@@ -1,4 +1,4 @@
-# Conta Comigo v2.1 — Material de publicação nas lojas (S35)
+# Conta Comigo v2.1.1 — Material de publicação nas lojas (S35)
 
 Este diretório reúne tudo o que é necessário para publicar a extensão na
 Chrome Web Store e no Firefox Add-ons (AMO).
@@ -13,8 +13,14 @@ Chrome Web Store e no Firefox Add-ons (AMO).
 
 ## 2. Checklist antes do envio
 
-1. **Pacote**: compacte o conteúdo da pasta `conta-comigo` (o `manifest.json`
-   precisa ficar na raiz do ZIP).
+1. **Pacotes separados por navegador** (obrigatório no MV3):
+   - **Chrome Web Store**: use o zip `conta-comigo-chrome-2.1.1.zip` (background
+     declarado apenas como `service_worker` — o Chrome rejeita
+     `background.scripts`, que é exclusivo do Firefox);
+   - **Firefox Add-ons (AMO)**: use o zip `conta-comigo-firefox-2.1.1.zip`
+     (background declarado como `scripts`, event page, + id gecko).
+   - Em ambos, o `manifest.json` fica na raiz do ZIP e as pastas
+     `demo.html`, `web/` e `loja/` ficam de fora do pacote de instalação.
 2. **Chrome Web Store** (<https://chrome.google.com/webstore/devconsole>):
    - Categoria: *Education*;
    - Idioma principal: português (Brasil); descrições em inglês e espanhol opcionais;
@@ -24,10 +30,11 @@ Chrome Web Store e no Firefox Add-ons (AMO).
      explique como desligar o desafio rápido;
    - Distribuição: pública ou oculta por link.
 3. **Firefox Add-ons** (<https://addons.mozilla.org/developers/>):
-   - Enviar o mesmo ZIP ("Carregar uma nova versão");
+   - Enviar o zip `conta-comigo-firefox-2.1.1.zip` ("Carregar uma nova versão");
    - Notas de revisão destacando o id `conta-comigo@kidmath.app`;
    - A nova aba pode ser revertida pelo usuário nas configurações de início do Firefox;
-   - O atalho global (S34) funciona no Firefox 121+; nos 109–120 o jogo abre pelo ícone.
+   - O background é uma event page (`background.scripts`), suportada no
+     Firefox 109+ — ícone, atalho Ctrl+Shift+U e nova aba funcionam nessa faixa completa.
 4. **Revisão de conteúdo infantil**: nenhum dado é coletado, não há publicidade,
    compras ou links externos dentro do jogo.
 5. **Contas de desenvolvedor**: taxas únicas/diárias das lojas são de

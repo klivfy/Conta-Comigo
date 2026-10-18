@@ -110,3 +110,24 @@ Stage Summary:
 - Conta Comigo v2.1.0: extensão abre SEMPRE em janela nativa em tela cheia (ícone ou Ctrl+Shift+U, Chromium e Firefox), nunca popup; layout da tela inicial reorganizado (herói, cartões, faixa de controles, grade fluida); CSP 100% limpa (sem scripts/handlers inline).
 - Arquivos alterados: manifest.json, background.js, js/boot.js (novo), js/ui.js, js/i18n.js, js/newtab.js, css/style.css, game.html, popup.html, newtab.html, options.html, demo.html, web/index.html, loja/.
 - Pacote: /home/z/my-project/download/conta-comigo-extension.zip · QA: /home/z/my-project/qa/v21-0*.png
+
+---
+Task ID: 6
+Agent: Z.ai (agente principal)
+Task: v2.1.1 — Corrigir os 3 erros reportados pelo Chrome: (1) 'background.scripts' requires manifest version of 2 or lower; (2)/(3) inline script bloqueado pela CSP 'script-src 'self'' (hash sha256-pR1/EfeZuQm7Lt8tShLqHetTXNYDMjbthabvdMMXhjY=).
+
+Work Log:
+- Evidência forense: sha256("document.documentElement.classList.add(\"html-page\");") = pR1/EfeZuQm7Lt8tShLqHetTXNYDMjbthabvdMMXhjY= — o hash reportado é EXATAMENTE o script inline da v2.0.0 (aspas duplas), já removido na v2.1. Os dois erros de CSP (duas variantes de directiva = CSP padrão de extensão antes/depois do Chrome 130) vêm da build ANTIGA ainda carregada no navegador do usuário. Scanner (scripts/scan_csp.py) confirmou: pasta e zip v2.1.0 com ZERO scripts inline.
+- Erro 1 era real no pacote v2.1.0: manifest com background dual {"service_worker","scripts"} — Chrome MV3 rejeita a chave 'scripts' (mostra erro em chrome://extensions, embora funcione via SW).
+- Solução (padrão da indústria p/ MV3 dual-browser): builds SEPARADAS. scripts/build_packages.py gera: conta-comigo/ (Chromium: só service_worker, sem gecko id) e conta-comigo-firefox/ (event page scripts + browser_specific_settings.gecko), idênticos no restante; background.js único compatível com os dois.
+- manifest v2.1.1 nas duas builds; zip antigo conta-comigo-extension.zip REMOVIDO (evita reinstalar a build com background dual); criados conta-comigo-chrome-2.1.1.zip e conta-comigo-firefox-2.1.1.zip (~54 KB, manifest na raiz, demo/web/loja fora do pacote de instalação).
+- background.js: cabeçalho atualizado (explica as builds separadas); nenhuma mudança de comportamento.
+- demo.html: painel "Novidades da v2.1.1" (substitui feat "background dual"), instalação Chromium com passo 0 "REMOVA a versão antiga antes de carregar" e zip novo; instalação Firefox com zip próprio.
+- loja/README-publicacao.md: checklist atualizado (zip por loja; nota de compatibilidade FF 109+ via event page).
+- QA agent-browser: scan CSP limpo nas 2 pastas e 2 zips; game.html Chromium 1440×900 (html-page aplicado, #app 1120px, grade 6 colunas), rodada completa de Contar até a tela final "Incrível! 🏆" com +12⭐ e combo; demo.html com iframe OK; game.html da build Firefox OK; node --check em background.js das duas builds; manifests validados por json+assert (sem chave proibida em nenhuma build); console sem erros/violações em todas as páginas.
+- QA: /home/z/my-project/qa/v211-01..05.png
+
+Stage Summary:
+- Causa-raiz: erro de background.scripts era do manifest dual (corrigido com builds separadas); erros de CSP eram da v2.0.0 ainda instalada no Chrome do usuário (o pacote atual já estava limpo) — a instrução-chave ao usuário é REMOVER a extensão antiga e carregar o zip 2.1.1.
+- Entregáveis: download/conta-comigo/ (pasta Chromium), download/conta-comigo-firefox/ (pasta Firefox), conta-comigo-chrome-2.1.1.zip, conta-comigo-firefox-2.1.1.zip.
+- Scripts reutilizáveis: scripts/build_packages.py (build dual), scripts/scan_csp.py (auditoria de CSP com hash).

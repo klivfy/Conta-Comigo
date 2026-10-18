@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conta Comigo — Continha rápido</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { width: auto; height: auto; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .nt-card { background: var(--card); border-radius: 26px; box-shadow: 0 12px 30px rgba(0, 0, 0, .18); padding: 34px 40px; text-align: center; max-width: 520px; width: 92%; }
+    .nt-title { font-size: 30px; font-weight: 900; margin: 6px 0 2px; }
+    .nt-sub { color: var(--ink-soft); font-weight: 700; font-size: 14.5px; margin-bottom: 16px; }
+    .nt-stats { display: flex; gap: 10px; justify-content: center; margin-bottom: 18px; flex-wrap: wrap; }
+    .nt-stat { background: rgba(var(--sh), .07); border-radius: 999px; padding: 8px 16px; font-weight: 800; font-size: 15px; }
+    .nt-q { font-size: 44px; font-weight: 900; margin: 8px 0 14px; }
+    .nt-ans { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .nt-ans button { font-family: inherit; font-size: 26px; font-weight: 900; color: #fff; background: var(--blue); border: none; border-radius: 18px; padding: 13px 0; cursor: pointer; box-shadow: 0 5px 0 var(--blue-dark); }
+    .nt-ans button:nth-child(2) { background: var(--green); box-shadow: 0 5px 0 var(--green-dark); }
+    .nt-ans button:nth-child(3) { background: var(--orange); box-shadow: 0 5px 0 var(--orange-dark); }
+    .nt-ans button:nth-child(4) { background: var(--purple); box-shadow: 0 5px 0 #6b3fd4; }
+    .nt-ans button.good { animation: pop .5s; }
+    .nt-foot { margin-top: 18px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .nt-off { color: var(--ink-soft); font-weight: 700; }
+  </style>
+  <script src="js/boot.js"></script>
+</head>
+<body>
+  <div class="nt-card" id="nt-card">
+    <div class="mascot" style="font-size:64px"><span class="mascot-main" id="nt-mascot">🦊</span></div>
+    <div class="nt-title" id="nt-title">Conta Comigo</div>
+    <div class="nt-sub" id="nt-sub">Continha rápida!</div>
+    <div class="nt-stats">
+      <span class="nt-stat">⭐ <b id="nt-stars">0</b></span>
+      <span class="nt-stat">🔥 <b id="nt-streak">0</b></span>
+      <span class="nt-stat" id="nt-stage"></span>
+    </div>
+    <div id="nt-play">
+      <div class="nt-q" id="nt-q"></div>
+      <div class="nt-ans" id="nt-ans"></div>
+    </div>
+    <div id="nt-done" class="hidden" style="font-size:22px;font-weight:900;padding:10px 0"></div>
+    <div class="nt-foot">
+      <button class="mini-btn" id="nt-open">🎮 <span data-i18n="appName">Conta Comigo</span></button>
+      <button class="mini-btn" id="nt-toggle">⏻</button>
+    </div>
+    <div class="nt-off" id="nt-note"></div>
+  </div>
+  <div id="fx"></div>
+  <script src="js/i18n.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/newtab.js"></script>
+</body>
+</html>

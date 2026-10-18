@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Conta Comigo v2.1 — demonstração e instalação</title>
+  <title>Conta Comigo v2.1.1 — demonstração e instalação</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
     body { width: auto; height: auto; min-height: 100vh; overflow: auto; }
@@ -33,7 +33,7 @@
   <div class="demo-wrap">
     <div class="demo-hero">
       <div class="mascot" style="font-size:72px"><span class="mascot-main">🦊</span></div>
-      <h1>Conta Comigo v2.1</h1>
+      <h1>Conta Comigo v2.1.1</h1>
       <p>Matemática lúdica para crianças a partir de 4 anos — extensão Chromium + Firefox</p>
     </div>
 
@@ -54,12 +54,12 @@
         </div>
 
         <div class="panel">
-          <h2>✨ Novidades da v2.1</h2>
+          <h2>✨ Novidades da v2.1.1</h2>
           <div class="feat-grid">
+            <div class="feat"><b>PKG</b> Builds separadas: Chromium usa <i>service worker</i>; Firefox usa <i>event page</i> — acabou o erro <code>background.scripts</code> no <code>chrome://extensions</code></div>
+            <div class="feat"><b>CSP</b> Zero scripts inline (o <code>boot.js</code> externo substituiu o <code>&lt;script&gt;</code> do head) — 100% aderente à política MV3</div>
             <div class="feat"><b>FX</b> Ícone da extensão abre sempre janela nativa em tela cheia (nunca popup)</div>
             <div class="feat"><b>UI</b> Tela inicial reorganizada: herói, cartões de status e grade fluida de jogos</div>
-            <div class="feat"><b>CSP</b> Zero scripts inline — 100% aderente à política MV3 do Chrome</div>
-            <div class="feat"><b>FF</b> Background dual (service worker + event page): tela cheia funciona também no Firefox</div>
           </div>
         </div>
 
@@ -108,10 +108,12 @@
         <div class="panel">
           <h2>🧩 Instalação no Chromium (Chrome, Edge, Brave, Opera)</h2>
           <ol>
-            <li>Descompacte o arquivo <code>conta-comigo-extension.zip</code>.</li>
+            <li><b>Importante:</b> se já havia uma versão instalada, <b>remova-a</b> primeiro em <code>chrome://extensions</code> → <i>Remover</i> (os erros de CSP reportados vêm da build antiga ainda carregada).</li>
+            <li>Descompacte o arquivo <code>conta-comigo-chrome-2.1.1.zip</code>.</li>
             <li>Abra <code>chrome://extensions</code> (ou <code>edge://extensions</code>).</li>
             <li>Ative o <b>Modo do desenvolvedor</b> (canto superior direito).</li>
             <li>Clique em <b>Carregar sem compactação</b> e escolha a pasta descompactada.</li>
+            <li>Confira: o cartão da extensão deve ficar <b>sem nenhum botão de “Erros”</b>.</li>
             <li>Opcional: em <code>chrome://extensions/shortcuts</code>, confirme o atalho <span class="kbd">Ctrl+Shift+U</span>.</li>
           </ol>
         </div>
@@ -119,6 +121,7 @@
         <div class="panel">
           <h2>🦊 Instalação no Firefox</h2>
           <ol>
+            <li>Descompacte o arquivo <code>conta-comigo-firefox-2.1.1.zip</code> (build própria do Firefox, com <i>event page</i>).</li>
             <li>Abra <code>about:debugging#/runtime/this-firefox</code>.</li>
             <li>Clique em <b>Carregar add-on temporário</b>.</li>
             <li>Selecione o <code>manifest.json</code> da pasta descompactada.</li>

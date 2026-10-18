@@ -1,12 +1,14 @@
 'use strict';
-/* ==================== Conta Comigo v2.1 — background (MV3) ====================
+/* ==================== Conta Comigo v2.1.1 — background (MV3) ====================
    O ícone da extensão NÃO tem mais popup: o clique dispara
    chrome.action.onClicked e abre SEMPRE o jogo numa janela nativa própria
    em tela cheia (type:'popup' + state:'fullscreen'). Se a janela do jogo
    já existir, ela é focada e re-maximizada em tela cheia.
    O atalho global Ctrl+Shift+U / ⌘⇧U (S34) usa o mesmo caminho.
-   Chromium lê background.service_worker; Firefox (MV3, 109+) lê
-   background.scripts (event page) — o manifest declara os dois. */
+   Builds separadas por navegador: a build Chromium declara apenas
+   background.service_worker (o Chrome rejeita 'background.scripts' no MV3);
+   a build Firefox declara background.scripts (event page) + gecko id.
+   Este arquivo é idêntico nas duas — usa apenas APIs comuns. */
 
 let gameWinId = null;
 
