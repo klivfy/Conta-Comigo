@@ -1,0 +1,79 @@
+/* ===== Conta Comigo — modo página (tela cheia) =====
+   Aplicado apenas em game.html (body.page-mode).
+   Sobrescreve o tamanho fixo do popup e escala o layout
+   para qualquer resolução, do laptop à TV/projetor. */
+
+html { width: auto; height: auto; }
+
+body.page-mode {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+body.page-mode #app { height: 100vh; }
+
+body.page-mode #topbar,
+body.page-mode #screens {
+  width: min(94vw, 620px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+body.page-mode .screen { padding-top: 8px; }
+
+/* tipografia e elementos escalados */
+body.page-mode .mascot { font-size: clamp(76px, 13vmin, 150px); }
+body.page-mode .title { font-size: clamp(30px, 5.5vmin, 54px); }
+body.page-mode .subtitle { font-size: clamp(14px, 2.2vmin, 20px); margin-bottom: 12px; }
+
+body.page-mode .diff-chip {
+  max-width: 120px; font-size: clamp(12px, 1.8vmin, 16px);
+  padding: clamp(7px, 1.2vmin, 12px) 4px; border-radius: 14px;
+}
+body.page-mode .diff-label { font-size: clamp(12px, 1.8vmin, 16px); }
+body.page-mode .diff-row { gap: clamp(6px, 1vmin, 12px); margin-bottom: clamp(10px, 2vmin, 22px); }
+
+body.page-mode .modes { gap: clamp(10px, 1.8vmin, 20px); }
+body.page-mode .mode-card {
+  border-radius: 22px; padding: clamp(10px, 2vmin, 22px) 8px clamp(9px, 1.6vmin, 18px);
+}
+body.page-mode .mode-emoji { font-size: clamp(28px, 5vmin, 48px); }
+body.page-mode .mode-name { font-size: clamp(16px, 2.8vmin, 26px); }
+body.page-mode .mode-desc { font-size: clamp(11px, 2vmin, 17px); }
+body.page-mode .tip { font-size: clamp(12px, 2vmin, 16px); margin-top: clamp(10px, 2vmin, 20px); }
+
+body.page-mode #visual { min-height: 210px; max-height: none; border-radius: 26px; }
+body.page-mode .obj { font-size: clamp(34px, 6.5vmin, 64px); margin: 5px; }
+body.page-mode .obj.small { font-size: clamp(24px, 4.2vmin, 42px); margin: 3px; }
+body.page-mode .op { font-size: clamp(34px, 6vmin, 58px); }
+body.page-mode .grp { border-radius: 20px; }
+body.page-mode .groups { gap: clamp(8px, 1.4vmin, 14px); }
+
+body.page-mode #equation { font-size: clamp(44px, 8.5vmin, 82px); margin: 12px 0 10px; }
+
+body.page-mode #answers { gap: clamp(12px, 2vmin, 22px); }
+body.page-mode .ans {
+  font-size: clamp(28px, 5.5vmin, 52px);
+  padding: clamp(14px, 2.6vmin, 26px) 0 clamp(12px, 2.2vmin, 22px);
+  border-radius: 24px;
+}
+
+body.page-mode #btn-repeat { font-size: clamp(14px, 2.4vmin, 20px); padding: clamp(10px, 1.6vmin, 16px) clamp(18px, 3vmin, 30px); }
+
+body.page-mode #bubble { font-size: clamp(17px, 2.8vmin, 24px); top: clamp(20px, 4vmin, 48px); }
+body.page-mode #bubble-emoji { font-size: clamp(24px, 4vmin, 36px); }
+
+body.page-mode #end-title { font-size: clamp(30px, 6vmin, 56px); }
+body.page-mode #end-msg { font-size: clamp(15px, 2.4vmin, 21px); }
+body.page-mode .star-pop { font-size: clamp(30px, 5vmin, 46px); }
+body.page-mode .end-actions { max-width: min(88vw, 360px); gap: clamp(12px, 2vmin, 20px); margin-top: clamp(14px, 3vmin, 30px); }
+body.page-mode .big-btn { font-size: clamp(19px, 3.2vmin, 28px); border-radius: 22px; padding: clamp(14px, 2.4vmin, 24px); }
+
+body.page-mode .icon-btn { width: clamp(44px, 6vmin, 58px); height: clamp(44px, 6vmin, 58px); font-size: clamp(20px, 3vmin, 28px); }
+body.page-mode #star-chip { font-size: clamp(17px, 2.6vmin, 24px); padding: clamp(8px, 1.4vmin, 14px) clamp(16px, 2.6vmin, 26px); }
+
+/* telas muito baixas (notebook com barra de tarefas, por exemplo) */
+@media (max-height: 620px) {
+  body.page-mode { overflow: auto; }
+}

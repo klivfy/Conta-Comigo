@@ -59,7 +59,8 @@ const MAX_LEVEL = 3;
 const S = {
   totalStars: 0,
   mute: false,
-  levels: {},      // progressão salva por modo
+  difficulty: 'auto', // 'auto' (adaptativo) ou 1 | 2 | 3 (fixo escolhido)
+  levels: {},      // progressão orgânica salva por modo
   mode: null,
   qIndex: 0,
   misses: 0,       // erros na pergunta atual
@@ -92,7 +93,7 @@ function loadState() {
 }
 
 function saveState() {
-  const data = { totalStars: S.totalStars, mute: S.mute, levels: S.levels };
+  const data = { totalStars: S.totalStars, mute: S.mute, difficulty: S.difficulty, levels: S.levels };
   let stored = false;
   try {
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
@@ -205,7 +206,7 @@ function distractors(answer, extras, maxCap) {
 
 /* Contar: "Quantas maçãs?" */
 function genContar(level) {
-  const maxN = [5, 8, 10][level - 1] || 10;
+  const maxN = [5, 8, 15][level - 1] || 10;
   const item = pick(ITEMS);
   const n = rand(1, maxN);
   const q = n === 1 ? (item.f ? 'Quanta' : 'Quanto') : (item.f ? 'Quantas' : 'Quantos');
@@ -221,14 +222,15 @@ function genContar(level) {
 
 /* Somar: dois grupos juntinhos */
 function genSomar(level) {
-  const cap = [5, 8, 10][level - 1] || 10;
+  const cap = [5, 10, 20][level - 1] || 10;
   const item = pick(ITEMS);
   const a = rand(1, cap - 1);
   const b = rand(1, cap - a);
   const n = a + b;
+  const small = n > 10;
   return {
-    visual: '<div class="expr"><span class="grp">' + emojisHTML(item, a) + '</span>' +
-      '<span class="op">+</span><span class="grp">' + emojisHTML(item, b) + '</span></div>',
+    visual: '<div class="expr"><span class="grp">' + emojisHTML(item, a, { small: small }) + '</span>' +
+      '<span class="op">+</span><span class="grp">' + emojisHTML(item, b, { small: small }) + '</span></div>',
     display: a + ' + ' + b + ' = ?',
     tts: 'Quanto é ' + numWord(a) + ' mais ' + numWord(b) + '?',
     answer: n,
@@ -238,13 +240,14 @@ function genSomar(level) {
 
 /* Subtrair: itens que "voam" ficam riscados */
 function genSubtrair(level) {
-  const cap = [5, 8, 10][level - 1] || 10;
+  const cap = [5, 10, 20][level - 1] || 10;
   const item = pick(ITEMS);
   const a = rand(2, cap);
   const b = rand(1, a - 1);
   const n = a - b;
+  const small = a > 10;
   return {
-    visual: '<div class="grp plain">' + emojisHTML(item, a, { crossedFrom: a - b }) + '</div>',
+    visual: '<div class="grp plain">' + emojisHTML(item, a, { crossedFrom: a - b, small: small }) + '</div>',
     display: a + ' − ' + b + ' = ?',
     tts: 'Quanto é ' + numWord(a) + ' menos ' + numWord(b) + '?',
     answer: n,
@@ -270,12 +273,48 @@ function genMultiplicar(level) {
   };
 }
 
+/* Dividir: repartição em grupos iguais (divisão exata, visual) */
+function genDividir(level) {
+  const ranges = [[3, 3], [4, 5], [5, 5]][level - 1] || [3, 3];
+  const g = rand(2, ranges[0]);
+  const k = rand(2, ranges[1]);
+  const total = g * k;
+  const item = pick(ITEMS);
+  let rows = '';
+  for (let r = 0; r < g; r++) rows += '<div class="grp row">' + emojisHTML(item, k, { small: true }) + '</div>';
+  return {
+    visual: '<div class="groups">' + rows + '</div>',
+    display: total + ' ÷ ' + g + ' = ?',
+    tts: 'Quanto é ' + numWord(total) + ' dividido por ' + numWord(g) + '?',
+    answer: k,
+    options: distractors(k, [g, k + 1, k - 1], 25),
+  };
+}
+
+/* Mistão: sorteia operações liberadas conforme a dificuldade */
+function genMistar(level) {
+  const ops = level >= 3
+    ? ['contar', 'somar', 'subtrair', 'multiplicar', 'dividir']
+    : level === 2
+      ? ['contar', 'somar', 'subtrair']
+      : ['contar', 'somar'];
+  return MODES[pick(ops)].gen(level);
+}
+
 const MODES = {
   contar: { label: 'Contar', gen: genContar },
   somar: { label: 'Somar', gen: genSomar },
   subtrair: { label: 'Subtrair', gen: genSubtrair },
   multiplicar: { label: 'Multiplicar', gen: genMultiplicar },
+  dividir: { label: 'Dividir', gen: genDividir },
+  mistar: { label: 'Mistão', gen: genMistar },
 };
+
+/* Nível ativo: fixo (manual) ou adaptativo (automático) */
+function activeLevel() {
+  if (S.difficulty !== 'auto') return S.difficulty;
+  return S.levels[S.mode] || 1;
+}
 
 /* ==================== Interface ==================== */
 function show(name) {
@@ -308,19 +347,23 @@ function showBubble(emoji, text) {
 function hideBubble() { $('#bubble').classList.add('hidden'); }
 
 function renderProgress() {
-  const el = $('#progress');
-  el.innerHTML = '';
-  for (let i = 0; i < QUESTIONS_PER_ROUND; i++) {
-    const d = document.createElement('i');
-    d.className = 'dot' + (i < S.qIndex ? ' done' : i === S.qIndex ? ' now' : '');
-    el.appendChild(d);
+  const el = $('#dots');
+  if (el) {
+    el.innerHTML = '';
+    for (let i = 0; i < QUESTIONS_PER_ROUND; i++) {
+      const d = document.createElement('i');
+      d.className = 'dot' + (i < S.qIndex ? ' done' : i === S.qIndex ? ' now' : '');
+      el.appendChild(d);
+    }
   }
+  const chip = $('#level-chip');
+  if (chip) chip.textContent = 'Nível ' + activeLevel() + (S.difficulty === 'auto' ? ' · auto' : ' · fixo');
 }
 
 function nextQuestion() {
   S.misses = 0;
   hideBubble();
-  const level = S.levels[S.mode] || 1;
+  const level = activeLevel();
   S.current = MODES[S.mode].gen(level);
   $('#visual').innerHTML = S.current.visual;
   $('#equation').textContent = S.current.display;
@@ -416,11 +459,14 @@ function confetti(n) {
 
 function endRound() {
   const rate = S.firstTryWins / QUESTIONS_PER_ROUND;
-  let lvl = S.levels[S.mode] || 1;
-  if (rate >= 0.8) lvl = Math.min(MAX_LEVEL, lvl + 1);
-  else if (rate <= 0.4) lvl = Math.max(1, lvl - 1);
-  S.levels[S.mode] = lvl;
+  const manual = S.difficulty !== 'auto';
+  // progressão orgânica continua sendo registrada (vale ao voltar para automático)
+  let org = S.levels[S.mode] || 1;
+  if (rate >= 0.8) org = Math.min(MAX_LEVEL, org + 1);
+  else if (rate <= 0.4) org = Math.max(1, org - 1);
+  S.levels[S.mode] = org;
   saveState();
+  const lvl = manual ? S.difficulty : org;
 
   show('end');
   SFX.fanfare();
@@ -439,7 +485,8 @@ function endRound() {
   }
   $('#end-msg').textContent =
     'Você ganhou ' + S.starsRound + (S.starsRound === 1 ? ' estrela' : ' estrelas') +
-    ' nesta rodada! ' + MODES[S.mode].label + ' — nível ' + lvl + ' de ' + MAX_LEVEL + '.';
+    ' nesta rodada! ' + MODES[S.mode].label + ' — nível ' + lvl + ' de ' + MAX_LEVEL +
+    (manual ? ' (dificuldade fixa).' : ' (modo automático).');
 }
 
 function startRound(mode) {
@@ -457,14 +504,55 @@ function startRound(mode) {
 
 function applyMute() { $('#btn-mute').textContent = S.mute ? '🔇' : '🔊'; }
 
+/* ==================== Dificuldade manual ==================== */
+function applyDifficultyUI() {
+  document.querySelectorAll('.diff-chip').forEach((c) => {
+    c.classList.toggle('active', String(S.difficulty) === c.dataset.d);
+  });
+}
+
+/* ==================== Tela cheia ==================== */
+const IS_PAGE = /game\.html$/.test(location.pathname);
+const HAS_EXT = typeof chrome !== 'undefined' && !!chrome.runtime && !!chrome.runtime.getURL &&
+  !!chrome.windows && !!chrome.windows.create;
+
+function toggleFullscreen() {
+  ensureAudio();
+  SFX.tap();
+  // No popup da extensão: abre o jogo em janela nativa em tela cheia
+  // (popups têm limite de 800x600 e não podem ficar em tela cheia).
+  if (!IS_PAGE && HAS_EXT) {
+    try {
+      chrome.windows.create({
+        url: chrome.runtime.getURL('game.html'),
+        type: 'popup',
+        focused: true,
+        state: 'fullscreen',
+      }, () => { void chrome.runtime.lastError; });
+      return;
+    } catch (e) { /* cai para a Fullscreen API */ }
+  }
+  // Em página própria (game.html) ou na demo: Fullscreen API do navegador
+  try {
+    if (document.fullscreenElement) {
+      if (document.exitFullscreen) document.exitFullscreen().catch(function () {});
+    } else if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(function () {});
+    }
+  } catch (e) { /* ignora */ }
+}
+
 /* ==================== Inicialização ==================== */
 async function init() {
   const data = await loadState();
   S.totalStars = Number(data && data.totalStars) || 0;
   S.mute = !!(data && data.mute);
   S.levels = data && data.levels && typeof data.levels === 'object' ? data.levels : {};
+  const d = data && data.difficulty;
+  S.difficulty = (d === 1 || d === 2 || d === 3) ? d : 'auto';
 
   applyMute();
+  applyDifficultyUI();
   updateStarChip(false);
   TTS.init();
 
@@ -482,6 +570,19 @@ async function init() {
   $('#btn-repeat').addEventListener('click', () => { ensureAudio(); SFX.tap(); if (S.current) TTS.speak(S.current.tts); });
   $('#btn-again').addEventListener('click', () => { ensureAudio(); SFX.tap(); startRound(S.mode); });
   $('#btn-menu').addEventListener('click', () => { TTS.stop(); SFX.tap(); show('home'); });
+  const btnFull = $('#btn-full');
+  if (btnFull) btnFull.addEventListener('click', toggleFullscreen);
+  const btnClose = $('#btn-close');
+  if (btnClose) btnClose.addEventListener('click', () => { try { window.close(); } catch (e) { /* ignora */ } });
+  document.querySelectorAll('.diff-chip').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      ensureAudio();
+      SFX.tap();
+      S.difficulty = chip.dataset.d === 'auto' ? 'auto' : Number(chip.dataset.d);
+      saveState();
+      applyDifficultyUI();
+    });
+  });
 
   document.addEventListener('pointerdown', ensureAudio);
   show('home');

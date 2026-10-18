@@ -49,6 +49,12 @@
       font-size: 13px; font-weight: 800;
     }
     .hint { font-size: 13px; color: #8a8ea8; margin-top: 10px; text-align: center; }
+    .card table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    .card th, .card td { text-align: left; padding: 7px 8px; border-bottom: 1px solid #f0eef7; vertical-align: top; }
+    .card th { color: #6b6f8a; font-size: 12px; text-transform: uppercase; letter-spacing: .4px; }
+    .card td:first-child { white-space: nowrap; font-weight: 800; }
+    a.chip.link { text-decoration: none; color: #33355c; display: inline-block; }
+    a.chip.link:hover { background: #fff8e0; }
   </style>
 </head>
 <body>
@@ -68,8 +74,11 @@
 
     <div class="demo-area">
       <div class="phone">
-        <iframe src="popup.html" title="Prévia do jogo"></iframe>
+        <iframe src="popup.html" title="Prévia do jogo" allowfullscreen allow="fullscreen"></iframe>
         <p class="hint">👆 Prévia interativa — clique e jogue!</p>
+        <p class="hint" style="margin-top:6px;">
+          <a class="chip link" href="game.html" target="_blank" rel="noopener">⛶ Abrir em tela cheia</a>
+        </p>
       </div>
 
       <div class="side">
@@ -96,15 +105,35 @@
         </div>
 
         <div class="card">
+          <h2>📈 Dificuldade e operações</h2>
+          <p style="font-size:14px;margin-bottom:10px;line-height:1.6;">
+            Os responsáveis podem fixar a dificuldade manualmente na tela inicial
+            (🤖 Auto · 🌱 Fácil · 🌿 Médio · 🌳 Difícil). No modo automático, o jogo
+            sobe ou desce de nível sozinho conforme os acertos — e vai liberando
+            novas operações. O modo <b>🎲 Mistão</b> sorteia tudo o que o nível permite:
+          </p>
+          <table>
+            <tr><th>Nível</th><th>Operações apresentadas</th></tr>
+            <tr><td>🌱 Fácil</td><td>Contar (1–5) · Somar (até 5)</td></tr>
+            <tr><td>🌿 Médio</td><td>Contar (até 8) · Somar e Subtrair (até 10)</td></tr>
+            <tr><td>🌳 Difícil</td><td>Contar (até 15) · Somar e Subtrair (até 20) · Multiplicar (tabuadas 2–5) · Dividir (exatas, com grupos)</td></tr>
+            <tr><td>🤖 Auto</td><td>Progressão adaptativa: começa fácil e desbloqueia as operações conforme a criança acerta</td></tr>
+          </table>
+        </div>
+
+        <div class="card">
           <h2>⭐ O que o jogo ensina</h2>
           <div class="feat">
-            <span>🍎 Contar até 10</span>
+            <span>🍎 Contar até 15</span>
             <span>➕ Adição com figuras</span>
             <span>➖ Subtração visual</span>
             <span>✖️ Multiplicação em grupos</span>
+            <span>➗ Divisão exata</span>
+            <span>🎲 Modo Mistão</span>
             <span>🗣️ Voz em português</span>
             <span>🔊 Sons alegres</span>
             <span>⭐ Estrelas e níveis</span>
+            <span>⛶ Tela cheia</span>
             <span>🚫 Sem anúncios</span>
             <span>📶 Funciona offline</span>
           </div>

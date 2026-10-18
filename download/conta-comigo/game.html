@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conta Comigo — Tela cheia</title>
+  <link rel="stylesheet" href="popup.css">
+  <link rel="stylesheet" href="game.css">
+</head>
+<body class="page-mode">
+  <div class="deco d1">➕</div>
+  <div class="deco d2">🔢</div>
+  <div class="deco d3">✨</div>
+
+  <div id="app">
+    <header id="topbar">
+      <div class="btn-group">
+        <button id="btn-home" class="icon-btn" title="Início" aria-label="Voltar ao início">🏠</button>
+        <button id="btn-close" class="icon-btn" title="Fechar" aria-label="Fechar o jogo">✕</button>
+      </div>
+      <div id="star-chip" title="Suas estrelas">⭐ <span id="star-total">0</span></div>
+      <div class="btn-group">
+        <button id="btn-mute" class="icon-btn" title="Som" aria-label="Ativar ou desativar som">🔊</button>
+        <button id="btn-full" class="icon-btn" title="Alternar tela cheia" aria-label="Alternar tela cheia">⛶</button>
+      </div>
+    </header>
+
+    <main id="screens">
+
+      <!-- TELA INICIAL -->
+      <section id="screen-home" class="screen">
+        <div class="mascot" id="mascot-home">🦊</div>
+        <h1 class="title">Conta Comigo</h1>
+        <p class="subtitle">Vamos brincar com os números!</p>
+        <div class="diff-row" role="group" aria-label="Dificuldade">
+          <span class="diff-label">Dificuldade:</span>
+          <button class="diff-chip" data-d="auto" title="O jogo adapta sozinho">🤖 Auto</button>
+          <button class="diff-chip" data-d="1" title="Contar e somar até 5">🌱 Fácil</button>
+          <button class="diff-chip" data-d="2" title="Somar e subtrair até 10">🌿 Médio</button>
+          <button class="diff-chip" data-d="3" title="Até 20, multiplicar e dividir">🌳 Difícil</button>
+        </div>
+        <div class="modes">
+          <button class="mode-card" data-mode="contar">
+            <span class="mode-emoji">🍎</span>
+            <span class="mode-name">Contar</span>
+            <span class="mode-desc">Quantos tem?</span>
+          </button>
+          <button class="mode-card" data-mode="somar">
+            <span class="mode-emoji">➕</span>
+            <span class="mode-name">Somar</span>
+            <span class="mode-desc">Juntar tudo</span>
+          </button>
+          <button class="mode-card" data-mode="subtrair">
+            <span class="mode-emoji">➖</span>
+            <span class="mode-name">Subtrair</span>
+            <span class="mode-desc">Tirar alguns</span>
+          </button>
+          <button class="mode-card" data-mode="multiplicar">
+            <span class="badge">para os maiores</span>
+            <span class="mode-emoji">✖️</span>
+            <span class="mode-name">Multiplicar</span>
+            <span class="mode-desc">Grupos iguais</span>
+          </button>
+          <button class="mode-card" data-mode="dividir">
+            <span class="mode-emoji">➗</span>
+            <span class="mode-name">Dividir</span>
+            <span class="mode-desc">Repartir igual</span>
+          </button>
+          <button class="mode-card" data-mode="mistar">
+            <span class="mode-emoji">🎲</span>
+            <span class="mode-name">Mistão</span>
+            <span class="mode-desc">Tudo junto!</span>
+          </button>
+        </div>
+        <p class="tip">Toque em um modo para começar! 👆</p>
+      </section>
+
+      <!-- TELA DO JOGO -->
+      <section id="screen-game" class="screen">
+        <div id="progress"><div id="dots"></div><span id="level-chip"></span></div>
+        <div id="visual"></div>
+        <div id="equation"></div>
+        <div id="answers"></div>
+        <button id="btn-repeat">🔊 Ouvir de novo</button>
+        <div id="bubble" class="hidden">
+          <span id="bubble-emoji">🦊</span>
+          <span id="bubble-text"></span>
+        </div>
+      </section>
+
+      <!-- TELA FINAL -->
+      <section id="screen-end" class="screen">
+        <div class="mascot">🥳</div>
+        <h2 id="end-title">Muito bem!</h2>
+        <div id="stars-earned"></div>
+        <p id="end-msg"></p>
+        <div class="end-actions">
+          <button id="btn-again" class="big-btn">Jogar de novo 🔁</button>
+          <button id="btn-menu" class="big-btn alt">Trocar modo 🏠</button>
+        </div>
+      </section>
+
+    </main>
+
+    <div id="fx"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

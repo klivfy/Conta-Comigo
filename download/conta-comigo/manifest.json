@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Conta Comigo — Matemática para Crianças",
-  "version": "1.0.0",
-  "description": "Jogo lúdico de contagem, soma, subtração e multiplicação para crianças a partir de 4 anos, com voz em português.",
+  "version": "1.1.0",
+  "description": "Jogo lúdico de contagem, soma, subtração, multiplicação e divisão para crianças a partir de 4 anos, com voz em português.",
   "author": "Conta Comigo",
   "action": {
     "default_title": "Conta Comigo",
