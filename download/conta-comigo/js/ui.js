@@ -1,8 +1,9 @@
 'use strict';
-/* ==================== Conta Comigo v2.0 — interface ====================
+/* ==================== Conta Comigo v2.1 — interface ====================
    S07 adaptação · S08 revisão · S10 fadiga · S11 metas · S12 avaliação
    S13 mascote evolutiva · S14 conquistas · S15 ofensiva · S16 missões
-   S17 loja · S18 chefe · S20 teclado · S24 calmo · S28 limite de sessão · S30 duelo */
+   S17 loja · S18 chefe · S20 teclado · S24 calmo · S28 limite de sessão · S30 duelo
+   v2.1: sem scripts/handlers inline (CSP MV3), ✕ fecha a janela dedicada */
 
 const IS_PAGE = document.body.classList.contains('page-mode');
 const HAS_EXT = typeof chrome !== 'undefined' && !!chrome.runtime && !!chrome.runtime.getURL && !!chrome.windows && !!chrome.windows.create;
@@ -99,6 +100,8 @@ function renderMascot() {
   const st = mascotStage();
   const m = $('#mascot-home');
   if (m) m.innerHTML = '<span class="mascot-main">' + st.emoji + '</span>' + (p.hat ? '<span class="mascot-hat">' + p.hat + '</span>' : '');
+  const ms = $('#mascot-side');
+  if (ms) ms.textContent = st.emoji;
   const lbl = $('#mascot-stage');
   if (lbl) lbl.textContent = t(st.key) + ' · ' + p.name;
   const nx = $('#mascot-next');
@@ -165,9 +168,9 @@ function renderMissions() {
   const el = $('#mission-row'); if (!el) return;
   ensureMissions();
   const p = P();
-  el.innerHTML = '<span class="m-title">' + t('missions') + ':</span>' + p.missions.list.map((m) => {
+  el.innerHTML = p.missions.list.map((m) => {
     const def = MISSION_DEFS.find((d) => d.id === m.id);
-    return '<span class="mission' + (m.done ? ' done' : '') + '">' + (m.done ? '✅' : '🔸') + t(def.key) + ' ' + m.p + '/' + def.goal + '</span>';
+    return '<span class="mission' + (m.done ? ' done' : '') + '">' + (m.done ? '✅ ' : '🔸 ') + t(def.key) + ' ' + m.p + '/' + def.goal + '</span>';
   }).join('');
 }
 
@@ -469,7 +472,7 @@ function onAnswer(btn) {
 function levelUpOverlay(mode, lv) {
   SFX.fanfare(); confetti(40);
   showOverlay('<div class="ov-emoji">🎉</div><h3>' + t('lvl_up', { n: lv, m: t('m_' + mode) }) + '</h3>' +
-    '<button class="big-btn" onclick="closeOverlay()">' + t('ok') + '</button>');
+    '<button class="big-btn" data-close="1">' + t('ok') + '</button>');
 }
 function closeOverlay() { hideOverlay(); }
 
@@ -642,7 +645,7 @@ function buySticker() {
   else { p.stickers.push(i); msg = STICKERS[i] + '!'; }
   p.firstBuy = true;
   checkAch(); saveState(); renderShop(); refreshChrome();
-  showOverlay('<div class="ov-emoji">' + STICKERS[i] + '</div><h3>' + msg + '</h3><button class="big-btn" onclick="closeOverlay()">' + t('ok') + '</button>');
+  showOverlay('<div class="ov-emoji">' + STICKERS[i] + '</div><h3>' + msg + '</h3><button class="big-btn" data-close="1">' + t('ok') + '</button>');
   SFX.fanfare(); confetti(24);
 }
 
@@ -755,6 +758,22 @@ function bindStatic() {
     G().diffMode = chip.dataset.d === 'auto' ? 'auto' : Number(chip.dataset.d);
     saveState(); renderDiffChips();
   }));
+  // CSP: overlays usam data-close em vez de onclick inline
+  document.addEventListener('click', (e) => {
+    const b = e.target && e.target.closest ? e.target.closest('[data-close]') : null;
+    if (b) closeOverlay();
+  });
+  const bc = $('#btn-close');
+  if (bc) {
+    if (IS_PAGE && HAS_EXT) bc.classList.remove('hidden');
+    bc.addEventListener('click', () => {
+      SFX.tap();
+      try { window.close(); } catch (e) { /* ignora */ }
+      setTimeout(() => {
+        try { if (HAS_EXT && chrome.windows) chrome.windows.remove(chrome.windows.WINDOW_ID_CURRENT, () => void chrome.runtime.lastError); } catch (e) { /* ignora */ }
+      }, 160);
+    });
+  }
   document.addEventListener('pointerdown', ensureAudio);
   document.addEventListener('keydown', onKey);
 }

@@ -6,6 +6,7 @@ const I18N = {
     tip: 'Toque em um modo para começar! 👆', home: 'Início', parents: 'Responsáveis',
     fullscreen: 'Tela cheia', sound: 'Som', repeat: 'Ouvir de novo', level: 'Nível', auto: 'auto', fixed: 'fixo',
     difficulty: 'Dificuldade', q_of: 'Questão {a} de {b}', stars: 'estrelas', star1: 'estrela',
+    pick_game: 'Escolha um jogo',
     review_btn: 'Revisar ({n})', sp_boss: 'Desafio-chefe', sp_duel: 'Duelo', sp_diag: 'Meu nível',
     goal_line: '🎯 Meta: {a}/{b}', goal_done: 'Meta do dia concluída! +5 ⭐',
     // modos
@@ -109,6 +110,7 @@ const I18N = {
     tip: 'Tap a mode to start! 👆', home: 'Home', parents: 'Parents',
     fullscreen: 'Fullscreen', sound: 'Sound', repeat: 'Say it again', level: 'Level', auto: 'auto', fixed: 'fixed',
     difficulty: 'Difficulty', q_of: 'Question {a} of {b}', stars: 'stars', star1: 'star',
+    pick_game: 'Pick a game',
     review_btn: 'Review ({n})', sp_boss: 'Boss challenge', sp_duel: 'Duel', sp_diag: 'My level',
     goal_line: '🎯 Goal: {a}/{b}', goal_done: 'Daily goal done! +5 ⭐',
     m_contar: 'Count', d_contar: 'How many?', m_somar: 'Add', d_somar: 'Put together',
@@ -199,6 +201,7 @@ const I18N = {
     tip: '¡Toca un modo para empezar! 👆', home: 'Inicio', parents: 'Familia',
     fullscreen: 'Pantalla completa', sound: 'Sonido', repeat: 'Escuchar otra vez', level: 'Nivel', auto: 'auto', fixed: 'fijo',
     difficulty: 'Dificultad', q_of: 'Pregunta {a} de {b}', stars: 'estrellas', star1: 'estrella',
+    pick_game: 'Elige un juego',
     review_btn: 'Repasar ({n})', sp_boss: 'Reto jefe', sp_duel: 'Duelo', sp_diag: 'Mi nivel',
     goal_line: '🎯 Meta: {a}/{b}', goal_done: '¡Meta del día lograda! +5 ⭐',
     m_contar: 'Contar', d_contar: '¿Cuántos hay?', m_somar: 'Sumar', d_somar: 'Juntar todo',

@@ -84,3 +84,29 @@ Stage Summary:
 - Conta Comigo v2.0.0 entrega as 36 propostas S01–S36 implementadas e testadas.
 - Pasta: /home/z/my-project/download/conta-comigo/ · Pacote: /home/z/my-project/download/conta-comigo-extension.zip · Demo: demo.html (prévia + lista das 36 + instalação Chromium/Firefox).
 - Observações: nova aba vem ativada por padrão (desligável na própria página e nas opções); atalho global sem efeito no Firefox 109-120 (sem service worker); sincronização desativada por padrão.
+
+---
+Task ID: 5
+Agent: Z.ai (agente principal)
+Task: v2.1.0 — Otimizar a disposição das informações na tela e fazer a extensão abrir SEMPRE em tela cheia (nunca popup); corrigir erros de CSP reportados pelo Chrome.
+
+Work Log:
+- Diagnóstico-raiz: o <script> inline do <head> (que adicionava html-page ao <html>) era bloqueado pela CSP MV3 ('script-src 'self'', hash sha256-pR1/... reportado pelo Chrome). Sem a classe, html ficava preso em 400×600 overflow:hidden → conteúdo espremido numa coluna de ~400px à esquerda na janela tela-cheia (print do usuário). CSP e layout eram o MESMO bug.
+- Criado js/boot.js (classe html-page antes do CSS) e substituído o script inline em game.html, newtab.html, options.html, demo.html e web/index.html → zero scripts inline no pacote.
+- Removidos onclick="closeOverlay()" gerados no ui.js (levelUpOverlay, buySticker) → data-close="1" + delegação de evento em bindStatic; validado no QA (overlay abre e fecha).
+- manifest v2.1.0: removido action.default_popup; background dual {"service_worker","scripts"} (Chromium usa SW; Firefox MV3 usa event page → ícone também funciona no FF).
+- background.js reescrito: chrome.action.onClicked + commands → openGame() = windows.create({type:'popup', state:'fullscreen'}) com reforço de fullscreen no callback (compatibilidade Firefox); se a janela do jogo já existe, foca e re-maximiza (onRemoved limpa o id); fallback final = aba normal (nunca popup).
+- Layout otimizado (css/style.css + markup dos 3 shells game/popup/web): tela inicial reestruturada em .home-hero (grade 2 colunas: marca+mascote à esquerda; cartões "mascote/status" e "missões+semana" à direita), .home-controls (Revisar/Chefe/Duelo/Meu nível + dificuldade numa única faixa), .sec-title "Escolha um jogo" (i18n pick_game pt/en/es) e grade de modos auto-fill minmax(158px,1fr) → 6 colunas em 1440px (12 modos em 2 linhas); topbar sticky translúcida com blur; botões de dificuldade sem quebra de linha; link-row centralizada.
+- Popup 400×600 preservado e compacto (herói empilhado, chips de dificuldade cabem numa linha).
+- Adicionado botão ✕ (btn-close) na topbar: visível só em page-mode+extensão; window.close() com fallback chrome.windows.remove; i18n close.
+- renderMascot atualiza #mascot-side; renderMissions não injeta mais m-title (estático no card); espaço após ✅/🔸 nas missões.
+- web/index.html: caminhos corrigidos para ../css e ../js (estava quebrado), selo v2.1.
+- newtab.js: botão do jogo agora abre janela nativa fullscreen em vez de navegar a aba.
+- demo.html: painel "✨ Novidades da v2.1" + textos atualizados; loja/README-publicacao.md para v2.1; captura-1-home.png atualizada com o novo layout.
+- QA agent-browser (1440×900 e 400×600, file://): html-page aplicado, #app 1120px, herói 2 colunas, modos 6 colunas, topbar sticky; rodada completa de Contar (+12⭐ com combo), overlay data-close OK, home re-render OK (mascote 🦊, 3 missões, título não duplicado); popup 400×600 íntegro; options (portão), newtab (questão + 4 respostas) e web (CSS ../ carregado) sem erros; console/erros limpos — nenhuma violação de CSP.
+- Reempacotado conta-comigo-extension.zip v2.1.0 (34 arquivos, ~576 KB, manifest na raiz, capturas incluídas).
+
+Stage Summary:
+- Conta Comigo v2.1.0: extensão abre SEMPRE em janela nativa em tela cheia (ícone ou Ctrl+Shift+U, Chromium e Firefox), nunca popup; layout da tela inicial reorganizado (herói, cartões, faixa de controles, grade fluida); CSP 100% limpa (sem scripts/handlers inline).
+- Arquivos alterados: manifest.json, background.js, js/boot.js (novo), js/ui.js, js/i18n.js, js/newtab.js, css/style.css, game.html, popup.html, newtab.html, options.html, demo.html, web/index.html, loja/.
+- Pacote: /home/z/my-project/download/conta-comigo-extension.zip · QA: /home/z/my-project/qa/v21-0*.png

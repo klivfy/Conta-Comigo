@@ -1,4 +1,4 @@
-# Conta Comigo v2.0 — Material de publicação nas lojas (S35)
+# Conta Comigo v2.1 — Material de publicação nas lojas (S35)
 
 Este diretório reúne tudo o que é necessário para publicar a extensão na
 Chrome Web Store e no Firefox Add-ons (AMO).

@@ -1,5 +1,5 @@
 'use strict';
-/* ==================== Conta Comigo v2.0 — nova aba (S33) ==================== */
+/* ==================== Conta Comigo v2.1 — nova aba (S33) ==================== */
 let NTQ = null;
 
 function ntRenderStats() {
@@ -68,6 +68,13 @@ async function bootNewtab() {
   if (G().newtabOn) ntShowGame(); else ntShowOff();
   $('#nt-open').addEventListener('click', () => {
     const url = (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) ? chrome.runtime.getURL('game.html') : 'game.html';
+    // v2.1: na extensão, abre janela nativa em tela cheia (mesmo caminho do ícone)
+    try {
+      if (typeof chrome !== 'undefined' && chrome.windows && chrome.windows.create) {
+        chrome.windows.create({ url, type: 'popup', focused: true, state: 'fullscreen' }, () => { void chrome.runtime.lastError; });
+        return;
+      }
+    } catch (e) { /* cai para navegação */ }
     location.href = url;
   });
   $('#nt-toggle').addEventListener('click', () => {

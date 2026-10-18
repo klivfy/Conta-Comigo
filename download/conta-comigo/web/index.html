@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Conta Comigo — Tela cheia</title>
-  <link rel="stylesheet" href="css/style.css">
-  <script>document.documentElement.classList.add("html-page");</script>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/boot.js"></script>
 </head>
 <body class="page-mode">
   <div class="deco d1">➕</div>
@@ -26,6 +26,7 @@
         <button id="btn-mute" class="icon-btn" aria-label="🔊">🔊</button>
         <button id="btn-full" class="icon-btn" aria-label="⛶">⛶</button>
         <button id="btn-gear" class="icon-btn" aria-label="⚙️">⚙️</button>
+        <button id="btn-close" class="icon-btn icon-close hidden" title="✕ Fechar" aria-label="✕">✕</button>
       </div>
     </header>
 
@@ -33,33 +34,48 @@
 
       <!-- TELA INICIAL -->
       <section id="screen-home" class="screen">
-        <div class="mascot-row">
-          <div class="mascot" id="mascot-home"><span class="mascot-main">🥚</span></div>
-          <div class="mascot-info">
-            <div id="mascot-stage"></div>
-            <div id="mascot-next"></div>
-            <div id="goal-line"></div>
+        <div class="home-hero">
+          <div class="hero-brand">
+            <div class="mascot" id="mascot-home"><span class="mascot-main">🥚</span></div>
+            <div class="hero-titlebox">
+              <h1 class="title" data-i18n="appName">Conta Comigo</h1>
+              <p class="subtitle" data-i18n="subtitle">Vamos brincar com os números!</p>
+            </div>
+          </div>
+          <aside class="hero-side">
+            <div class="side-card pet-card">
+              <span class="pet-emoji" id="mascot-side">🥚</span>
+              <div class="pet-lines">
+                <div id="mascot-stage"></div>
+                <div id="mascot-next"></div>
+                <div id="goal-line"></div>
+              </div>
+            </div>
+            <div class="side-card missions-card">
+              <div class="m-title" data-i18n="missions">Missões de hoje</div>
+              <div id="week-strip"></div>
+              <div id="mission-row"></div>
+            </div>
+          </aside>
+        </div>
+        <div class="home-controls">
+          <div class="special-row">
+            <button id="sp-review" class="hidden"><b>📚</b><span>Revisar</span></button>
+            <button id="sp-boss" class="hidden"><b>⚔️</b><span data-i18n="sp_boss">Chefe</span></button>
+            <button id="sp-duel"><b>👥</b><span data-i18n="sp_duel">Duelo</span></button>
+            <button id="sp-diag"><b>🎯</b><span data-i18n="sp_diag">Meu nível</span></button>
+          </div>
+          <div class="diff-row" role="group" aria-label="Dificuldade">
+            <span class="diff-label" data-i18n="difficulty">Dificuldade:</span>
+            <button class="diff-chip" data-d="auto">🤖 Auto</button>
+            <button class="diff-chip" data-d="1">🌱 1</button>
+            <button class="diff-chip" data-d="2">🌿 2</button>
+            <button class="diff-chip" data-d="3">🌳 3</button>
+            <button class="diff-chip" data-d="4">⛰️ 4</button>
+            <button class="diff-chip" data-d="5">🚀 5</button>
           </div>
         </div>
-        <h1 class="title" data-i18n="appName">Conta Comigo</h1>
-        <p class="subtitle" data-i18n="subtitle">Vamos brincar com os números!</p>
-        <div id="week-strip"></div>
-        <div id="mission-row"></div>
-        <div class="special-row">
-          <button id="sp-review" class="hidden"><b>📚</b><span>Revisar</span></button>
-          <button id="sp-boss" class="hidden"><b>⚔️</b><span data-i18n="sp_boss">Chefe</span></button>
-          <button id="sp-duel"><b>👥</b><span data-i18n="sp_duel">Duelo</span></button>
-          <button id="sp-diag"><b>🎯</b><span data-i18n="sp_diag">Meu nível</span></button>
-        </div>
-        <div class="diff-row" role="group" aria-label="Dificuldade">
-          <span class="diff-label" data-i18n="difficulty">Dificuldade:</span>
-          <button class="diff-chip" data-d="auto">🤖 Auto</button>
-          <button class="diff-chip" data-d="1">🌱 1</button>
-          <button class="diff-chip" data-d="2">🌿 2</button>
-          <button class="diff-chip" data-d="3">🌳 3</button>
-          <button class="diff-chip" data-d="4">⛰️ 4</button>
-          <button class="diff-chip" data-d="5">🚀 5</button>
-        </div>
+        <h2 class="sec-title" data-i18n="pick_game">Escolha um jogo</h2>
         <div class="modes" id="modes-grid"></div>
         <div class="link-row">
           <button id="btn-shop">🛒 <span data-i18n="shop">Loja</span></button>
@@ -143,11 +159,11 @@
     <div id="overlay" class="hidden"><div id="overlay-card"></div></div>
     <div id="toast" class="hidden"></div>
     <div id="fx"></div>
-  <div style="position:fixed;bottom:10px;right:14px;font-size:11px;font-weight:800;opacity:.55;z-index:80;background:rgba(255,255,255,.7);border-radius:999px;padding:4px 10px">Conta Comigo Web · versão para escolas · v2.0</div>
+  <div style="position:fixed;bottom:10px;right:14px;font-size:11px;font-weight:800;opacity:.55;z-index:80;background:rgba(255,255,255,.7);border-radius:999px;padding:4px 10px">Conta Comigo Web · versão para escolas · v2.1</div>
   </div>
 
-  <script src="js/i18n.js"></script>
-  <script src="js/engine.js"></script>
-  <script src="js/ui.js"></script>
+  <script src="../js/i18n.js"></script>
+  <script src="../js/engine.js"></script>
+  <script src="../js/ui.js"></script>
 </body>
 </html>

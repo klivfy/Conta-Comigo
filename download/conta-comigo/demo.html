@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Conta Comigo v2.0 — demonstração e instalação</title>
+  <title>Conta Comigo v2.1 — demonstração e instalação</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
     body { width: auto; height: auto; min-height: 100vh; overflow: auto; }
@@ -27,13 +27,13 @@
     .kbd { background: rgba(var(--sh), .08); border-radius: 6px; padding: 1px 7px; font-family: monospace; font-weight: 800; }
     code { background: rgba(var(--sh), .08); border-radius: 6px; padding: 1px 6px; font-size: 13px; }
   </style>
-  <script>document.documentElement.classList.add("html-page");</script>
+  <script src="js/boot.js"></script>
 </head>
 <body>
   <div class="demo-wrap">
     <div class="demo-hero">
       <div class="mascot" style="font-size:72px"><span class="mascot-main">🦊</span></div>
-      <h1>Conta Comigo v2.0</h1>
+      <h1>Conta Comigo v2.1</h1>
       <p>Matemática lúdica para crianças a partir de 4 anos — extensão Chromium + Firefox</p>
     </div>
 
@@ -50,11 +50,21 @@
             <a class="demo-btn alt" href="web/index.html" target="_blank">🏫 Versão web para escolas</a>
             <a class="demo-btn alt" href="newtab.html" target="_blank">🔄 Continha da nova aba</a>
           </div>
-          <p>No popup de verdade, o botão ⛶ abre o jogo numa janela nativa em tela cheia — popups de extensão têm limite de 800×600, e é por isso que a tela cheia usa uma página dedicada.</p>
+          <p>A partir da v2.1, clicar no ícone da extensão abre o jogo <b>sempre numa janela nativa em tela cheia</b> — nunca mais no popup pequeno. O iframe ao lado mostra apenas a versão mini de demonstração; o ⛶ dentro dela continua abrindo a janela cheia.</p>
         </div>
 
         <div class="panel">
-          <h2>🚀 O que há de novo na v2.0 (36 melhorias)</h2>
+          <h2>✨ Novidades da v2.1</h2>
+          <div class="feat-grid">
+            <div class="feat"><b>FX</b> Ícone da extensão abre sempre janela nativa em tela cheia (nunca popup)</div>
+            <div class="feat"><b>UI</b> Tela inicial reorganizada: herói, cartões de status e grade fluida de jogos</div>
+            <div class="feat"><b>CSP</b> Zero scripts inline — 100% aderente à política MV3 do Chrome</div>
+            <div class="feat"><b>FF</b> Background dual (service worker + event page): tela cheia funciona também no Firefox</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>🚀 As 36 melhorias da v2.0</h2>
           <div class="feat-grid">
             <div class="feat"><b>S01</b> Número faltante (3 + ? = 7)</div>
             <div class="feat"><b>S02</b> Comparação maior/menor/igual</div>

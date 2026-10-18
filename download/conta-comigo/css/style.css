@@ -1,4 +1,4 @@
-/* ==================== Conta Comigo v2.0 — estilos ==================== */
+/* ==================== Conta Comigo v2.1 — estilos ==================== */
 :root, body[data-theme="classico"] {
   --ink: #33355c; --ink-soft: #6b6f8a; --sh: 51, 53, 92;
   --bg-a: #eaf6ff; --bg-b: #fff7e8; --bg-c: #fff0f4;
@@ -88,9 +88,18 @@ body.calmo .mascot-main, body.calmo .deco { animation: none !important; }
 .mascot-main { display: inline-block; animation: bounce 2.2s ease-in-out infinite; }
 .mascot-hat { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 26px; z-index: 2; }
 @keyframes bounce { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-9px) scale(1.04); } }
-.mascot-row { display: flex; align-items: center; gap: 10px; width: 100%; justify-content: center; }
-.mascot-info { display: flex; flex-direction: column; gap: 3px; font-weight: 800; font-size: 12.5px; color: var(--ink-soft); }
+/* herói da tela inicial: marca à esquerda, cartões de status à direita */
+.home-hero { display: flex; flex-direction: column; align-items: center; width: 100%; margin-bottom: 4px; }
+.hero-brand { display: flex; flex-direction: column; align-items: center; }
+.hero-titlebox { display: flex; flex-direction: column; align-items: center; }
+.hero-side { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%; }
+.side-card { display: flex; align-items: center; gap: 10px; width: 100%; max-width: 350px; padding: 3px 10px; border-radius: 16px; }
+.pet-card { justify-content: center; }
+.pet-emoji { font-size: 30px; line-height: 1.1; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .15)); }
+.pet-lines { display: flex; flex-direction: column; gap: 2px; font-weight: 800; font-size: 12.5px; color: var(--ink-soft); text-align: left; }
 #mascot-stage { color: var(--ink); font-size: 13.5px; }
+.missions-card { flex-direction: column; align-items: center; gap: 4px; max-width: none; padding: 3px 6px 0; }
+.icon-btn.icon-close { color: var(--red-dark); font-weight: 900; }
 .title {
   font-size: 27px; font-weight: 800; letter-spacing: .5px; margin-top: 2px;
   background: linear-gradient(90deg, #ff8a3d, #ff5e7e);
@@ -99,18 +108,23 @@ body.calmo .mascot-main, body.calmo .deco { animation: none !important; }
 body.hc .title { background: none; color: #ffff00; -webkit-text-fill-color: #ffff00; }
 .subtitle { font-size: 12.5px; color: var(--ink-soft); margin: 1px 0 7px; font-weight: 700; text-align: center; }
 
-#week-strip { display: flex; gap: 4px; margin-bottom: 7px; }
+#week-strip { display: flex; gap: 4px; }
 .wday { display: flex; flex-direction: column; align-items: center; font-size: 13px; color: var(--ink-soft); width: 26px; }
 .wday i { font-style: normal; font-size: 9px; font-weight: 800; }
 .wday.on { color: var(--orange); }
 
-#mission-row { display: flex; flex-direction: column; gap: 3px; align-items: center; margin-bottom: 7px; width: 100%; }
-.m-title { font-size: 10.5px; font-weight: 800; color: var(--ink-soft); }
+#mission-row { display: flex; flex-direction: column; gap: 4px; align-items: center; width: 100%; }
+.m-title { font-size: 11px; font-weight: 800; color: var(--ink-soft); }
 .mission { font-size: 11px; font-weight: 700; background: var(--card); border-radius: 999px; padding: 3px 10px; box-shadow: 0 2px 0 rgba(var(--sh), .08); max-width: 100%; }
 .mission.done { opacity: .75; background: #e6fbe9; color: #1c7c3d; }
 body.hc .mission.done { background: #000; color: #7fff7f; border: 1px solid #7fff7f; }
 
-.special-row { display: flex; gap: 7px; width: 100%; margin-bottom: 8px; }
+/* faixa de controles: atalhos + dificuldade */
+.home-controls { display: flex; flex-direction: column; gap: 8px; width: 100%; margin-bottom: 8px; }
+.home-controls .special-row, .home-controls .diff-row { margin-bottom: 0; }
+.sec-title { width: 100%; text-align: center; font-size: 11.5px; font-weight: 800; letter-spacing: .4px; color: var(--ink-soft); margin: 2px 0 7px; }
+
+.special-row { display: flex; gap: 7px; width: 100%; }
 .special-row button {
   flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px;
   background: var(--card); border: 2px solid var(--line); border-radius: 14px; padding: 6px 2px;
@@ -123,7 +137,7 @@ body.hc .mission.done { background: #000; color: #7fff7f; border: 1px solid #7ff
 @keyframes attention { 0%, 100% { box-shadow: 0 3px 0 rgba(var(--sh), .1); } 50% { box-shadow: 0 3px 0 rgba(var(--sh), .1), 0 0 0 8px rgba(255, 201, 60, .25); } }
 .special-row button.hidden { display: none; }
 
-.diff-row { display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; margin-bottom: 8px; flex-wrap: wrap; }
+.diff-row { display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; flex-wrap: wrap; }
 .diff-label { font-size: 10.5px; font-weight: 800; color: var(--ink-soft); }
 .diff-chip {
   flex: 1; min-width: 40px; max-width: 72px; background: var(--card); border: 2px solid var(--line);
@@ -350,23 +364,49 @@ body.hc .av-row .av.sel { background: #333; }
 /* ==================== página dedicada (wide) ==================== */
 body.page-mode, body.wide { width: auto; height: auto; overflow: auto; min-height: 100vh; }
 body.page-mode #app, body.wide #app { max-width: 1120px; margin: 0 auto; min-height: 100vh; padding: 0 24px 30px; }
-body.page-mode #topbar { padding: 16px 8px 8px; }
+body.page-mode #topbar {
+  position: sticky; top: 0; z-index: 40; padding: 12px 10px 8px;
+  background: rgba(var(--sh), .05); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-radius: 0 0 22px 22px;
+}
 body.page-mode #star-chip { font-size: 21px; padding: 10px 22px; }
 body.page-mode .icon-btn { width: 50px; height: 50px; font-size: 24px; }
-body.page-mode .mascot { font-size: 84px; }
-body.page-mode .title { font-size: 44px; }
-body.page-mode .subtitle { font-size: 17px; }
-body.page-mode #screen-home.active { padding-top: 6px; }
-body.page-mode #mission-row { flex-direction: row; flex-wrap: wrap; justify-content: center; }
-body.page-mode .mission { font-size: 13px; }
-body.page-mode .special-row button { font-size: 12.5px; padding: 9px 4px; }
-body.page-mode .special-row button b { font-size: 24px; }
-body.page-mode .diff-chip { font-size: 13px; max-width: 90px; padding: 7px 4px; }
-body.page-mode .modes { grid-template-columns: repeat(4, 1fr); gap: 14px; }
-body.page-mode .mode-card { padding: 14px 8px 12px; border-radius: 22px; }
-body.page-mode .mode-emoji { font-size: 34px; }
-body.page-mode .mode-name { font-size: 17px; }
+
+/* ---- tela inicial: herói 2 colunas + faixa de controles + grade fluida ---- */
+body.page-mode #screen-home.active { padding-top: 2px; }
+body.page-mode .home-hero { display: grid; grid-template-columns: 1.06fr .94fr; gap: 10px 36px; align-items: center; padding: 8px 4px 12px; }
+body.page-mode .mascot { font-size: 92px; }
+body.page-mode .title { font-size: 46px; }
+body.page-mode .subtitle { font-size: 17px; margin: 3px 0 0; }
+body.page-mode .hero-side { gap: 12px; }
+body.page-mode .side-card { background: var(--card); box-shadow: 0 4px 0 rgba(var(--sh), .08); border-radius: 20px; padding: 14px 20px; max-width: none; }
+body.page-mode .pet-card { gap: 16px; }
+body.page-mode .pet-emoji { font-size: 48px; }
+body.page-mode .pet-lines { font-size: 14.5px; gap: 3px; }
+body.page-mode #mascot-stage { font-size: 16.5px; }
+body.page-mode .missions-card { align-items: flex-start; gap: 7px; }
+body.page-mode .m-title { font-size: 13.5px; }
+body.page-mode #mission-row { flex-direction: row; flex-wrap: wrap; justify-content: flex-start; gap: 6px; }
+body.page-mode .mission { font-size: 13px; padding: 5px 12px; }
+body.page-mode #week-strip { gap: 9px; }
+body.page-mode .wday { font-size: 14px; width: 30px; }
+body.page-mode .wday i { font-size: 10px; }
+body.page-mode .home-controls { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 30px; }
+body.page-mode .special-row { width: auto; }
+body.page-mode .special-row button { flex-direction: row; gap: 8px; padding: 10px 18px; font-size: 14px; border-radius: 999px; }
+body.page-mode .special-row button b { font-size: 21px; }
+body.page-mode .diff-row { width: auto; }
+body.page-mode .diff-chip { flex: 0 0 auto; min-width: 0; max-width: none; padding: 8px 16px; font-size: 13.5px; border-radius: 999px; }
+body.page-mode .diff-label { font-size: 13px; }
+body.page-mode .sec-title { text-align: left; font-size: 14.5px; margin: 16px 4px 10px; }
+body.page-mode .modes { grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); gap: 14px; }
+body.page-mode .mode-card { padding: 16px 10px 13px; border-radius: 22px; }
+body.page-mode .mode-emoji { font-size: 36px; }
+body.page-mode .mode-name { font-size: 16.5px; }
 body.page-mode .mode-desc { font-size: 11.5px; }
+body.page-mode .link-row { max-width: 540px; margin: 16px auto 0; }
+body.page-mode .link-row button { padding: 12px; font-size: 15px; }
+body.page-mode .tip { margin-top: 10px; font-size: 13px; }
 body.page-mode #screen-game.active { justify-content: flex-start; padding-top: 8px; }
 body.page-mode #visual { min-height: 240px; max-height: 380px; }
 body.page-mode .obj { font-size: 52px; }
