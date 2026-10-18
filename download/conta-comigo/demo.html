@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conta Comigo — Jogo de Matemática para Crianças</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', 'Nunito', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(160deg, #eaf6ff 0%, #fff7e8 50%, #fff0f4 100%);
+      color: #33355c; min-height: 100vh; padding: 40px 20px 60px;
+    }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    header.hero { text-align: center; margin-bottom: 34px; }
+    .logo { font-size: 64px; line-height: 1; display: inline-block; animation: hop 2.4s ease-in-out infinite; }
+    @keyframes hop { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    h1 {
+      font-size: 44px; margin-top: 8px;
+      background: linear-gradient(90deg, #ff8a3d, #ff5e7e);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .tagline { font-size: 18px; color: #6b6f8a; font-weight: 700; margin-top: 6px; }
+    .browsers { margin-top: 12px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .chip {
+      background: #fff; border-radius: 999px; padding: 8px 16px; font-size: 14px;
+      font-weight: 800; box-shadow: 0 3px 0 rgba(51,53,92,.12);
+    }
+    .demo-area { display: flex; gap: 40px; justify-content: center; align-items: flex-start; flex-wrap: wrap; }
+    .phone {
+      padding: 12px; background: #fff; border-radius: 36px;
+      box-shadow: 0 24px 60px rgba(51,53,92,.25); border: 1px solid #e8e3f0; flex: 0 0 auto;
+    }
+    .phone iframe { width: 400px; height: 600px; border: 0; border-radius: 26px; display: block; }
+    .side { max-width: 420px; flex: 1 1 320px; }
+    .card {
+      background: #fff; border-radius: 22px; padding: 22px; margin-bottom: 18px;
+      box-shadow: 0 5px 0 rgba(51,53,92,.10);
+    }
+    .card h2 { font-size: 20px; margin-bottom: 10px; }
+    .card ol { margin-left: 20px; line-height: 1.9; font-size: 15px; }
+    .card code {
+      background: #f1f0fb; border-radius: 6px; padding: 2px 7px;
+      font-family: ui-monospace, Consolas, monospace; font-size: 13px;
+    }
+    .feat { display: flex; flex-wrap: wrap; gap: 8px; }
+    .feat span {
+      background: #fff4dc; border-radius: 999px; padding: 7px 14px;
+      font-size: 13px; font-weight: 800;
+    }
+    .hint { font-size: 13px; color: #8a8ea8; margin-top: 10px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div class="logo">🦊</div>
+      <h1>Conta Comigo</h1>
+      <p class="tagline">Mini jogo de matemática para crianças a partir de 4 anos — extensão para navegadores</p>
+      <div class="browsers">
+        <span class="chip">✅ Chrome</span>
+        <span class="chip">✅ Edge</span>
+        <span class="chip">✅ Brave</span>
+        <span class="chip">✅ Opera</span>
+        <span class="chip">✅ Firefox</span>
+      </div>
+    </header>
+
+    <div class="demo-area">
+      <div class="phone">
+        <iframe src="popup.html" title="Prévia do jogo"></iframe>
+        <p class="hint">👆 Prévia interativa — clique e jogue!</p>
+      </div>
+
+      <div class="side">
+        <div class="card">
+          <h2>🧩 Instalar no Google Chrome, Edge, Brave ou Opera</h2>
+          <ol>
+            <li>Abra <code>chrome://extensions</code> (ou <code>edge://extensions</code>).</li>
+            <li>Ative o <b>Modo do desenvolvedor</b> no canto superior direito.</li>
+            <li>Clique em <b>Carregar sem compactação</b>.</li>
+            <li>Selecione a pasta <code>conta-comigo</code>.</li>
+            <li>Fixe o ícone 🦊 na barra (ícone de peça de quebra-cabeça → alfinete).</li>
+          </ol>
+        </div>
+
+        <div class="card">
+          <h2>🦊 Instalar no Mozilla Firefox</h2>
+          <ol>
+            <li>Abra <code>about:debugging#/runtime/this-firefox</code>.</li>
+            <li>Clique em <b>Carregar add-on temporário</b>.</li>
+            <li>Escolha o arquivo <code>manifest.json</code> da pasta <code>conta-comigo</code>.</li>
+            <li>Clique no ícone 🦊 na barra de ferramentas para jogar.</li>
+          </ol>
+          <p style="font-size:13px;color:#8a8ea8;margin-top:8px;">Dica: para uso permanente no Firefox, o pacote pode ser enviado ao Firefox Add-ons (AMO) para assinatura.</p>
+        </div>
+
+        <div class="card">
+          <h2>⭐ O que o jogo ensina</h2>
+          <div class="feat">
+            <span>🍎 Contar até 10</span>
+            <span>➕ Adição com figuras</span>
+            <span>➖ Subtração visual</span>
+            <span>✖️ Multiplicação em grupos</span>
+            <span>🗣️ Voz em português</span>
+            <span>🔊 Sons alegres</span>
+            <span>⭐ Estrelas e níveis</span>
+            <span>🚫 Sem anúncios</span>
+            <span>📶 Funciona offline</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
