@@ -3,140 +3,122 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Conta Comigo — Jogo de Matemática para Crianças</title>
+  <title>Conta Comigo v2.0 — demonstração e instalação</title>
+  <link rel="stylesheet" href="css/style.css">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', 'Nunito', 'Segoe UI', system-ui, sans-serif;
-      background: linear-gradient(160deg, #eaf6ff 0%, #fff7e8 50%, #fff0f4 100%);
-      color: #33355c; min-height: 100vh; padding: 40px 20px 60px;
-    }
-    .wrap { max-width: 980px; margin: 0 auto; }
-    header.hero { text-align: center; margin-bottom: 34px; }
-    .logo { font-size: 64px; line-height: 1; display: inline-block; animation: hop 2.4s ease-in-out infinite; }
-    @keyframes hop { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-    h1 {
-      font-size: 44px; margin-top: 8px;
-      background: linear-gradient(90deg, #ff8a3d, #ff5e7e);
-      -webkit-background-clip: text; background-clip: text; color: transparent;
-    }
-    .tagline { font-size: 18px; color: #6b6f8a; font-weight: 700; margin-top: 6px; }
-    .browsers { margin-top: 12px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-    .chip {
-      background: #fff; border-radius: 999px; padding: 8px 16px; font-size: 14px;
-      font-weight: 800; box-shadow: 0 3px 0 rgba(51,53,92,.12);
-    }
-    .demo-area { display: flex; gap: 40px; justify-content: center; align-items: flex-start; flex-wrap: wrap; }
-    .phone {
-      padding: 12px; background: #fff; border-radius: 36px;
-      box-shadow: 0 24px 60px rgba(51,53,92,.25); border: 1px solid #e8e3f0; flex: 0 0 auto;
-    }
-    .phone iframe { width: 400px; height: 600px; border: 0; border-radius: 26px; display: block; }
-    .side { max-width: 420px; flex: 1 1 320px; }
-    .card {
-      background: #fff; border-radius: 22px; padding: 22px; margin-bottom: 18px;
-      box-shadow: 0 5px 0 rgba(51,53,92,.10);
-    }
-    .card h2 { font-size: 20px; margin-bottom: 10px; }
-    .card ol { margin-left: 20px; line-height: 1.9; font-size: 15px; }
-    .card code {
-      background: #f1f0fb; border-radius: 6px; padding: 2px 7px;
-      font-family: ui-monospace, Consolas, monospace; font-size: 13px;
-    }
-    .feat { display: flex; flex-wrap: wrap; gap: 8px; }
-    .feat span {
-      background: #fff4dc; border-radius: 999px; padding: 7px 14px;
-      font-size: 13px; font-weight: 800;
-    }
-    .hint { font-size: 13px; color: #8a8ea8; margin-top: 10px; text-align: center; }
-    .card table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-    .card th, .card td { text-align: left; padding: 7px 8px; border-bottom: 1px solid #f0eef7; vertical-align: top; }
-    .card th { color: #6b6f8a; font-size: 12px; text-transform: uppercase; letter-spacing: .4px; }
-    .card td:first-child { white-space: nowrap; font-weight: 800; }
-    a.chip.link { text-decoration: none; color: #33355c; display: inline-block; }
-    a.chip.link:hover { background: #fff8e0; }
+    body { width: auto; height: auto; min-height: 100vh; overflow: auto; }
+    .demo-wrap { max-width: 1060px; margin: 0 auto; padding: 26px 22px 70px; }
+    .demo-hero { text-align: center; margin-bottom: 18px; }
+    .demo-hero h1 { font-size: 40px; font-weight: 900; background: linear-gradient(90deg, #ff8a3d, #ff5e7e); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .demo-hero p { font-weight: 700; color: var(--ink-soft); }
+    .demo-grid { display: grid; grid-template-columns: 430px 1fr; gap: 24px; align-items: start; }
+    .phone { background: var(--card); border-radius: 30px; padding: 12px; box-shadow: 0 14px 34px rgba(0, 0, 0, .16); }
+    .phone iframe { width: 400px; height: 600px; border: 0; border-radius: 22px; background: #fff; }
+    .panel { background: var(--card); border-radius: 24px; box-shadow: 0 8px 22px rgba(0, 0, 0, .1); padding: 22px 26px; margin-bottom: 20px; }
+    .panel h2 { font-size: 21px; font-weight: 900; margin-bottom: 10px; }
+    .panel p, .panel li { font-size: 14.5px; font-weight: 600; color: var(--ink); line-height: 1.55; }
+    .panel ol, .panel ul { padding-left: 20px; }
+    .btn-line { display: flex; gap: 12px; flex-wrap: wrap; margin: 12px 0; }
+    .demo-btn { font-family: inherit; font-weight: 800; font-size: 15px; color: #fff; background: var(--blue); border: none; border-radius: 14px; padding: 12px 18px; cursor: pointer; box-shadow: 0 5px 0 var(--blue-dark); text-decoration: none; display: inline-block; }
+    .demo-btn.alt { background: var(--card); color: var(--ink); box-shadow: 0 5px 0 rgba(var(--sh), .15); border: 2px solid var(--line); }
+    .feat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 8px 18px; }
+    .feat { font-size: 13.5px; font-weight: 700; padding: 5px 0; border-bottom: 1px dashed var(--line); }
+    .feat b { color: var(--blue); font-size: 12px; }
+    .kbd { background: rgba(var(--sh), .08); border-radius: 6px; padding: 1px 7px; font-family: monospace; font-weight: 800; }
+    code { background: rgba(var(--sh), .08); border-radius: 6px; padding: 1px 6px; font-size: 13px; }
   </style>
+  <script>document.documentElement.classList.add("html-page");</script>
 </head>
 <body>
-  <div class="wrap">
-    <header class="hero">
-      <div class="logo">🦊</div>
-      <h1>Conta Comigo</h1>
-      <p class="tagline">Mini jogo de matemática para crianças a partir de 4 anos — extensão para navegadores</p>
-      <div class="browsers">
-        <span class="chip">✅ Chrome</span>
-        <span class="chip">✅ Edge</span>
-        <span class="chip">✅ Brave</span>
-        <span class="chip">✅ Opera</span>
-        <span class="chip">✅ Firefox</span>
-      </div>
-    </header>
+  <div class="demo-wrap">
+    <div class="demo-hero">
+      <div class="mascot" style="font-size:72px"><span class="mascot-main">🦊</span></div>
+      <h1>Conta Comigo v2.0</h1>
+      <p>Matemática lúdica para crianças a partir de 4 anos — extensão Chromium + Firefox</p>
+    </div>
 
-    <div class="demo-area">
+    <div class="demo-grid">
       <div class="phone">
-        <iframe src="popup.html" title="Prévia do jogo" allowfullscreen allow="fullscreen"></iframe>
-        <p class="hint">👆 Prévia interativa — clique e jogue!</p>
-        <p class="hint" style="margin-top:6px;">
-          <a class="chip link" href="game.html" target="_blank" rel="noopener">⛶ Abrir em tela cheia</a>
-        </p>
+        <iframe src="popup.html" title="Prévia do jogo" allowfullscreen></iframe>
       </div>
+      <div>
+        <div class="panel">
+          <h2>🎮 Experimente também</h2>
+          <div class="btn-line">
+            <a class="demo-btn" href="game.html" target="_blank">⛶ Tela cheia (game.html)</a>
+            <a class="demo-btn alt" href="options.html" target="_blank">⚙️ Área dos responsáveis</a>
+            <a class="demo-btn alt" href="web/index.html" target="_blank">🏫 Versão web para escolas</a>
+            <a class="demo-btn alt" href="newtab.html" target="_blank">🔄 Continha da nova aba</a>
+          </div>
+          <p>No popup de verdade, o botão ⛶ abre o jogo numa janela nativa em tela cheia — popups de extensão têm limite de 800×600, e é por isso que a tela cheia usa uma página dedicada.</p>
+        </div>
 
-      <div class="side">
-        <div class="card">
-          <h2>🧩 Instalar no Google Chrome, Edge, Brave ou Opera</h2>
+        <div class="panel">
+          <h2>🚀 O que há de novo na v2.0 (36 melhorias)</h2>
+          <div class="feat-grid">
+            <div class="feat"><b>S01</b> Número faltante (3 + ? = 7)</div>
+            <div class="feat"><b>S02</b> Comparação maior/menor/igual</div>
+            <div class="feat"><b>S03</b> Sequências e padrões</div>
+            <div class="feat"><b>S04</b> Dobro e metade</div>
+            <div class="feat"><b>S05</b> Problemas narrados (histórias)</div>
+            <div class="feat"><b>S06</b> Dinheiro e troco</div>
+            <div class="feat"><b>S07</b> Adaptação por habilidade (janela de 5)</div>
+            <div class="feat"><b>S08</b> Revisão espaçada de erros (Leitner)</div>
+            <div class="feat"><b>S09</b> Mapa de domínio por operação e nível</div>
+            <div class="feat"><b>S10</b> Detector de fadiga com respiração guiada</div>
+            <div class="feat"><b>S11</b> Metas diárias configuráveis</div>
+            <div class="feat"><b>S12</b> Avaliação inicial de nível (8 questões)</div>
+            <div class="feat"><b>S13</b> Mascote evolutiva (ovo → filhote → adulta)</div>
+            <div class="feat"><b>S14</b> 12 conquistas com vitrine</div>
+            <div class="feat"><b>S15</b> Ofensiva diária com calendário</div>
+            <div class="feat"><b>S16</b> 3 missões diárias</div>
+            <div class="feat"><b>S17</b> Loja (temas, adereços, figurinhas)</div>
+            <div class="feat"><b>S18</b> Desafio-chefe a cada 5 rodadas</div>
+            <div class="feat"><b>S19</b> Alto contraste + fonte para dislexia</div>
+            <div class="feat"><b>S20</b> Teclado: <span class="kbd">1–4</span> <span class="kbd">R</span> <span class="kbd">H</span> <span class="kbd">M</span> <span class="kbd">F</span></div>
+            <div class="feat"><b>S21</b> Português, inglês e espanhol</div>
+            <div class="feat"><b>S22</b> Voz configurável (velocidade, tom, voz)</div>
+            <div class="feat"><b>S23</b> Temas Clássico/Espaço/Jardim</div>
+            <div class="feat"><b>S24</b> Modo calmo (respeita o sistema)</div>
+            <div class="feat"><b>S25</b> Portão parental (conta de multiplicar)</div>
+            <div class="feat"><b>S26</b> Painel dos responsáveis</div>
+            <div class="feat"><b>S27</b> Até 4 perfis de jogadores</div>
+            <div class="feat"><b>S28</b> Limite de sessão com pausa gentil</div>
+            <div class="feat"><b>S29</b> Exportar/importar progresso (JSON)</div>
+            <div class="feat"><b>S30</b> Modo dois jogadores (duelo)</div>
+            <div class="feat"><b>S31</b> Página de opções nativa</div>
+            <div class="feat"><b>S32</b> Sincronização opcional (storage.sync)</div>
+            <div class="feat"><b>S33</b> Continha da nova aba (desligável)</div>
+            <div class="feat"><b>S34</b> Atalho global Ctrl+Shift+U</div>
+            <div class="feat"><b>S35</b> Material de publicação (pasta loja/)</div>
+            <div class="feat"><b>S36</b> Versão web para escolas (web/)</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>🧩 Instalação no Chromium (Chrome, Edge, Brave, Opera)</h2>
           <ol>
+            <li>Descompacte o arquivo <code>conta-comigo-extension.zip</code>.</li>
             <li>Abra <code>chrome://extensions</code> (ou <code>edge://extensions</code>).</li>
-            <li>Ative o <b>Modo do desenvolvedor</b> no canto superior direito.</li>
-            <li>Clique em <b>Carregar sem compactação</b>.</li>
-            <li>Selecione a pasta <code>conta-comigo</code>.</li>
-            <li>Fixe o ícone 🦊 na barra (ícone de peça de quebra-cabeça → alfinete).</li>
+            <li>Ative o <b>Modo do desenvolvedor</b> (canto superior direito).</li>
+            <li>Clique em <b>Carregar sem compactação</b> e escolha a pasta descompactada.</li>
+            <li>Opcional: em <code>chrome://extensions/shortcuts</code>, confirme o atalho <span class="kbd">Ctrl+Shift+U</span>.</li>
           </ol>
         </div>
 
-        <div class="card">
-          <h2>🦊 Instalar no Mozilla Firefox</h2>
+        <div class="panel">
+          <h2>🦊 Instalação no Firefox</h2>
           <ol>
             <li>Abra <code>about:debugging#/runtime/this-firefox</code>.</li>
             <li>Clique em <b>Carregar add-on temporário</b>.</li>
-            <li>Escolha o arquivo <code>manifest.json</code> da pasta <code>conta-comigo</code>.</li>
-            <li>Clique no ícone 🦊 na barra de ferramentas para jogar.</li>
+            <li>Selecione o <code>manifest.json</code> da pasta descompactada.</li>
+            <li>A nova aba do Firefox pode ser restaurada em Configurações → Início, se preferir o padrão do navegador.</li>
           </ol>
-          <p style="font-size:13px;color:#8a8ea8;margin-top:8px;">Dica: para uso permanente no Firefox, o pacote pode ser enviado ao Firefox Add-ons (AMO) para assinatura.</p>
         </div>
 
-        <div class="card">
-          <h2>📈 Dificuldade e operações</h2>
-          <p style="font-size:14px;margin-bottom:10px;line-height:1.6;">
-            Os responsáveis podem fixar a dificuldade manualmente na tela inicial
-            (🤖 Auto · 🌱 Fácil · 🌿 Médio · 🌳 Difícil). No modo automático, o jogo
-            sobe ou desce de nível sozinho conforme os acertos — e vai liberando
-            novas operações. O modo <b>🎲 Mistão</b> sorteia tudo o que o nível permite:
-          </p>
-          <table>
-            <tr><th>Nível</th><th>Operações apresentadas</th></tr>
-            <tr><td>🌱 Fácil</td><td>Contar (1–5) · Somar (até 5)</td></tr>
-            <tr><td>🌿 Médio</td><td>Contar (até 8) · Somar e Subtrair (até 10)</td></tr>
-            <tr><td>🌳 Difícil</td><td>Contar (até 15) · Somar e Subtrair (até 20) · Multiplicar (tabuadas 2–5) · Dividir (exatas, com grupos)</td></tr>
-            <tr><td>🤖 Auto</td><td>Progressão adaptativa: começa fácil e desbloqueia as operações conforme a criança acerta</td></tr>
-          </table>
-        </div>
-
-        <div class="card">
-          <h2>⭐ O que o jogo ensina</h2>
-          <div class="feat">
-            <span>🍎 Contar até 15</span>
-            <span>➕ Adição com figuras</span>
-            <span>➖ Subtração visual</span>
-            <span>✖️ Multiplicação em grupos</span>
-            <span>➗ Divisão exata</span>
-            <span>🎲 Modo Mistão</span>
-            <span>🗣️ Voz em português</span>
-            <span>🔊 Sons alegres</span>
-            <span>⭐ Estrelas e níveis</span>
-            <span>⛶ Tela cheia</span>
-            <span>🚫 Sem anúncios</span>
-            <span>📶 Funciona offline</span>
-          </div>
+        <div class="panel">
+          <h2>🔒 Privacidade</h2>
+          <p>Tudo funciona offline e fica salvo apenas neste navegador (<code>chrome.storage.local</code>). Nenhum dado sai do computador — sem contas, sem anúncios, sem rastreamento. A sincronização (S32) é opcional e usa a própria conta do navegador.</p>
         </div>
       </div>
     </div>

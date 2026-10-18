@@ -61,3 +61,26 @@ Stage Summary:
 - Scripts reutilizáveis: analise_data.js, gen_analise_conta_comigo.js, patch_docx_footers.py.
 
 
+
+---
+Task ID: 4
+Agent: Z.ai (agente principal)
+Task: Implantar as 36 sugestões (S01–S36) do relatório de melhorias na extensão Conta Comigo (versão 2.0.0).
+
+Work Log:
+- Rearquitetura completa: css/style.css compartilhado, js/i18n.js (3 idiomas), js/engine.js (motor), js/ui.js (telas), js/options.js, js/newtab.js; shells popup.html (400×600) e game.html (página dedicada, classe page-mode + html.html-page para liberar o tamanho do <html>).
+- Pedagógicos: S01 Faltante (3+?=7), S02 Comparar (A/B/=, objetos até nv.2 e números até 500), S03 Sequências (crescentes/decrescentes), S04 Dobro e metade, S05 Histórias narradas com plurais corretos, S06 Dinheiro (moedas, cédulas de 5 e troco) — 12 modos com desbloqueio por estrelas (0–120).
+- Adaptação: S07 janela móvel de 5 respostas por modo (sobe ≥4/5, desce ≤1/5) com celebração de nível; S08 revisão espaçada de erros (caixas Leitner 1/2/4/8/16 dias, cartões com dados forçados nos geradores, mistar grava o modo subjacente); S09 mapa de domínio no painel (modo × níveis 1-5 coloridos por precisão); S10 detector de fadiga (3 erros → respiração guiada com 2 ciclos); S11 metas diárias (0/1/2/3/5 rodadas, +5⭐); S12 avaliação inicial de 8 questões em escada sugerindo nível 1-5.
+- Gamificação: S13 mascote evolutiva (🥚<30, 🐣 30-99, 🦊 100+) com adereços; S14 12 conquistas (+5⭐ cada, vitrine); S15 ofensiva diária com faixa semanal D-S-T-Q-Q-S-S; S16 3 missões diárias determinísticas por data (+3⭐); S17 loja (tema arco-íris 60⭐, boné/laço/coroa, figurinhas 5⭐ com álbum 24 e duplicata +2⭐); S18 Desafio-chefe a cada 5 rodadas (10 questões, sem dicas, estrelas ×2); S30 Duelo para 2 jogadores (10 questões alternadas, placar no chip, avatares).
+- Acessibilidade: S19 alto contraste + fonte dislexia; S20 teclado (1-4 respostas, R repetir, H início, M mudo, Enter em overlays, foco visível); S21 pt/en/es (UI + narração + numWord 0-59 nos 3 idiomas); S22 voz com velocidade/tom/voz do sistema e volume; S23 temas Clássico/Espaço(noturno)/Jardim; S24 modo calmo (segue prefers-reduced-motion ou manual) limitando confetes e animações.
+- Família: S25 portão parental (multiplicação aleatória 6-9×4-9); S26 painel (estrelas, ofensiva, rodadas, tempo, precisão, semanas); S27 até 4 perfis com avatar/nome e troca no popover; S28 limite de sessão (0/10/15/20/30 min) com pausa gentil; S29 exportar (arquivo/área de transferência) e importar (texto/arquivo) com validação parseDB.
+- Plataforma: S31 options.html como options_ui open_in_tab; S32 sync opcional via chrome.storage.sync (adota carimbo mais recente + onChanged); S33 chrome_url_overrides.newtab → newtab.html com continha rápido, +1⭐ e interruptor liga/desliga na própria página; S34 commands Ctrl+Shift+U (Mac ⌘⇧U) + background.js service worker abrindo janela nativa fullscreen (Chromium e FF 121+); S35 pasta loja/ (README-publicacao, listagem trilíngue, política de privacidade, 6 capturas 1440×900); S36 web/index.html (versão web para escolas, mesmo motor + selo).
+- Migração v1→v2: cc_state antigo (totalStars/mute/difficulty/levels) vira perfil "Jogador" com estrelas e níveis preservados; diffMode 1-3 mapeado.
+- QA agent-browser (~30 verificações): layout wide 1440×900 e popup 400×600 no iframe do demo; rodada completa com +2⭐/+1⭐, combo bônus, missões, conquistas a1/a5; desbloqueios por estrelas; revisão espaçada (box 2, due +2d); fadiga→respiração; duelo até empate com placar; avaliação 8/8 → nível 5; chefe ×2⭐; loja (figurinha, boné no mascote, tema arco-íris); portão (erro mostra mensagem); painel com 12 modos e semanas; i18n EN/ES ao vivo; temas + HC + dislexia; newtab com +1⭐; teclado; limite de sessão; perfis (novo jogador ovo 0⭐); stress test dos 12 geradores × 5 níveis × 60 iterações (0 falhas fora do mistar com forced, que é esperado).
+- Correções durante o QA: html 400px na página dedicada; .hidden genérico no CSS; AVATARS movido p/ engine (options quebrava); applyLang movido p/ i18n (newtab quebrava); addReviewCard não era chamado; duelo sem modo por questão; diagOK não incrementado; portão apagava o erro; LANG não aplicado nas opções; rótulo do botão repetir; plurais (balões/estrelas) e frases neutras em st_3/st_4.
+- Empacotado conta-comigo-extension.zip v2.0.0 (33 arquivos, ~570 KB) com manifest na raiz; capturas em loja/capturas/.
+
+Stage Summary:
+- Conta Comigo v2.0.0 entrega as 36 propostas S01–S36 implementadas e testadas.
+- Pasta: /home/z/my-project/download/conta-comigo/ · Pacote: /home/z/my-project/download/conta-comigo-extension.zip · Demo: demo.html (prévia + lista das 36 + instalação Chromium/Firefox).
+- Observações: nova aba vem ativada por padrão (desligável na própria página e nas opções); atalho global sem efeito no Firefox 109-120 (sem service worker); sincronização desativada por padrão.

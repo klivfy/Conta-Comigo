@@ -1,0 +1,253 @@
+     1→     1→'use strict';
+     2→     2→/* Dados do relatório: Conta Comigo — Análise de Conceito e Propostas de Melhorias */
+     3→     3→
+     4→     4→const cover = {
+     5→     5→  englishLabel: 'RELATÓRIO DE PRODUTO · 2026',
+     6→     6→  title: 'Conta Comigo',
+     7→     7→  subtitle: 'Análise de conceito e propostas de melhoria do jogo educativo',
+     8→     8→  metaLines: [
+     9→     9→    'Produto: extensão Conta Comigo, versão 1.1.0 (Chromium e Firefox)',
+    10→    10→    'Público: crianças a partir de 4 anos, famílias e educadores',
+    11→    11→    'Escopo: 36 propostas em 6 categorias, com priorização e roadmap',
+    12→    12→    'Data: 19 de outubro de 2026',
+    13→    13→  ],
+    14→    14→  footerLeft: 'Conta Comigo — relatório de produto',
+    15→    15→  footerRight: 'Outubro de 2026',
+    16→    16→};
+    17→    17→
+    18→    18→const execSummary = [
+    19→    19→  'Este relatório consolida a análise de conceito da extensão de navegador Conta Comigo, um mini jogo educativo desenvolvido para ensinar cálculos simples a crianças a partir de 4 anos nas plataformas Chromium e Mozilla Firefox. A versão atual (v1.1.0) oferece seis modos de jogo — Contar, Somar, Subtrair, Multiplicar, Dividir e Mistão —, dificuldade adaptativa em três níveis com seleção manual opcional, narração em português para crianças que ainda não leem, efeitos sonoros sintetizados e sistema de estrelas como recompensa imediata. A distribuição emprega um único pacote Manifest V3 de aproximadamente 57 KB, sem dependências externas e com funcionamento integralmente offline.',
+    20→    20→  'A análise examinou a experiência completa do produto — interface, pedagogia, tecnologia e potencial de distribuição — e resultou em 36 propostas de melhoria e de novas funcionalidades, organizadas em seis categorias: conteúdo pedagógico, adaptação inteligente, gamificação e motivação, acessibilidade e interface, família e segurança, e plataforma e distribuição. Cada proposta recebe uma avaliação qualitativa de impacto e de esforço de implementação, o que permite priorizar com objetividade os próximos investimentos e agrupar as entregas em ondas de versão.',
+    21→    21→  'O diagnóstico central indica que a base técnica e pedagógica está sólida, mas três frentes concentram o maior potencial de evolução: ampliar o repertório matemático com novos tipos de desafio, fortalecer a motivação de longo prazo com progresso visível e metas, e aproximar os adultos responsáveis com segurança e relatórios de acompanhamento. Recomenda-se iniciar pelos nove ganhos rápidos de baixo esforço identificados na matriz de priorização e, em seguida, avançar para as apostas estratégicas distribuídas no roadmap de quatro ondas de versão.',
+    22→    22→];
+    23→    23→
+    24→    24→const sec21 = [
+    25→    25→  'Conta Comigo é uma extensão de navegador concebida como primeiro contato lúdico com a matemática. A premissa do conceito é transformar momentos curtos de navegação em prática de cálculo sem caderno, sem telas adicionais e sem barreira de leitura: o ícone da extensão abre um jogo compacto no qual a raposa mascote conduz a criança por rodadas rápidas de cinco questões. Por se dirigir a crianças de 4 anos ou mais, que em geral ainda não leem convencionalmente, toda pergunta é narrada em voz em português, com botão dedicado para repetir o áudio e balões de fala que reforçam os acertos e convidam a tentar de novo.',
+    26→    26→  'Cada questão apresenta apoio visual concreto: objetos contáveis ilustrados por emojis, dois grupos lado a lado nas somas, itens riscados na subtração, linhas de grupos iguais na multiplicação e na divisão exata. A criança responde escolhendo entre três botões grandes com números; o erro não é punido — após duas tentativas, a resposta correta passa a piscar com uma dica visual e a criança segue adiante após acertar. Ao final da rodada, fanfarra, confetes e estrelas (duas por acerto de primeira, uma após errar) celebram o resultado, e o sistema decide se o nível de dificuldade sobe, desce ou se mantém.',
+    27→    27→  'Do ponto de vista tecnológico, o jogo é escrito em JavaScript puro, sem frameworks e sem nenhuma chamada de rede: todo o progresso permanece no dispositivo, em chrome.storage.local com reserva automática em localStorage para ambientes sem a API de extensão. Um único manifesto Manifest V3 atende Chrome, Edge, Brave, Opera e Firefox 109 ou superior, com permissão mínima de armazenamento. Uma página de demonstração acompanha o pacote, com prévia jogável e instruções ilustradas de instalação nos dois navegadores.',
+    28→    28→];
+    29→    29→
+    30→    30→const sec22Intro = [
+    31→    31→  'A tabela a seguir resume os domínios de funcionalidade já entregues na versão 1.1.0, que constituem a base factual sobre a qual as propostas deste relatório foram construídas. Os valores citados decorrem diretamente do código implementado e dos testes de interface realizados.',
+    32→    32→];
+    33→    33→
+    34→    34→const featuresTable = {
+    35→    35→  headers: ['Domínio', 'Funcionalidades implementadas'],
+    36→    36→  pcts: [22, 78],
+    37→    37→  rows: [
+    38→    38→    ['Modos de jogo', 'Contar, Somar, Subtrair, Multiplicar, Dividir e Mistão, que sorteia operações conforme o nível liberado'],
+    39→    39→    ['Dificuldade', 'Três níveis por modo com progressão adaptativa (sobe com 80% de acertos de primeira; desce com 40%) e seleção manual Auto, Fácil, Médio ou Difícil'],
+    40→    40→    ['Rodada e recompensas', 'Cinco questões por rodada; duas estrelas por acerto de primeira, uma após errar; total acumulado persistente'],
+    41→    41→    ['Tela cheia', 'Janela nativa em tela cheia criada por chrome.windows.create a partir do popup; Fullscreen API na página dedicada e na demonstração'],
+    42→    42→    ['Áudio e voz', 'Narração em português brasileiro por speechSynthesis com botão de repetição; efeitos sonoros sintetizados pela Web Audio API; mudo persistente'],
+    43→    43→    ['Persistência', 'chrome.storage.local com reserva em localStorage; estrelas, mudo, dificuldade escolhida e nível orgânico de cada modo'],
+    44→    44→    ['Interface', 'Popup de 400 por 600 pixels com mascote, balões de feedback, confetes e página dedicada responsiva para tela cheia'],
+    45→    45→    ['Distribuição', 'Manifest V3 único para Chromium e Firefox 109+, ícones em quatro resoluções e página de demonstração com tutorial de instalação'],
+    46→    46→  ],
+    47→    47→};
+    48→    48→
+    49→    49→const sec22Close = [
+    50→    50→  'Todos esses comportamentos foram exercitados por testes automatizados de interface em navegador sem cabeça, cobrindo os seis modos, o fluxo de erro com dica, a rodada completa, a persistência da dificuldade e a tela cheia, sem erros de console registrados. Esse nível de verificação é um ativo do projeto e deve ser mantido a cada nova versão.',
+    51→    51→];
+    52→    52→
+    53→    53→const sec23 = [
+    54→    54→  'O conceito apoia-se em princípios pedagógicos consolidados para a primeira infância. O primeiro é a representação concreta antes do abstrato: cada operação tem tradução visual — juntar grupos na soma, riscar itens que saem na subtração, repetir linhas iguais na multiplicação e repartir em grupos exatos na divisão — de modo que o símbolo numérico chega acompanhado do significado. O segundo é a multimodalidade: a criança vê, ouve e toca a mesma informação, o que reduz a barreira da leitura e reforça a memória. O terceiro é a qualidade das opções erradas: os distratores são construídos a partir dos próprios operandos da conta, capturando mal-entendidos típicos em vez de oferecer números aleatórios.',
+    55→    55→  'O erro é tratado como parte do processo: não há penalização, há dica progressiva — primeiro incentivo para tentar de novo, depois destaque visual da resposta correta. O reforço positivo é imediato e variado, com elogios falados e celebrados. A progressão adaptativa mantém o desafio próximo da capacidade atual da criança, subindo após rodadas com alta taxa de acerto de primeira e descendo quando o desempenho cai, enquanto a seleção manual de dificuldade dá ao adulto educador controle explícito sobre o nível quando desejado.',
+    56→    56→];
+    57→    57→
+    58→    58→const sec31Intro = [
+    59→    59→  'Do ponto de vista técnico e pedagógico, o produto parte de uma base rara em projetos deste porte: pequena, auditável e sem intermediários. Os destaques estão listados a seguir.',
+    60→    60→];
+    61→    61→
+    62→    62→const sec31Bullets = [
+    63→    63→  'Leveza e independência técnica: cerca de 57 KB, zero dependências externas e nenhum envio de dados para servidores.',
+    64→    64→  'Privacidade por arquitetura: a única permissão solicitada é a de armazenamento, e todo o progresso permanece no dispositivo da família.',
+    65→    65→  'Acessibilidade a pré-leitores: narração em português, repetição de áudio a um toque e botões de resposta grandes, que dispensam a leitura.',
+    66→    66→  'Feedback multimídia consistente: som, confetes, balões e estrelas acompanham todas as interações relevantes do jogo.',
+    67→    67→  'Dupla plataforma com um só pacote: o Manifest V3 com ajustes de Firefox atende Chromium e Mozilla simultaneamente, sem manutenção dobrada.',
+    68→    68→];
+    69→    69→
+    70→    70→const sec31Close = [
+    71→    71→  'Esses atributos reduzem o custo de manutenção, aceleram eventual aprovação nas lojas oficiais e criam confiança junto às famílias, preocupadas com a privacidade infantil. São ativos estratégicos que devem ser explicitamente preservados à medida que o produto cresce em funcionalidades.',
+    72→    72→];
+    73→    73→
+    74→    74→const sec32 = [
+    75→    75→  'A primeira limitação é de repertório curricular. O conteúdo atual cobre contagem e as quatro operações dentro de faixas numéricas moderadas — no nível mais avançado, contagem até quinze e operações até vinte. Faltam formatos de desafio que ampliem o raciocínio sem sair desse alcance: número faltante em equações, comparação entre quantidades, sequências e padrões, além de contextos aplicados como dinheiro e problemas falados.',
+    76→    76→  'A segunda limitação é motivacional. O sistema de recompensas acumula estrelas sem destino definido, sem objetivos intermediários, sem evolução visível do mascote e sem reconhecimento de constância; a retenção de longo prazo tende a sofrer. Não há, ainda, nenhum canal estruturado para os adultos: não existem relatórios de desempenho, limites de tempo de sessão nem proteção das configurações contra toques acidentais da criança.',
+    77→    77→  'A terceira limitação é de cobertura de uso. O progresso é único por dispositivo, sem perfis para irmãos ou alunos de uma mesma turma. A adaptação opera por modo de jogo, e não por habilidade específica — por exemplo, somas com passagem de dezena. A narração depende das vozes instaladas no sistema operacional, com qualidade variável entre plataformas, e não há ajuste de velocidade ou de tom para compensar diferenças de cada voz.',
+    78→    78→];
+    79→    79→
+    80→    80→const sec33Intro = [
+    81→    81→  'A matriz a seguir sintetiza o diagnóstico em quatro dimensões, considerando o estado atual da versão 1.1.0 e o contexto de mercado de aplicativos educativos infantis.',
+    82→    82→];
+    83→    83→
+    84→    84→const swotTable = {
+    85→    85→  headers: ['Dimensão', 'Fatores identificados'],
+    86→    86→  pcts: [18, 82],
+    87→    87→  rows: [
+    88→    88→    ['Forças', 'Arquitetura leve de cerca de 57 KB sem dependências; funcionamento offline; permissão mínima de armazenamento; narração para pré-leitores; feedback multimídia imediato; verificação automatizada de interface'],
+    89→    89→    ['Fragilidades', 'Conteúdo restrito a seis modos numéricos; motivação apoiada apenas em estrelas acumuladas; ausência de relatórios e de controles para adultos; progresso único sem perfis; narração dependente das vozes do sistema'],
+    90→    90→    ['Oportunidades', 'Uso escolar e alinhamento curricular; publicação nas lojas oficiais; gamificação e envolvimento da família; expansão para dinheiro, padrões e pré-álgebra; versão web responsiva para tablets'],
+    91→    91→    ['Ameaças', 'Políticas rigorosas das lojas para conteúdo infantil; concorrência de aplicativos educativos consolidados; variação de qualidade das vozes de narração entre sistemas; risco de uso excessivo de tela sem limites configuráveis'],
+    92→    92→  ],
+    93→    93→};
+    94→    94→
+    95→    95→const sec33Close = [
+    96→    96→  'A leitura conjunta da matriz indica que o caminho de maior retorno está em converter as oportunidades curriculares e de envolvimento familiar em funcionalidades concretas, usando a solidez técnica atual como diferencial de simplicidade e privacidade. As fragilidades mapeadas não demandam reengenharia: todas são endereçáveis por extensões incrementais do código existente, o que as propostas da próxima seção exploram.',
+    97→    97→];
+    98→    98→
+    99→    99→const sec4 = [
+   100→   100→  'As propostas deste relatório originam-se de três fontes combinadas: auditoria do código e da interface da versão 1.1.0, revisão de práticas consagradas de aplicativos educativos infantis e princípios de pedagogia lúdica, como aprendizagem concreta, repetição espaçada e reforço positivo; e delimitação das restrições reais da plataforma de extensões Manifest V3, que favorece soluções locais, offline e sem coleta de dados.',
+   101→   101→  'Cada proposta recebe duas avaliações qualitativas. Impacto mede a contribuição esperada para aprendizagem, engajamento sustentado ou confiança das famílias: Alto indica contribuição direta, Médio indica melhora relevante e Baixo indica refinamento. Esforço mede a complexidade de implementação: Baixo corresponde a alterações pontuais nos arquivos existentes, Médio a novas telas ou módulos e Alto a sistemas com persistência adicional ou integração externa. Trata-se de uma escala de ordenação de prioridades, não de estimativas de prazo.',
+   102→   102→  'As 36 propostas estão distribuídas em seis categorias, apresentadas na seção 5 na seguinte ordem:',
+   103→   103→];
+   104→   104→
+   105→   105→const categorias = [
+   106→   106→  'Conteúdo pedagógico: novos tipos de desafio matemático para ampliar o currículo.',
+   107→   107→  'Adaptação inteligente: refinamento do motor de dificuldade e uso pedagógico dos erros.',
+   108→   108→  'Gamificação e motivação: progresso visível, conquistas, metas e recompensas.',
+   109→   109→  'Acessibilidade e interface: inclusão visual, auditiva e de entrada de dados.',
+   110→   110→  'Família, segurança e envolvimento: proteção da criança e visibilidade para os adultos.',
+   111→   111→  'Plataforma e distribuição: configurações centrais, sincronização, lojas oficiais e versão web.',
+   112→   112→];
+   113→   113→
+   114→   114→const sec5Intro = [
+   115→   115→  'Esta seção apresenta as 36 propostas, identificadas pelos códigos S01 a S36 e agrupadas nas seis categorias definidas na seção 4. Cada categoria traz um quadro-resumo com as avaliações de impacto e de esforço, seguido de um comentário que aprofunda os itens de maior potencial. As propostas são independentes entre si, porém o roadmap da seção 6 indica combinações naturais de entrega por versão.',
+   116→   116→];
+   117→   117→
+   118→   118→const sugPcts = [7, 22, 45, 13, 13];
+   119→   119→const sugHeaders = ['Nº', 'Proposta', 'Descrição', 'Impacto', 'Esforço'];
+   120→   120→
+   121→   121→const categories = [
+   122→   122→  {
+   123→   123→    title: '5.1 Conteúdo pedagógico',
+   124→   124→    intro: 'As propostas desta categoria ampliam o repertório matemático do jogo mantendo o modelo visual que já funciona: objetos contáveis, grupos e feedback imediato. Todas reaproveitam a infraestrutura existente de geradores de questões, que monta o visual e as opções erradas plausíveis a partir dos próprios operandos.',
+   125→   125→    items: [
+   126→   126→      { no: 'S01', name: 'Número faltante', desc: 'Equações incompletas do tipo 3 + ? = 7 com apoio visual dos objetos, introduzindo pré-álgebra de forma lúdica.', impact: 'Alto', effort: 'Baixo' },
+   127→   127→      { no: 'S02', name: 'Comparação de quantidades', desc: 'Perguntas maior, menor ou igual entre dois grupos de objetos, apresentando os símbolos de comparação.', impact: 'Alto', effort: 'Baixo' },
+   128→   128→      { no: 'S03', name: 'Sequências e padrões', desc: 'Descobrir o próximo número de uma sequência (2, 4, 6, ?) com objetos ilustrando o padrão escolhido.', impact: 'Médio', effort: 'Baixo' },
+   129→   129→      { no: 'S04', name: 'Dobrar e metade', desc: 'Atividades de dobramento e repartição ao meio, base intuitiva para multiplicação e divisão futuras.', impact: 'Médio', effort: 'Baixo' },
+   130→   130→      { no: 'S05', name: 'Problemas narrados', desc: 'Mini-histórias em português narradas por voz que terminam em um cálculo, conectando matemática e cotidiano.', impact: 'Alto', effort: 'Médio' },
+   131→   131→      { no: 'S06', name: 'Dinheiro e troco', desc: 'Compras com moedas ilustradas: conferir preço, somar valores e calcular troco simples.', impact: 'Alto', effort: 'Médio' },
+   132→   132→    ],
+   133→   133→    highlight: 'S01 e S02 são as extensões de currículo de melhor custo-benefício do conjunto: introduzem pré-álgebra e comparação de quantidades reutilizando o gerador visual e a função de opções erradas já existentes, elevando o catálogo a oito modos com esforço reduzido. S05 dá um novo papel à narração em português, que deixa de ser apenas apoio de leitura e passa a sustentar problemas contextuais, conectando o cálculo a situações do cotidiano. S06 acrescenta utilidade prática, pois dinheiro e troco são a aplicação de matemática que as crianças percebem primeiro no mundo real.',
+   134→   134→  },
+   135→   135→  {
+   136→   136→    title: '5.2 Adaptação inteligente',
+   137→   137→    intro: 'A dificuldade adaptativa atual sobe ou desce por modo de jogo a cada rodada. As propostas abaixo refinam esse motor para considerar habilidades específicas, transformar erros em material de estudo e dar aos responsáveis visibilidade real do progresso.',
+   138→   138→    items: [
+   139→   139→      { no: 'S07', name: 'Adaptação por habilidade', desc: 'Registrar acertos por fator numérico e tipo de erro, ajustando o nível por habilidade e não apenas por modo.', impact: 'Alto', effort: 'Alto' },
+   140→   140→      { no: 'S08', name: 'Revisão espaçada de erros', desc: 'Guardar questões erradas em um banco e reapresentá-las em intervalos crescentes até a consolidação.', impact: 'Alto', effort: 'Médio' },
+   141→   141→      { no: 'S09', name: 'Mapa de domínio', desc: 'Grade de domínio por operação e nível, visível aos responsáveis, destacando avanços e lacunas.', impact: 'Médio', effort: 'Médio' },
+   142→   142→      { no: 'S10', name: 'Detector de fadiga', desc: 'Reconhecer sequência incomum de erros e sugerir uma pausa com respiração guiada antes de continuar.', impact: 'Médio', effort: 'Baixo' },
+   143→   143→      { no: 'S11', name: 'Metas configuráveis', desc: 'Responsáveis definem metas simples, como três rodadas por dia, com lembretes gentis e sem pressão.', impact: 'Médio', effort: 'Baixo' },
+   144→   144→      { no: 'S12', name: 'Avaliação inicial', desc: 'Rodada diagnóstica de oito questões no primeiro uso para sugerir o nível inicial mais adequado.', impact: 'Alto', effort: 'Baixo' },
+   145→   145→    ],
+   146→   146→    highlight: 'S12 resolve uma lacuna perceptível no primeiro uso: hoje toda criança começa no nível 1, o que entedia as maiores e pode frustrar as menores; uma rodada diagnóstica curta posiciona cada usuário no nível adequado desde a primeira partida. S08 aplica revisão espaçada, uma das técnicas pedagógicas com melhor evidência acumulada: questões erradas voltam em intervalos crescentes até a consolidação. S07 é a evolução estrutural do motor adaptativo — do nível por modo para um perfil por habilidade — e serve de fundação para o mapa de domínio da proposta S09.',
+   147→   147→  },
+   148→   148→  {
+   149→   149→    title: '5.3 Gamificação e motivação',
+   150→   150→    intro: 'O sistema de recompensas atual acumula estrelas sem destino definido. As propostas desta categoria dão propósito às estrelas, reconhecem a constância e criam objetivos de curto prazo compatíveis com a rotina infantil e com sessões curtas de uso.',
+   151→   151→    items: [
+   152→   152→      { no: 'S13', name: 'Mascote evolutivo', desc: 'A raposa cresce em estágios (ovo, filhote e adulta) conforme o total de estrelas conquistadas.', impact: 'Alto', effort: 'Médio' },
+   153→   153→      { no: 'S14', name: 'Conquistas e medalhas', desc: 'Selos por marcos, como primeira divisão e cem estrelas, exibidos em uma vitrine acessível.', impact: 'Alto', effort: 'Médio' },
+   154→   154→      { no: 'S15', name: 'Sequência diária', desc: 'Calendário visual de constância com os dias jogados consecutivos, reforçando o hábito de praticar.', impact: 'Médio', effort: 'Baixo' },
+   155→   155→      { no: 'S16', name: 'Missões diárias', desc: 'Três miniobjetivos sorteados por dia, com recompensa extra ao completá-los durante as rodadas.', impact: 'Médio', effort: 'Médio' },
+   156→   156→      { no: 'S17', name: 'Loja de recompensas', desc: 'Trocar estrelas por temas, adereços do mascote e figurinhas, ensinando noções elementares de economia.', impact: 'Alto', effort: 'Médio' },
+   157→   157→      { no: 'S18', name: 'Desafio-chefe', desc: 'A cada cinco rodadas, um desafio especial de dez questões sem dicas, com recompensa dobrada.', impact: 'Médio', effort: 'Baixo' },
+   158→   158→    ],
+   159→   159→    highlight: 'S13 transforma a raposa mascote no símbolo do progresso: ela evolui em estágios conforme o total de estrelas, dando destino visual e emocional ao que hoje é apenas um número no canto da tela. O trio S14, S15 e S16 forma a base de formação de hábito — conquistas por marcos, calendário de constância e missões diárias curtas. S17 introduz uma primeira noção de economia: decidir entre gastar estrelas na loja ou economizar por um tema mais desejado é, em si, um exercício de matemática aplicada.',
+   160→   160→  },
+   161→   161→  {
+   162→   162→    title: '5.4 Acessibilidade e interface',
+   163→   163→    intro: 'Acessibilidade, aqui, significa ampliar quem consegue usar o jogo com conforto: crianças com baixa visão ou dislexia, usuários de teclado, famílias que preferem reduzir estímulos e ambientes de uso noturno. A maioria das propostas tem baixo esforço, pois toca apenas folhas de estilo e preferências já persistidas.',
+   164→   164→    items: [
+   165→   165→      { no: 'S19', name: 'Alto contraste e dislexia', desc: 'Tema de alto contraste e opção de fonte com espaçamento ampliado para leitura facilitada.', impact: 'Alto', effort: 'Baixo' },
+   166→   166→      { no: 'S20', name: 'Controles por teclado', desc: 'Responder com as teclas numéricas, confirmar com Enter e navegar com Tab e foco visível.', impact: 'Médio', effort: 'Baixo' },
+   167→   167→      { no: 'S21', name: 'Multilíngue', desc: 'Interface e narração em português, inglês e espanhol, com voz ajustada a cada idioma.', impact: 'Médio', effort: 'Médio' },
+   168→   168→      { no: 'S22', name: 'Voz configurável', desc: 'Ajuste de velocidade, tom e voz da narração nas opções, além de exibição simultânea em legendas.', impact: 'Médio', effort: 'Baixo' },
+   169→   169→      { no: 'S23', name: 'Tema noturno', desc: 'Paleta escura suave para uso à noite, reduzindo o cansaço visual provocado pelas telas.', impact: 'Médio', effort: 'Baixo' },
+   170→   170→      { no: 'S24', name: 'Modo calmo', desc: 'Respeitar a preferência de movimento reduzido do sistema: menos confetes e animações por padrão.', impact: 'Alto', effort: 'Baixo' },
+   171→   171→    ],
+   172→   172→    highlight: 'S19 e S24 ampliam a inclusão com esforço mínimo: alto contraste com fonte de leitura facilitada atende casos de baixa visão e dislexia, e o modo calmo — que respeita a preferência de movimento reduzido declarada pelo sistema — acomoda crianças sensíveis a estímulos intensos. S20 habilita o uso em notebooks de escolas, onde a tela pode não ser sensível ao toque. S22 compensa a variação de qualidade das vozes de narração entre plataformas, permitindo ajustar velocidade, tom e escolha de voz.',
+   173→   173→  },
+   174→   174→  {
+   175→   175→    title: '5.5 Família, segurança e envolvimento',
+   176→   176→    intro: 'Nenhum produto infantil cresce de forma sustentável sem o adulto como aliado. As propostas desta categoria protegem a criança e informam quem cuida, usando exclusivamente os dados que o jogo já coleta localmente — sem coleta adicional e sem envio a servidores.',
+   177→   177→    items: [
+   178→   178→      { no: 'S25', name: 'Portão parental', desc: 'Desafio de multiplicação para adultos antes de abrir configurações sensíveis ou redefinir progresso.', impact: 'Alto', effort: 'Baixo' },
+   179→   179→      { no: 'S26', name: 'Painel dos responsáveis', desc: 'Relatório de tempo jogado, precisão por operação e evolução semanal dentro da própria extensão.', impact: 'Alto', effort: 'Alto' },
+   180→   180→      { no: 'S27', name: 'Perfis múltiplos', desc: 'Até quatro crianças com nome, avatar e progresso separados, adequado a irmãos e salas de aula.', impact: 'Médio', effort: 'Alto' },
+   181→   181→      { no: 'S28', name: 'Limite de sessão', desc: 'Temporizador configurável pelos responsáveis, com contagem regressiva e encerramento gentil.', impact: 'Médio', effort: 'Baixo' },
+   182→   182→      { no: 'S29', name: 'Exportar e importar', desc: 'Salvar o progresso em arquivo e restaurá-lo em outro computador ou navegador em poucos toques.', impact: 'Médio', effort: 'Baixo' },
+   183→   183→      { no: 'S30', name: 'Modo dois jogadores', desc: 'Turnos alternados para duas crianças cooperarem na mesma rodada e dividirem as estrelas.', impact: 'Médio', effort: 'Médio' },
+   184→   184→    ],
+   185→   185→    highlight: 'S25 é pré-requisito de segurança para as demais funções destinadas a adultos: um desafio de multiplicação para os responsáveis impede que a criança altere limites ou redefina o progresso por acidente. S26 converte em relatório compreensível os dados que já existem no estado salvo — níveis por modo, estrelas e resultados de rodadas — sem coletar nada além do dispositivo, em linha com a privacidade por arquitetura do produto. S27 viabiliza o uso compartilhado entre irmãos e em salas de aula, mantendo progressos separados por perfil.',
+   186→   186→  },
+   187→   187→  {
+   188→   188→    title: '5.6 Plataforma e distribuição',
+   189→   189→    intro: 'A última categoria trata de levar o produto além do círculo atual: centralizar configurações, sincronizar progresso entre computadores, preparar a publicação nas lojas oficiais e abrir caminhos para escolas por meio de uma versão web responsiva.',
+   190→   190→    items: [
+   191→   191→      { no: 'S31', name: 'Página de opções nativa', desc: 'Central de configurações da extensão: operações habilitadas, idioma, limites de tempo e som.', impact: 'Alto', effort: 'Baixo' },
+   192→   192→      { no: 'S32', name: 'Sincronização opcional', desc: 'Espelhar o progresso entre computadores do mesmo usuário por meio do armazenamento sincronizado.', impact: 'Médio', effort: 'Baixo' },
+   193→   193→      { no: 'S33', name: 'Desafio da nova aba', desc: 'Substituição opcional da página de nova aba por um desafio rápido e um resumo de estrelas.', impact: 'Médio', effort: 'Baixo' },
+   194→   194→      { no: 'S34', name: 'Atalho de teclado global', desc: 'Combinação de teclas para abrir o jogo diretamente, sem passar pelo ícone da extensão.', impact: 'Baixo', effort: 'Baixo' },
+   195→   195→      { no: 'S35', name: 'Publicação nas lojas', desc: 'Listagem na Chrome Web Store e no Firefox Add-ons com textos, capturas e política de privacidade.', impact: 'Alto', effort: 'Médio' },
+   196→   196→      { no: 'S36', name: 'Versão web para escolas', desc: 'Empacotar o jogo como página web responsiva para tablets, salas de aula e demonstração pública.', impact: 'Alto', effort: 'Alto' },
+   197→   197→    ],
+   198→   198→    highlight: 'S31 centraliza em uma página de opções nativa os ajustes que hoje vivem na tela inicial e passa a abrigar as preferências criadas pelas demais propostas, como acessibilidade e limites. S35 transforma o projeto em produto público: a listagem na Chrome Web Store e no Firefox Add-ons traz distribuição, atualizações automáticas e o selo de confiança das lojas. S36 abre o segundo canal de alcance: uma versão web responsiva atende tablets e escolas que não instalam extensões, reutilizando integralmente a página dedicada já existente.',
+   199→   199→  },
+   200→   200→];
+   201→   201→
+   202→   202→const sec61Intro = [
+   203→   203→  'O cruzamento entre impacto e esforço gera quatro quadrantes de decisão, apresentados na tabela a seguir. O quadrante de ganhos rápidos reúne as nove propostas com melhor relação entre valor entregue e custo de implementação.',
+   204→   204→];
+   205→   205→
+   206→   206→const prioritization = {
+   207→   207→  headers: ['Quadrante', 'Critério', 'Propostas'],
+   208→   208→  pcts: [20, 34, 46],
+   209→   209→  rows: [
+   210→   210→    ['Ganhos rápidos', 'Alto impacto com baixo esforço: executar primeiro', 'S01, S02, S12, S19, S24, S25, S28, S29, S31'],
+   211→   211→    ['Apostas estratégicas', 'Alto impacto com esforço médio ou alto: planejar em ondas', 'S05, S06, S07, S08, S13, S14, S17, S26, S35, S36'],
+   212→   212→    ['Complementos', 'Médio impacto com baixo esforço: distribuir entre versões', 'S03, S04, S10, S11, S15, S20, S22, S23, S32, S33, S34'],
+   213→   213→    ['Avaliar adiante', 'Médio impacto com esforço médio ou alto: decidir com dados de uso', 'S09, S16, S18, S21, S27, S30'],
+   214→   214→  ],
+   215→   215→};
+   216→   216→
+   217→   217→const sec61Close = [
+   218→   218→  'A recomendação de execução é começar pelos ganhos rápidos, que entregam valor visível com risco reduzido e preparam a infraestrutura — página de opções, portão parental e preferências de acessibilidade — exigida pelas apostas estratégicas. Os complementos podem ser distribuídos entre as versões conforme a capacidade de desenvolvimento, e o quadrante de avaliação adiante deve ser revisitado após as primeiras medições de uso, quando decisões como perfis múltiplos e modo dois jogadores poderão se apoiar em demanda observada.',
+   219→   219→];
+   220→   220→
+   221→   221→const sec62Intro = [
+   222→   222→  'Com base na matriz, o roadmap organiza as 36 propostas em quatro ondas de versão, cada uma com foco claro e dependências mínimas em relação à anterior.',
+   223→   223→];
+   224→   224→
+   225→   225→const roadmap = {
+   226→   226→  headers: ['Versão', 'Foco da onda', 'Propostas incluídas'],
+   227→   227→  pcts: [12, 34, 54],
+   228→   228→  rows: [
+   229→   229→    ['v1.1.x', 'Fundações: opções, segurança e acessibilidade — curto prazo', 'S31, S25, S12, S19, S24, S20, S22, S23, S28, S29, S34'],
+   230→   230→    ['v1.2', 'Expansão pedagógica e revisão de erros — curto a médio prazo', 'S01, S02, S03, S04, S08, S10'],
+   231→   231→    ['v1.3', 'Motivação, hábito e metas — médio prazo', 'S13, S14, S15, S16, S18, S11'],
+   232→   232→    ['v2.0', 'Plataforma, família e alcance — longo prazo', 'S05, S06, S07, S09, S17, S21, S26, S27, S30, S32, S33, S35, S36'],
+   233→   233→  ],
+   234→   234→};
+   235→   235→
+   236→   236→const sec62Close = [
+   237→   237→  'A sequência proposta minimiza retrabalho: a onda v1.1.x cria a página de opções e as preferências que abrigarão todos os ajustes posteriores; a v1.2 amplia o currículo quando já existe controle adulto; a v1.3 engaja com progresso visível sobre um catálogo mais rico; e a v2.0 escala o produto para novos canais e para o uso compartilhado. Nenhuma onda depende de reescrita do motor de jogo — todas são incrementos compatíveis com o estado salvo atual.',
+   238→   238→  'Duas salvaguardas acompanham o roadmap. Primeiro, validação com crianças reais a cada onda, observando tempo médio de rodada, taxa de acerto de primeira e rejeição de conteúdo, com critérios objetivos de aceitação. Segundo, conformidade de privacidade: todas as propostas mantêm os dados no dispositivo, e as funcionalidades voltadas a adultos devem seguir esse princípio, evitando qualquer coleta ou transmissão de dados de crianças — inclusive no processo de publicação nas lojas, cuja política de privacidade deve documentar explicitamente esse compromisso.',
+   239→   239→];
+   240→   240→
+   241→   241→const sec7 = [
+   242→   242→  'O conceito do Conta Comigo está tecnicamente validado e pedagogicamente coerente: a extensão entrega, em cerca de 57 KB e sem permissões sensíveis, uma experiência de cálculo acessível a pré-leitores, com adaptação de dificuldade funcional e feedback multimídia consistente. O conjunto de 36 propostas deste relatório indica que a evolução pode ser integralmente incremental, preservando a arquitetura atual e o compromisso de privacidade que diferencia o produto.',
+   243→   243→  'Como próximos passos imediatos, recomenda-se implementar a onda v1.1.x — página de opções nativa com portão parental, preferências de acessibilidade, limite de sessão e avaliação inicial de nível — e, na sequência, iniciar a expansão pedagógica da v1.2 com os modos de número faltante e comparação de quantidades. Antes e depois de cada onda, medir tempo médio de rodada, taxa de acerto de primeira e retorno dos usuários, usando as métricas locais já registradas pelo jogo.',
+   244→   244→  'Ao longo de todas as ondas, vale manter como critério de aceitação os três pilares que sustentam o conceito: privacidade local, leveza técnica e acessibilidade a crianças que ainda não leem. Toda proposta que não puder ser implementada sem comprometer um desses pilares deve ser reavaliada, independentemente do impacto estimado.',
+   245→   245→];
+   246→   246→
+   247→   247→module.exports = {
+   248→   248→  cover, execSummary, sec21, sec22Intro, featuresTable, sec22Close, sec23,
+   249→   249→  sec31Intro, sec31Bullets, sec31Close, sec32, sec33Intro, swotTable, sec33Close,
+   250→   250→  sec4, categorias, sec5Intro, sugPcts, sugHeaders, categories,
+   251→   251→  sec61Intro, prioritization, sec61Close, sec62Intro, roadmap, sec62Close, sec7,
+   252→   252→};
+   253→   253→
