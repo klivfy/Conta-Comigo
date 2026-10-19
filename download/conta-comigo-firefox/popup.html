@@ -85,7 +85,8 @@
 
       <!-- TELA DO JOGO -->
       <section id="screen-game" class="screen">
-        <div id="progress"><div id="dots"></div><span id="combo-chip" class="hidden"></span><span id="level-chip"></span></div>
+        <div id="progress"><div id="dots"></div><span id="combo-chip" class="hidden"></span><span id="pts-chip" class="hidden">⚡ <b>0</b></span><span id="level-chip"></span></div>
+        <div id="timer-wrap" class="hidden" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><i id="timer-bar"></i></div>
         <div id="visual"></div>
         <div id="equation"></div>
         <div id="answers"></div>
@@ -101,6 +102,7 @@
         <div class="mascot"><span class="mascot-main">🥳</span></div>
         <h2 id="end-title">Muito bem!</h2>
         <div id="stars-earned"></div>
+        <div id="end-pts" class="hidden"></div>
         <p id="end-msg"></p>
         <div id="end-history"></div>
         <div class="end-actions">

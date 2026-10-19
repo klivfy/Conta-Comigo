@@ -131,3 +131,25 @@ Stage Summary:
 - Causa-raiz: erro de background.scripts era do manifest dual (corrigido com builds separadas); erros de CSP eram da v2.0.0 ainda instalada no Chrome do usuário (o pacote atual já estava limpo) — a instrução-chave ao usuário é REMOVER a extensão antiga e carregar o zip 2.1.1.
 - Entregáveis: download/conta-comigo/ (pasta Chromium), download/conta-comigo-firefox/ (pasta Firefox), conta-comigo-chrome-2.1.1.zip, conta-comigo-firefox-2.1.1.zip.
 - Scripts reutilizáveis: scripts/build_packages.py (build dual), scripts/scan_csp.py (auditoria de CSP com hash).
+
+---
+Task ID: 7
+Agent: Z.ai (agente principal)
+Task: v2.2.0 — (a) mecânica de tempo entre respostas com pontuação por rapidez e precisão; (b) estudo amplo de cadastro/login/logout + competição sem contato direto (Google via Supabase) + acessibilidade, usabilidade e segurança cibernética (documento entregável).
+
+Work Log:
+- Implementado no jogo (v2.2.0): Timer (barra suave por questão, orçamento 30..22s por nível, +6s nos modos Contar/Histórias/Dinheiro/Dividir), pausa automática em overlays/aba oculta/tela inativa, timeout NUNCA pune (só zera bônus de rapidez, balão gentil); pontuação: acerto de primeira 100×nível + até 60×nível por tempo restante, após erro 40×nível, chefe ×2, diag/duelo não pontuam no perfil; chip ⚡ no jogo, pts-pop flutuante, end-pts com recorde por modo, ⚡ total no painel dos responsáveis e no popover de perfis; toggle "Cronômetro de pontos" na área dos responsáveis (DEFAULT_SETTINGS.timer=true); migração normalizeDB (points/bestPts) em parseDB/initDB.
+- Bugs corrigidos no QA: ratio() com estado velho quando timer desligado no meio da rodada (pontos fantasma 148 em vez de 100) — start() zera totalMs/leftMs; recorde gravado em memória após saveState(true) do endRound — saveState(true) extra no bloco do recorde.
+- i18n pt/en/es (end_pts, end_record, time_over, d_points, s_timer, s_timer_note); game.html/popup.html com #pts-chip/#timer-wrap/#end-pts; CSS (barra green→yellow→red, pts-pop, page-mode, hc); options.js v2.2.0.
+- QA agent-browser: timer visível e contando, +142⚡ em resposta rápida, timeout→balão+100 base, toggle off→100 exatos, duelo sem timer/sem pontos, rodada completa ⚡795 + "Novo recorde", recorde persistido, painel ⚡, portão, i18n EN/ES, popup 400×600 íntegro; zero erros de console.
+- Pacotes: build_packages.py VERSION=2.2.0 → conta-comigo-chrome-2.2.0.zip e conta-comigo-firefox-2.2.0.zip (57 KB cada), scan CSP limpo, zips 2.1.1 removidos; demo.html (Novidades v2.2 + zips novos) e loja/README-publicacao.md atualizados.
+- Estudo (documento): skill docx recarregada com cadeia completa (create.md, design-system.md R1/WM-1/calcTitleLayout/calcCoverSpacing/tabelas horizontal-only, common-rules.md, toc.md, report.md, docx-js-core.md); fig1-curva-pontos.png via scripts/gen_chart_bonus.py (matplotlib, paleta WM-1, ylim corrigido p/ nível 5=800).
+- Conteúdo PT-BR em scripts/estudo_data.js (9 capítulos, 11 tabelas: pontuação, orçamento de tempo, schema Supabase, política de dados, custos, riscos, backlog a11y WCAG 2.2, heurísticas usabilidade, STRIDE, endurecimento P0/P1/P2, roteiro por ondas); scripts/gen_estudo_conta_comigo.js (R1+WM-1, 3 seções: capa margem 0 / sumário romanos / corpo arábicos, Figura 1 embutida com proporção real).
+- Pós-processamento: scripts/postprocess_estudo.py (novo, reutilizável): rodapés PAGE \* ROMAN/arabic, remove pgNumType, FUNDE begin+instr+separate do campo TOC com a 1ª entrada limpa (elimina a duplicata "1. Sumário Executivo" sem número que o docx-js gera dentro do sdt); corrigido bug de compactação que quebrava atributos XML (regenerado do zero).
+- add_toc_placeholders.py --auto: 31 entradas, exit 0; postcheck 8/9 (0 erros; 1 aviso de espaçamento por células de tabela a 276 — intencional); PDF 22 páginas inspecionado (capa R1/WM-1, sumário limpo, tabelas teal, Figura 1, conclusões).
+
+Stage Summary:
+- Extensão v2.2.0: pontos por rapidez e precisão implementados e testados (sem punição, desligável, acessível) — pacotes chrome/firefox 2.2.0 atualizados.
+- Estudo entregue: download/Conta-Comigo-Estudo-de-Expansao-e-Seguranca.docx (~126 KB, 22 páginas, PT-BR): viabilidade Google-via-Supabase no MV3 (empacotar supabase-js, chrome.identity/browser.identity + PKCE, id estável via key), arquitetura cliente-não-confiável (RLS, edge function, view pública sem PII), proteção infantil (LGPD art. 14, COPPA, minimização, exclusão), antifraude em camadas, backlog a11y/usabilidade priorizado e plano de segurança STRIDE/OWASP; roteiro em 4 ondas (v2.3→v3.0).
+- Scripts reutilizáveis: estudo_data.js, gen_estudo_conta_comigo.js, postprocess_estudo.py, gen_chart_bonus.py.
+- QA: /home/z/my-project/qa/v22-01..02.png e qa/fig1-curva-pontos.png

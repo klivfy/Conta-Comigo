@@ -53,6 +53,7 @@ function renderOptions() {
   $('#set-diff').value = String(g.diffMode);
   $('#set-unlock').checked = !!g.unlockAll;
   $('#set-newtab').checked = !!g.newtabOn;
+  $('#set-timer').checked = g.timer !== false; // v2.2: ligado por padrão
   $('#set-lang').value = g.lang || 'pt';
   $('#set-mute').checked = !!g.mute;
   $('#set-vol').value = String(Math.round((g.volume != null ? g.volume : 0.9) * 100));
@@ -76,7 +77,7 @@ function renderOptions() {
   $('#set-limit').options[0].text = t('no_limit');
   $('#set-sync').checked = !!g.sync;
   $('#imp-area').placeholder = t('imp_ph');
-  $('#opt-version').textContent = t('version') + ': 2.0.0';
+  $('#opt-version').textContent = t('version') + ': 2.2.0';
 }
 
 /* ---------- painel (S26 + S09) ---------- */
@@ -86,7 +87,7 @@ function renderDash() {
   const acc = totalQ ? Math.round((100 * p.rights) / totalQ) : 0;
   const stage = p.stars >= 100 ? '🦊' : p.stars >= 30 ? '🐣' : '🥚';
   $('#stat-grid').innerHTML = [
-    ['⭐', p.stars, t('d_stars')], ['🔥', p.streak || 0, t('d_streak')],
+    ['⭐', p.stars, t('d_stars')], ['⚡', p.points || 0, t('d_points')], ['🔥', p.streak || 0, t('d_streak')],
     ['🎮', p.rounds, t('d_rounds')], ['⏱️', Math.round(p.playSec / 60) + ' min', t('d_time')],
     ['✅', acc + '%', t('d_acc')], [stage, Object.keys(p.played).length + '/12', t('m_mistar')],
   ].map((s) => '<div class="stat"><b>' + s[1] + '</b><span>' + s[0] + ' ' + s[2] + '</span></div>').join('');
@@ -195,6 +196,7 @@ function bindOptions() {
   $('#set-diff').addEventListener('change', (e) => { G().diffMode = e.target.value === 'auto' ? 'auto' : Number(e.target.value); set(); });
   $('#set-unlock').addEventListener('change', (e) => { G().unlockAll = e.target.checked; set(); });
   $('#set-newtab').addEventListener('change', (e) => { G().newtabOn = e.target.checked; set(); });
+  $('#set-timer').addEventListener('change', (e) => { G().timer = e.target.checked; set(); });
   $('#set-lang').addEventListener('change', (e) => { G().lang = e.target.value; G().vVoice = ''; set(); renderOptions(); });
   $('#set-mute').addEventListener('change', (e) => { G().mute = e.target.checked; set(); });
   $('#set-vol').addEventListener('input', (e) => { G().volume = Number(e.target.value) / 100; set(); });

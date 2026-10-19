@@ -1,0 +1,834 @@
+     1→'use strict';
+     2→/* ==================== Conta Comigo v2.1 — interface ====================
+     3→   S07 adaptação · S08 revisão · S10 fadiga · S11 metas · S12 avaliação
+     4→   S13 mascote evolutiva · S14 conquistas · S15 ofensiva · S16 missões
+     5→   S17 loja · S18 chefe · S20 teclado · S24 calmo · S28 limite de sessão · S30 duelo
+     6→   v2.1: sem scripts/handlers inline (CSP MV3), ✕ fecha a janela dedicada */
+     7→
+     8→const IS_PAGE = document.body.classList.contains('page-mode');
+     9→const HAS_EXT = typeof chrome !== 'undefined' && !!chrome.runtime && !!chrome.runtime.getURL && !!chrome.windows && !!chrome.windows.create;
+    10→
+    11→/* ---------- estado da rodada ---------- */
+    12→let R = {
+    13→  kind: 'normal', mode: null, total: QUESTIONS_PER_ROUND, qIndex: 0, misses: 0,
+    14→  firsts: 0, stars: 0, combo: 0, history: [], due: [], diagI: 0, diagOK: 0,
+    15→  duel: null, unlockedShown: [], locked: false,
+    16→};
+    17→let sessionSec = 0;
+    18→let bubbleTimer = null, toastTimer = null;
+    19→
+    20→/* ---------- navegação de telas ---------- */
+    21→function show(name) {
+    22→  $$('.screen').forEach((s) => s.classList.remove('active'));
+    23→  const el = $('#screen-' + name);
+    24→  if (el) el.classList.add('active');
+    25→}
+    26→
+    27→function applySettings() {
+    28→  const g = G();
+    29→  document.body.dataset.theme = g.theme || 'classico';
+    30→  document.body.classList.toggle('hc', !!g.hc);
+    31→  document.body.classList.toggle('dys', !!g.dys);
+    32→  const sysReduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    33→  const calm = g.calmo == null ? sysReduce : !!g.calmo;
+    34→  document.body.classList.toggle('calmo', !!calm);
+    35→  const bm = $('#btn-mute'); if (bm) bm.textContent = g.mute ? '🔇' : '🔊';
+    36→}
+    37→function refreshChrome() {
+    38→  const p = P();
+    39→  $('#star-total').textContent = String(p ? p.stars : 0);
+    40→  const chip = $('#star-chip'); if (chip) { chip.classList.remove('bump'); void chip.offsetWidth; chip.classList.add('bump'); }
+    41→  const st = $('#chip-streak'); if (st) st.querySelector('b').textContent = String(p ? p.streak : 0);
+    42→}
+    43→
+    44→/* ---------- balão, toast e overlays ---------- */
+    45→function showBubble(emoji, text) {
+    46→  const b = $('#bubble'); if (!b) return;
+    47→  $('#bubble-emoji').textContent = emoji;
+    48→  $('#bubble-text').textContent = text;
+    49→  b.classList.remove('hidden', 'pop'); void b.offsetWidth; b.classList.add('pop');
+    50→  clearTimeout(bubbleTimer);
+    51→  bubbleTimer = setTimeout(hideBubble, 2400);
+    52→}
+    53→function hideBubble() { const b = $('#bubble'); if (b) b.classList.add('hidden'); }
+    54→function toast(msg) {
+    55→  const el = $('#toast'); if (!el) return;
+    56→  el.textContent = msg; el.classList.remove('hidden', 'show'); void el.offsetWidth; el.classList.add('show');
+    57→  clearTimeout(toastTimer);
+    58→  toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+    59→}
+    60→function showOverlay(html) {
+    61→  const o = $('#overlay');
+    62→  $('#overlay-card').innerHTML = html;
+    63→  o.classList.remove('hidden');
+    64→}
+    65→function hideOverlay() { $('#overlay').classList.add('hidden'); }
+    66→function overlayOpen() { return !$('#overlay').classList.contains('hidden'); }
+    67→
+    68→/* ---------- confetes (respeitam modo calmo S24) ---------- */
+    69→const CONF_COLORS = ['#ffc93c', '#ff6b6b', '#2ed573', '#4c7dff', '#9b6bff', '#ff9a3d'];
+    70→function confetti(n) {
+    71→  if (document.body.classList.contains('calmo')) n = Math.min(n, 8);
+    72→  const fx = $('#fx');
+    73→  for (let i = 0; i < n; i++) {
+    74→    const el = document.createElement('i');
+    75→    el.className = 'confetti';
+    76→    if (Math.random() < 0.3) {
+    77→      el.textContent = pick(['⭐', '✨', '💫']);
+    78→      el.style.fontSize = rand(10, 18) + 'px';
+    79→      el.style.width = 'auto'; el.style.height = 'auto'; el.style.background = 'transparent';
+    80→    } else el.style.background = pick(CONF_COLORS);
+    81→    el.style.left = (Math.random() * 100) + '%';
+    82→    el.style.animationDelay = (Math.random() * 0.5) + 's';
+    83→    el.style.animationDuration = (1.4 + Math.random() * 1.4) + 's';
+    84→    el.style.setProperty('--r', rand(-540, 540) + 'deg');
+    85→    el.style.setProperty('--x', rand(-60, 60) + 'px');
+    86→    el.addEventListener('animationend', () => el.remove());
+    87→    fx.appendChild(el);
+    88→  }
+    89→}
+    90→
+    91→/* ---------- mascote evolutiva (S13) ---------- */
+    92→function mascotStage() {
+    93→  const s = P() ? P().stars : 0;
+    94→  if (s >= 100) return { emoji: '🦊', key: 'st_big', next: null };
+    95→  if (s >= 30) return { emoji: '🐣', key: 'st_baby', next: 100 - s };
+    96→  return { emoji: '🥚', key: 'st_egg', next: 30 - s };
+    97→}
+    98→function renderMascot() {
+    99→  const p = P(); if (!p) return;
+   100→  const st = mascotStage();
+   101→  const m = $('#mascot-home');
+   102→  if (m) m.innerHTML = '<span class="mascot-main">' + st.emoji + '</span>' + (p.hat ? '<span class="mascot-hat">' + p.hat + '</span>' : '');
+   103→  const ms = $('#mascot-side');
+   104→  if (ms) ms.textContent = st.emoji;
+   105→  const lbl = $('#mascot-stage');
+   106→  if (lbl) lbl.textContent = t(st.key) + ' · ' + p.name;
+   107→  const nx = $('#mascot-next');
+   108→  if (nx) nx.textContent = st.next != null ? t('to_next', { n: st.next }) : '⭐ ' + p.stars;
+   109→}
+   110→
+   111→/* ---------- ofensiva / semana (S15) ---------- */
+   112→function renderWeekStrip() {
+   113→  const el = $('#week-strip'); if (!el) return;
+   114→  const p = P();
+   115→  const today = new Date();
+   116→  let html = '';
+   117→  for (let i = 6; i >= 0; i--) {
+   118→    const d = new Date(today); d.setDate(d.getDate() - i);
+   119→    const ds = fmtDate(d);
+   120→    let played = false;
+   121→    if (p && p.streak > 0 && p.lastPlay) {
+   122→      const end = (p.lastPlay === fmtDate(today)) ? new Date(today) : new Date(p.lastPlay + 'T12:00:00');
+   123→      if (ds <= p.lastPlay) {
+   124→        const diffDays = Math.round((end - d) / 86400000);
+   125→        played = diffDays >= 0 && diffDays < p.streak;
+   126→      }
+   127→    }
+   128→    html += '<span class="wday' + (played ? ' on' : '') + '" title="' + ds + '"><i>' + 'DSTQQSS'[d.getDay()] + '</i>' + (played ? '🔥' : '·') + '</span>';
+   129→  }
+   130→  el.innerHTML = html;
+   131→}
+   132→
+   133→/* ---------- missões diárias (S16) ---------- */
+   134→const MISSION_DEFS = [
+   135→  { id: 'rounds2', key: 'mi_rounds2', goal: 2, ev: 'round' },
+   136→  { id: 'first5', key: 'mi_first5', goal: 5, ev: 'first' },
+   137→  { id: 'combo3', key: 'mi_combo3', goal: 3, ev: 'combo' },
+   138→  { id: 'newmode', key: 'mi_newmode', goal: 1, ev: 'newmode' },
+   139→  { id: 'review3', key: 'mi_review3', goal: 3, ev: 'review' },
+   140→];
+   141→function ensureMissions() {
+   142→  const p = P(); const today = fmtDate();
+   143→  if (!p.today || p.today.d !== today) p.today = { d: today, rounds: 0, done: false, modes: {} };
+   144→  if (p.missions.d !== today) {
+   145→    let seed = 0; for (const ch of today) seed += ch.charCodeAt(0);
+   146→    const idx = shuffle([0, 1, 2, 3, 4].map((x) => x)).sort((a, b) => ((seed * (a + 3)) % 7) - ((seed * (b + 3)) % 7)).slice(0, 3);
+   147→    p.missions = { d: today, list: idx.map((i) => ({ id: MISSION_DEFS[i].id, p: 0, done: false })) };
+   148→    saveState();
+   149→  }
+   150→}
+   151→function missionEvent(ev, n) {
+   152→  const p = P(); const defs = { rounds2: 'round', first5: 'first', combo3: 'combo', newmode: 'newmode', review3: 'review' };
+   153→  let changed = false;
+   154→  p.missions.list.forEach((m) => {
+   155→    const def = MISSION_DEFS.find((d) => d.id === m.id);
+   156→    if (!def || m.done || defs[m.id] !== ev) return;
+   157→    m.p = Math.min(def.goal, m.p + (n || 1));
+   158→    if (m.p >= def.goal) {
+   159→      m.done = true; changed = true;
+   160→      p.stars += 3; p.missionsDone++;
+   161→      toast('🎉 ' + t('mission_done'));
+   162→      SFX.star(); refreshChrome();
+   163→    }
+   164→  });
+   165→  if (changed) saveState();
+   166→}
+   167→function renderMissions() {
+   168→  const el = $('#mission-row'); if (!el) return;
+   169→  ensureMissions();
+   170→  const p = P();
+   171→  el.innerHTML = p.missions.list.map((m) => {
+   172→    const def = MISSION_DEFS.find((d) => d.id === m.id);
+   173→    return '<span class="mission' + (m.done ? ' done' : '') + '">' + (m.done ? '✅ ' : '🔸 ') + t(def.key) + ' ' + m.p + '/' + def.goal + '</span>';
+   174→  }).join('');
+   175→}
+   176→
+   177→/* ---------- meta diária (S11) ---------- */
+   178→function renderGoal() {
+   179→  const el = $('#goal-line'); if (!el) return;
+   180→  const p = P(); ensureMissions();
+   181→  el.textContent = (G().goalRounds > 0)
+   182→    ? t('goal_line', { a: Math.min(p.today.rounds, G().goalRounds), b: G().goalRounds })
+   183→    : '⭐ ' + p.stars;
+   184→}
+   185→
+   186→/* ---------- metas de estrelas por modo / desbloqueio ---------- */
+   187→function renderModes() {
+   188→  const grid = $('#modes-grid'); if (!grid) return;
+   189→  const p = P();
+   190→  grid.innerHTML = Object.keys(MODES).map((m) => {
+   191→    const md = MODES[m];
+   192→    const ok = modeUnlocked(m);
+   193→    return '<button class="mode-card c-' + md.color + '" data-mode="' + m + '" ' + (ok ? '' : 'data-locked="' + md.unlock + '"') + '>' +
+   194→      (m === 'mistar' ? '<span class="badge">' + t('d_mistar') + '</span>' : '') +
+   195→      '<span class="mode-emoji">' + (ok ? md.emoji : '🔒') + '</span>' +
+   196→      '<span class="mode-name">' + t('m_' + m) + '</span>' +
+   197→      '<span class="mode-desc">' + (ok ? t('d_' + m) : t('locked', { n: md.unlock })) + '</span></button>';
+   198→  }).join('');
+   199→  $$('.mode-card').forEach((card) => {
+   200→    card.addEventListener('click', () => {
+   201→      ensureAudio(); SFX.tap();
+   202→      if (card.dataset.locked) { showBubble('🔒', t('locked', { n: card.dataset.locked })); return; }
+   203→      startRound(card.dataset.mode);
+   204→    });
+   205→  });
+   206→}
+   207→
+   208→/* ---------- tela inicial completa ---------- */
+   209→function renderHome() {
+   210→  renderMascot(); renderWeekStrip(); renderMissions(); renderGoal(); renderModes();
+   211→  const p = P();
+   212→  const due = dueReviews().length;
+   213→  const btnReview = $('#sp-review');
+   214→  if (btnReview) {
+   215→    btnReview.classList.toggle('hidden', due === 0);
+   216→    btnReview.querySelector('span').textContent = t('review_btn', { n: due });
+   217→  }
+   218→  const btnBoss = $('#sp-boss');
+   219→  if (btnBoss) btnBoss.classList.toggle('hidden', !p.bossReady);
+   220→  const btnDiag = $('#sp-diag');
+   221→  if (btnDiag) btnDiag.classList.toggle('attention', !p.assessed);
+   222→  renderDiffChips(); refreshChrome();
+   223→}
+   224→
+   225→/* ---------- dificuldade manual (chips auto + 1..5) ---------- */
+   226→function renderDiffChips() {
+   227→  $$('.diff-chip').forEach((c) => c.classList.toggle('active', String(G().diffMode) === c.dataset.d));
+   228→}
+   229→
+   230→/* ==================== rodadas ==================== */
+   231→function resetRound(kind, mode, total) {
+   232→  R = {
+   233→    kind, mode: mode || null, total: total || QUESTIONS_PER_ROUND, qIndex: 0, misses: 0,
+   234→    firsts: 0, stars: 0, combo: 0, history: [], due: [], diagI: 0, diagOK: 0,
+   235→    duel: R.duel, unlockedShown: [], locked: false,
+   236→  };
+   237→}
+   238→function startRound(mode) {
+   239→  TTS.stop();
+   240→  const p = P();
+   241→  ensureMissions();
+   242→  if (p.today.modes[mode] == null) {
+   243→    p.today.modes[mode] = 1;
+   244→    if (Object.keys(p.today.modes).length <= Object.keys(MODES).length) missionEvent('newmode');
+   245→  }
+   246→  if (!p.played[mode]) { p.played[mode] = 1; }
+   247→  resetRound('normal', mode);
+   248→  show('game'); nextQuestion(); saveState();
+   249→}
+   250→function startReview() {
+   251→  const due = dueReviews();
+   252→  if (!due.length) { renderHome(); return; }
+   253→  TTS.stop();
+   254→  resetRound('review', null, Math.min(5, due.length));
+   255→  R.due = shuffle(due).slice(0, 5);
+   256→  show('game'); nextQuestion();
+   257→}
+   258→function startBoss() {
+   259→  TTS.stop();
+   260→  const p = P();
+   261→  resetRound('boss', null, BOSS_QUESTIONS);
+   262→  R.mode = 'mistar';
+   263→  p.bossReady = false; saveState();
+   264→  showBubble('⚔️', t('boss_title'));
+   265→  show('game'); nextQuestion();
+   266→}
+   267→const DIAG_LADDER = [['contar',1],['somar',1],['somar',2],['subtrair',2],['subtrair',3],['multiplicar',3],['dividir',3],['multiplicar',4]];
+   268→function startDiag() {
+   269→  TTS.stop();
+   270→  resetRound('diag', null, DIAG_LADDER.length);
+   271→  show('game'); nextQuestion();
+   272→}
+   273→function startDuelSetup() {
+   274→  TTS.stop(); SFX.tap();
+   275→  const mk = (sel, defIdx) => {
+   276→    const el = $(sel); if (!el) return;
+   277→    el.innerHTML = '';
+   278→    AVATARS.forEach((a, i) => {
+   279→      const b = document.createElement('button');
+   280→      b.className = 'av' + (i === defIdx ? ' sel' : '');
+   281→      b.textContent = a;
+   282→      b.addEventListener('click', () => { $$(sel + ' .av').forEach((x) => x.classList.remove('sel')); b.classList.add('sel'); SFX.tap(); });
+   283→      el.appendChild(b);
+   284→    });
+   285→  };
+   286→  mk('#duel-av1', 0); mk('#duel-av2', 1);
+   287→  show('duel');
+   288→}
+   289→function startDuel(a1, a2) {
+   290→  resetRound('duel', null, 10);
+   291→  R.duel = { a1, a2, s1: 0, s2: 0, turn: 1 };
+   292→  show('game'); nextQuestion();
+   293→}
+   294→
+   295→/* ---------- geração da próxima questão ---------- */
+   296→function currentMode() {
+   297→  if (R.kind === 'review') return R.due[R.qIndex] ? R.due[R.qIndex].m : 'somar';
+   298→  if (R.kind === 'diag') return DIAG_LADDER[R.qIndex][0];
+   299→  return R.mode;
+   300→}
+   301→function nextQuestion() {
+   302→  R.misses = 0; R.locked = false;
+   303→  hideBubble();
+   304→  const p = P();
+   305→  let q, level;
+   306→  if (R.kind === 'review') {
+   307→    const card = R.due[R.qIndex];
+   308→    q = makeFromCard(card); level = card.lv;
+   309→  } else if (R.kind === 'diag') {
+   310→    const [m, lv] = DIAG_LADDER[R.qIndex];
+   311→    q = GENS[m](lv); level = lv;
+   312→  } else if (R.kind === 'duel') {
+   313→    const pool = Object.keys(MODES).filter((m) => m !== 'mistar' && modeUnlocked(m));
+   314→    R.mode = pick(pool.length ? pool : ['contar']);
+   315→    level = activeLevel(R.mode);
+   316→    q = GENS[R.mode](level);
+   317→  } else {
+   318→    level = activeLevel(currentMode());
+   319→    q = GENS[R.mode === 'mistar' ? 'mistar' : R.mode](level);
+   320→    if (R.kind === 'boss') q = GENS[pick(Object.keys(MODES).filter((m) => m !== 'mistar' && modeUnlocked(m)))](Math.min(MAX_LEVEL, level + 1));
+   321→  }
+   322→  R.current = q; R.level = level;
+   323→  $('#visual').innerHTML = q.visual || '';
+   324→  $('#visual').classList.toggle('naked', !q.visual);
+   325→  $('#equation').textContent = q.display;
+   326→  $('#equation').classList.toggle('small-text', String(q.display).length > 16);
+   327→  bindCounting(q);
+   328→  const box = $('#answers');
+   329→  box.innerHTML = '';
+   330→  box.classList.remove('locked');
+   331→  box.classList.toggle('n3', q.options.length === 3 && q.kind === 'cmp');
+   332→  shuffle(q.options).forEach((opt, i) => {
+   333→    const b = document.createElement('button');
+   334→    b.className = 'ans';
+   335→    b.textContent = String(opt);
+   336→    b.dataset.v = String(opt);
+   337→    b.dataset.idx = i;
+   338→    b.addEventListener('click', () => onAnswer(b));
+   339→    box.appendChild(b);
+   340→  });
+   341→  renderProgress();
+   342→  setTimeout(() => TTS.speak(q.tts), 260);
+   343→}
+   344→function renderProgress() {
+   345→  const p = P();
+   346→  const dots = $('#dots');
+   347→  if (dots) {
+   348→    dots.innerHTML = '';
+   349→    for (let i = 0; i < Math.min(R.total, 12); i++) {
+   350→      const d = document.createElement('i');
+   351→      d.className = 'dot' + (i < R.qIndex ? ' done' : i === R.qIndex ? ' now' : '');
+   352→      dots.appendChild(d);
+   353→    }
+   354→  }
+   355→  const chip = $('#level-chip');
+   356→  if (chip) {
+   357→    let txt;
+   358→    if (R.kind === 'review') txt = '📚 ' + t('review_btn', { n: R.total }) + ' · ' + (R.qIndex + 1) + '/' + R.total;
+   359→    else if (R.kind === 'boss') txt = '⚔️ ' + (R.qIndex + 1) + '/' + R.total;
+   360→    else if (R.kind === 'diag') txt = '🎯 ' + (R.qIndex + 1) + '/' + R.total;
+   361→    else if (R.kind === 'duel') {
+   362→      const d = R.duel;
+   363→      txt = d.a1 + ' ' + d.s1 + ' × ' + d.s2 + ' ' + d.a2 + ' · ' + (R.qIndex + 1) + '/' + R.total;
+   364→    } else txt = t('q_of', { a: Math.min(R.qIndex + 1, R.total), b: R.total }) + ' · ' + t('level') + ' ' + R.level + (G().diffMode === 'auto' ? '' : ' · ' + t('fixed_lbl'));
+   365→    chip.textContent = txt;
+   366→  }
+   367→  const combo = $('#combo-chip');
+   368→  if (combo) {
+   369→    combo.classList.toggle('hidden', R.combo < 2);
+   370→    combo.textContent = t('combo', { n: R.combo });
+   371→  }
+   372→  if (R.kind === 'duel') showBubble(R.duel.turn === 1 ? R.duel.a1 : R.duel.a2, t('duel_turn', { av: R.duel.turn === 1 ? R.duel.a1 : R.duel.a2 }));
+   373→}
+   374→
+   375→/* ---------- contagem tocável ---------- */
+   376→function bindCounting(q) {
+   377→  $$('#visual .obj.tappable').forEach((el) => {
+   378→    el.addEventListener('click', () => {
+   379→      ensureAudio();
+   380→      const i = Number(el.dataset.i);
+   381→      el.classList.add('counted');
+   382→      el.style.setProperty('--cnt', '"' + (i + 1) + '"');
+   383→      SFX.tap();
+   384→      const words = ['um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove', 'vinte'];
+   385→      TTS.speak(words[i] || String(i + 1));
+   386→    });
+   387→  });
+   388→}
+   389→
+   390→/* ---------- resposta ---------- */
+   391→function grantStars(n) {
+   392→  const p = P();
+   393→  p.stars += n; R.stars += n;
+   394→  saveState(); refreshChrome();
+   395→}
+   396→function onAnswer(btn) {
+   397→  ensureAudio();
+   398→  if (R.locked || !R.current) return;
+   399→  const v = btn.dataset.v;
+   400→  const correct = R.current.kind === 'cmp' ? v === String(R.current.answer) : Number(v) === R.current.answer;
+   401→  const mode = currentMode();
+   402→  const firstTry = R.misses === 0;
+   403→
+   404→  if (correct) {
+   405→    R.locked = true;
+   406→    const p = P();
+   407→    let gained = firstTry ? 2 : 1;
+   408→    if (R.kind === 'boss') gained *= 2;
+   409→    if (firstTry) {
+   410→      R.firsts++;
+   411→      p.firsts++;
+   412→      R.combo++;
+   413→      if (R.kind === 'diag') R.diagOK++;
+   414→      p.fatigue = 0;
+   415→      if (R.combo > (p.bestCombo || 0)) p.bestCombo = R.combo;
+   416→      if (R.combo === 3) missionEvent('combo');
+   417→      if (R.combo > 0 && R.combo % 5 === 0) { grantStars(2); toast('🔥 +2 ⭐'); }
+   418→      missionEvent('first');
+   419→    }
+   420→    grantStars(gained);
+   421→    p.rights++;
+   422→    bumpLvlStat(mode, R.level, true);
+   423→    if (mode === 'dividir') p.firstDiv = true;
+   424→    if (R.kind === 'review') { gradeReview(R.due[R.qIndex], true); missionEvent('review'); }
+   425→
+   426→    btn.classList.add('good');
+   427→    $('#answers').classList.add('locked');
+   428→    SFX.correct(); if (firstTry) SFX.star();
+   429→    confetti(firstTry ? 30 : 18);
+   430→    const pr = pick(I18N[LANG].praise);
+   431→    showBubble(mascotStage().emoji, pr);
+   432→    TTS.speak(pr);
+   433→
+   434→    // S07: adaptação por habilidade (fora de diagnóstico/duelo)
+   435→    if (R.kind === 'normal' || R.kind === 'boss') {
+   436→      const grew = recordResult(mode, firstTry);
+   437→      if (grew > 0) setTimeout(() => levelUpOverlay(mode, p.levels[mode]), 1500);
+   438→    }
+   439→    if (R.kind === 'duel' && firstTry) { if (R.duel.turn === 1) R.duel.s1++; else R.duel.s2++; }
+   440→
+   441→    R.history.push({ txt: R.current.display, ok: firstTry });
+   442→    R.qIndex++;
+   443→    setTimeout(() => {
+   444→      if (R.qIndex >= R.total) endRound();
+   445→      else { if (R.kind === 'duel') R.duel.turn = R.duel.turn === 1 ? 2 : 1; nextQuestion(); }
+   446→    }, 1600);
+   447→  } else {
+   448→    R.misses++;
+   449→    P().wrongs++;
+   450→    P().fatigue++;
+   451→    bumpLvlStat(mode, R.level, false);
+   452→    if ((R.kind === 'normal' || R.kind === 'duel') && R.current.f) {
+   453→      addReviewCard(mode === 'mistar' ? R.current.underlying || mode : mode, R.level, R.current.f);
+   454→    }
+   455→    SFX.wrong();
+   456→    btn.classList.add('bad'); btn.disabled = true;
+   457→    if (R.kind !== 'boss') {
+   458→      if (R.misses >= 2) {
+   459→        const good = $('#answers .ans[data-v="' + CSS.escape(String(R.current.answer)) + '"]');
+   460→        if (good) good.classList.add('hint');
+   461→        showBubble('👉', t('hint'));
+   462→        TTS.speak(t('hint'));
+   463→      } else {
+   464→        const r = pick(I18N[LANG].retry);
+   465→        showBubble('🙈', r); TTS.speak(r);
+   466→      }
+   467→    }
+   468→    if (P().fatigue >= 3 && !overlayOpen()) { P().fatigue = 0; setTimeout(breathingOverlay, 900); }
+   469→    saveState();
+   470→  }
+   471→}
+   472→function levelUpOverlay(mode, lv) {
+   473→  SFX.fanfare(); confetti(40);
+   474→  showOverlay('<div class="ov-emoji">🎉</div><h3>' + t('lvl_up', { n: lv, m: t('m_' + mode) }) + '</h3>' +
+   475→    '<button class="big-btn" data-close="1">' + t('ok') + '</button>');
+   476→}
+   477→function closeOverlay() { hideOverlay(); }
+   478→
+   479→/* ---------- fim de rodada ---------- */
+   480→function endRound() {
+   481→  const p = P();
+   482→  const today = fmtDate();
+   483→  // ofensiva S15
+   484→  if (p.lastPlay !== today) {
+   485→    p.streak = (p.lastPlay === yesterdayStr()) ? (p.streak || 0) + 1 : 1;
+   486→    p.lastPlay = today;
+   487→  }
+   488→  // semanas (S26)
+   489→  const wk = weekKey();
+   490→  let wrow = p.weeks.find((w) => w.k === wk);
+   491→  if (!wrow) { wrow = { k: wk, rounds: 0, rights: 0 }; p.weeks.push(wrow); p.weeks = p.weeks.slice(-8); }
+   492→  wrow.rounds++; wrow.rights += R.firsts;
+   493→  // rodadas e meta S11
+   494→  p.rounds++;
+   495→  if (!p.today) ensureMissions();
+   496→  p.today.rounds++;
+   497→  missionEvent('round');
+   498→  if (G().goalRounds > 0 && p.today.rounds >= G().goalRounds && !p.today.done) {
+   499→    p.today.done = true; grantStars(5); setTimeout(() => toast('🎯 ' + t('goal_done')), 800);
+   500→  }
+   501→  // chefe S18
+   502→  let bossMsg = '';
+   503→  if (R.kind === 'boss') {
+   504→    const won = R.firsts >= Math.ceil(R.total * 0.7);
+   505→    if (won) { p.bossWon = true; bossMsg = t('boss_win'); } else bossMsg = t('boss_lose');
+   506→  } else if (R.kind === 'normal' && p.rounds % 5 === 0) {
+   507→    p.bossReady = true; bossMsg = t('boss_ready');
+   508→  }
+   509→  checkAch();
+   510→  saveState(true);
+   511→
+   512→  show('end');
+   513→  SFX.fanfare();
+   514→  confetti(60);
+   515→  $('#end-title').textContent = R.stars >= 8 ? t('end_great') : t('end_good');
+   516→  const starsEl = $('#stars-earned');
+   517→  starsEl.innerHTML = '';
+   518→  for (let i = 0; i < Math.min(R.stars, 20); i++) {
+   519→    const sp = document.createElement('span');
+   520→    sp.className = 'star-pop'; sp.textContent = '⭐';
+   521→    sp.style.animationDelay = (i * 0.1) + 's';
+   522→    starsEl.appendChild(sp);
+   523→    if (i < 5) setTimeout(() => SFX.star(), 300 + i * 140);
+   524→  }
+   525→  let msg = R.stars === 1 ? t('end_star1') : t('end_stars', { n: R.stars });
+   526→  if (R.kind === 'duel') {
+   527→    const d = R.duel;
+   528→    msg = (d.s1 === d.s2) ? t('duel_tie') : t('duel_win', { av: d.s1 > d.s2 ? d.a1 : d.a2 }) + ' ' + d.a1 + ' ' + d.s1 + ' × ' + d.s2 + ' ' + d.a2;
+   529→  }
+   530→  if (bossMsg) msg += ' ' + bossMsg;
+   531→  if (R.kind === 'diag') {
+   532→    const sug = R.diagOK <= 2 ? 1 : R.diagOK <= 4 ? 2 : R.diagOK <= 6 ? 3 : R.diagOK === 7 ? 4 : 5;
+   533→    Object.keys(MODES).forEach((m) => { if (m !== 'mistar') p.levels[m] = sug; });
+   534→    p.assessed = true;
+   535→    msg = t('diag_done', { n: sug });
+   536→    saveState();
+   537→  }
+   538→  $('#end-msg').textContent = msg;
+   539→
+   540→  const hist = $('#end-history');
+   541→  hist.innerHTML = '<b>' + t('history') + '</b><div class="hist-list">' +
+   542→    R.history.map((h) => '<span class="hrow' + (h.ok ? ' ok' : ' no') + '">' + (h.ok ? '✅' : '🔁') + ' ' + h.txt + '</span>').join('') + '</div>';
+   543→  renderHome();
+   544→}
+   545→
+   546→/* ---------- conquistas (S14) ---------- */
+   547→const ACHS = [
+   548→  { id: 'a1', cond: (p) => p.stars >= 1 },
+   549→  { id: 'a2', cond: (p) => p.stars >= 50 },
+   550→  { id: 'a3', cond: (p) => p.stars >= 200 },
+   551→  { id: 'a4', cond: (p) => p.rounds >= 10 },
+   552→  { id: 'a5', cond: (p) => (p.bestCombo || 0) >= 5 },
+   553→  { id: 'a6', cond: (p) => !!p.firstDiv },
+   554→  { id: 'a7', cond: (p) => !!p.bossWon },
+   555→  { id: 'a8', cond: (p) => (p.streak || 0) >= 7 },
+   556→  { id: 'a9', cond: (p) => Object.keys(p.played || {}).length >= 12 },
+   557→  { id: 'a10', cond: (p) => (p.reviewWins || 0) >= 10 },
+   558→  { id: 'a11', cond: (p) => (p.missionsDone || 0) >= 5 },
+   559→  { id: 'a12', cond: (p) => !!p.firstBuy },
+   560→];
+   561→function checkAch() {
+   562→  const p = P();
+   563→  ACHS.forEach((a) => {
+   564→    if (!p.ach[a.id] && a.cond(p)) {
+   565→      p.ach[a.id] = 1;
+   566→      p.stars += 5;
+   567→      toast('🏅 ' + t('ach_unlock', { n: t(a.id) }));
+   568→      SFX.fanfare();
+   569→    }
+   570→  });
+   571→}
+   572→function renderAch() {
+   573→  const p = P();
+   574→  $('#ach-grid').innerHTML = ACHS.map((a) =>
+   575→    '<div class="ach-card' + (p.ach[a.id] ? ' got' : '') + '"><span class="ach-emoji">' + (p.ach[a.id] ? '🏅' : '🔒') + '</span>' +
+   576→    '<b>' + t(a.id) + '</b><small>' + t('ad' + a.id.slice(1)) + '</small></div>').join('');
+   577→}
+   578→
+   579→/* ---------- loja (S17) ---------- */
+   580→const SHOP_THEMES = [
+   581→  { id: 'classico', price: 0, key: 'th_classico' },
+   582→  { id: 'espaco', price: 0, key: 'th_espaco' },
+   583→  { id: 'jardim', price: 0, key: 'th_jardim' },
+   584→  { id: 'arcoiris', price: 60, key: 'th_arcoiris' },
+   585→];
+   586→const SHOP_HATS = [
+   587→  { id: '', price: 0, emoji: '', key: 'hat_none_d' },
+   588→  { id: '🧢', price: 30, emoji: '🧢', key: 'hat_bone' },
+   589→  { id: '🎀', price: 30, emoji: '🎀', key: 'hat_laco' },
+   590→  { id: '👑', price: 60, emoji: '👑', key: 'hat_coroa' },
+   591→];
+   592→function renderShop() {
+   593→  const p = P();
+   594→  $('#shop-stars').textContent = String(p.stars);
+   595→  const themeRow = $('#shop-themes');
+   596→  themeRow.innerHTML = SHOP_THEMES.map((th) => {
+   597→    const owned = th.price === 0 || p.owned.themes.includes(th.id);
+   598→    const inUse = (G().theme === th.id);
+   599→    return '<div class="shop-item th-' + th.id + '"><span class="swatch"></span><b>' + t(th.key) + '</b>' +
+   600→      (owned
+   601→        ? '<button class="mini-btn' + (inUse ? ' using' : '') + '" data-th="' + th.id + '">' + (inUse ? t('in_use') : t('equip')) + '</button>'
+   602→        : '<button class="mini-btn" data-buyth="' + th.id + '">' + t('buy') + ' ' + th.price + '⭐</button>') +
+   603→      '</div>';
+   604→  }).join('');
+   605→  const hatRow = $('#shop-hats');
+   606→  hatRow.innerHTML = SHOP_HATS.map((h) => {
+   607→    const owned = h.price === 0 || p.owned.hats.includes(h.id);
+   608→    const inUse = (p.hat || '') === h.id;
+   609→    return '<div class="shop-item"><span class="shop-emoji">' + (h.emoji || '🦊') + '</span><b>' + t(h.key) + '</b>' +
+   610→      (owned
+   611→        ? '<button class="mini-btn' + (inUse ? ' using' : '') + '" data-hat="' + h.id + '">' + (inUse ? t('in_use') : t('equip')) + '</button>'
+   612→        : '<button class="mini-btn" data-buyhat="' + h.id + '">' + t('buy') + ' ' + h.price + '⭐</button>') +
+   613→      '</div>';
+   614→  }).join('');
+   615→  const alb = $('#album-grid');
+   616→  alb.innerHTML = STICKERS.map((s, i) => '<span class="stk' + (p.stickers.includes(i) ? ' got' : '') + '">' + (p.stickers.includes(i) ? s : '❔') + '</span>').join('');
+   617→  $('#album-count').textContent = t('album', { a: p.stickers.length });
+   618→  $$('#shop-themes [data-th]').forEach((b) => b.addEventListener('click', () => { G().theme = b.dataset.th; saveState(); applySettings(); renderShop(); SFX.tap(); }));
+   619→  $$('#shop-themes [data-buyth]').forEach((b) => b.addEventListener('click', () => buyTheme(b.dataset.buyth)));
+   620→  $$('#shop-hats [data-hat]').forEach((b) => b.addEventListener('click', () => { P().hat = b.dataset.hat; saveState(); renderShop(); renderMascot(); SFX.tap(); }));
+   621→  $$('#shop-hats [data-buyhat]').forEach((b) => b.addEventListener('click', () => buyHat(b.dataset.buyhat)));
+   622→}
+   623→function buyTheme(id) {
+   624→  const th = SHOP_THEMES.find((x) => x.id === id); const p = P();
+   625→  if (!th || p.owned.themes.includes(id)) return;
+   626→  if (p.stars < th.price) { showBubble('😢', t('locked', { n: th.price - p.stars })); return; }
+   627→  p.stars -= th.price; p.owned.themes.push(id); p.firstBuy = true;
+   628→  G().theme = id;
+   629→  checkAch(); saveState(); applySettings(); renderShop(); renderMascot(); refreshChrome(); SFX.star(); confetti(20);
+   630→}
+   631→function buyHat(id) {
+   632→  const h = SHOP_HATS.find((x) => x.id === id); const p = P();
+   633→  if (!h || p.owned.hats.includes(id)) return;
+   634→  if (p.stars < h.price) { showBubble('😢', t('locked', { n: h.price - p.stars })); return; }
+   635→  p.stars -= h.price; p.owned.hats.push(id); p.firstBuy = true; p.hat = id;
+   636→  checkAch(); saveState(); renderShop(); renderMascot(); refreshChrome(); SFX.star(); confetti(20);
+   637→}
+   638→function buySticker() {
+   639→  const p = P();
+   640→  if (p.stars < 5) { showBubble('😢', t('locked', { n: 5 - p.stars })); return; }
+   641→  p.stars -= 5;
+   642→  const i = rand(0, STICKERS.length - 1);
+   643→  let msg;
+   644→  if (p.stickers.includes(i)) { p.stars += 2; msg = t('dup'); }
+   645→  else { p.stickers.push(i); msg = STICKERS[i] + '!'; }
+   646→  p.firstBuy = true;
+   647→  checkAch(); saveState(); renderShop(); refreshChrome();
+   648→  showOverlay('<div class="ov-emoji">' + STICKERS[i] + '</div><h3>' + msg + '</h3><button class="big-btn" data-close="1">' + t('ok') + '</button>');
+   649→  SFX.fanfare(); confetti(24);
+   650→}
+   651→
+   652→/* ---------- overlays de fadiga (S10) e pausa (S28) ---------- */
+   653→let breatheTimer = null;
+   654→function breathingOverlay() {
+   655→  showOverlay('<div class="ov-emoji breathe-ball" id="ball">🫧</div><h3>' + t('breathe') + '</h3>' +
+   656→    '<p id="breathe-lbl">' + t('breathe_in') + '</p>' +
+   657→    '<button class="big-btn" id="btn-breathe-done" disabled>' + t('breathe_done') + '</button>');
+   658→  let phase = 0, cycles = 0;
+   659→  const ball = $('#ball');
+   660→  if (!document.body.classList.contains('calmo')) ball.classList.add('anim');
+   661→  breatheTimer = setInterval(() => {
+   662→    phase = 1 - phase;
+   663→    $('#breathe-lbl').textContent = phase ? t('breathe_out') : t('breathe_in');
+   664→    if (!phase) { cycles++; if (cycles >= 2) { clearInterval(breatheTimer); const b = $('#btn-breathe-done'); if (b) b.disabled = false; } }
+   665→  }, 4000);
+   666→  $('#btn-breathe-done').addEventListener('click', () => { clearInterval(breatheTimer); hideOverlay(); TTS.speak(t('breathe_done')); });
+   667→}
+   668→function breakOverlay() {
+   669→  TTS.stop();
+   670→  showOverlay('<div class="ov-emoji">💤🦊</div><h3>' + t('break_time') + '</h3><p>' + t('break_msg') + '</p>' +
+   671→    '<button class="big-btn" id="btn-break-done">' + t('break_done') + '</button>');
+   672→  $('#btn-break-done').addEventListener('click', () => { sessionSec = 0; hideOverlay(); });
+   673→}
+   674→
+   675→/* ---------- perfis (S27) ---------- */
+   676→function renderProfilePop() {
+   677→  const wrap = $('#pop-profile');
+   678→  wrap.innerHTML = '<b>' + t('who') + '</b>' + DB.profiles.map((pf) =>
+   679→    '<button class="prof-row' + (pf.id === DB.activeId ? ' cur' : '') + '" data-pid="' + pf.id + '">' +
+   680→    '<span class="pf-av">' + pf.avatar + '</span><span class="pf-name">' + pf.name + '</span><span class="pf-st">⭐ ' + pf.stars + '</span></button>').join('') +
+   681→    (DB.profiles.length < 4
+   682→      ? '<div class="prof-add"><input id="new-prof-name" maxlength="14" placeholder="' + t('name_ph') + '">' +
+   683→        '<div class="av-row">' + AVATARS.map((a, i) => '<button class="av' + (i === 0 ? ' sel' : '') + '" data-av="' + a + '">' + a + '</button>').join('') + '</div>' +
+   684→        '<button class="mini-btn" id="btn-add-prof">' + t('add_profile') + '</button></div>'
+   685→      : '<small class="max-note">' + t('max4') + '</small>');
+   686→  $$('#pop-profile .prof-row').forEach((b) => b.addEventListener('click', () => {
+   687→    DB.activeId = b.dataset.pid; saveState(true);
+   688→    closePopovers(); renderHome(); applyLang(); toast(t('switch_to', { n: P().name })); SFX.tap();
+   689→  }));
+   690→  $$('#pop-profile .av').forEach((b) => b.addEventListener('click', () => {
+   691→    $$('#pop-profile .av').forEach((x) => x.classList.remove('sel'));
+   692→    b.classList.add('sel'); SFX.tap();
+   693→  }));
+   694→  const add = $('#btn-add-prof');
+   695→  if (add) add.addEventListener('click', () => {
+   696→    const name = ($('#new-prof-name').value || '').trim() || ('Jogador ' + (DB.profiles.length + 1));
+   697→    const av = ($('#pop-profile .av.sel') || { dataset: { av: '🦊' } }).dataset.av;
+   698→    DB.profiles.push(newProfile(null, name, av));
+   699→    DB.activeId = DB.profiles[DB.profiles.length - 1].id;
+   700→    saveState(true);
+   701→    closePopovers(); renderHome(); refreshChrome(); SFX.fanfare();
+   702→  });
+   703→}
+   704→function closePopovers() { $$('.popover').forEach((p) => p.classList.add('hidden')); }
+   705→
+   706→/* ---------- tela cheia (popup → janela nativa; página → Fullscreen API) ---------- */
+   707→function toggleFullscreen() {
+   708→  ensureAudio(); SFX.tap();
+   709→  if (!IS_PAGE && HAS_EXT) {
+   710→    try {
+   711→      chrome.windows.create({ url: chrome.runtime.getURL('game.html'), type: 'popup', focused: true, state: 'fullscreen' }, () => { void chrome.runtime.lastError; });
+   712→      return;
+   713→    } catch (e) { /* cai para a API */ }
+   714→  }
+   715→  try {
+   716→    if (document.fullscreenElement) { if (document.exitFullscreen) document.exitFullscreen().catch(() => {}); }
+   717→    else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+   718→  } catch (e) { /* ignora */ }
+   719→}
+   720→function openOptions() {
+   721→  ensureAudio(); SFX.tap();
+   722→  const url = HAS_EXT ? chrome.runtime.getURL('options.html') : 'options.html';
+   723→  if (HAS_EXT) chrome.tabs ? chrome.tabs.create({ url }) : window.open(url, '_blank');
+   724→  else window.open(url, '_blank');
+   725→}
+   726→
+   727→/* ==================== inicialização ==================== */
+   728→function bindStatic() {
+   729→  $('#btn-home').addEventListener('click', () => { TTS.stop(); SFX.tap(); renderHome(); show('home'); });
+   730→  $('#btn-mute').addEventListener('click', () => {
+   731→    G().mute = !G().mute; applySettings(); saveState();
+   732→    if (G().mute) TTS.stop(); else { ensureAudio(); SFX.tap(); }
+   733→  });
+   734→  $('#btn-full').addEventListener('click', toggleFullscreen);
+   735→  $('#btn-gear').addEventListener('click', openOptions);
+   736→  $('#btn-profile').addEventListener('click', () => { SFX.tap(); renderProfilePop(); $('#pop-profile').classList.toggle('hidden'); });
+   737→  $('#btn-again').addEventListener('click', () => { ensureAudio(); SFX.tap(); R.kind === 'duel' ? startDuelSetup() : startRound(R.mode || 'somar'); });
+   738→  $('#btn-menu').addEventListener('click', () => { TTS.stop(); SFX.tap(); renderHome(); show('home'); });
+   739→  $('#btn-repeat').addEventListener('click', () => { ensureAudio(); SFX.tap(); if (R.current) TTS.speak(R.current.tts); });
+   740→  $('#btn-shop').addEventListener('click', () => { SFX.tap(); renderShop(); show('shop'); });
+   741→  $('#btn-ach').addEventListener('click', () => { SFX.tap(); renderAch(); show('ach'); });
+   742→  $('#shop-back').addEventListener('click', () => { SFX.tap(); renderHome(); show('home'); });
+   743→  $('#ach-back').addEventListener('click', () => { SFX.tap(); renderHome(); show('home'); });
+   744→  $('#btn-sticker').addEventListener('click', () => { ensureAudio(); buySticker(); });
+   745→  $('#sp-review').addEventListener('click', () => { ensureAudio(); SFX.tap(); startReview(); });
+   746→  $('#sp-boss').addEventListener('click', () => { ensureAudio(); SFX.tap(); startBoss(); });
+   747→  $('#sp-diag').addEventListener('click', () => { ensureAudio(); SFX.tap(); startDiag(); });
+   748→  $('#sp-duel').addEventListener('click', startDuelSetup);
+   749→  $('#btn-duel-go').addEventListener('click', () => {
+   750→    ensureAudio(); SFX.tap();
+   751→    const a1 = ($('#duel-av1 .av.sel') || { textContent: '🦊' }).textContent;
+   752→    const a2 = ($('#duel-av2 .av.sel') || { textContent: '🐼' }).textContent;
+   753→    startDuel(a1, a2);
+   754→  });
+   755→  $('#duel-back').addEventListener('click', () => { SFX.tap(); renderHome(); show('home'); });
+   756→  $$('.diff-chip').forEach((chip) => chip.addEventListener('click', () => {
+   757→    ensureAudio(); SFX.tap();
+   758→    G().diffMode = chip.dataset.d === 'auto' ? 'auto' : Number(chip.dataset.d);
+   759→    saveState(); renderDiffChips();
+   760→  }));
+   761→  // CSP: overlays usam data-close em vez de onclick inline
+   762→  document.addEventListener('click', (e) => {
+   763→    const b = e.target && e.target.closest ? e.target.closest('[data-close]') : null;
+   764→    if (b) closeOverlay();
+   765→  });
+   766→  const bc = $('#btn-close');
+   767→  if (bc) {
+   768→    if (IS_PAGE && HAS_EXT) bc.classList.remove('hidden');
+   769→    bc.addEventListener('click', () => {
+   770→      SFX.tap();
+   771→      try { window.close(); } catch (e) { /* ignora */ }
+   772→      setTimeout(() => {
+   773→        try { if (HAS_EXT && chrome.windows) chrome.windows.remove(chrome.windows.WINDOW_ID_CURRENT, () => void chrome.runtime.lastError); } catch (e) { /* ignora */ }
+   774→      }, 160);
+   775→    });
+   776→  }
+   777→  document.addEventListener('pointerdown', ensureAudio);
+   778→  document.addEventListener('keydown', onKey);
+   779→}
+   780→
+   781→/* ---------- teclado (S20) ---------- */
+   782→function onKey(e) {
+   783→  if (overlayOpen()) {
+   784→    if (e.key === 'Enter') { const b = $('#overlay-card .big-btn:not([disabled])'); if (b) b.click(); }
+   785→    return;
+   786→  }
+   787→  if ($('#screen-game').classList.contains('active')) {
+   788→    if (e.key >= '1' && e.key <= '4') { const b = $$('#answers .ans')[Number(e.key) - 1]; if (b) b.click(); }
+   789→    else if (e.key === 'Enter' || e.key.toLowerCase() === 'r') { if (R.current) TTS.speak(R.current.tts); }
+   790→    else if (e.key.toLowerCase() === 'h') $('#btn-home').click();
+   791→  } else if (e.key.toLowerCase() === 'm') $('#btn-mute').click();
+   792→  if (e.key === 'Escape') closePopovers();
+   793→}
+   794→
+   795→/* ---------- relógio de sessão (S28) ---------- */
+   796→setInterval(() => {
+   797→  if (document.hidden || overlayOpen()) return;
+   798→  const active = $('#screen-game') && $('#screen-game').classList.contains('active');
+   799→  if (!active) return;
+   800→  sessionSec++;
+   801→  const p = P(); if (p) p.playSec++;
+   802→  if (sessionSec % 30 === 0) saveState();
+   803→  const lim = G().sessionLimit;
+   804→  if (lim > 0 && sessionSec >= lim * 60) breakOverlay();
+   805→}, 1000);
+   806→
+   807→/* ---------- boot ---------- */
+   808→async function boot() {
+   809→  await initDB();
+   810→  TTS.init();
+   811→  applyLang();
+   812→  applySettings();
+   813→  bindStatic();
+   814→  ensureMissions();
+   815→  renderHome();
+   816→  show('home');
+   817→  if (HAS_EXT && typeof chrome !== 'undefined' && chrome.tabs) {
+   818→    try { chrome.runtime.sendMessage('cc-page-ready', () => void chrome.runtime.lastError); } catch (e) { /* ignora */ }
+   819→  }
+   820→  // S32: adotar mudanças remotas
+   821→  try {
+   822→    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged && G().sync) {
+   823→      chrome.storage.onChanged.addListener((ch, area) => {
+   824→        if (area === 'sync' && ch.cc_state_sync) {
+   825→          const remote = parseDB(JSON.stringify(ch.cc_state_sync.newValue));
+   826→          if (remote && remote.updatedAt > DB.updatedAt + 500) { DB = remote; renderHome(); }
+   827→        }
+   828→      });
+   829→    }
+   830→  } catch (e) { /* ignora */ }
+   831→}
+   832→window.CC = { closeOverlay, renderHome, refreshChrome };
+   833→boot();
+   834→

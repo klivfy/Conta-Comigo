@@ -63,7 +63,7 @@ const MODES = {
 function newProfile(id, name, avatar) {
   return {
     id: id || ('p' + Date.now() + rand(100, 999)), name: name || 'Jogador', avatar: avatar || '🦊',
-    stars: 0, levels: {}, recent: {}, review: [],
+    stars: 0, points: 0, bestPts: {}, levels: {}, recent: {}, review: [],
     streak: 0, lastPlay: '', rounds: 0, firsts: 0, rights: 0, wrongs: 0, playSec: 0,
     bestCombo: 0, fatigue: 0, ach: {}, missions: { d: '', list: [] }, missionsDone: 0,
     owned: { themes: ['classico'], hats: [] }, hat: '', stickers: [],
@@ -75,7 +75,7 @@ const DEFAULT_SETTINGS = {
   lang: 'pt', theme: 'classico', hc: false, dys: false, calmo: null,
   mute: false, volume: 0.9, vRate: 0.95, vPitch: 1.15, vVoice: '',
   diffMode: 'auto', goalRounds: 3, sessionLimit: 15, sync: false,
-  unlockAll: false, newtabOn: true,
+  unlockAll: false, newtabOn: true, timer: true,
 };
 let DB = { v: 2, updatedAt: 0, activeId: '', profiles: [], settings: Object.assign({}, DEFAULT_SETTINGS) };
 function P() { return DB.profiles.find((p) => p.id === DB.activeId) || DB.profiles[0]; }
@@ -99,11 +99,20 @@ function parseDB(raw) {
     if (!d || typeof d !== 'object') return null;
     if (d.v === 2 && Array.isArray(d.profiles) && d.profiles.length) {
       d.settings = Object.assign({}, DEFAULT_SETTINGS, d.settings || {});
+      normalizeDB(d);
       return d;
     }
     if (d.totalStars != null || d.levels) return migrateV1(d); // v1 → v2
   } catch (e) { /* ignora */ }
   return null;
+}
+/* v2.2: garante campos novos de pontos em perfis antigos (migração suave) */
+function normalizeDB(d) {
+  (d.profiles || []).forEach((p) => {
+    p.points = Number(p.points) || 0;
+    p.bestPts = (p.bestPts && typeof p.bestPts === 'object') ? p.bestPts : {};
+  });
+  return d;
 }
 function loadRaw() {
   try {
@@ -141,6 +150,7 @@ async function initDB() {
   if (!d.profiles.length) d.profiles.push(newProfile('p1', 'Jogador', '🦊'));
   if (!d.profiles.find((p) => p.id === d.activeId)) d.activeId = d.profiles[0].id;
   d.settings = Object.assign({}, DEFAULT_SETTINGS, d.settings || {});
+  normalizeDB(d);
   DB = d;
   return DB;
 }
@@ -480,6 +490,14 @@ function activeLevel(mode) {
   const p = P();
   if (G().diffMode !== 'auto') return clamp(G().diffMode | 0, 1, MAX_LEVEL);
   return clamp((p.levels[mode] || 1) | 0, 1, MAX_LEVEL);
+}
+/* v2.2: orçamento de tempo por questão (segundos) — generoso p/ pequenos:
+   nível 1 = 30s · nível 5 = 22s; modos com muitos visuais/história ganham +6s */
+const SLOW_MODES = ['contar', 'historia', 'dinheiro', 'dividir'];
+function timeBudget(level, mode) {
+  let s = 30 - 2 * (clamp(level, 1, MAX_LEVEL) - 1);
+  if (SLOW_MODES.indexOf(mode) >= 0) s += 6;
+  return s;
 }
 /* S07: janela móvel das últimas 5 respostas do modo — sobe/desce por habilidade */
 function recordResult(mode, firstTry) {

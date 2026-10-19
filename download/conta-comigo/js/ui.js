@@ -11,7 +11,7 @@ const HAS_EXT = typeof chrome !== 'undefined' && !!chrome.runtime && !!chrome.ru
 /* ---------- estado da rodada ---------- */
 let R = {
   kind: 'normal', mode: null, total: QUESTIONS_PER_ROUND, qIndex: 0, misses: 0,
-  firsts: 0, stars: 0, combo: 0, history: [], due: [], diagI: 0, diagOK: 0,
+  firsts: 0, stars: 0, points: 0, newRecord: false, combo: 0, history: [], due: [], diagI: 0, diagOK: 0,
   duel: null, unlockedShown: [], locked: false,
 };
 let sessionSec = 0;
@@ -207,6 +207,7 @@ function renderModes() {
 
 /* ---------- tela inicial completa ---------- */
 function renderHome() {
+  Timer.hide();
   renderMascot(); renderWeekStrip(); renderMissions(); renderGoal(); renderModes();
   const p = P();
   const due = dueReviews().length;
@@ -231,9 +232,11 @@ function renderDiffChips() {
 function resetRound(kind, mode, total) {
   R = {
     kind, mode: mode || null, total: total || QUESTIONS_PER_ROUND, qIndex: 0, misses: 0,
-    firsts: 0, stars: 0, combo: 0, history: [], due: [], diagI: 0, diagOK: 0,
+    firsts: 0, stars: 0, points: 0, newRecord: false, combo: 0, history: [], due: [], diagI: 0, diagOK: 0,
     duel: R.duel, unlockedShown: [], locked: false,
   };
+  Timer.hide();
+  const chip = $('#pts-chip'); if (chip) chip.classList.add('hidden');
 }
 function startRound(mode) {
   TTS.stop();
@@ -339,6 +342,7 @@ function nextQuestion() {
     box.appendChild(b);
   });
   renderProgress();
+  Timer.start(timeBudget(level, currentMode()));
   setTimeout(() => TTS.speak(q.tts), 260);
 }
 function renderProgress() {
@@ -372,6 +376,80 @@ function renderProgress() {
   if (R.kind === 'duel') showBubble(R.duel.turn === 1 ? R.duel.a1 : R.duel.a2, t('duel_turn', { av: R.duel.turn === 1 ? R.duel.a1 : R.duel.a2 }));
 }
 
+/* ---------- cronômetro de pontos (v2.2) ----------
+   Barra suave por questão: pausa em overlays/aba oculta/tela inativa,
+   NUNCA pune — ao esgotar só zera o bônus de rapidez. Avaliação (diag)
+   e duelo ficam sem cronômetro (menos pressão). */
+const Timer = {
+  iv: null, totalMs: 0, leftMs: 0, last: 0, active: false,
+  allowed() { return !!G().timer && R.kind !== 'diag' && R.kind !== 'duel'; },
+  start(sec) {
+    this.stop();
+    const wrap = $('#timer-wrap');
+    if (!wrap) return;
+    if (!this.allowed()) { wrap.classList.add('hidden'); this.totalMs = 0; this.leftMs = 0; return; }
+    this.totalMs = sec * 1000; this.leftMs = this.totalMs; this.last = Date.now(); this.active = true;
+    wrap.classList.remove('hidden', 'warn', 'low', 'out');
+    wrap.setAttribute('aria-label', t('s_timer'));
+    this.paint();
+    this.iv = setInterval(() => this.tick(), 200);
+  },
+  paused() {
+    const scr = $('#screen-game');
+    return !scr || !scr.classList.contains('active') || overlayOpen() || document.hidden ||
+      $('#answers').classList.contains('locked');
+  },
+  tick() {
+    if (!this.active) return;
+    const now = Date.now(); const dt = now - this.last; this.last = now;
+    if (!this.paused()) this.leftMs = Math.max(0, this.leftMs - dt);
+    this.paint();
+    if (this.leftMs <= 0) {
+      this.active = false; clearInterval(this.iv); this.iv = null;
+      const w = $('#timer-wrap'); if (w) w.classList.add('out');
+      if (!R.locked && R.current) showBubble('⏰', t('time_over'));
+    }
+  },
+  paint() {
+    const w = $('#timer-wrap'); if (!w) return;
+    const pct = this.totalMs ? Math.round(100 * this.leftMs / this.totalMs) : 0;
+    const bar = $('#timer-bar');
+    if (bar) bar.style.width = pct + '%';
+    w.setAttribute('aria-valuenow', String(pct));
+    w.classList.toggle('warn', pct < 50 && pct >= 25);
+    w.classList.toggle('low', pct < 25 && pct > 0);
+  },
+  stop() { this.active = false; if (this.iv) { clearInterval(this.iv); this.iv = null; } },
+  hide() { this.stop(); const w = $('#timer-wrap'); if (w) w.classList.add('hidden'); },
+  ratio() { return this.totalMs ? clamp(this.leftMs / this.totalMs, 0, 1) : 0; },
+};
+
+/* ---------- pontos por rapidez e precisão (v2.2) ----------
+   Acerto de primeira: 100×nível + até 60×nível conforme o tempo restante.
+   Acerto após errar: 40×nível (precisão conta, rapidez não). Chefe: dobro. */
+function grantPts(pts) {
+  R.points += pts;
+  const p = P();
+  p.points = (p.points || 0) + pts;
+  const chip = $('#pts-chip');
+  if (chip) {
+    chip.classList.remove('hidden');
+    chip.querySelector('b').textContent = String(R.points);
+    chip.classList.remove('bump'); void chip.offsetWidth; chip.classList.add('bump');
+  }
+  ptsPop(pts);
+  saveState();
+}
+function ptsPop(pts) {
+  const host = $('#screen-game'); if (!host) return;
+  const el = document.createElement('span');
+  el.className = 'pts-pop';
+  el.textContent = '+' + pts + ' ⚡';
+  el.addEventListener('animationend', () => el.remove());
+  host.appendChild(el);
+  setTimeout(() => { if (el.parentNode) el.remove(); }, 1400);
+}
+
 /* ---------- contagem tocável ---------- */
 function bindCounting(q) {
   $$('#visual .obj.tappable').forEach((el) => {
@@ -403,6 +481,7 @@ function onAnswer(btn) {
 
   if (correct) {
     R.locked = true;
+    const speedRatio = Timer.ratio();
     const p = P();
     let gained = firstTry ? 2 : 1;
     if (R.kind === 'boss') gained *= 2;
@@ -422,6 +501,15 @@ function onAnswer(btn) {
     bumpLvlStat(mode, R.level, true);
     if (mode === 'dividir') p.firstDiv = true;
     if (R.kind === 'review') { gradeReview(R.due[R.qIndex], true); missionEvent('review'); }
+
+    // v2.2: pontos por rapidez + precisão (fora de diagnóstico e duelo)
+    if (R.kind !== 'diag' && R.kind !== 'duel') {
+      const mult = clamp(R.level || 1, 1, MAX_LEVEL);
+      let pts = firstTry ? Math.round(100 * mult + 60 * mult * speedRatio) : 40 * mult;
+      if (R.kind === 'boss') pts *= 2;
+      grantPts(pts);
+    }
+    Timer.stop();
 
     btn.classList.add('good');
     $('#answers').classList.add('locked');
@@ -512,6 +600,7 @@ function endRound() {
   show('end');
   SFX.fanfare();
   confetti(60);
+  Timer.hide();
   $('#end-title').textContent = R.stars >= 8 ? t('end_great') : t('end_good');
   const starsEl = $('#stars-earned');
   starsEl.innerHTML = '';
@@ -536,6 +625,23 @@ function endRound() {
     saveState();
   }
   $('#end-msg').textContent = msg;
+
+  // v2.2: recorde de pontos por modo + destaque na tela final
+  if (R.kind === 'normal' || R.kind === 'boss' || R.kind === 'review') {
+    const key = R.kind === 'boss' ? 'chefe' : R.kind === 'review' ? 'revisao' : (R.mode || 'somar');
+    const prev = (p.bestPts || {})[key] || 0;
+    R.newRecord = R.points > 0 && R.points > prev;
+    if (R.newRecord) { p.bestPts = p.bestPts || {}; p.bestPts[key] = R.points; }
+    saveState(true); // grava o recorde imediatamente (saveState anterior acontece antes dele)
+  }
+  const endPts = $('#end-pts');
+  if (endPts) {
+    if (R.points > 0) {
+      endPts.classList.remove('hidden');
+      endPts.innerHTML = t('end_pts', { n: R.points }) +
+        (R.newRecord ? ' <span class="rec">🏆 ' + t('end_record') + '</span>' : '');
+    } else endPts.classList.add('hidden');
+  }
 
   const hist = $('#end-history');
   hist.innerHTML = '<b>' + t('history') + '</b><div class="hist-list">' +
@@ -677,7 +783,7 @@ function renderProfilePop() {
   const wrap = $('#pop-profile');
   wrap.innerHTML = '<b>' + t('who') + '</b>' + DB.profiles.map((pf) =>
     '<button class="prof-row' + (pf.id === DB.activeId ? ' cur' : '') + '" data-pid="' + pf.id + '">' +
-    '<span class="pf-av">' + pf.avatar + '</span><span class="pf-name">' + pf.name + '</span><span class="pf-st">⭐ ' + pf.stars + '</span></button>').join('') +
+    '<span class="pf-av">' + pf.avatar + '</span><span class="pf-name">' + pf.name + '</span><span class="pf-st">⭐ ' + pf.stars + ' · ⚡ ' + (pf.points || 0) + '</span></button>').join('') +
     (DB.profiles.length < 4
       ? '<div class="prof-add"><input id="new-prof-name" maxlength="14" placeholder="' + t('name_ph') + '">' +
         '<div class="av-row">' + AVATARS.map((a, i) => '<button class="av' + (i === 0 ? ' sel' : '') + '" data-av="' + a + '">' + a + '</button>').join('') + '</div>' +

@@ -1,5 +1,5 @@
 'use strict';
-/* ==================== Conta Comigo v2.1.1 — background (MV3) ====================
+/* ==================== Conta Comigo v2.2 — background (MV3) ====================
    O ícone da extensão NÃO tem mais popup: o clique dispara
    chrome.action.onClicked e abre SEMPRE o jogo numa janela nativa própria
    em tela cheia (type:'popup' + state:'fullscreen'). Se a janela do jogo
