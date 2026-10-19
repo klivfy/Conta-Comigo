@@ -234,3 +234,22 @@ Stage Summary:
 - Extensão v2.4.0 entregue: voz cordial Fase 1 completa (custo zero, 100% local, privacidade intacta) + 19 melhorias de alto impacto da planilha implementadas.
 - Scripts reutilizáveis atualizados: build_packages.py (parametrizável) e scan_csp.py (2.4.0).
 - QA: qa/v24-01-home.png, v24-02-es-erro.png, v24-03-home.png, v24-04-opcoes-voz.png, v24-05-voz-perfil.png.
+
+---
+Task ID: 12
+Agent: Z.ai (agente principal)
+Task: Resposta a "Não notei nenhuma melhoria real, o que houve com o meu pedido expresso?" — diagnosticar a causa e tornar a melhoria VISÍVEL/VERIFICÁVEL (v2.4.1).
+
+Work Log:
+- Diagnóstico: a v2.4.0 (voz cordial Fase 1 + 19 itens de alto impacto) estava implementada, testada e empacotada (Task 11), MAS a versão só aparecia nas opções (atrás do portão parental) e extensões descompactadas NÃO se atualizam sozinhas — se o navegador ainda tem a build antiga carregada, nada muda na tela. Falha de visibilidade minha, não de implementação.
+- Correção v2.4.1 (surgical patch): selo de versão sempre visível no topo do jogo (ao lado de 🔥), preenchido dinamicamente via chrome.runtime.getManifest() com fallback 2.4.1 (window.ccVersion em boot.js — fonte única); options.js deixou de ter versão fixa no código; CSS .cc-ver (chip discreto) + regra html:not(.html-page) .cc-ver{display:none} para o popup 400×600.
+- Bug pego no QA: o selo estourava o topbar do popup (scrollWidth 452 > 400) — resolvido com o escopo CSS acima; popup revalidado 400/400.
+- Manifest 2.4.1; build_packages.py VERSION=2.4.1 (zips antigos 2.4.0 removidos automaticamente); scan_csp.py atualizado para 2.4.1 — 18/18 verificações limpas nas pastas e zips.
+- QA agent-browser: selo "v2.4.1" visível no jogo (page-mode) e ausente no popup sem overflow; rodada completa de Contar jogada até o fim — elogio cordial disparou ao vivo ("Uau, que mente rápida, Jogador!" = biblioteca v2.4 + nome do perfil), fim de rodada OK, console/erros limpos; demo.html com novo painel laranja "⚠️ A extensão parece igual? Confira a versão em 1 segundo"; sem erros.
+- Docs: demo.html (painel de atualização + zips 2.4.1), download/README.md (seção "Como atualizar e confirmar" no topo), loja/README-publicacao.md (2.4.1).
+- Capturas: qa/v241-01-home-selo.png, v241-02-jogo-selo.png, v241-03-fim-rodada.png, v241-04-popup-selo.png, v241-05-jogo-final.png, v241-06-demo-atualizar.png.
+
+Stage Summary:
+- v2.4.1 entregue: mesmo jogo da v2.4.0 + selo de versão visível e guia de atualização — o usuário consegue confirmar em 1 segundo qual build está no navegador.
+- Entregáveis: download/conta-comigo-chrome-2.4.1.zip, download/conta-comigo-firefox-2.4.1.zip, pastas conta-comigo/ e conta-comigo-firefox/.
+- Lição: toda mudança futura deve incluir verificação visual do SELO na QA (prova de que a build nova está rodando).

@@ -498,3 +498,21 @@ body.rm *, body.rm *::before, body.rm *::after {
 .pp-row label { font-size: 12px; font-weight: 700; }
 .pp-row input[type="range"] { width: 120px; }
 .pp-row select { max-width: 230px; font-family: inherit; font-size: 13px; padding: 7px 9px; border-radius: 10px; border: 2px solid var(--line); background: var(--card); color: var(--ink); }
+
+/* v2.4.1: selo de versão no topo — confirmação instantânea da build em execução
+   (evita a dúvida "estou mesmo com a versão nova?": versões descompactadas NÃO
+   se atualizam sozinhas no navegador) */
+.cc-ver {
+  align-self: center;
+  font-size: 11px; font-weight: 800; letter-spacing: .3px;
+  line-height: 1; white-space: nowrap; user-select: none; cursor: default;
+  color: var(--ink-soft);
+  background: rgba(var(--sh), .06);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 9px;
+}
+.cc-ver:hover { color: var(--ink); border-color: var(--ink-soft); }
+/* popup 400x600 (sem classe html-page): espaço curto — selo some no mini-molde,
+   continua visível no jogo em tela cheia (page-mode) e nas opções */
+html:not(.html-page) .cc-ver { display: none; }

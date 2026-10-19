@@ -1,17 +1,26 @@
 # Conta Comigo — Arquivos gerados
 
 Extensão de navegador (Chrome + Firefox) de matemática lúdica para crianças a partir de 4 anos.
-Versão atual: **v2.4.0**
+Versão atual: **v2.4.1**
+
+## ⚠️ A extensão parece igual? Como atualizar e confirmar
+
+Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo parece o de antes, o navegador provavelmente ainda está com a build antiga. Para confirmar em 1 segundo: abra o jogo e olhe o **topo da tela** — desde a v2.4.1 há um **selo de versão** (ex.: `v2.4.1`) ao lado de 🔥. Sem selo = build anterior à 2.4.1.
+
+**Atualizar (Chrome/Edge/Brave):** `chrome://extensions` → *Remover* a extensão antiga → descompacte o zip 2.4.1 → *Carregar sem compactação* na pasta descompactada.
+**Atualizar (Firefox):** `about:debugging#/runtime/this-firefox` → *Recarregar* (ou remova e carregue o manifest do zip 2.4.1 de novo).
+O progresso das crianças (estrelas, pontos, perfis, senha dos responsáveis) fica salvo no navegador — não se perde ao trocar a build.
 
 ## Extensão (instalação manual)
 
 | Arquivo | Uso |
 |---|---|
-| `conta-comigo-chrome-2.4.0.zip` | Pacote para Chrome/Edge/Brave (Manifest V3, service worker) |
-| `conta-comigo-firefox-2.4.0.zip` | Pacote para Firefox (event page + `browser_specific_settings`) |
+| `conta-comigo-chrome-2.4.1.zip` | Pacote para Chrome/Edge/Brave (Manifest V3, service worker) |
+| `conta-comigo-firefox-2.4.1.zip` | Pacote para Firefox (event page + `browser_specific_settings`) |
 
 - Instalação e novidades: abra `conta-comigo/demo.html` no navegador.
 - Pasta `conta-comigo/` = código-fonte da build Chromium; pasta `conta-comigo-firefox/` = build Firefox.
+- Novo na v2.4.1: **selo de versão visível no topo do jogo** (confirmação instantânea da build) e versão dinâmica nas opções.
 - O que há de novo na v2.4.0: **voz cordial (Fase 1 do estudo)** — seleção automática de vozes naturais/neurais do sistema, prosódia por pontuação, biblioteca de falas afetuosas com o nome da criança (PT/EN/ES), voz por perfil, botão ouvir amostra, narração/efeitos separados, tempo extra por questão, reduzir movimentos, medalhas de persistência e modo sem loja.
 - O que houve na v2.3.0: portão parental por senha (criada pelo adulto responsável em onboarding na primeira sessão, com lembrete de segurança, bloqueio progressivo após erros, troca de senha e redefinição de emergência) — a central de configurações deixou de ser aberta por conta de multiplicação.
 

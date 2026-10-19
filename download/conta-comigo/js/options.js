@@ -198,7 +198,7 @@ function renderOptions() {
   $('#set-sync').checked = !!g.sync;
   renderSec();
   $('#imp-area').placeholder = t('imp_ph');
-  $('#opt-version').textContent = t('version') + ': 2.4.0';
+  $('#opt-version').textContent = t('version') + ': ' + (window.ccVersion ? window.ccVersion() : '2.4.1');
 }
 
 /* ---------- painel (S26 + S09) ---------- */

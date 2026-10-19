@@ -1022,6 +1022,9 @@ async function boot() {
   ensureMissions();
   renderHome();
   show('home');
+  // v2.4.1: selo de versão visível no topo — confirmação instantânea da build
+  const vb = $('#cc-ver');
+  if (vb) vb.textContent = 'v' + (window.ccVersion ? window.ccVersion() : '2.4.1');
   // v2.4 (A-198): saudação cordial com o nome — o 1º toque libera o áudio no navegador
   const greet = () => {
     const home = $('#screen-home');
