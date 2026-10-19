@@ -281,15 +281,43 @@ const TTS = {
       window.addEventListener('beforeunload', () => this.stop());
     } catch (e) { /* ignora */ }
   },
-  /* pontuação de qualidade (A-176): naturais/neurais primeiro; locais ganham bônus
-     de estabilidade; a escolha manual do responsável sempre vence a heurística */
+  /* pontuação de qualidade (A-176 + estudo de vozes humanizadas v2, v2.6):
+     camada 🌟 = vozes "Online (Natural)" do Edge / neural / studio / premium /
+     enhanced (modelos neurais com entonação humana); camada ⚡ = vozes de rede
+     e marcas (Google, Microsoft, Apple/Siri, Samsung); vozes locais estáveis
+     ganham bônus; motores robóticos conhecidos (eSpeak, Pico, Festival,
+     "Compact" da Apple) são afastados; curadoria por nome soma prioridade.
+     A escolha manual do responsável sempre vence a heurística. */
   scoreVoice(v) {
     const n = ((v.name || '') + ' ' + (v.voiceURI || '')).toLowerCase();
     let s = 0;
-    if (/(natural|neural|online|studio|premium|enhanced|siri|eloquence)/.test(n)) s += 40;
-    if (/(google|microsoft|apple)/.test(n)) s += 10;
+    if (/online \(natural\)|natural|neural|studio|premium|enhanced|super-?real/.test(n)) s += 46;
+    if (/multilingual|siri|eloquence/.test(n)) s += 12;
+    if (/(google|microsoft|apple|samsung)/.test(n)) s += 10;
     if (v.localService) s += 6;
+    // curadoria (estudo v2): vozes sabidamente calorosas/agradáveis em pt/en/es
+    if (/(thalita|francisca|antonio|brenda|elza|giovanni|giovana|leticia|luciana|yara|joana|maria|camila|aria|jenny|emma|michelle|ana online|elvira|dalia|salome|helena|paulina|monica|monica|isabela)/.test(n)) s += 8;
+    // penaliza motores notoriamente robóticos
+    if (/(espeak|pico|festival|fife|flite|cmu|compact|robosoft)/.test(n)) s -= 30;
     return s;
+  },
+  /* camada de qualidade para a interface: 3=🌟 natural · 2=⚡ neural/rede ·
+     1=padrão · 0=básica/robótica — usada nas opções para agrupar e rotular */
+  voiceTier(v) {
+    if (!v) return 1;
+    const n = ((v.name || '') + ' ' + (v.voiceURI || '')).toLowerCase();
+    if (/(espeak|pico|festival|fife|flite|cmu|robosoft)/.test(n)) return 0;
+    if (/online \(natural\)|natural|neural|studio|premium|enhanced|super-?real/.test(n)) return 3;
+    if (/multilingual|siri|eloquence/.test(n)) return 2;
+    if (/(google|microsoft|apple|samsung)/.test(n)) return 2;
+    if (/compact/.test(n)) return 0;
+    return 1;
+  },
+  /* voz automaticamente escolhida (para mostrar na UI qual está ativa) */
+  bestVoiceInfo(want2) {
+    const v = this.pickVoice(want2);
+    if (!v) return null;
+    return { name: v.name || v.voiceURI || '', tier: this.voiceTier(v) };
   },
   pickVoice(want2) {
     const vs = this.voices.filter((v) => v.lang && v.lang.replace('_', '-').toLowerCase().indexOf(want2) === 0);

@@ -1,4 +1,4 @@
-# Conta Comigo 2.5.0 — Android
+# Conta Comigo 2.6.0 — Android
 
 Três caminhos para usar no Android (do mais simples ao mais completo):
 
@@ -10,7 +10,7 @@ Três caminhos para usar no Android (do mais simples ao mais completo):
    (o service worker `sw.js` guarda todo o app no cache).
 
 ## 2) Extensão no Firefox para Android
-- Use o pacote `conta-comigo-firefox-2.5.0.zip` publicado no **addons.mozilla.org (AMO)**.
+- Use o pacote `conta-comigo-firefox-2.6.0.zip` publicado no **addons.mozilla.org (AMO)**.
 - O manifest já declara `gecko_android` (Firefox 113+) e o jogo abre em aba normal no celular.
 - Instale pelo Firefox do Android pesquisando "Conta Comigo" no AMO.
 

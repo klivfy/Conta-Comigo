@@ -532,7 +532,7 @@ body.rm *, body.rm *::before, body.rm *::after {
 .pp-row .pp-t { font-weight: 900; font-size: 14px; width: 100%; }
 .pp-row label { font-size: 12px; font-weight: 700; }
 .pp-row input[type="range"] { width: 120px; }
-.pp-row select { max-width: 230px; font-family: inherit; font-size: 13px; padding: 7px 9px; border-radius: 10px; border: 2px solid var(--line); background: var(--card); color: var(--ink); }
+.pp-row select { max-width: 230px; min-width: 0; font-family: inherit; font-size: 13px; padding: 7px 9px; border-radius: 10px; border: 2px solid var(--line); background: var(--card); color: var(--ink); }
 
 /* v2.4.1: selo de versão no topo — confirmação instantânea da build em execução
    (evita a dúvida "estou mesmo com a versão nova?": versões descompactadas NÃO
@@ -551,3 +551,205 @@ body.rm *, body.rm *::before, body.rm *::after {
 /* popup 400x600 (sem classe html-page): espaço curto — selo some no mini-molde,
    continua visível no jogo em tela cheia (page-mode) e nas opções */
 html:not(.html-page) .cc-ver { display: none; }
+
+/* ==================== v2.6 — responsividade multi-telas ====================
+   Objetivo: o mesmo jogo se adapta de 320px (celular pequeno, PWA Android)
+   a 1920px+ (monitor). O layout "wide" da v2.1 (body.page-mode) era fixo —
+   herói 2 colunas, título 46px e equação 64px transbordavam em telas < 800px.
+   Aqui entram media queries progressivas, unidades fluidas (clamp), suporte a
+   dvh, safe-area (notch/gesture bar) e otimizações para toque. */
+
+/* toque: elimina o atraso de ~300 ms e o zoom por duplo toque nos controles */
+button, .mode-card, .diff-chip, .mini-btn, .swatch, .stk, .av, .obj.tappable { touch-action: manipulation; }
+/* carrossel de telas nunca vira scroll horizontal acidental */
+#screens { overflow-x: hidden; }
+
+/* ---------- dvh: altura real em navegadores móveis (barras dinâmicas) ---------- */
+@supports (min-height: 100dvh) {
+  body.page-mode, body.wide { min-height: 100dvh; }
+  body.page-mode #app, body.wide #app { min-height: 100dvh; }
+}
+
+/* ---------- safe-area: respeita notch e barra de gestos (Android PWA) ---------- */
+body.page-mode #app, body.wide #app {
+  padding-left: max(24px, env(safe-area-inset-left));
+  padding-right: max(24px, env(safe-area-inset-right));
+  padding-bottom: max(30px, env(safe-area-inset-bottom));
+}
+#toast { bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
+
+/* ---------- monitores grandes (≥1500px): mais respiro ---------- */
+@media (min-width: 1500px) {
+  body.page-mode #app, body.wide #app { max-width: 1320px; }
+  body.page-mode .home-hero { gap: 10px 56px; }
+  body.page-mode .modes { grid-template-columns: repeat(auto-fill, minmax(172px, 1fr)); }
+  body.page-mode #answers { max-width: 720px; }
+  body.page-mode .ans { font-size: 44px; }
+}
+
+/* ---------- tablets retrato / janelas estreitas (≤ 760px) ----------
+   O herói volta a empilhar (marca em cima, cartões embaixo) e a tipografia
+   grande do desktop vira fluida (clamp) — sem transbordar em 360–430px. */
+@media (max-width: 760px) {
+  body.page-mode #app { padding-left: max(14px, env(safe-area-inset-left)); padding-right: max(14px, env(safe-area-inset-right)); }
+  /* topbar: permite quebra em 2 linhas e devolve botões ao tamanho de toque */
+  body.page-mode #topbar { flex-wrap: wrap; gap: 6px 10px; padding: 10px 8px 8px; }
+  body.page-mode .icon-btn { width: 44px; height: 44px; font-size: 21px; }
+  body.page-mode #star-chip { font-size: 18px; padding: 8px 16px; }
+  body.page-mode .cc-ver { font-size: 10px; padding: 4px 8px; }
+  /* herói empilhado e fluido */
+  body.page-mode .home-hero { grid-template-columns: 1fr; gap: 6px; padding: 6px 0 10px; }
+  body.page-mode .mascot { font-size: clamp(52px, 15vw, 68px); }
+  body.page-mode .title { font-size: clamp(30px, 8.5vw, 42px); }
+  body.page-mode .subtitle { font-size: clamp(13px, 3.8vw, 16px); margin: 2px 0 0; }
+  body.page-mode .side-card { max-width: 440px; padding: 10px 14px; }
+  body.page-mode .pet-emoji { font-size: 40px; }
+  body.page-mode .pet-lines { font-size: 13px; }
+  body.page-mode .mission { font-size: 12px; }
+  /* faixa de controles volta a empilhar como no popup */
+  body.page-mode .home-controls { flex-direction: column; gap: 8px; }
+  body.page-mode .special-row { width: 100%; }
+  body.page-mode .special-row button { padding: 9px 14px; font-size: 13px; min-height: 46px; }
+  body.page-mode .diff-row { width: 100%; }
+  body.page-mode .diff-chip { padding: 7px 12px; font-size: 12.5px; min-height: 36px; }
+  body.page-mode .sec-title { text-align: center; }
+  /* grade de modos: 2 colunas garantidas em 320–400px */
+  body.page-mode .modes { grid-template-columns: repeat(auto-fill, minmax(138px, 1fr)); gap: 10px; }
+  body.page-mode .mode-card { padding: 12px 8px 10px; }
+  body.page-mode .mode-emoji { font-size: 29px; }
+  body.page-mode .mode-name { font-size: 14px; }
+  body.page-mode .mode-desc { font-size: 10px; }
+  /* jogo: tipografia fluida, visual limitado pela altura real da tela */
+  body.page-mode #visual { min-height: 170px; max-height: 42vh; }
+  body.page-mode .obj { font-size: clamp(32px, 9vw, 50px); }
+  body.page-mode .obj.small { font-size: clamp(22px, 6.4vw, 34px); }
+  body.page-mode #equation { font-size: clamp(32px, 9.5vw, 54px); }
+  body.page-mode #equation.small-text { font-size: clamp(25px, 7.5vw, 38px); }
+  body.page-mode #answers { max-width: 560px; gap: 12px; }
+  body.page-mode .ans { font-size: clamp(25px, 7.4vw, 36px); padding: clamp(13px, 3.6vw, 20px) 0 clamp(11px, 3vw, 17px); }
+  body.page-mode #bubble { white-space: normal; text-align: center; font-size: 16px; top: 14px; max-width: 92%; }
+  /* telas de resultado e grades de coleção */
+  body.page-mode #ach-grid { grid-template-columns: repeat(2, 1fr); }
+  body.page-mode #album-grid { grid-template-columns: repeat(6, 1fr); }
+  body.page-mode .shop-row { grid-template-columns: repeat(2, 1fr); }
+  body.page-mode .end-actions { max-width: 340px; }
+  body.page-mode .big-btn { font-size: 19px; padding: 15px; }
+  body.page-mode #end-title { font-size: clamp(26px, 7.5vw, 36px); }
+  body.page-mode .star-pop { font-size: 30px; }
+  body.page-mode #end-pts { font-size: 15px; }
+  /* overlays e popovers respeitam telas baixas/estreitas */
+  body.page-mode #overlay-card { max-width: min(480px, 94vw); max-height: 86vh; overflow-y: auto; padding: 22px; }
+  body.page-mode .ov-emoji { font-size: 54px; }
+  body.page-mode #overlay-card h3 { font-size: 21px; }
+  body.page-mode .popover { width: min(300px, calc(100vw - 24px)); }
+  body.page-mode .link-row { max-width: none; }
+  /* painel dos responsáveis (options) também respira em janela estreita */
+  .pp-row input[type="range"] { width: clamp(110px, 30vw, 160px); }
+  .pp-row select { max-width: min(230px, 60vw); }
+}
+
+/* ---------- celulares pequenos (≤ 430px) ---------- */
+@media (max-width: 430px) {
+  body.page-mode #app { padding-left: max(10px, env(safe-area-inset-left)); padding-right: max(10px, env(safe-area-inset-right)); }
+  .screen { padding: 4px 10px 12px; }
+  body.page-mode .modes { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  body.page-mode .special-row { flex-wrap: wrap; }
+  body.page-mode .special-row button { flex: 1 1 44%; }
+  body.page-mode .diff-label { width: 100%; text-align: center; }
+  body.page-mode .mascot { font-size: clamp(48px, 16vw, 60px); }
+  body.page-mode .side-card { max-width: none; }
+  body.page-mode #answers.n3 { gap: 8px; }
+  body.page-mode #answers.n3 .ans { font-size: clamp(20px, 6.4vw, 26px); padding: 12px 0 10px; }
+  body.page-mode #overlay-card { padding: 18px 14px; }
+  .story { max-width: 100%; font-size: 14px; }
+  .grp { max-width: 46vw; }
+}
+
+/* ---------- paisagem curta (celular deitado, altura ≤ 500px) ----------
+   O herói vira linha única (marca à esquerda, cartões à direita), a topbar
+   para de ser sticky e tudo encolhe para caber sem rolar — o foco é jogar. */
+@media (max-height: 500px) and (orientation: landscape) {
+  body.page-mode #topbar { position: static; padding: 6px 8px 4px; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  body.page-mode .icon-btn { width: 40px; height: 40px; font-size: 19px; }
+  body.page-mode #star-chip { font-size: 15px; padding: 6px 14px; }
+  body.page-mode #screen-home.active { padding-top: 2px; }
+  body.page-mode .home-hero { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; padding: 0 0 6px; }
+  body.page-mode .hero-brand { flex-direction: row; gap: 12px; }
+  body.page-mode .mascot { font-size: 38px; }
+  body.page-mode .title { font-size: 24px; }
+  body.page-mode .subtitle { font-size: 11.5px; margin: 0; }
+  body.page-mode .hero-side { flex-direction: row; gap: 8px; max-width: 58%; }
+  body.page-mode .side-card { padding: 6px 12px; }
+  body.page-mode .pet-emoji { font-size: 28px; }
+  body.page-mode .pet-lines { font-size: 10.5px; }
+  body.page-mode .missions-card { padding: 4px 10px; }
+  body.page-mode .m-title { font-size: 10px; }
+  body.page-mode .mission { font-size: 10px; padding: 2px 8px; }
+  body.page-mode .wday { font-size: 11px; width: 20px; }
+  body.page-mode .home-controls { flex-direction: row; flex-wrap: wrap; gap: 6px 16px; margin-bottom: 4px; }
+  body.page-mode .special-row button { padding: 6px 12px; font-size: 11.5px; min-height: 38px; }
+  body.page-mode .special-row button b { font-size: 16px; }
+  body.page-mode .diff-chip { padding: 5px 10px; font-size: 11px; }
+  body.page-mode .sec-title { font-size: 11px; margin: 4px 2px 6px; }
+  body.page-mode .modes { grid-template-columns: repeat(auto-fill, minmax(116px, 1fr)); gap: 8px; }
+  body.page-mode .mode-card { padding: 7px 6px 6px; border-top-width: 3px; }
+  body.page-mode .mode-emoji { font-size: 20px; }
+  body.page-mode .mode-name { font-size: 11.5px; }
+  body.page-mode .mode-desc { font-size: 9px; }
+  body.page-mode .link-row { max-width: 420px; margin-top: 8px; }
+  body.page-mode .link-row button { padding: 8px; font-size: 12.5px; }
+  body.page-mode .tip { margin-top: 4px; font-size: 10.5px; }
+  /* jogo em paisagem: encaixa sem rolagem */
+  body.page-mode #screen-game.active { padding-top: 2px; }
+  body.page-mode #progress { margin: 0 0 4px; }
+  body.page-mode #timer-wrap { height: 7px; margin-bottom: 4px; }
+  body.page-mode #visual { min-height: 60px; max-height: 22vh; }
+  body.page-mode .obj { font-size: clamp(24px, 5.5vh, 34px); }
+  body.page-mode .obj.small { font-size: clamp(16px, 4vh, 24px); }
+  body.page-mode #equation { font-size: clamp(24px, 7vh, 34px); margin: 4px 0 4px; }
+  body.page-mode #equation.small-text { font-size: clamp(19px, 5.5vh, 26px); }
+  body.page-mode #answers { max-width: 620px; gap: 10px; }
+  body.page-mode .ans { font-size: clamp(18px, 6vh, 26px); padding: clamp(8px, 1.8vh, 14px) 0 clamp(6px, 1.4vh, 12px); border-radius: 16px; }
+  body.page-mode #btn-repeat { margin-top: 6px; padding: 7px 14px; font-size: 12.5px; }
+  body.page-mode .dot { width: 10px; height: 10px; }
+  body.page-mode #bubble { font-size: 14px; top: 10px; padding: 7px 12px; }
+  body.page-mode .pts-pop { font-size: 22px; top: 24%; }
+  body.page-mode #end-title { font-size: 24px; }
+  body.page-mode .star-pop { font-size: 22px; }
+  body.page-mode .end-actions { max-width: 300px; gap: 8px; margin-top: 6px; }
+  body.page-mode .big-btn { font-size: 15px; padding: 10px; }
+  body.page-mode #overlay-card { padding: 14px; max-height: 92vh; }
+  body.page-mode .ov-emoji { font-size: 38px; }
+  body.page-mode #overlay-card h3 { font-size: 17px; }
+  body.page-mode #overlay-card p { font-size: 12.5px; margin-bottom: 6px; }
+  body.page-mode .popover { max-height: 86%; }
+  body.page-mode .hist-list .hrow { font-size: 12px; }
+}
+
+/* ---------- dispositivos de toque (sem hover): feedback por pressão ---------- */
+@media (hover: none) {
+  .mode-card:hover { transform: none; }
+  .mode-card:active { transform: translateY(2px) scale(.99); box-shadow: 0 2px 0 rgba(var(--sh), .1); }
+  .mini-btn { padding: 9px 16px; min-height: 40px; }
+  .prof-row { padding: 10px 11px; min-height: 44px; }
+  .av-row .av { width: 48px; height: 48px; }
+  .stk { padding: 9px 0; }
+}
+
+/* ---------- muito estreito (<330px): última defesa ---------- */
+@media (max-width: 329px) {
+  body.page-mode .mode-emoji { font-size: 24px; }
+  body.page-mode .mode-name { font-size: 12.5px; }
+  body.page-mode .ans { font-size: 20px; }
+  #equation { font-size: 26px; }
+}
+
+/* ---------- v2.6 — voz humanizada: agrupador + guia nas opções ---------- */
+#voice-tier-note { font-size: 12px; font-weight: 700; color: var(--ink-soft); margin-top: 6px; }
+.voice-guide { width: 100%; margin-top: 10px; border: 2px dashed var(--line); border-radius: 14px; background: rgba(var(--sh), .04); }
+.voice-guide summary { cursor: pointer; font-weight: 900; font-size: 14px; padding: 11px 14px; user-select: none; }
+.voice-guide summary::marker { color: var(--orange); }
+.voice-guide .vg-body { padding: 0 14px 12px; display: flex; flex-direction: column; gap: 7px; }
+.voice-guide .vg-body p { font-size: 12.5px; line-height: 1.5; color: var(--ink-soft); font-weight: 600; text-align: left; }
+.voice-guide .vg-body b { color: var(--ink); }
+.voice-guide .vg-tip { font-size: 12px; font-weight: 700; color: var(--ink); background: rgba(var(--sh), .06); border-radius: 10px; padding: 8px 10px; }

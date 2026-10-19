@@ -1,16 +1,25 @@
 # Conta Comigo — Arquivos gerados
 
 Extensão de navegador (Chrome + Firefox) de matemática lúdica para crianças a partir de 4 anos.
-Versão atual: **v2.5.0**
+Versão atual: **v2.6.0**
 
 ## ⚠️ A extensão parece igual? Como atualizar e confirmar
 
-Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo parece o de antes, o navegador provavelmente ainda está com a build antiga. Para confirmar em 1 segundo: abra o jogo e olhe o **topo da tela** — desde a v2.4.1 há um **selo de versão** (ex.: `v2.5.0`) ao lado de 🔥. Sem selo = build anterior à 2.4.1.
+Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo parece o de antes, o navegador provavelmente ainda está com a build antiga. Para confirmar em 1 segundo: abra o jogo e olhe o **topo da tela** — desde a v2.4.1 há um **selo de versão** (ex.: `v2.6.0`) ao lado de 🔥. Sem selo = build anterior à 2.4.1.
 
 **Importante sobre o progresso:** recarregar a extensão (botão ↻ em `chrome://extensions`) **preserva** estrelas, conquistas e perfis; **remover e reinstalar apaga**. Antes de remover, baixe o **backup datado** no botão 💾 da tela de Conquistas ou no painel dos responsáveis — depois reimporte no mesmo painel.
 
 **Atualizar (Chrome/Edge/Brave):** com a extensão ainda instalada, clique em ↻ Recarregar no cartão da extensão e escolha a pasta nova descompactada (preserva tudo). Ou: backup → remover → carregar o zip novo → importar o backup.
 **Atualizar (Firefox):** `about:debugging#/runtime/this-firefox` → *Recarregar*.
+
+## Novidades da v2.6.0
+
+- **Responsividade total** — o mesmo jogo se adapta de **320px** (celular pequeno) a **1920px+** (monitor): herói empilha em telas estreitas, tipografia fluida (`clamp`), grades que se reorganizam e nada transborda (testado em 320/360/768/844×390/1440/1920).
+- **Modo paisagem (celular deitado)** — quando a altura é curta, topbar compacta, herói em linha única e jogo encaixa sem rolagem.
+- **Toque aprimorado** — alvos ≥44px, `touch-action: manipulation` (sem atraso de 300ms/zoom duplo) e feedback por pressão em telas sem hover.
+- **Android/PWA** — `dvh` + `safe-area` (notch/barra de gestos) e `viewport-fit=cover` no jogo.
+- **Vozes humanizadas (Fase 2 do estudo de voz)** — lista de vozes **agrupada por qualidade** (🌟 naturais → ⚡ neurais/rede → padrão → básicas), detector que prioriza "Online (Natural)" do Edge, Premium/Enhanced da Apple e Google de rede e afasta motores robóticos (eSpeak, Pico…), **nota "Voz ativa"** nas opções e **guia gratuito** para obter vozes mais humanas por plataforma (Edge, Windows, Android, iPhone/Mac, Linux/Piper) — tudo em PT/EN/ES.
+- Estudo completo: `Conta-Comigo-Estudo-Vozes-Humanizadas-v2.pdf` (comparativo e roteiro).
 
 ## Novidades da v2.5.0
 
@@ -26,9 +35,9 @@ Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo par
 
 | Arquivo | Uso |
 |---|---|
-| `conta-comigo-chrome-2.5.0.zip` | Pacote para Chrome/Edge/Brave (Manifest V3, service worker) |
-| `conta-comigo-firefox-2.5.0.zip` | Pacote para Firefox computador **e Android** (event page + `gecko_android` 113+) |
-| `conta-comigo-pwa-android-2.5.0.zip` | **Android/PWA**: jogo instalável e offline (manifest + service worker + ícones maskable) — hospedar em https e "Adicionar à tela inicial" |
+| `conta-comigo-chrome-2.6.0.zip` | Pacote para Chrome/Edge/Brave (Manifest V3, service worker) |
+| `conta-comigo-firefox-2.6.0.zip` | Pacote para Firefox computador **e Android** (event page + `gecko_android` 113+) |
+| `conta-comigo-pwa-android-2.6.0.zip` | **Android/PWA**: jogo instalável e offline (manifest + service worker + ícones maskable) — hospedar em https e "Adicionar à tela inicial" |
 | `conta-comigo-pwa/` | Pasta do PWA pronta para hospedar (mesmo conteúdo do zip) |
 
 - Instalação e novidades: abra `conta-comigo/demo.html` no navegador.
@@ -42,7 +51,8 @@ Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo par
 | Arquivo | Conteúdo |
 |---|---|
 | `Conta-Comigo-Estudo-Funcoes-Recompensas-e-Android.pdf` | 30 funções idealizadas (10 alta / 10 média / 10 baixa complexidade): desafios, prêmios, colecionáveis, temas, mascotes, loja, persistência das conquistas — e os 3 caminhos Android (PWA, Firefox AMO, Play via TWA) |
-| `Conta-Comigo-Estudo-Voz-Natural-e-Cordial.pdf` | Estudo de voz humana/cordial para o público infantil: 4 caminhos (motor local aprimorado, vozes neurais do sistema, nuvem, pacote gravado) e recomendação em 3 fases (v2.4 → v3.x) |
+| `Conta-Comigo-Estudo-Vozes-Humanizadas-v2.pdf` | **Novo (v2.6)**: 2º estudo de voz — comparativo de modelos humanizados (Edge "Online (Natural)", tiers Apple, Google de rede, Piper/Kokoro WASM offline, nuvem com ressalvas COPPA/LGPD) e o que foi implementado |
+| `Conta-Comigo-Estudo-Voz-Natural-e-Cordial.pdf` | 1º estudo de voz (v2.4): motor local aprimorado, vozes neurais do sistema, nuvem e pacote gravado — recomendação em 3 fases |
 | `Conta-Comigo-Estudo-de-Expansao-e-Seguranca.docx` | Estudo de expansão e segurança: pontuação por rapidez (implementada na v2.2.0), login Google via Supabase no MV3 (sem qualquer chat/troca de mensagens), LGPD/COPPA, acessibilidade WCAG, usabilidade e plano STRIDE |
 | `Conta-Comigo-Analise-de-Conceito-e-Propostas-de-Melhorias.docx` | Análise de conceito e primeiras propostas de melhorias |
 | `Conta-Comigo-750-Melhorias.xlsx` | Levantamento com **750 melhorias**: 250 de alto, 250 de médio e 250 de baixo impacto, em 23 domínios, com esforço, faixa de versão e Resumo com fórmulas vivas |

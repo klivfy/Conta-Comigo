@@ -11,8 +11,8 @@ TARGET_HASH = "pR1/EfeZuQm7Lt8tShLqHetTXNYDMjbthabvdMMXhjY="
 BASE = "/home/z/my-project/download/conta-comigo"
 FF = "/home/z/my-project/download/conta-comigo-firefox"
 ZIPS = [
-    "/home/z/my-project/download/conta-comigo-chrome-2.5.0.zip",
-    "/home/z/my-project/download/conta-comigo-firefox-2.5.0.zip",
+    "/home/z/my-project/download/conta-comigo-chrome-2.6.0.zip",
+    "/home/z/my-project/download/conta-comigo-firefox-2.6.0.zip",
 ]
 
 SCRIPT_RE = re.compile(r'<script\b([^>]*)>(.*?)</script>', re.S | re.I)

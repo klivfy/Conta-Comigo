@@ -1,0 +1,85 @@
+# -*- coding: utf-8 -*-
+"""Conteúdo do Estudo de Vozes Humanizadas v2 — Conta Comigo (v2.6.0)."""
+
+DOC_TITLE = "Estudo de Vozes Humanizadas v2 — Conta Comigo"
+FOOTER_META = "Conta Comigo · Estudo de Vozes Humanizadas v2 · pesquisa de modelos + implementação v2.6.0"
+
+SECTIONS = [
+    ("h1", "1. Sumário executivo"),
+    ("p", "Este documento responde ao pedido de <b>pesquisar mais modelos de vozes que possam ser utilizados no Conta Comigo, com foco em vozes mais humanizadas</b>, e registra o que foi imediatamente implementado na versão 2.6.0. A pesquisa cobriu três frentes complementares: as vozes que o próprio navegador já expõe pela Web Speech API (incluindo as vozes gratuitas \"Online (Natural)\" do Microsoft Edge e os níveis Enhanced/Premium da Apple), os modelos de síntese neural que rodam integralmente no navegador via WebAssembly (Piper e Kokoro-82M) e os serviços de voz em nuvem (ElevenLabs, Azure Neural e Google Cloud TTS). Para cada frente foram avaliadas qualidade sonora, custo, privacidade — critério inegociável em um aplicativo infantil sob COPPA/LGPD-K/GDPR-K — e viabilidade técnica dentro de uma extensão Manifest V3 e de um PWA para Android."),
+    ("p", "A conclusão principal é que <b>hoje já é possível soar consideravelmente mais humano sem custo algum e sem enviar nenhum dado para fora do dispositivo</b>: a chave está em detectar e priorizar as vozes neurais que os sistemas operacionais e navegadores já trazem, orientar os responsáveis a instalar as vozes de melhor qualidade de cada plataforma e manter o motor de prosódia próprio do jogo. Foi exatamente isso que a v2.6.0 entrega: camadas de qualidade de voz com curadoria para português, inglês e espanhol, lista agrupada por qualidade na área dos responsáveis, nota indicando qual voz está ativa e um guia prático de instalação de vozes por plataforma. Os modelos WASM ficam documentados como caminho recomendado para a v3.x, quando o modo Android/PWA permitir baixar um modelo neural opcional de 20 a 60 MB."),
+
+    ("h1", "2. O que torna uma voz \"humana\" para uma criança"),
+    ("p", "A sensação de humanidade em uma voz sintética vem de três pilares combinados. O primeiro é a <b>prosódia neural</b>: modelos treinados com horas de fala humana geram entonação, respiração e microvariações de duração que motores formantizados clássicos (eSpeak, Pico, Festival) não conseguem reproduzir — é a diferença entre ouvir uma pessoa lendo uma história e ouvir um robô soletrando palavras. O segundo pilar é a <b>segmentação contextual</b>: dividir o texto em segmentos com pausas proporcionais à pontuação, técnica já implementada no jogo desde a v2.4 (A-177), que melhora qualquer voz, inclusive as padrão. O terceiro pilar é a <b>adequação ao público</b>: para crianças de 4 anos, a pesquisa do 1º estudo (v2.4) e a literatura de desenho de áudio infantil convergem em voz de timbre acolhedor, velocidade 5 a 15% abaixo do padrão e tom levemente elevado — parâmetros que o jogo expõe por perfil (vRate/vPitch) e aplica com calma extra na repetição de questões."),
+    ("p", "Um detalhe prático descoberto na pesquisa e confirmado por catálogos independentes de vozes (repositório web-speech-recommended-voices): várias vozes \"Online (Natural)\" da Microsoft <b>não aceitam ajuste de tom</b> (pitchControl falso), pois o modelo neural fixa a entonação natural. O jogo já é tolerante a isso — o tom configurado é simplesmente ignorado por essas vozes, e a velocidade continua funcionando, o que preserva a experiência do responsável sem exigir código especial."),
+    ("quote", "Para o público infantil, a voz ideal não é apenas a mais realista em laboratório: é a que mantém entonação acolhedora de forma consistente, não falha offline no meio da rodada e não expõe nenhum dado da criança."),
+
+    ("h1", "3. Inventário: o que o navegador já oferece hoje"),
+    ("h2", "3.1 Microsoft Edge — vozes \"Online (Natural)\" gratuitas"),
+    ("p", "O Edge expõe pela mesma API speechSynthesis as vozes neurais da Microsoft identificadas como \"Online (Natural)\" — para o português do Brasil, as vozes de destaque são Thalita e Antonio (exemplo do nome completo reportado pelo navegador: \"Microsoft Thalita Online (Natural) - Portuguese (Brazil)\"). São as vozes de melhor qualidade disponíveis sem custo em qualquer desktop, exigem apenas conexão com a internet e voltam automaticamente às vozes locais quando o dispositivo fica offline. Como o jogo já tem caminho B de fallback silencioso para voz local (v2.4), usar o Conta Comigo no Edge é hoje a forma mais simples de obter narração humana — e virou a primeira recomendação do guia dentro do aplicativo."),
+    ("h2", "3.2 Apple (iPhone, iPad e Mac) — níveis Enhanced e Premium"),
+    ("p", "A documentação oficial da Apple (AVSpeechSynthesisVoiceQuality) define três níveis: default, enhanced e premium — os dois últimos precisam ser baixados manualmente pelo responsável, em Ajustes, Acessibilidade, Conteúdo falado, Vozes (iOS) ou no VoiceOver Utility (macOS). Baixar a voz Enhanced/Premium do idioma da criança transforma visivelmente a narração do jogo em dispositivos da Apple, e a voz aparece normalmente na lista do sistema com o nome do idioma (por exemplo, Luciana para o português). O detector implementado na v2.6.0 reconhece os rótulos \"enhanced\" e \"premium\" e os coloca na camada máxima."),
+    ("h2", "3.3 Android — Google Speech Services e Samsung"),
+    ("p", "No Android, a qualidade depende do motor instalado. O aplicativo de sistema \"Voz do Google\" (Speech Recognition &amp; Synthesis, pacote com.google.android.tts) fornece vozes de boa qualidade para o português e permite baixar variantes melhores por idioma; o caminho recomendado no guia é atualizar o app pela Play Store e, em Configurações, Acessibilidade, Saída de texto para fala, escolher e baixar as vozes de melhor qualidade. Fabricantes como a Samsung fornecem motores próprios. O PWA do jogo (v2.5) herda automaticamente o motor padrão do sistema, e o detector de camadas classifica as vozes Google e Samsung na camada intermediária de rede quando não há rótulo neural explícito."),
+    ("h2", "3.4 Quadro-resumo das fontes de voz no navegador"),
+    ("table", {
+        "caption": "Tabela 1 — Fontes de voz disponíveis pela Web Speech API, por plataforma",
+        "widths": [0.20, 0.16, 0.13, 0.12, 0.39],
+        "header": ["Fonte", "Qualidade", "Offline", "Custo", "Como o jogo trata (v2.6)"],
+        "rows": [
+            ["Edge \"Online (Natural)\"", "Excelente (neural)", "Não (fallback local)", "Grátis", "Camada máxima com prioridade alta; exemplo citado no guia interno (Thalita/Antonio)"],
+            ["Apple Enhanced/Premium", "Excelente", "Sim", "Grátis", "Camada máxima; guia ensina a baixar em Ajustes/VoiceOver Utility"],
+            ["Google de rede (Chrome/Android)", "Boa a ótima", "Não", "Grátis", "Camada intermediária; detectada pela marca na lista do sistema"],
+            ["Vozes locais padrão do sistema", "Regular", "Sim", "Grátis", "Camada padrão; usadas como fallback silencioso em caso de falha de rede"],
+            ["Motores robóticos (eSpeak, Pico, Festival, Compact)", "Baixa", "Sim", "Grátis", "Penalizados na heurística e agrupados como \"básicas\" no fim da lista"],
+        ],
+    }),
+
+    ("h1", "4. Síntese neural 100% no navegador (WASM) — o próximo passo"),
+    ("p", "A pesquisa confirmou que já existe um ecossistema maduro de modelos neurais que rodam dentro do próprio navegador via WebAssembly, sem servidor e sem custo de API. O <b>Piper</b>, compilado para WASM (projetos vits-web da diffusionstudio, piper-tts-web da Mintplex Labs e o clássico leitor read-aloud), gera voz com qualidade claramente superior aos motores locais clássicos, tem voz em português do Brasil (pt_BR-faber-medium) e licença MIT; cada voz ocupa de 20 a 60 MB baixados uma única vez e depois cacheados. O <b>Kokoro-82M</b> (82 milhões de parâmetros, licença Apache 2.0, biblioteca kokoro-js sobre Transformers.js) impressiona pela qualidade — variante quantizada de apenas 86 MB, aceleração via WebGPU quando disponível — mas, na versão atual, não tem voz nativa em português, o que o exclui como voz principal do jogo por enquanto."),
+    ("p", "Para o Conta Comigo, a integração WASM é tecnicamente viável nos dois formatos: na extensão MV3, dentro de um documento offscreen ou worker com o modelo empacotado opcionalmente; no PWA Android, com download do modelo sob demanda e cache pelo service worker, de forma análoga ao que projetos como StreamingKokoroJS já fazem. Os custos são conhecidos e administráveis: download inicial de dezenas de megabytes, memória extra durante a inferência e maior consumo de bateria em sessões longas — razões pelas quais a recomendação é oferecer isso como uma <b>\"voz premium offline\" opcional</b>, instalada pelo responsável, e não como padrão. Essa é a peça central da onda 3 do roteiro (seção 7)."),
+    ("table", {
+        "caption": "Tabela 2 — Modelos de síntese neural que rodam no navegador (WASM)",
+        "widths": [0.16, 0.13, 0.14, 0.12, 0.45],
+        "header": ["Modelo/projeto", "Licença", "Tamanho típico", "pt-BR", "Papel recomendado no Conta Comigo"],
+        "rows": [
+            ["Piper (vits-web / piper-tts-web)", "MIT", "20–60 MB por voz", "Sim (pt_BR-faber-medium)", "Voz premium offline opcional na v3.x, instalada pelo responsável no PWA/Android"],
+            ["Kokoro-82M (kokoro-js)", "Apache 2.0", "86 MB (q8) a 326 MB", "Não nativo", "Reavaliar quando o projeto publicar vozes pt-BR; referência de qualidade"],
+            ["StreamingKokoroJS (referência)", "Apache 2.0", "idem Kokoro", "Não", "Referência de arquitetura: workers, streaming por blocos e cache do modelo"],
+        ],
+    }),
+
+    ("h1", "5. Vozes em nuvem — por que não agora"),
+    ("p", "Os serviços de nuvem testados na pesquisa (ElevenLabs, Azure Neural e Google Cloud TTS) oferecem hoje a melhor qualidade absoluta do mercado — para o português do Brasil, catálogos chegam a listar mais de duzentas vozes neurais, incluindo as Azure Francisca e Antonio que inspiram a curadoria do jogo. Ainda assim, a recomendação deste estudo é <b>não integrá-los nesta fase</b>, por três razões independentes entre si. Primeiro, privacidade: enviar o texto das perguntas e recompensas para servidores de terceiros quebra o princípio local-first que sustenta o envelope de conformidade COPPA/LGPD-K/GDPR-K do produto e exigiria consentimento parental explícito, política de dados detalhada e auditoria de subprocessadores. Segundo, custo operacional contínuo por caractere, inviável para um uso doméstico gratuito e repetitivo. Terceiro, dependência de rede: a experiência infantil não pode depender de latência de API para narrar uma continha."),
+    ("p", "Resta um cenário futuro legítimo: um modo opcional \"narração em nuvem\" no PWA Android, ativado apenas pelo responsável com consentimento explícito, usando uma chave própria e limite de uso — avaliado apenas se a demanda real justificar. Até lá, as vozes \"Online (Natural)\" do Edge entregam, de graça e sem servidor próprio do projeto, praticamente a mesma classe de qualidade que a nuvem cobraria para gerar."),
+
+    ("h1", "6. O que foi implementado na v2.6.0"),
+    ("h2", "6.1 Detector de qualidade em camadas com curadoria PT/EN/ES"),
+    ("p", "A heurística da v2.4 foi reescrita como um sistema de camadas. A camada máxima identifica os rótulos de síntese neural de topo (\"Online (Natural)\", natural, neural, studio, premium, enhanced); a camada intermediária reconhece vozes de rede e marcas (Google, Microsoft, Apple/Siri, Samsung); a camada padrão cobre as vozes locais comuns; e a camada básica rebaixa motores notoriamente robóticos (eSpeak, Pico, Festival, CMU, Compact) na pontuação e na exibição. Sobre as camadas atua uma curadoria de nomes — vozes reconhecidamente acolhedoras para o público, como Thalita, Francisca, Luciana, Yara, Joana, Aria, Jenny, Elvira e Dália, recebem prioridade extra —, de modo que, entre duas vozes equivalentes, o jogo escolha a que tende a soar melhor para uma criança. A escolha manual do responsável continua vencendo a heurística, e o fallback silencioso para voz local em falha de rede foi preservado sem alteração."),
+    ("h2", "6.2 Interface dos responsáveis: lista agrupada, nota de voz ativa e guia"),
+    ("p", "A lista de vozes nas opções passou a ser renderizada em grupos por qualidade (naturais recomendadas primeiro, depois neurais/de rede, padrão e básicas), com escape de nomes do sistema que contenham caracteres especiais. Uma nota em texto indica em tempo real qual voz está ativa e com qual camada — por exemplo, \"Voz ativa: natural (Microsoft Thalita Online (Natural))\" —, eliminando a dúvida mais comum dos responsáveis: se a voz selecionada é de fato a boa. O novo guia embutido \"Como deixar a voz mais humana (grátis)\" traz, em cinco linhas, o caminho exato por plataforma: usar o Edge com as vozes Online (Natural); instalar vozes neurais no Windows pelo Narrador/Configurações; atualizar e baixar vozes no Android pelo app Voz do Google; baixar vozes Enhanced/Premium em iPhone, iPad e Mac; e instalar o Piper como módulo do speech-dispatcher no Linux. Todo o texto e os rótulos foram traduzidos para os três idiomas do jogo."),
+    ("table", {
+        "caption": "Tabela 3 — Camadas de qualidade implementadas no motor de voz (v2.6.0)",
+        "widths": [0.14, 0.34, 0.28, 0.24],
+        "header": ["Camada", "Critério de reconhecimento", "Exemplos", "Tratamento"],
+        "rows": [
+            ["Natural", "Online (Natural), natural, neural, studio, premium, enhanced", "Thalita (Edge), Enhanced/Premium (Apple)", "Primeiro grupo da lista; maior prioridade na escolha automática"],
+            ["Neural/rede", "Google, Microsoft, Apple, Samsung, Siri, multilingual", "Google português do Brasil", "Segundo grupo; usadas quando não há camada natural"],
+            ["Padrão", "Vozes locais comuns do sistema", "Luciana local, SAPI5", "Terceiro grupo; fallback offline do caminho B"],
+            ["Básica", "eSpeak, Pico, Festival, CMU, Compact", "eSpeak NG", "Fim da lista com rótulo próprio; só usadas se não houver alternativa"],
+        ],
+    }),
+    ("h2", "6.3 Responsividade multi-telas (pedido paralelo da v2.6.0)"),
+    ("p", "No mesmo ciclo foi entregue a adaptação da interface a qualquer tela, pré-requisito para o uso no Android: media queries progressivas de 320 a 1500 pixels, herói da tela inicial que empilha em telas estreitas, tipografia fluida com clamp para equação, respostas e títulos, modo paisagem compacto para altura abaixo de 500 pixels, suporte a dvh e safe-area (notch e barra de gestos) no PWA e alvos de toque de pelo menos 44 pixels com touch-action de manipulação. O conjunto foi verificado em navegador headless em seis resoluções, sem transbordo horizontal em nenhuma delas — 320, 360, 768, 844 por 390 em paisagem, 1440 e 1920 pixels."),
+
+    ("h1", "7. Recomendações e roteiro"),
+    ("p", "Onda 1 — entregue na v2.6.0: detector em camadas com curadoria, lista agrupada, nota de voz ativa e guia por plataforma; nenhuma dependência nova, zero custo e nenhum dado fora do dispositivo. Onda 2 — v2.7.x: botão de prévia por voz na lista agrupada (ouvir a mesma frase em duas vozes antes de escolher), memorização da \"voz preferida\" por criança com sugestão automática quando uma voz de camada superior aparecer no sistema e teste comparativo A/B dos parâmetros de velocidade e tom por faixa etária. Onda 3 — v3.x: voz premium offline opcional via Piper WASM no PWA Android, com download guiado de 20 a 60 MB, indicador de espaço disponível e desinstalação limpa; reavaliar Kokoro caso o projeto publique vozes nativas em português; manter nuvem fora do escopo enquanto o modo local atender."),
+    ("callout", "Regra de ouro do produto: toda melhoria de voz precisa passar pelo tripé — soa humana, funciona offline e não envia nada da criança para fora do aparelho."),
+
+    ("h1", "8. Metodologia e fontes"),
+    ("p", "A pesquisa foi conduzida em fontes públicas recentes: repositório web-speech-recommended-voices (catálogo colaborativo de vozes recomendadas por navegador, com metadados de controle de tom e velocidade), documentação oficial da Apple para AVSpeechSynthesisVoiceQuality, páginas da Microsoft e catálogos independentes sobre as vozes \"Online (Natural)\" do Edge, páginas oficiais de suporte do Google sobre saída de texto para fala no Android, e os projetos Piper (incluindo a integração com speech-dispatcher em Linux, que faz as vozes aparecerem como locais no Chrome), piper-tts-web (MIT), kokoro-js e StreamingKokoroJS (Apache 2.0) para a frente WASM. A implementação foi validada por QA automatizado em navegador headless: agrupamento de camadas com vozes simuladas de todas as classes, mensagem de ausência de vozes, guia nos três idiomas e medições de layout em seis resoluções, com console limpo em todas as páginas."),
+]
+
+if __name__ == "__main__":
+    kinds = [k for k, _ in SECTIONS]
+    print("seções:", len(SECTIONS), "| tabelas:", kinds.count("table"), "| h1:", kinds.count("h1"))

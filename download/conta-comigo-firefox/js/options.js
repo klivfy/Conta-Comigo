@@ -239,11 +239,32 @@ function renderDash() {
 }
 
 /* ---------- perfis (S27) + voz por perfil (v2.4, A-179) ---------- */
+/* v2.6: escapa o nome da voz (nomes do SO podem conter aspas/“&”) */
+function escVoz(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+/* v2.6 (estudo de vozes humanizadas): lista agrupada por camada de qualidade —
+   🌟 naturais primeiro, depois ⚡ neurais/rede, por último as padrão. Motores
+   básicos/robóticos (tier 0) entram no fim, rotulados. A opção “Auto” continua
+   deixando o app escolher sozinho a melhor voz instalada. */
 function voiceOptionsHtml(selected) {
-  const want = (TTS_LANG[G().lang] || 'pt-BR').slice(0, 2).toLowerCase();
+  const g = G();
+  const want = (TTS_LANG[g.lang] || 'pt-BR').slice(0, 2).toLowerCase();
   const vs = TTS.voices.filter((v) => v.lang && v.lang.replace('_', '-').toLowerCase().indexOf(want) === 0);
-  return '<option value="">—</option>' + vs.map((v) =>
-    '<option value="' + v.voiceURI + '"' + (selected === v.voiceURI ? ' selected' : '') + '>' + v.name + '</option>').join('');
+  if (!vs.length) return '<option value="">—</option>';
+  const opt = (v) => '<option value="' + escVoz(v.voiceURI) + '"' + (selected === v.voiceURI ? ' selected' : '') + '>' + escVoz(v.name) + '</option>';
+  const sortS = (a, b) => TTS.scoreVoice(b) - TTS.scoreVoice(a);
+  const g3 = vs.filter((v) => TTS.voiceTier(v) === 3).sort(sortS);
+  const g2 = vs.filter((v) => TTS.voiceTier(v) === 2).sort(sortS);
+  const g1 = vs.filter((v) => TTS.voiceTier(v) === 1).sort(sortS);
+  const g0 = vs.filter((v) => TTS.voiceTier(v) === 0).sort(sortS);
+  let html = '<option value="">' + t('v_auto') + '</option>';
+  if (g3.length) html += '<optgroup label="' + t('v_grp_natural') + '">' + g3.map(opt).join('') + '</optgroup>';
+  if (g2.length) html += '<optgroup label="' + t('v_grp_neural') + '">' + g2.map(opt).join('') + '</optgroup>';
+  if (g1.length) html += '<optgroup label="' + t('v_grp_std') + '">' + g1.map(opt).join('') + '</optgroup>';
+  if (g0.length) html += '<optgroup label="' + t('v_grp_basic') + '">' + g0.map(opt).join('') + '</optgroup>';
+  return html;
 }
 function renderProfList() {
   const g = G();
@@ -311,13 +332,26 @@ function renderProfList() {
   }));
 }
 
-/* ---------- vozes (S22) ---------- */
+/* ---------- vozes (S22 + estudo v2.6) ---------- */
 function fillVoices() {
   const g = G();
-  const want = (TTS_LANG[g.lang] || 'pt-BR').slice(0, 2);
-  const vs = TTS.voices.filter((v) => v.lang && v.lang.replace('_', '-').toLowerCase().indexOf(want) === 0);
   const sel = $('#set-voice');
-  sel.innerHTML = '<option value="">—</option>' + vs.map((v) => '<option value="' + v.voiceURI + '"' + (g.vVoice === v.voiceURI ? ' selected' : '') + '>' + v.name + '</option>').join('');
+  sel.innerHTML = voiceOptionsHtml(g.vVoice || '');
+  paintVoiceTierNote();
+}
+/* v2.6: diz ao responsável QUAL voz está ativa e com qual qualidade —
+   se nada foi escolhido manualmente, mostra a que a heurística seleciona */
+function paintVoiceTierNote() {
+  const el = $('#voice-tier-note');
+  if (!el) return;
+  const g = G();
+  const want = (TTS_LANG[g.lang] || 'pt-BR').slice(0, 2).toLowerCase();
+  const manual = g.vVoice ? TTS.voices.find((v) => v.voiceURI === g.vVoice) : null;
+  const v = manual || TTS.pickVoice(want);
+  if (!v) { el.textContent = t('v_none'); return; }
+  const tier = TTS.voiceTier(v);
+  const q = tier === 3 ? t('v_tier_natural') : tier === 2 ? t('v_tier_neural') : tier === 0 ? t('v_tier_basic') : t('v_tier_std');
+  el.textContent = t('v_current', { q: q, n: v.name || v.voiceURI || '' });
 }
 
 /* ---------- exportar / importar (S29) + backup com data (v2.5) ---------- */

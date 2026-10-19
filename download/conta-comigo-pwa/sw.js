@@ -1,6 +1,6 @@
 'use strict';
 /* Conta Comigo PWA — service worker (offline-first do app shell) */
-const CACHE = 'conta-comigo-2.5.0';
+const CACHE = 'conta-comigo-2.6.0';
 const ASSETS = ["./index.html", "./manifest.webmanifest", "./css/style.css", "./js/boot.js", "./js/engine.js", "./js/ui.js", "./js/i18n.js", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-maskable-192.png", "./icons/icon-maskable-512.png"];
 
 self.addEventListener('install', (e) => {

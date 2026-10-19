@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Conta Comigo — Responsáveis</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
@@ -14,6 +14,9 @@
     .opt-row { display: flex; align-items: center; gap: 12px; padding: 7px 0; flex-wrap: wrap; }
     .opt-row label { flex: 1 1 220px; font-weight: 700; font-size: 14.5px; }
     .opt-row select, .opt-row input[type="number"] { font-family: inherit; font-size: 14px; padding: 8px 10px; border-radius: 10px; border: 2px solid var(--line); background: var(--card); color: var(--ink); }
+    /* v2.6: nomes de vozes são longos — o select NÃO pode arrastar a largura
+       mínima do card (min-width:0 deixa o flex item encolher e cortar o texto) */
+    .opt-row select { min-width: 0; max-width: 100%; }
     .opt-row input[type="range"] { width: 180px; }
     .opt-row input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--blue); }
     .opt-note { font-size: 12.5px; color: var(--ink-soft); font-weight: 700; margin-top: 4px; }
@@ -27,6 +30,24 @@
     .map-bar { flex: 1; height: 12px; background: rgba(var(--sh), .1); border-radius: 999px; overflow: hidden; min-width: 80px; }
     .map-bar i { display: block; height: 100%; background: var(--green); border-radius: 999px; }
     .map-dots { display: flex; gap: 4px; }
+    /* v2.6 — telas estreitas (PWA/Android e janela reduzida): a área dos
+       responsáveis também se adapta — linhas do mapa quebram, ranges encolhem */
+    @media (max-width: 760px) {
+      .map-row { flex-wrap: wrap; }
+      .map-mode { flex: 1 1 140px; }
+    }
+    @media (max-width: 430px) {
+      .opt-wrap { padding: 14px 12px 40px; }
+      .opt-card { padding: 14px 13px; }
+      .opt-head h1 { font-size: 20px; }
+      .opt-row input[type="range"] { width: min(180px, 44vw); }
+      .opt-row label { flex: 1 1 150px; }
+      .map-mode { flex: 1 1 120px; font-size: 13px; }
+      .map-bar { min-width: 60px; }
+      .week-bars { gap: 8px; }
+      .week-bar i { width: 20px; }
+      .prof-line input { width: 118px; }
+    }
     .lv-dot { width: 22px; height: 22px; border-radius: 50%; font-size: 10px; font-weight: 900; display: flex; align-items: center; justify-content: center; color: #fff; background: rgba(var(--sh), .18); }
     .lv-dot.g { background: var(--green); } .lv-dot.y { background: var(--yellow); color: #5c4300; } .lv-dot.r { background: var(--red); }
     .week-bars { display: flex; gap: 14px; align-items: flex-end; height: 90px; padding-top: 6px; }
@@ -159,6 +180,18 @@
           <div class="opt-row"><label data-i18n="s_voice">Voz da narração</label><select id="set-voice"></select></div>
           <div class="opt-row"><label data-i18n="s_sample">Ouvir amostra</label><button class="mini-btn" id="btn-voice-sample">🔊</button></div>
           <p class="opt-note" data-i18n="s_natural_note"></p>
+          <p id="voice-tier-note" class="opt-note">·</p>
+          <details class="voice-guide">
+            <summary data-i18n="v_guide_title">Como deixar a voz mais humana</summary>
+            <div class="vg-body">
+              <p data-i18n="v_g_edge"></p>
+              <p data-i18n="v_g_win"></p>
+              <p data-i18n="v_g_android"></p>
+              <p data-i18n="v_g_apple"></p>
+              <p data-i18n="v_g_linux"></p>
+              <p class="vg-tip" data-i18n="v_g_tip"></p>
+            </div>
+          </details>
         </div>
 
         <div class="opt-card">
