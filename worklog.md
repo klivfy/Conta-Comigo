@@ -195,3 +195,19 @@ Stage Summary:
 - Entregável novo: download/Conta-Comigo-150-Melhorias.xlsx (~34 KB) — 150 melhorias inéditas (50 alto / 50 médio / 50 baixo), 33 domínios, filtros e totais vivos, complementar à edição de 750.
 - Confirmados os demais pedidos da rodada (já prontos): estudo de voz (PDF, 8 páginas, recomendação em 3 fases) e portão parental com onboarding + lembrete de segurança (v2.3.0, zips chrome/firefox).
 - Scripts reutilizáveis: melhorias150_{alto,medio,baixo}.py, gen_150_melhorias.py.
+
+---
+Task ID: 10
+Agent: Z.ai (agente principal)
+Task: Reentrega da mensagem original da rodada 8 — verificação de integridade ponta a ponta de todos os entregáveis já produzidos nas Task IDs 8 e 9.
+
+Work Log:
+- Confirmado pelo worklog que a rodada 8 já estava concluída: v2.3.0 (portão parental + onboarding + lembrete de segurança), estudo de voz (PDF), 750 melhorias (XLSX) e a edição extra de 150 melhorias inéditas.
+- Criado scripts/verify_r8.py (reutilizável) com 9 verificações: zips chrome/firefox 2.3.0 (manifest, background correto por navegador, ausência de demo/web/loja no pacote), builds-fonte com marcadores do portão parental (ccSha256Hex, passOnboardDone, showOnboarding, showGate, passTries), PDF de voz via qpdf --check/--show-npages + pdftotext (pypdf engasga no merge com 'bbox' — usar poppler), XLSX 750 (250/250/250) e 150 (50/50/50), DOCX de expansão e 6 capturas de QA (padrão glob v23-0N-*.png).
+- Correções durante a verificação: parser de páginas do qpdf substituído por --show-npages; padrão de busca das capturas ajustado para nomes descritivos.
+- download/README.md reescrito: índice em PT-BR de todos os entregáveis (extensão, estudos, planilhas, loja).
+- Resultado final: 9/9 PASS.
+
+Stage Summary:
+- Rodada 8 100% íntegra e confirmada: nenhum retrabalho necessário; entrega comunicada ao usuário com relatório em PT-BR.
+- Lições registradas: validar PDFs mesclados com poppler/qpdf (não pypdf); QA da extensão usa localStorage fallback ao abrir game.html direto no navegador.
