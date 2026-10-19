@@ -45,7 +45,20 @@ const ITEMS = [
 ];
 const NAMES = { pt: ['Ana', 'Bia', 'João', 'Lia'], en: ['Ana', 'Sam', 'Joe', 'May'], es: ['Ana', 'Lu', 'Juan', 'Mía'] };
 const AVATARS = ['🦊', '🐼', '🐨', '🐸', '🐵', '🦁', '🐰', '🐯', '🐧', '🦄'];
-const STICKERS = ['🦁','🐸','🐬','🦋','🐢','🦉','🐝','🐧','🦄','🐙','🦕','🐨','🦊','🐼','🐷','🐵','🦒','🐘','🦜','🐳','🐿️','🦩','🐊','🦔'];
+const STICKERS = ['🦁','🐸','🐬','🦋','🐢','🦉','🐝','🐧','🦄','🐙','🦕','🐨','🦊','🐼','🐷','🐵','🦒','🐘','🦜','🐳','🐿️','🦩','🐊','🦔',
+  /* v2.5: +12 colecionáveis novos (appended — índices antigos preservados) */
+  '🐞','🦗','🐌','🪲','🦭','🦦','🦥','🐈','🐕','🐴','🐑','🐐'];
+/* v2.5: mascotes adultas escolhíveis — a fase evolutiva (🥚→🐣) continua;
+   aos 100⭐ a mascote vira a forma adulta escolhida pela criança */
+const PETS = [
+  { id: 'fox',     emoji: '🦊', price: 0,   key: 'pet_fox' },
+  { id: 'panda',   emoji: '🐼', price: 40,  key: 'pet_panda' },
+  { id: 'dino',    emoji: '🦖', price: 80,  key: 'pet_dino' },
+  { id: 'unicorn', emoji: '🦄', price: 120, key: 'pet_unicorn' },
+  { id: 'robot',   emoji: '🤖', price: 160, key: 'pet_robot' },
+];
+/* v2.5: marcos de ofensiva que abrem baú de recompensas (dias) */
+const CHEST_MILESTONES = [3, 7, 14, 21, 30];
 
 const MODES = {
   contar:      { emoji: '🍎', unlock: 0,   color: 'orange' },
@@ -60,6 +73,8 @@ const MODES = {
   historia:    { emoji: '📖', unlock: 80,  color: 'teal' },
   dinheiro:    { emoji: '🪙', unlock: 100, color: 'brown' },
   mistar:      { emoji: '🎲', unlock: 120, color: 'red' },
+  /* v2.5: desafio Contra o Tempo — sobreviver 60 s respondendo o que der */
+  tempo:       { emoji: '⏱️', unlock: 70,  color: 'cyan' },
 };
 
 /* ---------- estado global (perfis S27 + configurações S31) ---------- */
@@ -69,7 +84,8 @@ function newProfile(id, name, avatar) {
     stars: 0, points: 0, bestPts: {}, levels: {}, recent: {}, review: [],
     streak: 0, lastPlay: '', rounds: 0, firsts: 0, rights: 0, wrongs: 0, playSec: 0,
     bestCombo: 0, fatigue: 0, ach: {}, missions: { d: '', list: [] }, missionsDone: 0,
-    owned: { themes: ['classico'], hats: [] }, hat: '', stickers: [],
+    owned: { themes: ['classico'], hats: [], pets: ['fox'] }, hat: '', stickers: [],
+    pet: '', chests: {}, bestSurvive: 0, firstPet: false, lastPet: 0,
     bossReady: false, assessed: false, played: {}, lvl: {}, weeks: [],
     today: { d: '', rounds: 0, done: false }, reviewWins: 0, persistRounds: 0,
   };
@@ -119,6 +135,17 @@ function normalizeDB(d) {
   (d.profiles || []).forEach((p) => {
     p.points = Number(p.points) || 0;
     p.bestPts = (p.bestPts && typeof p.bestPts === 'object') ? p.bestPts : {};
+    /* v2.5: persistência blindada de conquistas/coleções — nada some em migração */
+    p.ach = (p.ach && typeof p.ach === 'object') ? p.ach : {};
+    p.stickers = Array.isArray(p.stickers) ? p.stickers : [];
+    p.owned = (p.owned && typeof p.owned === 'object') ? p.owned : { themes: ['classico'], hats: [], pets: ['fox'] };
+    if (!Array.isArray(p.owned.themes)) p.owned.themes = ['classico'];
+    if (!Array.isArray(p.owned.hats)) p.owned.hats = [];
+    if (!Array.isArray(p.owned.pets) || !p.owned.pets.length) p.owned.pets = ['fox'];
+    p.pet = typeof p.pet === 'string' ? p.pet : '';
+    p.chests = (p.chests && typeof p.chests === 'object') ? p.chests : {};
+    p.bestSurvive = Number(p.bestSurvive) || 0;
+    p.firstPet = !!p.firstPet;
   });
   const s = d.settings || {};
   ['passHash', 'passSalt', 'passHint'].forEach((k) => { if (typeof s[k] !== 'string') s[k] = ''; });
@@ -222,6 +249,8 @@ const SFX = {
     SFX._fx = i;
     seqs[i].forEach((f, j) => tone(f, j * 0.13, 0.28, 'triangle', 0.11));
   },
+  /* v2.5: caixa registradora — compras na loja ganham som próprio */
+  cash: () => { tone(880, 0, 0.07, 'square', 0.05); tone(1319, 0.08, 0.16, 'triangle', 0.09); tone(1760, 0.18, 0.22, 'triangle', 0.08); },
 };
 
 /* ---------- voz cordial (S22 + Fase 1 do estudo de voz, v2.4) ----------
@@ -657,16 +686,20 @@ function genDinheiro(level, f) {
   };
 }
 function genMistar(level, f) {
-  const pool = Object.keys(MODES).filter((m) => m !== 'mistar' && modeUnlocked(m));
+  const pool = Object.keys(MODES).filter((m) => m !== 'mistar' && m !== 'tempo' && modeUnlocked(m));
   const m = pick(pool.length ? pool : ['contar']);
   const q = GENS[m](level, f);
   q.underlying = m;
   return q;
 }
+/* v2.5: Contra o Tempo — sorteia entre os modos liberados, igual ao Mistão */
+function genTempo(level, f) {
+  return genMistar(level, f);
+}
 const GENS = {
   contar: genContar, somar: genSomar, subtrair: genSubtrair, faltar: genFaltar,
   comparar: genComparar, sequencia: genSequencia, dobrar: genDobrar, multiplicar: genMultiplicar,
-  dividir: genDividir, historia: genHistoria, dinheiro: genDinheiro, mistar: genMistar,
+  dividir: genDividir, historia: genHistoria, dinheiro: genDinheiro, mistar: genMistar, tempo: genTempo,
 };
 
 /* ---------- nível e desbloqueio (S02 do round 2 + S12 + S07) ---------- */

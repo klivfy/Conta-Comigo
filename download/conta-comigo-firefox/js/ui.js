@@ -14,7 +14,7 @@ const HAS_EXT = typeof chrome !== 'undefined' && !!chrome.runtime && !!chrome.ru
 let R = {
   kind: 'normal', mode: null, total: QUESTIONS_PER_ROUND, qIndex: 0, misses: 0, wrongs: 0,
   firsts: 0, stars: 0, points: 0, newRecord: false, combo: 0, history: [], due: [], diagI: 0, diagOK: 0,
-  duel: null, unlockedShown: [], locked: false, lastAnsPos: -1, bossIntro: false,
+  duel: null, unlockedShown: [], locked: false, lastAnsPos: -1, bossIntro: false, ended: false,
 };
 let sessionSec = 0;
 let bubbleTimer = null, toastTimer = null;
@@ -45,6 +45,13 @@ function refreshChrome() {
   $('#star-total').textContent = String(p ? p.stars : 0);
   const chip = $('#star-chip'); if (chip) { chip.classList.remove('bump'); void chip.offsetWidth; chip.classList.add('bump'); }
   const st = $('#chip-streak'); if (st) st.querySelector('b').textContent = String(p ? p.streak : 0);
+  /* v2.5: moldura do perfil pela quantidade de conquistas — orgulho à vista */
+  const bp = $('#btn-profile');
+  if (bp && p) {
+    const n = Object.keys(p.ach || {}).length;
+    bp.classList.toggle('fr-gold', n >= 5 && n < 10);
+    bp.classList.toggle('fr-rb', n >= 10);
+  }
 }
 
 /* ---------- balão, toast e overlays ---------- */
@@ -73,6 +80,15 @@ function overlayOpen() { return !$('#overlay').classList.contains('hidden'); }
 
 /* ---------- confetes (respeitam modo calmo S24) ---------- */
 const CONF_COLORS = ['#ffc93c', '#ff6b6b', '#2ed573', '#4c7dff', '#9b6bff', '#ff9a3d'];
+/* v2.5: confete na paleta do tema ativo — cada mundo celebra com suas cores */
+const CONF_THEMES = {
+  classico: null, arcoiris: null,
+  espaco: ['#8fb3ff', '#c9d8ff', '#5c6bff', '#ffd66b', '#9b6bff', '#4cc9ff'],
+  jardim: ['#8fd97a', '#d6ff9e', '#2ed573', '#ffb3d9', '#fff28f', '#7ce0c3'],
+  oceano: ['#4cc9ff', '#2bb3a3', '#9fe8ff', '#3f7dff', '#7ce0c3', '#b3fff0'],
+  doces: ['#ff8fc7', '#ffd1e8', '#ff6b9d', '#ffb86b', '#fff3a3', '#c98fff'],
+  neve: ['#cfe8ff', '#a8d4ff', '#ffffff', '#7fa8d9', '#b3e0f5', '#e8f6ff'],
+};
 function confetti(n) {
   if (G().reduceMotion) return; // v2.4 (A-050): sem movimentos, sem confetes
   if (document.body.classList.contains('calmo')) n = Math.min(n, 8);
@@ -84,7 +100,7 @@ function confetti(n) {
       el.textContent = pick(['⭐', '✨', '💫']);
       el.style.fontSize = rand(10, 18) + 'px';
       el.style.width = 'auto'; el.style.height = 'auto'; el.style.background = 'transparent';
-    } else el.style.background = pick(CONF_COLORS);
+    } else el.style.background = pick(CONF_THEMES[G().theme] || CONF_COLORS);
     el.style.left = (Math.random() * 100) + '%';
     el.style.animationDelay = (Math.random() * 0.5) + 's';
     el.style.animationDuration = (1.4 + Math.random() * 1.4) + 's';
@@ -95,10 +111,15 @@ function confetti(n) {
   }
 }
 
-/* ---------- mascote evolutiva (S13) ---------- */
+/* ---------- mascote evolutiva (S13) + mascote adulta escolhida (v2.5) ----------
+   A fase evolutiva continua: 🥚 (<30⭐) → 🐣 (30–99⭐) → forma adulta (100⭐+).
+   Na fase adulta, a criança escolhe qual companheira quer (loja: Mascotes). */
 function mascotStage() {
-  const s = P() ? P().stars : 0;
-  if (s >= 100) return { emoji: '🦊', key: 'st_big', next: null };
+  const p = P(); const s = p ? p.stars : 0;
+  if (s >= 100) {
+    const pet = PETS.find((x) => x.id === (p.pet || 'fox')) || PETS[0];
+    return { emoji: pet.emoji, key: 'st_big', next: null };
+  }
   if (s >= 30) return { emoji: '🐣', key: 'st_baby', next: 100 - s };
   return { emoji: '🥚', key: 'st_egg', next: 30 - s };
 }
@@ -240,7 +261,7 @@ function resetRound(kind, mode, total) {
   R = {
     kind, mode: mode || null, total: total || QUESTIONS_PER_ROUND, qIndex: 0, misses: 0, wrongs: 0,
     firsts: 0, stars: 0, points: 0, newRecord: false, combo: 0, history: [], due: [], diagI: 0, diagOK: 0,
-    duel: R.duel, unlockedShown: [], locked: false, lastAnsPos: -1, bossIntro: false,
+    duel: R.duel, unlockedShown: [], locked: false, lastAnsPos: -1, bossIntro: false, ended: false,
   };
   Timer.hide();
   const chip = $('#pts-chip'); if (chip) chip.classList.add('hidden');
@@ -255,7 +276,11 @@ function startRound(mode) {
   }
   if (!p.played[mode]) { p.played[mode] = 1; }
   resetRound('normal', mode);
-  show('game'); nextQuestion(); saveState();
+  /* v2.5: Contra o Tempo — 60 s globais de fôlego; responde o máximo que der */
+  if (mode === 'tempo') { R.kind = 'tempo'; R.total = 9999; }
+  show('game');
+  if (mode === 'tempo') { Timer.startGlobal(60); showBubble('⏱️', t('pr_tempo', { name: p.name })); }
+  nextQuestion(); saveState();
 }
 function startReview() {
   const due = dueReviews();
@@ -359,7 +384,7 @@ function nextQuestion() {
     box.appendChild(b);
   });
   renderProgress();
-  Timer.start(timeBudget(level, currentMode()));
+  if (R.kind !== 'tempo') Timer.start(timeBudget(level, currentMode()));
   // v2.4: incentivo do chefe falado na 1ª questão (fila prosódica junta as duas frases)
   const intro = R.bossIntro ? tpick('pr_boss', { name: p.name }) + ' ' + q.tts : q.tts;
   R.bossIntro = false;
@@ -370,16 +395,19 @@ function renderProgress() {
   const dots = $('#dots');
   if (dots) {
     dots.innerHTML = '';
-    for (let i = 0; i < Math.min(R.total, 12); i++) {
-      const d = document.createElement('i');
-      d.className = 'dot' + (i < R.qIndex ? ' done' : i === R.qIndex ? ' now' : '');
-      dots.appendChild(d);
+    if (R.kind !== 'tempo') {
+      for (let i = 0; i < Math.min(R.total, 12); i++) {
+        const d = document.createElement('i');
+        d.className = 'dot' + (i < R.qIndex ? ' done' : i === R.qIndex ? ' now' : '');
+        dots.appendChild(d);
+      }
     }
   }
   const chip = $('#level-chip');
   if (chip) {
     let txt;
-    if (R.kind === 'review') txt = '📚 ' + t('review_btn', { n: R.total }) + ' · ' + (R.qIndex + 1) + '/' + R.total;
+    if (R.kind === 'tempo') txt = '⏱️ ' + t('survive_hits', { n: R.firsts });
+    else if (R.kind === 'review') txt = '📚 ' + t('review_btn', { n: R.total }) + ' · ' + (R.qIndex + 1) + '/' + R.total;
     else if (R.kind === 'boss') txt = '⚔️ ' + (R.qIndex + 1) + '/' + R.total;
     else if (R.kind === 'diag') txt = '🎯 ' + (R.qIndex + 1) + '/' + R.total;
     else if (R.kind === 'duel') {
@@ -401,7 +429,7 @@ function renderProgress() {
    NUNCA pune — ao esgotar só zera o bônus de rapidez. Avaliação (diag)
    e duelo ficam sem cronômetro (menos pressão). */
 const Timer = {
-  iv: null, totalMs: 0, leftMs: 0, last: 0, active: false,
+  iv: null, totalMs: 0, leftMs: 0, last: 0, active: false, global: false,
   allowed() { return !!G().timer && R.kind !== 'diag' && R.kind !== 'duel'; },
   start(sec) {
     this.stop();
@@ -409,7 +437,20 @@ const Timer = {
     if (!wrap) return;
     if (!this.allowed()) { wrap.classList.add('hidden'); this.totalMs = 0; this.leftMs = 0; return; }
     const ts = clamp(Number(G().timeScale) || 1, 1, 3); // v2.4 (A-047): tempo extra configurável
-    this.totalMs = Math.round(sec * 1000 * ts); this.leftMs = this.totalMs; this.last = Date.now(); this.active = true;
+    this.totalMs = Math.round(sec * 1000 * ts); this.leftMs = this.totalMs; this.last = Date.now(); this.active = true; this.global = false;
+    wrap.classList.remove('hidden', 'warn', 'low', 'out');
+    wrap.setAttribute('aria-label', t('s_timer'));
+    this.paint();
+    this.iv = setInterval(() => this.tick(), 200);
+  },
+  /* v2.5: cronômetro GLOBAL do Contra o Tempo — corre entre as questões e
+     encerra a rodada ao esgotar; respeita timeScale e pausa em overlays */
+  startGlobal(sec) {
+    this.stop(); this.global = false;
+    const wrap = $('#timer-wrap');
+    if (!wrap || !this.allowed()) { if (wrap) wrap.classList.add('hidden'); return; }
+    const ts = clamp(Number(G().timeScale) || 1, 1, 3);
+    this.totalMs = Math.round(sec * 1000 * ts); this.leftMs = this.totalMs; this.last = Date.now(); this.active = true; this.global = true;
     wrap.classList.remove('hidden', 'warn', 'low', 'out');
     wrap.setAttribute('aria-label', t('s_timer'));
     this.paint();
@@ -428,6 +469,11 @@ const Timer = {
     if (this.leftMs <= 0) {
       this.active = false; clearInterval(this.iv); this.iv = null;
       const w = $('#timer-wrap'); if (w) w.classList.add('out');
+      if (this.global) {
+        this.global = false;
+        if (R.kind === 'tempo' && !R.ended) { showBubble('⏰', t('time_over')); setTimeout(endRound, 500); }
+        return;
+      }
       if (!R.locked && R.current) showBubble('⏰', t('time_over'));
     }
   },
@@ -440,8 +486,8 @@ const Timer = {
     w.classList.toggle('warn', pct < 50 && pct >= 25);
     w.classList.toggle('low', pct < 25 && pct > 0);
   },
-  stop() { this.active = false; if (this.iv) { clearInterval(this.iv); this.iv = null; } },
-  hide() { this.stop(); const w = $('#timer-wrap'); if (w) w.classList.add('hidden'); },
+  stop() { if (this.global) return; this.active = false; if (this.iv) { clearInterval(this.iv); this.iv = null; } },
+  hide() { this.global = false; this.stop(); const w = $('#timer-wrap'); if (w) w.classList.add('hidden'); },
   ratio() { return this.totalMs ? clamp(this.leftMs / this.totalMs, 0, 1) : 0; },
 };
 
@@ -602,6 +648,8 @@ function closeOverlay() { hideOverlay(); }
 
 /* ---------- fim de rodada ---------- */
 function endRound() {
+  if (R.ended) return; // v2.5: à prova de dupla chamada (tempo global + última questão)
+  R.ended = true;
   const p = P();
   const today = fmtDate();
   // ofensiva S15
@@ -635,6 +683,11 @@ function endRound() {
   if (R.kind === 'normal' && R.wrongs >= 1 && R.firsts >= 3) {
     p.persistRounds = (p.persistRounds || 0) + 1;
   }
+  /* v2.5: baú de recompensas — marcos de ofensiva (3/7/14/21/30 dias) abrem
+     um baú com estrelas e uma figurinha garantida */
+  let chestMs = 0;
+  const cms = CHEST_MILESTONES.find((m) => p.streak >= m && !p.chests[m]);
+  if (cms) { p.chests[cms] = 1; chestMs = cms; }
   checkAch();
   saveState(true);
 
@@ -658,6 +711,14 @@ function endRound() {
     msg = (d.s1 === d.s2) ? t('duel_tie') : t('duel_win', { av: d.s1 > d.s2 ? d.a1 : d.a2 }) + ' ' + d.a1 + ' ' + d.s1 + ' × ' + d.s2 + ' ' + d.a2;
   }
   if (bossMsg) msg += ' ' + bossMsg;
+  /* v2.5: resultado do Contra o Tempo (com recorde próprio) */
+  let endExtra = '';
+  if (R.kind === 'tempo') {
+    const prevS = p.bestSurvive || 0;
+    endExtra = R.firsts >= 10 ? t('survive_great', { n: R.firsts }) : t('survive_end', { n: R.firsts });
+    if (R.firsts > prevS) { p.bestSurvive = R.firsts; endExtra += ' 🏆 ' + t('survive_record'); saveState(true); }
+  }
+  if (endExtra) msg += ' ' + endExtra;
   if (R.kind === 'diag') {
     const sug = R.diagOK <= 2 ? 1 : R.diagOK <= 4 ? 2 : R.diagOK <= 6 ? 3 : R.diagOK === 7 ? 4 : 5;
     Object.keys(MODES).forEach((m) => { if (m !== 'mistar') p.levels[m] = sug; });
@@ -695,6 +756,8 @@ function endRound() {
   hist.innerHTML = '<b>' + t('history') + '</b><div class="hist-list">' +
     R.history.map((h) => '<span class="hrow' + (h.ok ? ' ok' : ' no') + '">' + (h.ok ? '✅' : '🔁') + ' ' + h.txt + '</span>').join('') + '</div>';
   if (spoken) setTimeout(() => TTS.speak(spoken), 1100); // após a fanfarra
+  /* v2.5: baú aparece depois da tela final — momento de recompensa */
+  if (chestMs) setTimeout(() => openChest(chestMs), 3200);
   renderHome();
 }
 
@@ -715,6 +778,13 @@ const ACHS = [
   /* v2.4 (A-118/A-128): medalhas de persistência — errar faz parte, insistir vale medalha */
   { id: 'a13', cond: (p) => (p.persistRounds || 0) >= 1 },
   { id: 'a14', cond: (p) => (p.persistRounds || 0) >= 5 },
+  /* v2.5: conquistas das novidades — duas são SECRETAS (aparecem como ???) */
+  { id: 'a15', cond: (p) => !!p.firstPet },
+  { id: 'a16', cond: (p) => (p.stickers || []).length >= 10 },
+  { id: 'a17', sec: true, cond: (p) => (p.stickers || []).length >= STICKERS.length },
+  { id: 'a18', cond: (p) => (p.bestSurvive || 0) >= 10 },
+  { id: 'a19', cond: (p) => Object.keys(p.chests || {}).length >= 3 },
+  { id: 'a20', sec: true, cond: (p) => (p.owned.themes || []).length >= 4 },
 ];
 function checkAch() {
   const p = P();
@@ -729,9 +799,14 @@ function checkAch() {
 }
 function renderAch() {
   const p = P();
-  $('#ach-grid').innerHTML = ACHS.map((a) =>
-    '<div class="ach-card' + (p.ach[a.id] ? ' got' : '') + '"><span class="ach-emoji">' + (p.ach[a.id] ? '🏅' : '🔒') + '</span>' +
-    '<b>' + t(a.id) + '</b><small>' + t('ad' + a.id.slice(1)) + '</small></div>').join('');
+  $('#ach-grid').innerHTML = ACHS.map((a) => {
+    const got = !!p.ach[a.id];
+    const hidden = !got && a.sec; // secreta: só revela depois de conquistada
+    return '<div class="ach-card' + (got ? ' got' : '') + (hidden ? ' secret' : '') + '"><span class="ach-emoji">' + (got ? '🏅' : hidden ? '❓' : '🔒') + '</span>' +
+      '<b>' + (hidden ? '???' : t(a.id)) + '</b><small>' + (hidden ? t('ach_secret') : t('ad' + a.id.slice(1))) + '</small></div>';
+  }).join('');
+  const bk = $('#btn-backup');
+  if (bk) bk.classList.toggle('hidden', Object.keys(p.ach || {}).length === 0);
 }
 
 /* ---------- loja (S17) ---------- */
@@ -740,12 +815,20 @@ const SHOP_THEMES = [
   { id: 'espaco', price: 0, key: 'th_espaco' },
   { id: 'jardim', price: 0, key: 'th_jardim' },
   { id: 'arcoiris', price: 60, key: 'th_arcoiris' },
+  /* v2.5: três mundos novos */
+  { id: 'oceano', price: 60, key: 'th_oceano' },
+  { id: 'doces', price: 60, key: 'th_doces' },
+  { id: 'neve', price: 60, key: 'th_neve' },
 ];
 const SHOP_HATS = [
   { id: '', price: 0, emoji: '', key: 'hat_none_d' },
   { id: '🧢', price: 30, emoji: '🧢', key: 'hat_bone' },
   { id: '🎀', price: 30, emoji: '🎀', key: 'hat_laco' },
   { id: '👑', price: 60, emoji: '👑', key: 'hat_coroa' },
+  /* v2.5: acessórios novos */
+  { id: '🎩', price: 40, emoji: '🎩', key: 'hat_cartola' },
+  { id: '🕶️', price: 45, emoji: '🕶️', key: 'hat_oculos' },
+  { id: '🎓', price: 50, emoji: '🎓', key: 'hat_formatura' },
 ];
 function renderShop() {
   const p = P();
@@ -770,6 +853,21 @@ function renderShop() {
         : '<button class="mini-btn" data-buyhat="' + h.id + '">' + t('buy') + ' ' + h.price + '⭐</button>') +
       '</div>';
   }).join('');
+  /* v2.5: mascotes adultas escolhíveis */
+  const petRow = $('#shop-pets');
+  if (petRow) {
+    petRow.innerHTML = PETS.map((pt) => {
+      const owned = pt.price === 0 || p.owned.pets.includes(pt.id);
+      const inUse = (p.pet || 'fox') === pt.id;
+      const ready = p.stars >= 100;
+      return '<div class="shop-item"><span class="shop-emoji">' + pt.emoji + '</span><b>' + t(pt.key) + '</b>' +
+        (owned
+          ? '<button class="mini-btn' + (inUse ? ' using' : '') + '" data-pet="' + pt.id + '">' + (inUse ? t('in_use') : t('equip')) + '</button>'
+          : '<button class="mini-btn" data-buypet="' + pt.id + '">' + t('buy') + ' ' + pt.price + '⭐</button>') +
+        (!ready && !owned ? '<small class="pet-note">' + t('pet_note') + '</small>' : '') +
+        '</div>';
+    }).join('');
+  }
   const alb = $('#album-grid');
   alb.innerHTML = STICKERS.map((s, i) => '<span class="stk' + (p.stickers.includes(i) ? ' got' : '') + '">' + (p.stickers.includes(i) ? s : '❔') + '</span>').join('');
   $('#album-count').textContent = t('album', { a: p.stickers.length });
@@ -777,6 +875,8 @@ function renderShop() {
   $$('#shop-themes [data-buyth]').forEach((b) => b.addEventListener('click', () => buyTheme(b.dataset.buyth)));
   $$('#shop-hats [data-hat]').forEach((b) => b.addEventListener('click', () => { P().hat = b.dataset.hat; saveState(); renderShop(); renderMascot(); SFX.tap(); }));
   $$('#shop-hats [data-buyhat]').forEach((b) => b.addEventListener('click', () => buyHat(b.dataset.buyhat)));
+  $$('#shop-pets [data-pet]').forEach((b) => b.addEventListener('click', () => { P().pet = b.dataset.pet; saveState(); renderShop(); renderMascot(); SFX.tap(); showBubble(PETS.find((x) => x.id === b.dataset.pet).emoji, tpick('greet', { name: P().name })); }));
+  $$('#shop-pets [data-buypet]').forEach((b) => b.addEventListener('click', () => buyPet(b.dataset.buypet)));
 }
 function buyTheme(id) {
   const th = SHOP_THEMES.find((x) => x.id === id); const p = P();
@@ -784,14 +884,24 @@ function buyTheme(id) {
   if (p.stars < th.price) { showBubble('😢', t('locked', { n: th.price - p.stars })); return; }
   p.stars -= th.price; p.owned.themes.push(id); p.firstBuy = true;
   G().theme = id;
-  checkAch(); saveState(); applySettings(); renderShop(); renderMascot(); refreshChrome(); SFX.star(); confetti(20);
+  checkAch(); saveState(); applySettings(); renderShop(); renderMascot(); refreshChrome(); SFX.cash(); confetti(20);
 }
 function buyHat(id) {
   const h = SHOP_HATS.find((x) => x.id === id); const p = P();
   if (!h || p.owned.hats.includes(id)) return;
   if (p.stars < h.price) { showBubble('😢', t('locked', { n: h.price - p.stars })); return; }
   p.stars -= h.price; p.owned.hats.push(id); p.firstBuy = true; p.hat = id;
-  checkAch(); saveState(); renderShop(); renderMascot(); refreshChrome(); SFX.star(); confetti(20);
+  checkAch(); saveState(); renderShop(); renderMascot(); refreshChrome(); SFX.cash(); confetti(20);
+}
+/* v2.5: compra de mascote adulta */
+function buyPet(id) {
+  const pt = PETS.find((x) => x.id === id); const p = P();
+  if (!pt || p.owned.pets.includes(id)) return;
+  if (p.stars < pt.price) { showBubble('😢', t('locked', { n: pt.price - p.stars })); return; }
+  p.stars -= pt.price; p.owned.pets.push(id); p.firstBuy = true; p.firstPet = true; p.pet = id;
+  checkAch(); saveState(); renderShop(); renderMascot(); refreshChrome();
+  showOverlay('<div class="ov-emoji">' + pt.emoji + '</div><h3>' + t('pet_new', { n: t(pt.key) }) + '</h3><button class="big-btn" data-close="1">' + t('ok') + '</button>');
+  SFX.cash(); confetti(30);
 }
 function buySticker() {
   const p = P();
@@ -805,6 +915,48 @@ function buySticker() {
   checkAch(); saveState(); renderShop(); refreshChrome();
   showOverlay('<div class="ov-emoji">' + STICKERS[i] + '</div><h3>' + msg + '</h3><button class="big-btn" data-close="1">' + t('ok') + '</button>');
   SFX.fanfare(); confetti(24);
+}
+
+/* ---------- v2.5: baú de recompensas da ofensiva ---------- */
+function openChest(ms) {
+  const p = P();
+  const reward = ms * 10;
+  let extra = '';
+  const missing = STICKERS.map((s, i) => i).filter((i) => !p.stickers.includes(i));
+  if (missing.length) {
+    const idx = missing[rand(0, missing.length - 1)];
+    p.stickers.push(idx);
+    extra = '<p class="ov-sub">' + t('chest_sticker', { s: STICKERS[idx] }) + '</p>';
+  }
+  grantStars(reward);
+  checkAch(); saveState(); refreshChrome();
+  showOverlay('<div class="ov-emoji chest-pop">🎁</div><h3>' + t('chest_title') + '</h3><p>' + t('chest_msg', { n: ms }) + '</p>' +
+    '<p class="chest-reward">⭐ +' + reward + '</p>' + extra +
+    '<button class="big-btn" id="btn-chest-claim">' + t('chest_claim') + '</button>');
+  const b = $('#btn-chest-claim');
+  if (b) b.addEventListener('click', () => { SFX.fanfare(); confetti(50); hideOverlay(); });
+  SFX.fanfare(); confetti(30);
+}
+
+/* ---------- v2.5: backup das conquistas e do progresso (persistência) ----------
+   Conquistas/estrelas/figurinhas ficam no armazenamento da extensão. Recarregar
+   (↻) preserva tudo; REMOVER e reinstalar apaga. O backup em arquivo é a rede
+   de segurança — um clique baixa um .json que pode ser reimportado nas opções. */
+function downloadBackup() {
+  try {
+    const data = JSON.stringify(DB, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'conta-comigo-backup-' + fmtDate() + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    G().lastBackupAt = Date.now();
+    saveState();
+    toast('💾 ' + t('backup_done'));
+    SFX.cash();
+  } catch (e) { /* silencioso */ }
 }
 
 /* ---------- overlays de fadiga (S10) e pausa (S28) ---------- */
@@ -971,6 +1123,9 @@ function bindStatic() {
     const b = e.target && e.target.closest ? e.target.closest('[data-close]') : null;
     if (b) closeOverlay();
   });
+  // v2.5: backup das conquistas (botão da vitrine) — persistência em arquivo
+  const bb = $('#btn-backup');
+  if (bb) bb.addEventListener('click', () => { ensureAudio(); SFX.tap(); downloadBackup(); });
   const bc = $('#btn-close');
   if (bc) {
     if (IS_PAGE && HAS_EXT) bc.classList.remove('hidden');
@@ -1024,7 +1179,12 @@ async function boot() {
   show('home');
   // v2.4.1: selo de versão visível no topo — confirmação instantânea da build
   const vb = $('#cc-ver');
-  if (vb) vb.textContent = 'v' + (window.ccVersion ? window.ccVersion() : '2.4.1');
+  if (vb) {
+    let vv = '';
+    try { if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getManifest) vv = chrome.runtime.getManifest().version; } catch (e) { /* sem extensão */ }
+    if (!vv) { const mt = document.querySelector('meta[name="cc-version"]'); if (mt) vv = mt.content; }
+    vb.textContent = 'v' + (vv || (window.ccVersion ? window.ccVersion() : '2.5.0'));
+  }
   // v2.4 (A-198): saudação cordial com o nome — o 1º toque libera o áudio no navegador
   const greet = () => {
     const home = $('#screen-home');

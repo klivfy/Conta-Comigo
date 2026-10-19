@@ -15,6 +15,13 @@ let gameWinId = null;
 function openGame() {
   const url = chrome.runtime.getURL('game.html');
 
+  /* v2.5 (Android): o Firefox para Android não tem a API windows — abre numa
+     aba normal (a página de jogo já é responsiva e tem viewport própria). */
+  if (typeof chrome.windows === 'undefined' || !chrome.windows.create) {
+    try { chrome.tabs.create({ url }); } catch (e) { /* ignora */ }
+    return;
+  }
+
   const focusOrFs = (win) => {
     if (!win || win.id == null) return;
     gameWinId = win.id;

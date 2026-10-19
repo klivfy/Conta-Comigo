@@ -161,6 +161,7 @@ function renderOptions() {
   dp.innerHTML = DB.profiles.map((pf) => '<option value="' + pf.id + '"' + (pf.id === DB.activeId ? ' selected' : '') + '>' + pf.avatar + ' ' + pf.name + '</option>').join('');
   renderDash();
   renderProfList();
+  paintBackupHint(); // v2.5: estado do backup das conquistas
 
   $('#set-diff').value = String(g.diffMode);
   $('#set-unlock').checked = !!g.unlockAll;
@@ -319,7 +320,7 @@ function fillVoices() {
   sel.innerHTML = '<option value="">—</option>' + vs.map((v) => '<option value="' + v.voiceURI + '"' + (g.vVoice === v.voiceURI ? ' selected' : '') + '>' + v.name + '</option>').join('');
 }
 
-/* ---------- exportar / importar (S29) ---------- */
+/* ---------- exportar / importar (S29) + backup com data (v2.5) ---------- */
 function doExport() {
   saveState(true);
   const blob = new Blob([JSON.stringify(DB, null, 2)], { type: 'application/json' });
@@ -327,6 +328,28 @@ function doExport() {
   a.href = URL.createObjectURL(blob);
   a.download = 'conta-comigo-progresso.json';
   document.body.appendChild(a); a.click(); a.remove();
+  try { G().lastBackupAt = Date.now(); saveState(true); paintBackupHint(); } catch (e) { /* ignora */ }
+}
+/* v2.5: backup datado — rede de segurança das conquistas quando a extensão
+   é removida e reinstalada (recarregar ↻ preserva; remover apaga) */
+function doBackupDownload() {
+  saveState(true);
+  const blob = new Blob([JSON.stringify(DB, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'conta-comigo-backup-' + fmtDate() + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  try { G().lastBackupAt = Date.now(); saveState(true); paintBackupHint(); toastOpt('💾 ' + t('backup_done')); } catch (e) { /* ignora */ }
+}
+function paintBackupHint() {
+  const el = $('#bk-hint');
+  if (!el) return;
+  const last = Number(G().lastBackupAt) || 0;
+  const days = last ? Math.floor((Date.now() - last) / 86400000) : null;
+  el.textContent = days == null ? t('backup_hint_new')
+    : days >= 14 ? '⚠️ ' + t('backup_hint_old', { n: days })
+    : '✅ ' + t('backup_hint_ok', { n: days });
+  el.style.fontWeight = days != null && days >= 14 ? '800' : '600';
 }
 function doImport(text) {
   const d = parseDB(text);
@@ -397,6 +420,7 @@ function bindOptions() {
   $('#set-sync').addEventListener('change', (e) => { G().sync = e.target.checked; set(); if (G().sync) saveState(true); });
 
   $('#btn-export').addEventListener('click', doExport);
+  $('#btn-backup-dl').addEventListener('click', doBackupDownload); // v2.5: backup datado
   $('#btn-copy').addEventListener('click', async () => {
     saveState(true);
     const txt = JSON.stringify(DB);

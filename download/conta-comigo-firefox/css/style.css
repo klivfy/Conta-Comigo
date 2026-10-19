@@ -23,6 +23,21 @@ body[data-theme="arcoiris"] {
   --bg-a: #ffe3f1; --bg-b: #e3f2ff; --bg-c: #fff8d9;
   --card: #ffffff; --line: #e0d5f2;
 }
+body[data-theme="oceano"] {
+  --ink: #0d3a52; --ink-soft: #4a7d99; --sh: 13, 58, 82;
+  --bg-a: #dff4ff; --bg-b: #e8fbff; --bg-c: #d2f1fa;
+  --card: #ffffff; --line: #bfe6f5;
+}
+body[data-theme="doces"] {
+  --ink: #5c2547; --ink-soft: #a05c85; --sh: 92, 37, 71;
+  --bg-a: #ffe9f4; --bg-b: #fff3fa; --bg-c: #ffdff0;
+  --card: #ffffff; --line: #f5c4de;
+}
+body[data-theme="neve"] {
+  --ink: #27384d; --ink-soft: #5f7893; --sh: 39, 56, 77;
+  --bg-a: #eef6ff; --bg-b: #f8fcff; --bg-c: #e4f0fb;
+  --card: #ffffff; --line: #cfe2f2;
+}
 body.hc {
   --ink: #ffffff; --ink-soft: #ffff00; --sh: 0, 0, 0;
   --bg-a: #000; --bg-b: #000; --bg-c: #000; --card: #000; --line: #fff;
@@ -333,6 +348,26 @@ body.hc .av-row .av.sel { background: #333; }
 .th-espaco .swatch { background: linear-gradient(90deg, #131a33, #232c52); }
 .th-jardim .swatch { background: linear-gradient(90deg, #e4f6db, #f2fce9); }
 .th-arcoiris .swatch { background: linear-gradient(90deg, #ff8a8a, #ffd58a, #a8e88a, #8ad4ff, #c68aff); }
+.th-oceano .swatch { background: linear-gradient(90deg, #dff4ff, #2bb3a3); }
+.th-doces .swatch { background: linear-gradient(90deg, #ffdff0, #ff6b9d); }
+.th-neve .swatch { background: linear-gradient(90deg, #eef6ff, #a8d4ff); }
+/* v2.5: nota de desbloqueio das mascotes */
+.pet-note { width: 100%; font-size: 11px; font-weight: 700; color: var(--ink-soft); }
+/* v2.5: baú de recompensas — balanço alegre ao abrir */
+.chest-pop { display: inline-block; animation: chestShake .9s ease .15s both; }
+@keyframes chestShake {
+  0% { transform: rotate(0); } 20% { transform: rotate(-10deg) scale(1.05); }
+  40% { transform: rotate(9deg) scale(1.08); } 60% { transform: rotate(-7deg) scale(1.12); }
+  80% { transform: rotate(5deg) scale(1.16); } 100% { transform: rotate(0) scale(1.2); }
+}
+.chest-reward { font-size: 22px; font-weight: 900; color: var(--orange-dark); margin: 6px 0; }
+.ov-sub { font-weight: 700; color: var(--ink-soft); }
+/* v2.5: moldura do botão de perfil pela quantidade de conquistas */
+#btn-profile.fr-gold { box-shadow: 0 0 0 3px var(--gold), 0 3px 0 rgba(var(--sh), .15); }
+#btn-profile.fr-rb { box-shadow: 0 0 0 3px transparent, 0 3px 0 rgba(var(--sh), .15);
+  background: linear-gradient(45deg, #ff6b6b, #ffc93c, #2ed573, #4c7dff, #9b6bff) border-box; border: 2px solid transparent; }
+/* v2.5: conquistas secretas */
+.ach-card.secret { border-style: dashed; opacity: .85; }
 .shop-emoji { font-size: 30px; }
 #album-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; width: 100%; margin-top: 8px; }
 .stk { background: var(--card); border-radius: 10px; padding: 6px 0; text-align: center; font-size: 20px; opacity: .35; box-shadow: 0 2px 0 rgba(var(--sh), .08); }

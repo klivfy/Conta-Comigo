@@ -95,3 +95,11 @@ loja em que a extensão estiver publicada.
 
 Dúvidas sobre privacidade podem ser tratadas com o publicador da extensão por
 meio do canal indicado na página da loja em que ela foi instalada.
+
+## Backup do progresso (v2.5)
+
+O progresso (estrelas, conquistas, figurinhas, perfis) fica apenas no dispositivo. A partir da
+v2.5.0, o aplicativo oferece um botão de backup que gera um arquivo com data no nome, salvo onde o
+responsável escolher (geralmente a pasta de downloads). Esse arquivo fica sob controle exclusivo da
+família: o Conta Comigo não o envia a nenhum servidor. No Android via PWA, as regras são as mesmas:
+tudo roda localmente, sem servidores, sem contas e sem anúncios.

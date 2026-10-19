@@ -211,6 +211,7 @@
         <div class="opt-card">
           <h2>💾 <span data-i18n="data_set">Dados</span></h2>
           <div class="btn-line">
+            <button class="mini-btn" id="btn-backup-dl" data-i18n="backup_btn">Baixar backup datado</button>
             <button class="mini-btn" id="btn-export" data-i18n="exp_btn">Exportar (arquivo)</button>
             <button class="mini-btn" id="btn-copy" data-i18n="exp_copy">Copiar</button>
             <button class="mini-btn" id="btn-import" data-i18n="imp_btn">Importar do texto</button>
@@ -218,6 +219,7 @@
             <input type="file" id="imp-file" accept=".json,application/json" style="display:none">
           </div>
           <textarea id="imp-area" placeholder="…"></textarea>
+          <p class="opt-note" id="bk-hint"></p>
           <div class="btn-line" style="margin-top:10px">
             <button class="mini-btn danger-btn" id="btn-reset-p" data-i18n="reset_p">Apagar progresso deste jogador</button>
             <button class="mini-btn danger-btn" id="btn-reset-all" data-i18n="reset_all">Apagar tudo</button>
