@@ -3,7 +3,9 @@
    S01 faltar · S02 comparar · S03 sequencia · S04 dobrar · S05 historia · S06 dinheiro
    S07 adaptação por habilidade · S08 revisão espaçada · S21 multilíngue · S22 voz
    S27 perfis · S32 sync · migração v1 → v2
-   v2.2 pontos por rapidez · v2.3 portão parental por senha (hash local) */
+   v2.2 pontos por rapidez · v2.3 portão parental por senha (hash local)
+   v2.4 voz cordial Fase 1 do estudo (A-176..A-198): heurística de vozes naturais,
+   prosódia por pontuação em fila, biblioteca afetuosa, ducking, fallback local */
 
 /* ---------- utilidades ---------- */
 const $ = (s) => document.querySelector(s);
@@ -69,7 +71,7 @@ function newProfile(id, name, avatar) {
     bestCombo: 0, fatigue: 0, ach: {}, missions: { d: '', list: [] }, missionsDone: 0,
     owned: { themes: ['classico'], hats: [] }, hat: '', stickers: [],
     bossReady: false, assessed: false, played: {}, lvl: {}, weeks: [],
-    today: { d: '', rounds: 0, done: false }, reviewWins: 0,
+    today: { d: '', rounds: 0, done: false }, reviewWins: 0, persistRounds: 0,
   };
 }
 const DEFAULT_SETTINGS = {
@@ -77,6 +79,8 @@ const DEFAULT_SETTINGS = {
   mute: false, volume: 0.9, vRate: 0.95, vPitch: 1.15, vVoice: '',
   diffMode: 'auto', goalRounds: 3, sessionLimit: 15, sync: false,
   unlockAll: false, newtabOn: true, timer: true,
+  /* v2.4 — voz cordial: narração e efeitos independentes, tempo extra, menos movimento */
+  voiceOn: true, sfxOn: true, timeScale: 1, reduceMotion: false, shopOff: false,
   /* v2.3 — portão parental por senha (tudo fica no dispositivo) */
   passHash: '', passSalt: '', passHint: '', passSetAt: 0,
   passTries: 0, passLockUntil: 0, passOnboardDone: false,
@@ -195,8 +199,10 @@ function tone(freq, delay, dur, type, vol) {
     const t0 = actx.currentTime + delay;
     const o = actx.createOscillator(); const g = actx.createGain();
     o.type = type || 'sine'; o.frequency.setValueAtTime(freq, t0);
+    // v2.4 (A-185 mixagem clara): efeitos abaixam enquanto a narração fala
+    const duck = (typeof TTS !== 'undefined' && TTS.speakingNow) ? 0.35 : 1;
     g.gain.setValueAtTime(0.0001, t0);
-    g.gain.exponentialRampToValueAtTime((vol || 0.12) * (G().volume != null ? G().volume : 0.9), t0 + 0.02);
+    g.gain.exponentialRampToValueAtTime((vol || 0.12) * (G().volume != null ? G().volume : 0.9) * duck, t0 + 0.02);
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
     o.connect(g); g.connect(actx.destination);
     o.start(t0); o.stop(t0 + dur + 0.05);
@@ -207,13 +213,29 @@ const SFX = {
   correct: () => { tone(659, 0, 0.12, 'triangle', 0.12); tone(880, 0.1, 0.12, 'triangle', 0.12); tone(1175, 0.2, 0.25, 'triangle', 0.12); },
   wrong: () => { tone(233, 0, 0.18, 'sine', 0.09); tone(174, 0.16, 0.25, 'sine', 0.09); },
   star: () => { tone(1568, 0, 0.1, 'triangle', 0.08); tone(2093, 0.08, 0.16, 'triangle', 0.07); },
-  fanfare: () => { [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.13, 0.28, 'triangle', 0.11)); },
+  /* v2.4 (A-183): vitória com variações — nunca a mesma sequência duas vezes seguidas */
+  _fx: 0,
+  fanfare: () => {
+    const seqs = [[523, 659, 784, 1047], [392, 523, 659, 784], [523, 659, 784, 880, 1047]];
+    let i = rand(0, seqs.length - 1);
+    if (i === SFX._fx) i = (i + 1) % seqs.length;
+    SFX._fx = i;
+    seqs[i].forEach((f, j) => tone(f, j * 0.13, 0.28, 'triangle', 0.11));
+  },
 };
 
-/* ---------- voz configurável (S22) + narração por idioma (S21) ---------- */
+/* ---------- voz cordial (S22 + Fase 1 do estudo de voz, v2.4) ----------
+   A-176 heurística de vozes naturais/neurais · A-177 prosódia por pontuação em
+   fila com pausas calculadas · A-196 sem duplicatas em rajada · A-179 preferências
+   por perfil (pf.vRate/vPitch/vVoice) · fallback silencioso p/ voz local quando
+   uma voz Online falha · A-087/A-083 nenhum áudio continua fora de cena */
 const TTS = {
   ok: typeof window !== 'undefined' && 'speechSynthesis' in window,
   voices: [],
+  queue: [],
+  runner: null,
+  speakingNow: false,
+  lastText: '', lastAt: 0,
   init() {
     if (!this.ok) return;
     const upd = () => {
@@ -223,26 +245,97 @@ const TTS = {
     upd();
     try { window.speechSynthesis.addEventListener('voiceschanged', upd); }
     catch (e) { window.speechSynthesis.onvoiceschanged = upd; }
-  },
-  speak(text) {
-    if (!this.ok || G().mute || !text) return;
+    // A-087/A-083: trocar de aba ou fechar a janela corta a fala — nada "vaza" de cena
     try {
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      const want = TTS_LANG[G().lang] || 'pt-BR';
-      u.lang = want;
-      const vs = this.voices.filter((v) => v.lang && v.lang.replace('_', '-').indexOf(want.slice(0, 2)) === 0);
-      if (G().vVoice) {
-        const chosen = vs.find((v) => v.voiceURI === G().vVoice) || vs.find((v) => v.voiceURI === G().vVoice);
-        if (chosen) u.voice = chosen;
-      } else if (vs.length) u.voice = vs[0];
-      u.rate = clamp(G().vRate || 0.95, 0.5, 1.6);
-      u.pitch = clamp(G().vPitch || 1.15, 0.5, 2);
-      u.volume = 1;
-      window.speechSynthesis.speak(u);
+      document.addEventListener('visibilitychange', () => { if (document.hidden) this.stop(); });
+      window.addEventListener('pagehide', () => this.stop());
+      window.addEventListener('beforeunload', () => this.stop());
     } catch (e) { /* ignora */ }
   },
-  stop() { if (this.ok) { try { window.speechSynthesis.cancel(); } catch (e) { /* ignora */ } } },
+  /* pontuação de qualidade (A-176): naturais/neurais primeiro; locais ganham bônus
+     de estabilidade; a escolha manual do responsável sempre vence a heurística */
+  scoreVoice(v) {
+    const n = ((v.name || '') + ' ' + (v.voiceURI || '')).toLowerCase();
+    let s = 0;
+    if (/(natural|neural|online|studio|premium|enhanced|siri|eloquence)/.test(n)) s += 40;
+    if (/(google|microsoft|apple)/.test(n)) s += 10;
+    if (v.localService) s += 6;
+    return s;
+  },
+  pickVoice(want2) {
+    const vs = this.voices.filter((v) => v.lang && v.lang.replace('_', '-').toLowerCase().indexOf(want2) === 0);
+    if (!vs.length) return null;
+    const g = G();
+    const mine = (g.vVoice || '') || ((typeof P === 'function' && P() && P().vVoice) || '');
+    if (mine) { const c = vs.find((v) => v.voiceURI === mine); if (c) return c; }
+    return vs.slice().sort((a, b) => this.scoreVoice(b) - this.scoreVoice(a))[0];
+  },
+  stripEmoji(s) {
+    try { return String(s).replace(/\p{Extended_Pictographic}/gu, '').replace(/\s{2,}/g, ' ').trim(); }
+    catch (e) { return String(s); }
+  },
+  /* A-177: divide em segmentos prosódicos; a pausa cresce com a "força" da pontuação */
+  segments(text) {
+    const parts = String(text).split(/(?<=[.!?…])\s+|(?<=[:;])\s+/).filter(Boolean);
+    const out = parts.map((p) => ({
+      text: p,
+      pause: /…|\.\.\.$/.test(p) ? 420 : /[!?]$/.test(p) ? 300 : /[.]$/.test(p) ? 260 : 140,
+    }));
+    return out.length ? out : [{ text: String(text), pause: 0 }];
+  },
+  speak(text, opts) {
+    if (!this.ok || !G().voiceOn || G().mute || !text) return;
+    const now = Date.now();
+    if (!(opts && opts.force) && text === this.lastText && now - this.lastAt < 1800) return; // A-196
+    this.lastText = text; this.lastAt = now;
+    this.cancelQueue();
+    const calm = !!(opts && opts.calm); // A-194: repetir com calma (15% mais devagar)
+    this.queue = this.segments(this.stripEmoji(text)).map((s) => ({ text: s.text, pause: s.pause, calm }));
+    this.speakingNow = true;
+    this.next();
+  },
+  next() {
+    if (!this.ok) return;
+    const seg = this.queue.shift();
+    if (!seg) { this.speakingNow = false; return; }
+    try {
+      const g = G();
+      const want = TTS_LANG[g.lang] || 'pt-BR';
+      const prof = (typeof P === 'function' && P()) || {};
+      const rate = (typeof prof.vRate === 'number' ? prof.vRate : (g.vRate || 0.95)) * (seg.calm ? 0.85 : 1);
+      const pitch = (typeof prof.vPitch === 'number' ? prof.vPitch : (g.vPitch || 1.15));
+      const u = new SpeechSynthesisUtterance(seg.text);
+      u.lang = want;
+      const v = this.pickVoice(want.slice(0, 2).toLowerCase());
+      if (v) u.voice = v;
+      u.rate = clamp(rate, 0.5, 1.6);
+      u.pitch = clamp(pitch, 0.5, 2);
+      u.volume = 1;
+      const self = this;
+      u.onerror = () => {
+        // caminho B do estudo: voz Online falhou (sem rede) → cai em silêncio p/ voz local
+        if (v && v.localService === false) {
+          const local = self.voices.filter((x) => x.localService &&
+            x.lang && x.lang.replace('_', '-').toLowerCase().indexOf(want.slice(0, 2).toLowerCase()) === 0)[0];
+          if (local) {
+            try {
+              const u2 = new SpeechSynthesisUtterance(seg.text);
+              u2.voice = local; u2.lang = want; u2.rate = u.rate; u2.pitch = u.pitch;
+              window.speechSynthesis.speak(u2);
+            } catch (e) { /* ignora */ }
+          }
+        }
+      };
+      u.onend = () => { self.runner = setTimeout(() => self.next(), seg.pause); };
+      window.speechSynthesis.speak(u);
+    } catch (e) { this.speakingNow = false; }
+  },
+  cancelQueue() {
+    this.queue = [];
+    if (this.runner) { clearTimeout(this.runner); this.runner = null; }
+    try { window.speechSynthesis.cancel(); } catch (e) { /* ignora */ }
+  },
+  stop() { if (this.ok) { this.speakingNow = false; this.cancelQueue(); } },
 };
 
 /* ---------- portão parental: hash de senha (v2.3) ----------

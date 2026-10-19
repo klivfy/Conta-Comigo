@@ -30,6 +30,24 @@ const I18N = {
     praise: ['Muito bem!', 'Você é demais!', 'Isso mesmo!', 'Uau, que legal!', 'Acertou em cheio!'],
     retry: ['Quase! Tenta de novo.', 'Opa! Conta de novo.', 'Vamos tentar mais uma vez!'],
     hint: 'É este! Tente este!',
+    /* v2.4 — biblioteca cordial contextual (estudo de voz, caminho A) */
+    greet: ['Oi, {name}! Vamos brincar de contar?', 'Que bom te ver, {name}! Escolhe um joguinho?', 'Olá, {name}! Os números sentiram sua falta!'],
+    pr_fast: ['Uau, que mente rápida, {name}!', 'Que resposta rápida, {name}! Nem deu tempo da barra descer!', 'Rapidinho, {name}! Você é incrível!'],
+    pr_persist: ['Isso, {name}! Errar faz parte, e você conseguiu!', 'Você tentou de novo e deu certo, {name}! Estou muito orgulhosa!', 'Viu, {name}? Com calma, você consegue sempre!'],
+    pr_combo: ['{n} seguidas! A raposa está dançando de alegria!', 'Que corrente, {name}! Já são {n} sem errar!', 'Incrível, {name}! {n} acertos em sequência!'],
+    pr_record: ['Recorde novo, {name}! {n} pontos! Guardei no seu céu de estrelas.', 'Uau, {name}! Você nunca fez tantos pontos: {n}!', '{n} pontos, {name}! Esse é o seu melhor resultado!'],
+    pr_end: ['Rodada incrível, {name}! Guardei suas estrelas no céu.', 'Você foi muito bem, {name}! Os números ficaram felizes!', 'Que rodada bonita, {name}! Até a próxima!'],
+    pr_boss: ['Boa sorte, {name}! O chefe não ganha de você!', 'Respira fundo, {name}... você está prontinho!', 'Chegou a hora, {name}! Mostre ao chefe quem manda!'],
+    cm_err_item: ['Quase, {name}! Conta {art} {item} comigo, um por um.', 'Não foi dessa vez. Conta {art} {item} com calma, que eu te ajudo!', 'Está perto, {name}! Vamos contar {art} {item} juntos?'],
+    cm_err_plain: ['Quase, {name}! Respira fundo e tenta de novo, eu estou aqui.', 'Não foi dessa vez, {name}! Eu acredito em você. Vamos juntos?', 'Está perto, {name}! Com calma, você chega lá!'],
+    s_voice_on: 'Narração (voz)', s_sfx_on: 'Efeitos sonoros', s_sample: 'Ouvir amostra',
+    s_sample_txt: 'Olá! Eu sou a voz do Conta Comigo. Vamos contar juntos?',
+    s_natural_note: 'Sem escolha manual, o app procura sozinho as vozes mais naturais instaladas no sistema (ex.: “Natural”, “Neural”) e cai em silêncio para uma voz local se a escolhida falhar.',
+    s_tscale: 'Tempo por questão', ts_1: 'Normal', ts_15: '1,5 vezes mais', ts_2: '2 vezes mais',
+    s_rm: 'Reduzir movimentos e confetes', s_noshop: 'Esconder a loja das crianças',
+    a13: 'Não desisti', ad13: 'Venceu uma rodada depois de errar',
+    a14: 'Persistente', ad14: 'Venceu cinco rodadas depois de errar',
+    pp_voice: 'Voz do perfil', pp_default: 'Usar padrão geral', pp_saved: 'Voz do perfil salva!',
     // jogo
     combo: 'Combo x{n}! 🔥', end_great: 'Incrível! 🏆', end_good: 'Muito bem! 🎊',
     end_stars: 'Você ganhou {n} estrelas nesta rodada!', end_star1: 'Você ganhou 1 estrela nesta rodada!',
@@ -156,6 +174,24 @@ const I18N = {
     praise: ['Great job!', 'You\'re amazing!', 'That\'s right!', 'Wow, so cool!', 'Bullseye!'],
     retry: ['Almost! Try again.', 'Oops! Count again.', 'Let\'s try one more time!'],
     hint: 'This one! Try it!',
+    /* v2.4 — contextual cordial phrase library (voice study, path A) */
+    greet: ['Hi, {name}! Shall we play with numbers?', 'So good to see you, {name}! Pick a game!', 'Hello, {name}! The numbers missed you!'],
+    pr_fast: ['Wow, what a fast mind, {name}!', 'So quick, {name}! The bar barely moved!', 'Super fast, {name}! You are amazing!'],
+    pr_persist: ['Yes, {name}! Mistakes are part of it, and you did it!', 'You tried again and it worked, {name}! I am so proud!', 'See, {name}? Calmly, you can always do it!'],
+    pr_combo: ['{n} in a row! The fox is dancing with joy!', 'What a streak, {name}! {n} without missing!', 'Amazing, {name}! {n} answers in a row!'],
+    pr_record: ['New record, {name}! {n} points! Saved in your sky of stars.', 'Wow, {name}! You never scored so much: {n}!', '{n} points, {name}! Your best result ever!'],
+    pr_end: ['Amazing round, {name}! I saved your stars in the sky.', 'You did great, {name}! The numbers are happy!', 'What a lovely round, {name}! See you next time!'],
+    pr_boss: ['Good luck, {name}! The boss cannot beat you!', 'Take a deep breath, {name}... you are ready!', 'It is time, {name}! Show the boss who is in charge!'],
+    cm_err_item: ['Almost, {name}! Count the {item} with me, one by one.', 'Not this time. Count the {item} slowly, I will help you!', 'So close, {name}! Shall we count the {item} together?'],
+    cm_err_plain: ['Almost, {name}! Breathe and try again, I am here with you.', 'Not this time, {name}! I believe in you. Shall we try together?', 'So close, {name}! Take it slow, you will get there!'],
+    s_voice_on: 'Narration (voice)', s_sfx_on: 'Sound effects', s_sample: 'Play sample',
+    s_sample_txt: 'Hello! I am the voice of Conta Comigo. Let us count together!',
+    s_natural_note: 'Without a manual choice, the app finds by itself the most natural voices installed on the system (e.g., “Natural”, “Neural”) and falls back silently to a local voice if the chosen one fails.',
+    s_tscale: 'Time per question', ts_1: 'Normal', ts_15: '1.5 times more', ts_2: '2 times more',
+    s_rm: 'Reduce motion and confetti', s_noshop: 'Hide the shop from kids',
+    a13: 'Never gave up', ad13: 'Won a round after missing',
+    a14: 'Persistent', ad14: 'Won five rounds after missing',
+    pp_voice: 'Profile voice', pp_default: 'Use general default', pp_saved: 'Profile voice saved!',
     combo: 'Combo x{n}! 🔥', end_great: 'Amazing! 🏆', end_good: 'Well done! 🎊',
     end_stars: 'You earned {n} stars this round!', end_star1: 'You earned 1 star this round!',
     end_pts: '⚡ {n} points this round!', end_record: 'New points record!',
@@ -271,6 +307,24 @@ const I18N = {
     praise: ['¡Muy bien!', '¡Eres genial!', '¡Eso es!', '¡Qué genial!', '¡En el blanco!'],
     retry: ['¡Casi! Inténtalo de nuevo.', '¡Uy! Cuenta otra vez.', '¡Vamos a intentarlo otra vez!'],
     hint: '¡Este es! ¡Prueba este!',
+    /* v2.4 — biblioteca cordial contextual (estudio de voz, camino A) */
+    greet: ['¡Hola, {name}! ¿Jugamos con los números?', '¡Qué gusto verte, {name}! ¡Escoge un juego!', '¡Hola, {name}! ¡Los números te extrañaron!'],
+    pr_fast: ['¡Uau, qué mente rápida, {name}!', '¡Qué respuesta tan rápida, {name}! ¡Ni bajó la barra!', '¡Rapidísimo, {name}! ¡Eres increíble!'],
+    pr_persist: ['¡Eso, {name}! Equivocarse es parte, ¡y lo lograste!', '¡Lo intentaste otra vez y funcionó, {name}! ¡Estoy orgullosa!', '¿Ves, {name}? Con calma, ¡siempre puedes!'],
+    pr_combo: ['¡{n} seguidas! ¡La zorra está bailando de alegría!', '¡Qué cadena, {name}! ¡Ya van {n} sin fallar!', '¡Increíble, {name}! ¡{n} aciertos seguidos!'],
+    pr_record: ['¡Récord nuevo, {name}! ¡{n} puntos! Lo guardé en tu cielo de estrellas.', '¡Uau, {name}! ¡Nunca hiciste tantos puntos: {n}!', '¡{n} puntos, {name}! ¡Tu mejor resultado!'],
+    pr_end: ['¡Ronda increíble, {name}! Guardé tus estrellas en el cielo.', '¡Lo hiciste muy bien, {name}! ¡Los números quedaron felices!', '¡Qué ronda tan linda, {name}! ¡Hasta la próxima!'],
+    pr_boss: ['¡Buena suerte, {name}! ¡El jefe no puede contigo!', 'Respira hondo, {name}... ¡ya estás listo!', '¡Llegó la hora, {name}! ¡Muéstrale al jefe quién manda!'],
+    cm_err_item: ['¡Casi, {name}! Cuenta {art} {item} conmigo, uno por uno.', 'No fue esta vez. Cuenta {art} {item} con calma, ¡yo te ayudo!', '¡Estás cerca, {name}! ¿Contamos {art} {item} juntos?'],
+    cm_err_plain: ['¡Casi, {name}! Respira hondo e inténtalo de nuevo, estoy aquí.', 'No fue esta vez, {name}! ¡Creo en ti! ¿Vamos juntos?', '¡Estás cerca, {name}! Con calma llegarás, ¡tú puedes!'],
+    s_voice_on: 'Narración (voz)', s_sfx_on: 'Efectos de sonido', s_sample: 'Escuchar muestra',
+    s_sample_txt: '¡Hola! Soy la voz de Conta Comigo. ¡Contemos juntos!',
+    s_natural_note: 'Sin elección manual, el app encuentra solo las voces más naturales instaladas en el sistema (ej.: “Natural”, “Neural”) y cae en silencio a una voz local si la elegida falla.',
+    s_tscale: 'Tiempo por pregunta', ts_1: 'Normal', ts_15: '1,5 veces más', ts_2: '2 veces más',
+    s_rm: 'Reducir movimientos y confeti', s_noshop: 'Esconder la tienda de los niños',
+    a13: 'No me rendí', ad13: 'Ganó una ronda después de errar',
+    a14: 'Persistente', ad14: 'Ganó cinco rondas después de errar',
+    pp_voice: 'Voz del perfil', pp_default: 'Usar patrón general', pp_saved: '¡Voz del perfil guardada!',
     combo: '¡Combo x{n}! 🔥', end_great: '¡Increíble! 🏆', end_good: '¡Muy bien! 🎊',
     end_stars: '¡Ganaste {n} estrellas en esta ronda!', end_star1: '¡Ganaste 1 estrella en esta ronda!',
     end_pts: '⚡ {n} puntos en esta ronda!', end_record: '¡Nuevo récord de puntos!',
@@ -365,6 +419,13 @@ let LANG = 'pt';
 function t(key, vars) {
   let s = (I18N[LANG] && I18N[LANG][key] != null) ? I18N[LANG][key] : (I18N.pt[key] != null ? I18N.pt[key] : key);
   if (vars) for (const k in vars) s = s.split('{' + k + '}').join(String(vars[k]));
+  return s;
+}
+/* v2.4: variante para bibliotecas de frases (arrays) — escolhe aleatória e preenche */
+function tpick(key, vars) {
+  const arr = (I18N[LANG] && I18N[LANG][key]) || I18N.pt[key] || [key];
+  let s = (typeof rand === 'function' && arr.length) ? arr[rand(0, arr.length - 1)] : arr[0];
+  if (vars) for (const k in vars) s = String(s).split('{' + k + '}').join(String(vars[k]));
   return s;
 }
 const TTS_LANG = { pt: 'pt-BR', en: 'en-US', es: 'es-ES' };

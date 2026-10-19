@@ -475,3 +475,26 @@ body.page-mode .ov-emoji { font-size: 72px; }
 /* modo alto contraste: reforço geral */
 body.hc .mode-card, body.hc .special-row button, body.hc .shop-item, body.hc .ach-card, body.hc .big-btn.alt, body.hc #btn-repeat { border: 2px solid #fff; }
 body.hc .ans.hint { outline: 4px solid #ffff00; }
+
+/* ==================== v2.4 — voz cordial + acessibilidade ==================== */
+/* A-052: foco visível reforçado em todo o app (teclado e leitores de tela) */
+:focus-visible { outline: 3px solid #ff9800; outline-offset: 2px; border-radius: 8px; }
+/* A-050: menos movimento — animações praticamente instantâneas (confetes já
+   são cortados em JS; animationend continua disparando para limpeza) */
+body.rm *, body.rm *::before, body.rm *::after {
+  animation-duration: .001s !important;
+  animation-delay: 0s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .001s !important;
+}
+/* A-179: linha de voz por perfil no painel dos responsáveis */
+.pp-row {
+  display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center;
+  width: 100%; box-sizing: border-box; margin-top: 8px;
+  padding: 12px 14px; border: 2px dashed var(--line); border-radius: 14px;
+  background: rgba(var(--sh), .04);
+}
+.pp-row .pp-t { font-weight: 900; font-size: 14px; width: 100%; }
+.pp-row label { font-size: 12px; font-weight: 700; }
+.pp-row input[type="range"] { width: 120px; }
+.pp-row select { max-width: 230px; font-family: inherit; font-size: 13px; padding: 7px 9px; border-radius: 10px; border: 2px solid var(--line); background: var(--card); color: var(--ink); }

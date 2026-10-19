@@ -38,6 +38,24 @@ próprio navegador: os dados trafegam pela conta do usuário no navegador
 do Conta Comigo — nenhum servidor nosso participa desse fluxo, porque não
 existem servidores nossos.
 
+## Narração por voz (v2.4)
+
+A narração do jogo usa exclusivamente a **Web Speech API local do navegador**
+(`speechSynthesis`), com as vozes que já estão instaladas no sistema
+operacional do usuário. Sobre a voz:
+
+- o texto falado (perguntas, elogios e incentivos) é sintetizado **dentro do
+  próprio dispositivo** — nenhum texto da criança é enviado pela internet;
+- quando o responsável não escolhe uma voz manualmente, o app seleciona
+  automaticamente a voz mais natural disponível no sistema (heurística que
+  prefere vozes "Natural"/"Neural"); se uma voz que exige conexão falhar,
+  o app cai em silêncio para uma voz local;
+- as preferências de voz (velocidade, tom, voz) podem ser ajustadas por
+  perfil de jogador e ficam salvas apenas no dispositivo, junto do resto
+  do progresso;
+- a narração é interrompida automaticamente quando a aba/janela sai de
+  primeiro plano.
+
 ## Senha dos responsáveis (v2.3)
 
 A partir da versão 2.3, a área dos responsáveis pode ser protegida por uma

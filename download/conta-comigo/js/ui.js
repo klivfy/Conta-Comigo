@@ -1,18 +1,20 @@
 'use strict';
-/* ==================== Conta Comigo v2.1 — interface ====================
+/* ==================== Conta Comigo v2.4 — interface ====================
    S07 adaptação · S08 revisão · S10 fadiga · S11 metas · S12 avaliação
    S13 mascote evolutiva · S14 conquistas · S15 ofensiva · S16 missões
    S17 loja · S18 chefe · S20 teclado · S24 calmo · S28 limite de sessão · S30 duelo
-   v2.1: sem scripts/handlers inline (CSP MV3), ✕ fecha a janela dedicada */
+   v2.1: sem scripts/handlers inline (CSP MV3), ✕ fecha a janela dedicada
+   v2.4: biblioteca cordial contextual, saudação com nome, medalhas de persistência,
+   tempo extra, anti-repetição de posição, menos movimento (estudo de voz Fase 1) */
 
 const IS_PAGE = document.body.classList.contains('page-mode');
 const HAS_EXT = typeof chrome !== 'undefined' && !!chrome.runtime && !!chrome.runtime.getURL && !!chrome.windows && !!chrome.windows.create;
 
 /* ---------- estado da rodada ---------- */
 let R = {
-  kind: 'normal', mode: null, total: QUESTIONS_PER_ROUND, qIndex: 0, misses: 0,
+  kind: 'normal', mode: null, total: QUESTIONS_PER_ROUND, qIndex: 0, misses: 0, wrongs: 0,
   firsts: 0, stars: 0, points: 0, newRecord: false, combo: 0, history: [], due: [], diagI: 0, diagOK: 0,
-  duel: null, unlockedShown: [], locked: false,
+  duel: null, unlockedShown: [], locked: false, lastAnsPos: -1, bossIntro: false,
 };
 let sessionSec = 0;
 let bubbleTimer = null, toastTimer = null;
@@ -29,6 +31,10 @@ function applySettings() {
   document.body.dataset.theme = g.theme || 'classico';
   document.body.classList.toggle('hc', !!g.hc);
   document.body.classList.toggle('dys', !!g.dys);
+  // v2.4 (A-050): menos movimento — também respeitado nas confetes em JS
+  document.body.classList.toggle('rm', !!g.reduceMotion);
+  // v2.4 (A-101): modo sem loja — esconde o botão das crianças
+  const bs = $('#btn-shop'); if (bs) bs.classList.toggle('hidden', !!g.shopOff);
   const sysReduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const calm = g.calmo == null ? sysReduce : !!g.calmo;
   document.body.classList.toggle('calmo', !!calm);
@@ -68,6 +74,7 @@ function overlayOpen() { return !$('#overlay').classList.contains('hidden'); }
 /* ---------- confetes (respeitam modo calmo S24) ---------- */
 const CONF_COLORS = ['#ffc93c', '#ff6b6b', '#2ed573', '#4c7dff', '#9b6bff', '#ff9a3d'];
 function confetti(n) {
+  if (G().reduceMotion) return; // v2.4 (A-050): sem movimentos, sem confetes
   if (document.body.classList.contains('calmo')) n = Math.min(n, 8);
   const fx = $('#fx');
   for (let i = 0; i < n; i++) {
@@ -231,9 +238,9 @@ function renderDiffChips() {
 /* ==================== rodadas ==================== */
 function resetRound(kind, mode, total) {
   R = {
-    kind, mode: mode || null, total: total || QUESTIONS_PER_ROUND, qIndex: 0, misses: 0,
+    kind, mode: mode || null, total: total || QUESTIONS_PER_ROUND, qIndex: 0, misses: 0, wrongs: 0,
     firsts: 0, stars: 0, points: 0, newRecord: false, combo: 0, history: [], due: [], diagI: 0, diagOK: 0,
-    duel: R.duel, unlockedShown: [], locked: false,
+    duel: R.duel, unlockedShown: [], locked: false, lastAnsPos: -1, bossIntro: false,
   };
   Timer.hide();
   const chip = $('#pts-chip'); if (chip) chip.classList.add('hidden');
@@ -265,6 +272,7 @@ function startBoss() {
   R.mode = 'mistar';
   p.bossReady = false; saveState();
   showBubble('⚔️', t('boss_title'));
+  R.bossIntro = true; // v2.4: incentivo cordial falado junto da 1ª questão do chefe
   show('game'); nextQuestion();
 }
 const DIAG_LADDER = [['contar',1],['somar',1],['somar',2],['subtrair',2],['subtrair',3],['multiplicar',3],['dividir',3],['multiplicar',4]];
@@ -332,7 +340,16 @@ function nextQuestion() {
   box.innerHTML = '';
   box.classList.remove('locked');
   box.classList.toggle('n3', q.options.length === 3 && q.kind === 'cmp');
-  shuffle(q.options).forEach((opt, i) => {
+  let opts = shuffle(q.options);
+  // v2.4 (A-163): a resposta certa não cai na mesma posição 2× seguidas
+  const ansStr = String(q.answer);
+  if (opts.length > 1) {
+    for (let tries = 0; tries < 7 && opts.findIndex((o) => String(o) === ansStr) === R.lastAnsPos; tries++) {
+      opts = shuffle(q.options);
+    }
+    R.lastAnsPos = opts.findIndex((o) => String(o) === ansStr);
+  }
+  opts.forEach((opt, i) => {
     const b = document.createElement('button');
     b.className = 'ans';
     b.textContent = String(opt);
@@ -343,7 +360,10 @@ function nextQuestion() {
   });
   renderProgress();
   Timer.start(timeBudget(level, currentMode()));
-  setTimeout(() => TTS.speak(q.tts), 260);
+  // v2.4: incentivo do chefe falado na 1ª questão (fila prosódica junta as duas frases)
+  const intro = R.bossIntro ? tpick('pr_boss', { name: p.name }) + ' ' + q.tts : q.tts;
+  R.bossIntro = false;
+  setTimeout(() => TTS.speak(intro), 260);
 }
 function renderProgress() {
   const p = P();
@@ -388,7 +408,8 @@ const Timer = {
     const wrap = $('#timer-wrap');
     if (!wrap) return;
     if (!this.allowed()) { wrap.classList.add('hidden'); this.totalMs = 0; this.leftMs = 0; return; }
-    this.totalMs = sec * 1000; this.leftMs = this.totalMs; this.last = Date.now(); this.active = true;
+    const ts = clamp(Number(G().timeScale) || 1, 1, 3); // v2.4 (A-047): tempo extra configurável
+    this.totalMs = Math.round(sec * 1000 * ts); this.leftMs = this.totalMs; this.last = Date.now(); this.active = true;
     wrap.classList.remove('hidden', 'warn', 'low', 'out');
     wrap.setAttribute('aria-label', t('s_timer'));
     this.paint();
@@ -460,12 +481,21 @@ function bindCounting(q) {
       el.style.setProperty('--cnt', '"' + (i + 1) + '"');
       SFX.tap();
       const words = ['um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove', 'vinte'];
-      TTS.speak(words[i] || String(i + 1));
+      TTS.speak(words[i] || String(i + 1), { force: true }); // repetir o mesmo número é intencional
     });
   });
 }
 
 /* ---------- resposta ---------- */
+/* v2.4 (A-178): biblioteca cordial contextual — o elogio cita o nome, reconhece
+   rapidez, valoriza a persistência e comemora combos, sem spam de festa */
+function cordialPraise(firstTry, speedRatio) {
+  const name = P() ? P().name : '';
+  if (firstTry && speedRatio >= 0.55 && Math.random() < 0.65) return tpick('pr_fast', { name });
+  if (R.combo >= 3 && R.combo % 2 === 1) return tpick('pr_combo', { name, n: R.combo });
+  if (!firstTry) return tpick('pr_persist', { name });
+  return pick(I18N[LANG].praise);
+}
 function grantStars(n) {
   const p = P();
   p.stars += n; R.stars += n;
@@ -515,7 +545,7 @@ function onAnswer(btn) {
     $('#answers').classList.add('locked');
     SFX.correct(); if (firstTry) SFX.star();
     confetti(firstTry ? 30 : 18);
-    const pr = pick(I18N[LANG].praise);
+    const pr = cordialPraise(firstTry, speedRatio);
     showBubble(mascotStage().emoji, pr);
     TTS.speak(pr);
 
@@ -533,7 +563,7 @@ function onAnswer(btn) {
       else { if (R.kind === 'duel') R.duel.turn = R.duel.turn === 1 ? 2 : 1; nextQuestion(); }
     }, 1600);
   } else {
-    R.misses++;
+    R.misses++; R.wrongs++;
     P().wrongs++;
     P().fatigue++;
     bumpLvlStat(mode, R.level, false);
@@ -549,7 +579,13 @@ function onAnswer(btn) {
         showBubble('👉', t('hint'));
         TTS.speak(t('hint'));
       } else {
-        const r = pick(I18N[LANG].retry);
+        // v2.4 (A-178): acolhimento sem julgamento, citando os objetos da questão
+        // com artigo concordado (as maçãs / os morangos · pt/es; "the" no en)
+        const f = R.current && R.current.f;
+        const itPl = (f && ITEMS[f.it]) ? ITEMS[f.it].plural : '';
+        const fem = !!(f && ITEMS[f.it] && ITEMS[f.it].f);
+        const art = fem ? (LANG === 'es' ? 'las' : 'as') : (LANG === 'es' ? 'los' : 'os');
+        const r = itPl ? tpick('cm_err_item', { name: P().name, item: itPl, art }) : tpick('cm_err_plain', { name: P().name });
         showBubble('🙈', r); TTS.speak(r);
       }
     }
@@ -594,6 +630,11 @@ function endRound() {
   } else if (R.kind === 'normal' && p.rounds % 5 === 0) {
     p.bossReady = true; bossMsg = t('boss_ready');
   }
+  // v2.4 (A-118/A-128): rodada vencida depois de errar alimenta as medalhas de
+  // persistência — ANTES do checkAch, para a medalha sair nesta própria rodada
+  if (R.kind === 'normal' && R.wrongs >= 1 && R.firsts >= 3) {
+    p.persistRounds = (p.persistRounds || 0) + 1;
+  }
   checkAch();
   saveState(true);
 
@@ -634,6 +675,13 @@ function endRound() {
     if (R.newRecord) { p.bestPts = p.bestPts || {}; p.bestPts[key] = R.points; }
     saveState(true); // grava o recorde imediatamente (saveState anterior acontece antes dele)
   }
+  // v2.4 (A-144): parabéns personalizado falado — recorde tem fala própria
+  let spoken = '';
+  if (R.kind === 'normal' || R.kind === 'review') {
+    spoken = R.newRecord && R.points > 0
+      ? tpick('pr_record', { name: p.name, n: R.points })
+      : tpick('pr_end', { name: p.name });
+  }
   const endPts = $('#end-pts');
   if (endPts) {
     if (R.points > 0) {
@@ -646,6 +694,7 @@ function endRound() {
   const hist = $('#end-history');
   hist.innerHTML = '<b>' + t('history') + '</b><div class="hist-list">' +
     R.history.map((h) => '<span class="hrow' + (h.ok ? ' ok' : ' no') + '">' + (h.ok ? '✅' : '🔁') + ' ' + h.txt + '</span>').join('') + '</div>';
+  if (spoken) setTimeout(() => TTS.speak(spoken), 1100); // após a fanfarra
   renderHome();
 }
 
@@ -663,6 +712,9 @@ const ACHS = [
   { id: 'a10', cond: (p) => (p.reviewWins || 0) >= 10 },
   { id: 'a11', cond: (p) => (p.missionsDone || 0) >= 5 },
   { id: 'a12', cond: (p) => !!p.firstBuy },
+  /* v2.4 (A-118/A-128): medalhas de persistência — errar faz parte, insistir vale medalha */
+  { id: 'a13', cond: (p) => (p.persistRounds || 0) >= 1 },
+  { id: 'a14', cond: (p) => (p.persistRounds || 0) >= 5 },
 ];
 function checkAch() {
   const p = P();
@@ -892,7 +944,7 @@ function bindStatic() {
   $('#btn-profile').addEventListener('click', () => { SFX.tap(); renderProfilePop(); $('#pop-profile').classList.toggle('hidden'); });
   $('#btn-again').addEventListener('click', () => { ensureAudio(); SFX.tap(); R.kind === 'duel' ? startDuelSetup() : startRound(R.mode || 'somar'); });
   $('#btn-menu').addEventListener('click', () => { TTS.stop(); SFX.tap(); renderHome(); show('home'); });
-  $('#btn-repeat').addEventListener('click', () => { ensureAudio(); SFX.tap(); if (R.current) TTS.speak(R.current.tts); });
+  $('#btn-repeat').addEventListener('click', () => { ensureAudio(); SFX.tap(); if (R.current) TTS.speak(R.current.tts, { calm: true }); });
   $('#btn-shop').addEventListener('click', () => { SFX.tap(); renderShop(); show('shop'); });
   $('#btn-ach').addEventListener('click', () => { SFX.tap(); renderAch(); show('ach'); });
   $('#shop-back').addEventListener('click', () => { SFX.tap(); renderHome(); show('home'); });
@@ -942,7 +994,7 @@ function onKey(e) {
   }
   if ($('#screen-game').classList.contains('active')) {
     if (e.key >= '1' && e.key <= '4') { const b = $$('#answers .ans')[Number(e.key) - 1]; if (b) b.click(); }
-    else if (e.key === 'Enter' || e.key.toLowerCase() === 'r') { if (R.current) TTS.speak(R.current.tts); }
+    else if (e.key === 'Enter' || e.key.toLowerCase() === 'r') { if (R.current) TTS.speak(R.current.tts, { calm: true }); }
     else if (e.key.toLowerCase() === 'h') $('#btn-home').click();
   } else if (e.key.toLowerCase() === 'm') $('#btn-mute').click();
   if (e.key === 'Escape') closePopovers();
@@ -970,6 +1022,15 @@ async function boot() {
   ensureMissions();
   renderHome();
   show('home');
+  // v2.4 (A-198): saudação cordial com o nome — o 1º toque libera o áudio no navegador
+  const greet = () => {
+    const home = $('#screen-home');
+    if (!home || !home.classList.contains('active') || overlayOpen()) return;
+    const line = tpick('greet', { name: P().name });
+    showBubble(mascotStage().emoji, line);
+    TTS.speak(line);
+  };
+  document.addEventListener('pointerdown', () => setTimeout(greet, 350), { once: true });
   // v2.3: onboarding da senha dos responsáveis na sessão inicial (uma única vez)
   if (!G().passHash && !G().passOnboardDone) setTimeout(showOnboarding, 700);
   if (HAS_EXT && typeof chrome !== 'undefined' && chrome.tabs) {

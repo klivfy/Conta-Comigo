@@ -4,6 +4,7 @@
    Painel S26/S09 · Perfis S27 · Exportar/Importar S29 · Segurança (alterar senha) */
 
 let gateTriesTimer = null;
+let ppOpen = null; // v2.4: linha de voz por perfil aberta no painel (id do perfil ou null)
 
 /* ---------- portão parental (v2.3: senha + lembrete + bloqueio progressivo) ---------- */
 function gateHasPass() { return !!G().passHash && !!G().passSalt; }
@@ -167,6 +168,14 @@ function renderOptions() {
   $('#set-timer').checked = g.timer !== false; // v2.2: ligado por padrão
   $('#set-lang').value = g.lang || 'pt';
   $('#set-mute').checked = !!g.mute;
+  $('#set-voice-on').checked = g.voiceOn !== false; // v2.4 (A-186)
+  $('#set-sfx-on').checked = g.sfxOn !== false; // v2.4 (A-186)
+  $('#set-tscale').value = String(g.timeScale || 1); // v2.4 (A-047)
+  $('#set-tscale').options[0].text = t('ts_1');
+  $('#set-tscale').options[1].text = t('ts_15');
+  $('#set-tscale').options[2].text = t('ts_2');
+  $('#set-rm').checked = !!g.reduceMotion; // v2.4 (A-050)
+  $('#set-noshop').checked = !!g.shopOff; // v2.4 (A-101)
   $('#set-vol').value = String(Math.round((g.volume != null ? g.volume : 0.9) * 100));
   $('#set-rate').value = String(Math.round((g.vRate || 0.95) * 100));
   $('#set-pitch').value = String(Math.round((g.vPitch || 1.15) * 100));
@@ -189,7 +198,7 @@ function renderOptions() {
   $('#set-sync').checked = !!g.sync;
   renderSec();
   $('#imp-area').placeholder = t('imp_ph');
-  $('#opt-version').textContent = t('version') + ': 2.3.0';
+  $('#opt-version').textContent = t('version') + ': 2.4.0';
 }
 
 /* ---------- painel (S26 + S09) ---------- */
@@ -228,16 +237,34 @@ function renderDash() {
     : '<span class="opt-note">—</span>';
 }
 
-/* ---------- perfis (S27) ---------- */
+/* ---------- perfis (S27) + voz por perfil (v2.4, A-179) ---------- */
+function voiceOptionsHtml(selected) {
+  const want = (TTS_LANG[G().lang] || 'pt-BR').slice(0, 2).toLowerCase();
+  const vs = TTS.voices.filter((v) => v.lang && v.lang.replace('_', '-').toLowerCase().indexOf(want) === 0);
+  return '<option value="">—</option>' + vs.map((v) =>
+    '<option value="' + v.voiceURI + '"' + (selected === v.voiceURI ? ' selected' : '') + '>' + v.name + '</option>').join('');
+}
 function renderProfList() {
+  const g = G();
   $('#prof-list').innerHTML = DB.profiles.map((pf) => {
     const cur = pf.id === DB.activeId;
+    const pp = pf.id === ppOpen ? (
+      '<div class="pp-row">' +
+      '<span class="pp-t">🎙️ ' + t('pp_voice') + '</span>' +
+      '<label>' + t('s_rate') + '</label><input type="range" min="60" max="160" step="5" value="' + Math.round((pf.vRate != null ? pf.vRate : (g.vRate || 0.95)) * 100) + '" data-pprate="' + pf.id + '">' +
+      '<label>' + t('s_pitch') + '</label><input type="range" min="50" max="200" step="5" value="' + Math.round(pf.vPitch != null ? pf.vPitch : (g.vPitch || 1.15) * 100) + '" data-pppitch="' + pf.id + '">' +
+      '<select data-ppvoice="' + pf.id + '">' + voiceOptionsHtml(pf.vVoice || '') + '</select>' +
+      '<button class="mini-btn" data-ppreset="' + pf.id + '">' + t('pp_default') + '</button>' +
+      '</div>'
+    ) : '';
     return '<div class="prof-line" data-pid="' + pf.id + '">' +
       '<span style="font-size:24px">' + pf.avatar + '</span>' +
       '<input value="' + pf.name.replace(/"/g, '&quot;') + '" data-name="' + pf.id + '">' +
       '<div class="av-row">' + AVATARS.map((a) => '<button class="av' + (a === pf.avatar ? ' sel' : '') + '" data-setav="' + pf.id + '">' + a + '</button>').join('') + '</div>' +
       '<button class="mini-btn' + (cur ? ' using' : '') + '" data-use="' + pf.id + '">' + (cur ? t('in_use') : t('equip')) + '</button>' +
+      '<button class="mini-btn" data-pp="' + pf.id + '" title="' + t('pp_voice') + '">🎙️</button>' +
       (DB.profiles.length > 1 ? '<button class="mini-btn danger-btn" data-del="' + pf.id + '">✕</button>' : '') +
+      pp +
       '</div>';
   }).join('');
   $$('#prof-list [data-name]').forEach((inp) => inp.addEventListener('change', () => {
@@ -250,6 +277,30 @@ function renderProfList() {
   }));
   $$('#prof-list [data-use]').forEach((b) => b.addEventListener('click', () => {
     DB.activeId = b.dataset.use; saveState(true); renderOptions();
+  }));
+  // v2.4 (A-179): abrir/fechar a linha de voz do perfil
+  $$('#prof-list [data-pp]').forEach((b) => b.addEventListener('click', () => {
+    ppOpen = (ppOpen === b.dataset.pp) ? null : b.dataset.pp;
+    renderProfList();
+  }));
+  $$('#prof-list [data-pprate]').forEach((inp) => inp.addEventListener('input', () => {
+    const pf = DB.profiles.find((x) => x.id === inp.dataset.pprate);
+    if (pf) { pf.vRate = Number(inp.value) / 100; saveState(true); }
+  }));
+  $$('#prof-list [data-pppitch]').forEach((inp) => inp.addEventListener('input', () => {
+    const pf = DB.profiles.find((x) => x.id === inp.dataset.pppitch);
+    if (pf) { pf.vPitch = Number(inp.value) / 100; saveState(true); }
+  }));
+  $$('#prof-list [data-ppvoice]').forEach((sel) => sel.addEventListener('change', () => {
+    const pf = DB.profiles.find((x) => x.id === sel.dataset.ppvoice);
+    if (pf) { pf.vVoice = sel.value; saveState(true); toastOpt('🎙️ ' + t('pp_saved')); }
+  }));
+  $$('#prof-list [data-ppreset]').forEach((b) => b.addEventListener('click', () => {
+    const pf = DB.profiles.find((x) => x.id === b.dataset.ppreset);
+    if (pf) {
+      delete pf.vRate; delete pf.vPitch; delete pf.vVoice;
+      saveState(true); renderProfList(); toastOpt('🎙️ ' + t('pp_default'));
+    }
   }));
   $$('#prof-list [data-del]').forEach((b) => b.addEventListener('click', () => {
     if (!confirm(t('confirm_reset'))) return;
@@ -325,6 +376,14 @@ function bindOptions() {
   $('#set-timer').addEventListener('change', (e) => { G().timer = e.target.checked; set(); });
   $('#set-lang').addEventListener('change', (e) => { G().lang = e.target.value; G().vVoice = ''; set(); renderOptions(); });
   $('#set-mute').addEventListener('change', (e) => { G().mute = e.target.checked; set(); });
+  // v2.4: narração e efeitos independentes + tempo extra + menos movimento + sem loja
+  $('#set-voice-on').addEventListener('change', (e) => { G().voiceOn = e.target.checked; set(); });
+  $('#set-sfx-on').addEventListener('change', (e) => { G().sfxOn = e.target.checked; set(); });
+  $('#set-tscale').addEventListener('change', (e) => { G().timeScale = Number(e.target.value); set(); });
+  $('#set-rm').addEventListener('change', (e) => { G().reduceMotion = e.target.checked; document.body.classList.toggle('rm', !!e.target.checked); set(); });
+  $('#set-noshop').addEventListener('change', (e) => { G().shopOff = e.target.checked; set(); });
+  // v2.4 (A-180): ouvir amostra com as configurações atuais da voz
+  $('#btn-voice-sample').addEventListener('click', () => { TTS.speak(t('s_sample_txt'), { force: true }); });
   $('#set-vol').addEventListener('input', (e) => { G().volume = Number(e.target.value) / 100; set(); });
   $('#set-rate').addEventListener('input', (e) => { G().vRate = Number(e.target.value) / 100; set(); });
   $('#set-pitch').addEventListener('input', (e) => { G().vPitch = Number(e.target.value) / 100; set(); });
@@ -372,7 +431,7 @@ function bindOptions() {
 async function bootOptions() {
   await initDB();
   TTS.init();
-  TTS.onVoices = fillVoices;
+  TTS.onVoices = () => { fillVoices(); if (ppOpen) renderProfList(); };
   bindOptions();
   showGate();
   renderOptions();

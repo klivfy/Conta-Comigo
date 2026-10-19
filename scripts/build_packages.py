@@ -20,7 +20,11 @@ SRC = "/home/z/my-project/download/conta-comigo"
 FF  = "/home/z/my-project/download/conta-comigo-firefox"
 OUT = "/home/z/my-project/download"
 OLD_ZIP = os.path.join(OUT, "conta-comigo-extension.zip")
-VERSION = "2.3.0"
+# v2.4: VERSION aceito por argumento (build_packages.py VERSION=2.4.0) — padrão do manifest
+VERSION = "2.4.0"
+for a in sys.argv[1:]:
+    if a.upper().startswith("VERSION="):
+        VERSION = a.split("=", 1)[1].strip()
 ZIP_CHROME = os.path.join(OUT, f"conta-comigo-chrome-{VERSION}.zip")
 ZIP_FF     = os.path.join(OUT, f"conta-comigo-firefox-{VERSION}.zip")
 
@@ -81,10 +85,15 @@ def main():
     zip_dir(FF, ZIP_FF, INCLUDE)
     print(f"[OK] Firefox:  {ZIP_FF} ({os.path.getsize(ZIP_FF)//1024} KB)")
 
-    # ---------- 3) Remove zip antigo (build única com background dual)
-    if os.path.exists(OLD_ZIP):
-        os.remove(OLD_ZIP)
-        print(f"[OK] removido pacote antigo: {OLD_ZIP}")
+    # ---------- 3) Remove zips de versões anteriores (mantém só a atual)
+    import glob as _glob
+    for old in _glob.glob(os.path.join(OUT, "conta-comigo-chrome-*.zip")) + \
+               _glob.glob(os.path.join(OUT, "conta-comigo-firefox-*.zip")) + \
+               [OLD_ZIP]:
+        if os.path.abspath(old) != os.path.abspath(ZIP_CHROME) and \
+           os.path.abspath(old) != os.path.abspath(ZIP_FF) and os.path.exists(old):
+            os.remove(old)
+            print(f"[OK] removido pacote antigo: {os.path.basename(old)}")
 
     # ---------- 4) Validação final
     for label, path, bg_must, top_must, must_not in [

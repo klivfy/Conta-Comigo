@@ -142,6 +142,7 @@
           <div class="opt-row"><label data-i18n="s_unlock">Destravar todos os modos</label><input type="checkbox" id="set-unlock"></div>
           <div class="opt-row"><label data-i18n="s_newtab">Continha na nova aba</label><input type="checkbox" id="set-newtab"></div>
           <p class="opt-note" data-i18n="s_newtab_note"></p>
+          <div class="opt-row"><label data-i18n="s_noshop">Esconder a loja</label><input type="checkbox" id="set-noshop"></div>
         </div>
 
         <div class="opt-card">
@@ -150,10 +151,14 @@
             <select id="set-lang"><option value="pt">Português (BR)</option><option value="en">English</option><option value="es">Español</option></select>
           </div>
           <div class="opt-row"><label data-i18n="s_mute">Silenciar</label><input type="checkbox" id="set-mute"></div>
+          <div class="opt-row"><label data-i18n="s_voice_on">Narração (voz)</label><input type="checkbox" id="set-voice-on"></div>
+          <div class="opt-row"><label data-i18n="s_sfx_on">Efeitos sonoros</label><input type="checkbox" id="set-sfx-on"></div>
           <div class="opt-row"><label data-i18n="s_vol">Volume</label><input type="range" id="set-vol" min="0" max="100" step="5"></div>
           <div class="opt-row"><label data-i18n="s_rate">Velocidade da voz</label><input type="range" id="set-rate" min="60" max="140" step="5"></div>
           <div class="opt-row"><label data-i18n="s_pitch">Tom da voz</label><input type="range" id="set-pitch" min="50" max="200" step="5"></div>
           <div class="opt-row"><label data-i18n="s_voice">Voz da narração</label><select id="set-voice"></select></div>
+          <div class="opt-row"><label data-i18n="s_sample">Ouvir amostra</label><button class="mini-btn" id="btn-voice-sample">🔊</button></div>
+          <p class="opt-note" data-i18n="s_natural_note"></p>
         </div>
 
         <div class="opt-card">
@@ -166,6 +171,7 @@
           </div>
           <div class="opt-row"><label data-i18n="s_hc">Alto contraste</label><input type="checkbox" id="set-hc"></div>
           <div class="opt-row"><label data-i18n="s_dys">Fonte para dislexia</label><input type="checkbox" id="set-dys"></div>
+          <div class="opt-row"><label data-i18n="s_rm">Reduzir movimentos</label><input type="checkbox" id="set-rm"></div>
           <div class="opt-row"><label data-i18n="s_calmo">Modo calmo</label>
             <select id="set-calmo"><option value="auto"></option><option value="on"></option><option value="off"></option></select>
           </div>
@@ -175,6 +181,9 @@
           <h2>⏱️ <span data-i18n="time_set">Tempo e metas</span></h2>
           <div class="opt-row"><label data-i18n="s_timer">Cronômetro de pontos</label><input type="checkbox" id="set-timer"></div>
           <p class="opt-note" data-i18n="s_timer_note"></p>
+          <div class="opt-row"><label data-i18n="s_tscale">Tempo por questão</label>
+            <select id="set-tscale"><option value="1"></option><option value="1.5"></option><option value="2"></option></select>
+          </div>
           <div class="opt-row"><label data-i18n="s_goal">Meta diária (rodadas)</label>
             <select id="set-goal"><option value="0"></option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option></select>
           </div>

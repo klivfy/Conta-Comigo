@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Conta Comigo v2.3 — demonstração e instalação</title>
+  <title>Conta Comigo v2.4 — demonstração e instalação</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
     body { width: auto; height: auto; min-height: 100vh; overflow: auto; }
@@ -33,7 +33,7 @@
   <div class="demo-wrap">
     <div class="demo-hero">
       <div class="mascot" style="font-size:72px"><span class="mascot-main">🦊</span></div>
-      <h1>Conta Comigo v2.3</h1>
+      <h1>Conta Comigo v2.4</h1>
       <p>Matemática lúdica para crianças a partir de 4 anos — extensão Chromium + Firefox</p>
     </div>
 
@@ -51,6 +51,24 @@
             <a class="demo-btn alt" href="newtab.html" target="_blank">🔄 Continha da nova aba</a>
           </div>
           <p>A partir da v2.1, clicar no ícone da extensão abre o jogo <b>sempre numa janela nativa em tela cheia</b> — nunca mais no popup pequeno. O iframe ao lado mostra apenas a versão mini de demonstração; o ⛶ dentro dela continua abrindo a janela cheia.</p>
+        </div>
+
+        <div class="panel">
+          <h2>✨ Novidades da v2.4 — a voz que acolhe (Fase 1 do estudo)</h2>
+          <div class="feat-grid">
+            <div class="feat"><b>🎙️</b> <b>Vozes naturais automaticamente</b>: o app procura as vozes mais bonitas instaladas (Natural/Neural do Edge, Windows, macOS) — a escolha manual dos responsáveis continua valendo mais</div>
+            <div class="feat"><b>💭</b> <b>Narração com respiração</b>: prosódia por pontuação — vírgula pausa pouco, ponto pausa mais, reticências criam suspense</div>
+            <div class="feat"><b>💗</b> <b>Biblioteca cordial contextual</b>: elogios com o nome da criança, celebra a resposta rápida, valoriza quem tenta de novo, acolhe no erro sem julgamento (em PT/EN/ES)</div>
+            <div class="feat"><b>👋</b> Saudação com o nome ao chegar e parabéns personalizados no fim da rodada (com fala própria para recorde novo)</div>
+            <div class="feat"><b>🎚️</b> <b>Voz por perfil</b>: o ritmo ideal de 4 anos não é o de 9 — velocidade, tom e voz guardados para cada jogador</div>
+            <div class="feat"><b>🔊</b> Botão <b>ouvir amostra</b>, narração e efeitos sonoros <b>separados</b>, mixagem que abaixa os efeitos enquanto a voz fala</div>
+            <div class="feat"><b>⏰</b> Tempo extra por questão (1,5×/2×) para perfis que precisam de calma</div>
+            <div class="feat"><b>🧘</b> Reduzir movimentos e confetes + foco visível reforçado (acessibilidade)</div>
+            <div class="feat"><b>🏅</b> Medalhas de persistência: errar faz parte — vencer depois de errar agora vale medalha (2 novas conquistas)</div>
+            <div class="feat"><b>🔀</b> A resposta certa nunca cai na mesma posição duas vezes seguidas</div>
+            <div class="feat"><b>🛍️</b> Modo “esconder a loja” e narração que silencia ao trocar de aba (nada vaza de cena)</div>
+            <div class="feat"><b>🔒</b> Portão parental por senha da v2.3 mantido — onboarding, lembrete de segurança, bloqueio progressivo</div>
+          </div>
         </div>
 
         <div class="panel">
@@ -110,7 +128,7 @@
           <h2>🧩 Instalação no Chromium (Chrome, Edge, Brave, Opera)</h2>
           <ol>
             <li><b>Importante:</b> se já havia uma versão instalada, <b>remova-a</b> primeiro em <code>chrome://extensions</code> → <i>Remover</i> (os erros de CSP reportados vêm da build antiga ainda carregada).</li>
-            <li>Descompacte o arquivo <code>conta-comigo-chrome-2.3.0.zip</code>.</li>
+            <li>Descompacte o arquivo <code>conta-comigo-chrome-2.4.0.zip</code>.</li>
             <li>Abra <code>chrome://extensions</code> (ou <code>edge://extensions</code>).</li>
             <li>Ative o <b>Modo do desenvolvedor</b> (canto superior direito).</li>
             <li>Clique em <b>Carregar sem compactação</b> e escolha a pasta descompactada.</li>
@@ -122,7 +140,7 @@
         <div class="panel">
           <h2>🦊 Instalação no Firefox</h2>
           <ol>
-            <li>Descompacte o arquivo <code>conta-comigo-firefox-2.3.0.zip</code> (build própria do Firefox, com <i>event page</i>).</li>
+            <li>Descompacte o arquivo <code>conta-comigo-firefox-2.4.0.zip</code> (build própria do Firefox, com <i>event page</i>).</li>
             <li>Abra <code>about:debugging#/runtime/this-firefox</code>.</li>
             <li>Clique em <b>Carregar add-on temporário</b>.</li>
             <li>Selecione o <code>manifest.json</code> da pasta descompactada.</li>
@@ -132,7 +150,7 @@
 
         <div class="panel">
           <h2>🔒 Privacidade</h2>
-          <p>Tudo funciona offline e fica salvo apenas neste navegador (<code>chrome.storage.local</code>). Nenhum dado sai do computador — sem contas, sem anúncios, sem rastreamento. A sincronização (S32) é opcional e usa a própria conta do navegador. A senha dos responsáveis (v2.3) é guardada apenas como <b>hash SHA-256 com sal aleatório</b>, junto do lembrete de segurança escolhido pelo adulto.</p>
+          <p>Tudo funciona offline e fica salvo apenas neste navegador (<code>chrome.storage.local</code>). Nenhum dado sai do computador — sem contas, sem anúncios, sem rastreamento. A sincronização (S32) é opcional e usa a própria conta do navegador. A senha dos responsáveis (v2.3) é guardada apenas como <b>hash SHA-256 com sal aleatório</b>, junto do lembrete de segurança escolhido pelo adulto. A narração da v2.4 usa as <b>vozes do próprio sistema</b> (Web Speech API local): nenhum texto da criança vai para a internet.</p>
         </div>
       </div>
     </div>

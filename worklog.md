@@ -211,3 +211,26 @@ Work Log:
 Stage Summary:
 - Rodada 8 100% íntegra e confirmada: nenhum retrabalho necessário; entrega comunicada ao usuário com relatório em PT-BR.
 - Lições registradas: validar PDFs mesclados com poppler/qpdf (não pypdf); QA da extensão usa localStorage fallback ao abrir game.html direto no navegador.
+
+---
+Task ID: 11
+Agent: Z.ai (agente principal)
+Task: v2.4.0 — implementar a Fase 1 do estudo de voz (motor local aprimorado) + lote de alto impacto da planilha 750 (usuário: "Siga com elas").
+
+Work Log:
+- Lote definido (21 itens do alto impacto, faixa v2.4-v2.5): A-176 heurística de vozes naturais, A-177 prosódia por pontuação, A-178 biblioteca cordial contextual, A-179 voz por perfil, A-180 ouvir amostra, A-183 fanfarra com variações, A-185 ducking dos efeitos, A-186 toggles voz/efeitos separados, A-194 repetir com calma (-15% rate), A-196 fila sem duplicatas, A-198 saudação com nome, A-144 parabéns personalizado, A-087/A-083 TTS.stop em visibilitychange/pagehide/beforeunload, A-047 tempo extra (1x/1,5x/2x), A-050 reduzir movimento, A-052 foco visível, A-118+A-128 medalhas de persistência (a13/a14), A-163 anti-repetição de posição, A-101 modo sem loja. (A-071 e A-210 já existiam na v2.3.)
+- engine.js: TTS reescrito — scoreVoice (Natural/Neural/Online/Studio/Premium +40; Google/Microsoft/Apple +10; localService +6; escolha manual vence), pickVoice, stripEmoji (\p{Extended_Pictographic}), segments (pausas 420/300/260/140ms por pontuação), fila com runner onend→setTimeout, dedupe 1,8s (force para contagem falada), onerror→fallback voz local quando voz Online falha, preferências pf.vRate/vPitch/vVoice herdando do global; ducking 0,35 em tone(); SFX.fanfare 3 sequências; DEFAULT_SETTINGS voiceOn/sfxOn/timeScale/reduceMotion/shopOff; newProfile.persistRounds.
+- i18n.js: biblioteca cordial ×3 idiomas (greet, pr_fast, pr_persist, pr_combo, pr_record, pr_end, pr_boss, cm_err_item, cm_err_plain) + s_voice_on/s_sfx_on/s_sample/s_sample_txt/s_natural_note/s_tscale/ts_*/s_rm/s_noshop/a13/ad13/a14/ad14/pp_*; helper tpick() para arrays.
+- ui.js: cordialPraise (rápida 65% @ratio≥0,55 > combo ímpar ≥3 > persistência > base), acolhimento no erro com artigo concordado {art} (as maçãs/los pintinhos/the), saudação pós 1º pointerdown (overlay aberto desiste), fala de fim de rodada (recorde/pr_end) após fanfarra, incentivo do chefe na 1ª questão, Timer.start×timeScale, confetti corta com reduceMotion, applySettings aplica .rm e esconde loja, btn-repeat/tecla R com {calm:true}, R.wrongs por rodada.
+- Correções de bugs no QA: (1) R.misses é por questão — persistRounds não contava; criado R.wrongs por rodada e movido o incremento para ANTES do checkAch (medalha sai na mesma rodada); (2) artigo errado "os flores" — placeholder {art} com gênero do item (pt/es).
+- options.js/html: controles novos (voz, efeitos, tempo por questão, reduzir movimentos, esconder loja, 🔊 amostra), voz por perfil por meio de 🎙️ em cada linha (sliders + select de voz + "usar padrão geral"), versão 2.4.0; TTS.onVoices re-renderiza linha aberta.
+- style.css: :focus-visible global, body.rm (animações ~instantâneas), .pp-row; options.html ganhou linhas nos cartões Som e voz/Aparência/Tempo e metas/Jogo.
+- Docs: demo.html (Novidades v2.4 com 12 feitos + seção v2.3 mantida, zips 2.4.0, nota de privacidade da voz local), loja/README-publicacao.md (2.4.0), loja/politica-de-privacidade.md (nova seção "Narração por voz (v2.4)"), download/README.md (v2.4.0).
+- build_packages.py parametrizado (VERSION= por argv, remove zips de versões antigas automaticamente); scan_csp.py apontado para 2.4.0.
+- QA agent-browser (game + options): onboarding criou senha (hash persistido); saudação com nome no 1º toque; pr_fast disparou ("Que resposta rápida, Jogador! Nem deu tempo da barra descer!"); erro exibiu acolhimento com itens ("Conta os flores..."→ corrigido p/ {art}); persistência ("Isso, Jogador! Errar faz parte..."); fim de rodada com recorde falado ("Recorde novo, Jogador! 676 pontos!..."); a13 medalha na mesma rodada; prosódia confirmada por inspeção de TTS.queue (3 segmentos com pausas); tscale 2× → Timer 72s (36s base × 2); sem-loja esconde botão; anti-repetição sem posição consecutiva em 6 questões; i18n ES (saudação, título, "los pintinhos" com artigo correto); voz off → speakingNow false; rm class aplicada; portão (erro+senha), 6 controles novos OK, linha de voz por perfil renderizada; console sem erros. Capturas qa/v24-01..05.png.
+- Pacotes: build_packages.py VERSION=2.4.0 → conta-comigo-chrome-2.4.0.zip e conta-comigo-firefox-2.4.0.zip (70 KB cada; zips 2.3.0 removidos automaticamente); scan_csp.py: zero violações em pastas e zips; manifest chrome (service_worker) e firefox (event page + gecko) validados.
+
+Stage Summary:
+- Extensão v2.4.0 entregue: voz cordial Fase 1 completa (custo zero, 100% local, privacidade intacta) + 19 melhorias de alto impacto da planilha implementadas.
+- Scripts reutilizáveis atualizados: build_packages.py (parametrizável) e scan_csp.py (2.4.0).
+- QA: qa/v24-01-home.png, v24-02-es-erro.png, v24-03-home.png, v24-04-opcoes-voz.png, v24-05-voz-perfil.png.
