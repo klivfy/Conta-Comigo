@@ -381,6 +381,22 @@ body.hc .av-row .av.sel { background: #333; }
 .prof-add input { font-family: inherit; font-size: 13px; padding: 8px; border-radius: 10px; border: 2px solid var(--line); background: var(--card); color: var(--ink); }
 .max-note { font-size: 11px; color: var(--ink-soft); font-weight: 700; text-align: center; }
 
+/* ---------- portão/onboarding da senha dos responsáveis (v2.3) ---------- */
+.ob-form { display: flex; flex-direction: column; gap: 2px; width: min(320px, 100%); margin: 6px auto 0; text-align: left; }
+.pwd-lbl { display: block; text-align: left; font-size: 12.5px; font-weight: 800; color: var(--ink-soft); margin: 8px 0 4px; }
+.pwd-box { position: relative; }
+.pwd-box input { padding-right: 42px; }
+.pwd-box input, .ob-form input[type="text"] {
+  font-family: inherit; font-size: 15px; font-weight: 700; width: 100%; box-sizing: border-box;
+  padding: 10px 13px; border-radius: 12px; border: 2.5px solid var(--line);
+  background: var(--card); color: var(--ink);
+}
+.pwd-box input:focus, .ob-form input[type="text"]:focus { outline: 3px solid rgba(var(--sh), .15); }
+.eye-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 17px; padding: 4px; }
+.gate-err { color: var(--red); font-weight: 800; min-height: 20px; margin-top: 8px; font-size: 13.5px; }
+.ob-form .big-btn { margin-top: 6px; }
+body.hc .pwd-box input, body.hc .ob-form input[type="text"] { border: 2px solid #fff; }
+
 /* ==================== página dedicada (wide) ==================== */
 body.page-mode, body.wide { width: auto; height: auto; overflow: auto; min-height: 100vh; }
 body.page-mode #app, body.wide #app { max-width: 1120px; margin: 0 auto; min-height: 100vh; padding: 0 24px 30px; }

@@ -20,7 +20,7 @@ SRC = "/home/z/my-project/download/conta-comigo"
 FF  = "/home/z/my-project/download/conta-comigo-firefox"
 OUT = "/home/z/my-project/download"
 OLD_ZIP = os.path.join(OUT, "conta-comigo-extension.zip")
-VERSION = "2.2.0"
+VERSION = "2.3.0"
 ZIP_CHROME = os.path.join(OUT, f"conta-comigo-chrome-{VERSION}.zip")
 ZIP_FF     = os.path.join(OUT, f"conta-comigo-firefox-{VERSION}.zip")
 

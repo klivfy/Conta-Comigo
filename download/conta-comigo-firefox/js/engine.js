@@ -1,8 +1,9 @@
 'use strict';
-/* ==================== Conta Comigo v2.0 — motor ====================
+/* ==================== Conta Comigo — motor ====================
    S01 faltar · S02 comparar · S03 sequencia · S04 dobrar · S05 historia · S06 dinheiro
    S07 adaptação por habilidade · S08 revisão espaçada · S21 multilíngue · S22 voz
-   S27 perfis · S32 sync · migração v1 → v2                     */
+   S27 perfis · S32 sync · migração v1 → v2
+   v2.2 pontos por rapidez · v2.3 portão parental por senha (hash local) */
 
 /* ---------- utilidades ---------- */
 const $ = (s) => document.querySelector(s);
@@ -76,6 +77,9 @@ const DEFAULT_SETTINGS = {
   mute: false, volume: 0.9, vRate: 0.95, vPitch: 1.15, vVoice: '',
   diffMode: 'auto', goalRounds: 3, sessionLimit: 15, sync: false,
   unlockAll: false, newtabOn: true, timer: true,
+  /* v2.3 — portão parental por senha (tudo fica no dispositivo) */
+  passHash: '', passSalt: '', passHint: '', passSetAt: 0,
+  passTries: 0, passLockUntil: 0, passOnboardDone: false,
 };
 let DB = { v: 2, updatedAt: 0, activeId: '', profiles: [], settings: Object.assign({}, DEFAULT_SETTINGS) };
 function P() { return DB.profiles.find((p) => p.id === DB.activeId) || DB.profiles[0]; }
@@ -106,12 +110,16 @@ function parseDB(raw) {
   } catch (e) { /* ignora */ }
   return null;
 }
-/* v2.2: garante campos novos de pontos em perfis antigos (migração suave) */
+/* v2.2: campos novos de pontos · v2.3: campos da senha dos responsáveis */
 function normalizeDB(d) {
   (d.profiles || []).forEach((p) => {
     p.points = Number(p.points) || 0;
     p.bestPts = (p.bestPts && typeof p.bestPts === 'object') ? p.bestPts : {};
   });
+  const s = d.settings || {};
+  ['passHash', 'passSalt', 'passHint'].forEach((k) => { if (typeof s[k] !== 'string') s[k] = ''; });
+  ['passSetAt', 'passTries', 'passLockUntil'].forEach((k) => { s[k] = Number(s[k]) || 0; });
+  s.passOnboardDone = !!s.passOnboardDone;
   return d;
 }
 function loadRaw() {
@@ -235,6 +243,94 @@ const TTS = {
     } catch (e) { /* ignora */ }
   },
   stop() { if (this.ok) { try { window.speechSynthesis.cancel(); } catch (e) { /* ignora */ } } },
+};
+
+/* ---------- portão parental: hash de senha (v2.3) ----------
+   A senha NUNCA é guardada em texto puro: guardamos sha256(sal + ':' + senha).
+   O lembrete de segurança fica em texto (serve para ser lido pelo adulto em
+   "Esqueci a senha"). Nada sai do dispositivo — sem permissões de rede.
+   crypto.subtle quando disponível; fallback puro em JS (mesmo algoritmo). */
+function ccUtf8Bytes(str) {
+  try { return Array.from(new TextEncoder().encode(str)); }
+  catch (e) {
+    const bin = unescape(encodeURIComponent(str));
+    const out = [];
+    for (let i = 0; i < bin.length; i++) out.push(bin.charCodeAt(i) & 0xff);
+    return out;
+  }
+}
+function ccSha256Hex(input) {
+  const K = [0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2];
+  const H0 = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
+  const rr = (v, a) => (((v >>> a) | (v << (32 - a))) >>> 0);
+  const bytes = ccUtf8Bytes(input);
+  const msg = bytes.slice();
+  msg.push(0x80);
+  while (msg.length % 64 !== 56) msg.push(0);
+  const bitsHi = Math.floor(bytes.length / 536870912);
+  const bitsLo = (bytes.length * 8) >>> 0;
+  msg.push((bitsHi >>> 24) & 255, (bitsHi >>> 16) & 255, (bitsHi >>> 8) & 255, bitsHi & 255,
+    (bitsLo >>> 24) & 255, (bitsLo >>> 16) & 255, (bitsLo >>> 8) & 255, bitsLo & 255);
+  const H = H0.slice();
+  const w = new Array(64);
+  for (let off = 0; off < msg.length; off += 64) {
+    for (let i = 0; i < 16; i++) {
+      const j = off + i * 4;
+      w[i] = ((msg[j] << 24) | (msg[j + 1] << 16) | (msg[j + 2] << 8) | msg[j + 3]) | 0;
+    }
+    for (let i = 16; i < 64; i++) {
+      const s0 = rr(w[i - 15], 7) ^ rr(w[i - 15], 18) ^ (w[i - 15] >>> 3);
+      const s1 = rr(w[i - 2], 17) ^ rr(w[i - 2], 19) ^ (w[i - 2] >>> 10);
+      w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0;
+    }
+    let a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+    for (let i = 0; i < 64; i++) {
+      const S1 = rr(e, 6) ^ rr(e, 11) ^ rr(e, 25);
+      const ch = (e & f) ^ (~e & g);
+      const t1 = (h + S1 + ch + K[i] + w[i]) | 0;
+      const S0 = rr(a, 2) ^ rr(a, 13) ^ rr(a, 22);
+      const maj = (a & b) ^ (a & c) ^ (b & c);
+      const t2 = (S0 + maj) | 0;
+      h = g; g = f; f = e; e = (d + t1) | 0;
+      d = c; c = b; b = a; a = (t1 + t2) | 0;
+    }
+    H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
+    H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+  }
+  return H.map((x) => (x >>> 0).toString(16).padStart(8, '0')).join('');
+}
+const PASS = {
+  salt() {
+    try {
+      if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+        const a = new Uint8Array(16);
+        crypto.getRandomValues(a);
+        return Array.from(a).map((b) => b.toString(16).padStart(2, '0')).join('');
+      }
+    } catch (e) { /* cai para o fallback */ }
+    return String(Date.now()) + String(Math.random()).slice(2, 12) + String(Math.random()).slice(2, 12);
+  },
+  async hash(pw, salt) {
+    const text = salt + ':' + pw;
+    try {
+      if (typeof crypto !== 'undefined' && crypto.subtle && crypto.subtle.digest) {
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+        return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
+      }
+    } catch (e) { /* cai para o fallback */ }
+    return ccSha256Hex(text);
+  },
+  async verify(pw, salt, expect) {
+    if (!salt || !expect) return false;
+    return (await this.hash(pw, salt)) === expect;
+  },
 };
 
 /* ---------- visuais de objetos ---------- */

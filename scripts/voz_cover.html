@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&display=swap" rel="stylesheet">
+<style>
+  @page { margin: 0; }
+  html, body { margin: 0; padding: 0; background: #ffffff; }
+  .poster {
+    position: relative; width: 794px; height: 1123px; background: #ffffff;
+    font-family: 'Inter', 'Noto Sans SC', sans-serif; color: #1a1b1c;
+    border: none; outline: none; box-shadow: none;
+  }
+  .layer1 { position: absolute; inset: 0; overflow: hidden; z-index: 1; }
+  .grid {
+    position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(51,70,80,.05) 0 .5px, transparent .5px 50px),
+      repeating-linear-gradient(90deg, rgba(51,70,80,.05) 0 .5px, transparent .5px 50px);
+  }
+  .layer2 { position: absolute; inset: 0; z-index: 2; }
+  .anchor-line { position: absolute; left: 95px; top: 112px; width: 8px; height: 899px; background: #334650; }
+  .layer3 { position: absolute; inset: 0; z-index: 3; }
+  .kicker {
+    position: absolute; left: 175px; top: 168px; width: 540px;
+    font-size: 20px; font-weight: 400; letter-spacing: 4px; text-transform: uppercase;
+    color: rgba(26,27,28,.6);
+  }
+  .hero {
+    position: absolute; left: 175px; top: 320px; width: 560px;
+    font-size: 58px; line-height: 1.15; font-weight: 900; color: #334650;
+  }
+  .hero .thin { font-weight: 300; color: #5a7886; }
+  .summary {
+    position: absolute; left: 175px; top: 606px; width: 460px;
+    font-size: 21px; line-height: 1.6; font-weight: 400; color: rgba(26,27,28,.85);
+  }
+  .meta {
+    position: absolute; left: 175px; top: 852px; width: 480px;
+    font-size: 22px; font-weight: 600; color: #334650; line-height: 1.5;
+  }
+  .meta small { display: block; font-size: 17px; font-weight: 400; color: rgba(26,27,28,.6); margin-top: 6px; }
+  @media screen {
+    html { background: #ffffff; }
+    body { transform-origin: top left; }
+  }
+</style>
+</head>
+<body>
+<div class="poster">
+  <div class="layer1"><div class="grid"></div></div>
+  <div class="layer2"><div class="anchor-line"></div></div>
+  <div class="layer3">
+    <div class="kicker">Conta Comigo · Estudo de produto</div>
+    <div class="hero">Voz natural<br><span class="thin">e cordial</span><br>para crianças</div>
+    <div class="summary">Diagnóstico do motor de narração, quatro caminhos técnicos comparados — voz local aprimorada, vozes neurais do sistema, síntese em nuvem e áudio humano gravado — e um roteiro de adoção em três fases, sem abrir mão do offline e da privacidade.</div>
+    <div class="meta">Outubro de 2026 · Versão analisada: 2.3.0
+      <small>Produto: Conta Comigo — Matemática para Crianças (extensão Chromium + Firefox)</small>
+    </div>
+  </div>
+</div>
+</body>
+</html>

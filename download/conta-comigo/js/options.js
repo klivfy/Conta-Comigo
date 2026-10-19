@@ -1,9 +1,14 @@
 'use strict';
-/* ==================== Conta Comigo v2.0 — página de opções (S31) ====================
-   Portão parental S25 · Painel S26/S09 · Perfis S27 · Exportar/Importar S29 */
+/* ==================== Conta Comigo — página de opções (S31) ====================
+   Portão parental S25 (v2.3: senha dos responsáveis + lembrete de segurança)
+   Painel S26/S09 · Perfis S27 · Exportar/Importar S29 · Segurança (alterar senha) */
 
-let gateOK = false;
-let gateAnswer = 0;
+let gateTriesTimer = null;
+
+/* ---------- portão parental (v2.3: senha + lembrete + bloqueio progressivo) ---------- */
+function gateHasPass() { return !!G().passHash && !!G().passSalt; }
+function gateLockedNow() { return Date.now() < (G().passLockUntil || 0); }
+function gateLockLeft() { return Math.max(1, Math.ceil(((G().passLockUntil || 0) - Date.now()) / 1000)); }
 
 function toastOpt(msg) {
   const el = $('#toast');
@@ -11,26 +16,132 @@ function toastOpt(msg) {
   setTimeout(() => el.classList.remove('show'), 2400);
 }
 
-/* ---------- portão parental (S25) ---------- */
-function newGate() {
-  const a = rand(6, 9), b = rand(4, 9);
-  gateAnswer = a * b;
-  $('#gate-q').textContent = a + ' × ' + b;
-  $('#gate-in').value = '';
-  $('#gate-err').textContent = '';
+function showGate() {
+  const has = gateHasPass();
+  $('#gate-create').classList.toggle('hidden', has);
+  $('#gate-enter').classList.toggle('hidden', !has);
+  $('#gate').classList.remove('hidden');
+  $('#opt-content').classList.add('hidden');
+  $('#ge-pwd').placeholder = t('gate_pwd_ph');
+  $('#gc-hint').placeholder = t('ob_hint_ph');
+  $('#ge-reset-in').placeholder = t('gate_reset_ph');
+  if (has) gateEnterIdle();
 }
-function tryGate() {
-  const v = Number($('#gate-in').value);
-  if (v === gateAnswer) {
-    gateOK = true;
-    $('#gate').classList.add('hidden');
-    $('#opt-content').classList.remove('hidden');
-    renderOptions();
+function gateEnterIdle() {
+  clearInterval(gateTriesTimer);
+  const tries = G().passTries || 0;
+  // recuperação sempre acessível a partir da 2ª tentativa (mesmo durante bloqueio)
+  $('#ge-forgot-box').classList.toggle('hidden', tries < 2);
+  if (tries >= 2) $('#ge-hint').textContent = G().passHint || '—';
+  $('#ge-reset-box').classList.toggle('hidden', tries < 5);
+  $('#ge-reset-form').classList.add('hidden');
+  const go = $('#ge-go');
+  if (gateLockedNow()) {
+    go.disabled = true;
+    $('#ge-err').textContent = t('gate_locked', { n: gateLockLeft() });
+    gateTriesTimer = setInterval(() => {
+      if (!gateLockedNow()) gateEnterIdle();
+      else $('#ge-err').textContent = t('gate_locked', { n: gateLockLeft() });
+    }, 1000);
   } else {
-    newGate();
-    $('#gate-err').textContent = t('gate_wrong');
-    SFX.wrong();
+    go.disabled = false;
+    $('#ge-err').textContent = '';
   }
+}
+function registerFail() {
+  const g = G();
+  g.passTries = (g.passTries || 0) + 1;
+  const waits = [0, 0, 10, 30, 60, 120]; // segundos de espera progressivos
+  const w = waits[Math.min(g.passTries, waits.length - 1)];
+  if (w > 0) g.passLockUntil = Date.now() + w * 1000;
+  saveState(true);
+}
+async function tryGate() {
+  if (gateLockedNow()) { gateEnterIdle(); return; }
+  const v = $('#ge-pwd').value || '';
+  const ok = await PASS.verify(v, G().passSalt, G().passHash);
+  if (ok) {
+    const g = G();
+    g.passTries = 0; g.passLockUntil = 0;
+    saveState(true);
+    showContent();
+  } else {
+    registerFail();
+    SFX.wrong();
+    $('#ge-pwd').value = '';
+    gateEnterIdle(); // mostra/bloqueia conforme tentativas
+    if (!gateLockedNow()) $('#ge-err').textContent = t('gate_wrong_pwd');
+  }
+}
+function forgotPwd() {
+  $('#ge-forgot-box').classList.remove('hidden');
+  $('#ge-hint').textContent = G().passHint || '—';
+}
+function showContent() {
+  $('#gate').classList.add('hidden');
+  $('#opt-content').classList.remove('hidden');
+  renderOptions();
+}
+async function tryCreateGate() {
+  const a = $('#gc-pwd').value || '';
+  const b = $('#gc-pwd2').value || '';
+  const hint = ($('#gc-hint').value || '').trim();
+  if (a.length < 4) { $('#gc-err').textContent = t('sec_short'); SFX.wrong(); return; }
+  if (a !== b) { $('#gc-err').textContent = t('sec_mismatch'); SFX.wrong(); return; }
+  if (!hint) { $('#gc-err').textContent = t('sec_need_hint'); SFX.wrong(); return; }
+  await savePassword(a, hint);
+  $('#gc-pwd').value = ''; $('#gc-pwd2').value = ''; $('#gc-hint').value = ''; $('#gc-err').textContent = '';
+  toastOpt('🔒 ' + t('sec_saved'));
+  showContent();
+}
+async function savePassword(pw, hint) {
+  const g = G();
+  g.passSalt = PASS.salt();
+  g.passHash = await PASS.hash(pw, g.passSalt);
+  g.passHint = hint;
+  g.passSetAt = Date.now();
+  g.passTries = 0; g.passLockUntil = 0; g.passOnboardDone = true;
+  saveState(true);
+}
+function tryResetGate() {
+  const word = t('gate_reset_word');
+  if (($('#ge-reset-in').value || '').trim().toUpperCase() !== word) {
+    $('#ge-reset-err').textContent = t('gate_reset_ph');
+    SFX.wrong();
+    $('#ge-reset-in').value = '';
+    return;
+  }
+  if (!confirm(t('confirm_reset'))) return;
+  try { localStorage.removeItem('cc_state'); } catch (e) { /* ignora */ }
+  try {
+    if (typeof chrome !== 'undefined' && chrome.storage) { chrome.storage.local.clear(); chrome.storage.sync.clear(); }
+  } catch (e) { /* ignora */ }
+  location.reload();
+}
+
+/* ---------- cartão Segurança (alterar senha) ---------- */
+function renderSec() {
+  const g = G();
+  const on = gateHasPass();
+  $('#sec-status').textContent = on ? t('sec_on', { d: g.passSetAt ? new Date(g.passSetAt).toLocaleDateString(TTS_LANG[g.lang] || 'pt-BR') : '—' }) : t('sec_off');
+  $('#btn-sec-change').classList.toggle('hidden', !on);
+  $('#sec-form').classList.add('hidden');
+  $('#sec-hint').placeholder = t('ob_hint_ph');
+}
+async function tryChangePwd() {
+  const cur = $('#sec-cur').value || '';
+  const a = $('#sec-new').value || '';
+  const b = $('#sec-new2').value || '';
+  const hint = ($('#sec-hint').value || '').trim();
+  if (!(await PASS.verify(cur, G().passSalt, G().passHash))) { $('#sec-err').textContent = t('sec_bad_cur'); SFX.wrong(); return; }
+  if (a.length < 4) { $('#sec-err').textContent = t('sec_short'); return; }
+  if (a !== b) { $('#sec-err').textContent = t('sec_mismatch'); return; }
+  if (!hint) { $('#sec-err').textContent = t('sec_need_hint'); return; }
+  await savePassword(a, hint);
+  ['sec-cur', 'sec-new', 'sec-new2', 'sec-hint'].forEach((id) => { $('#' + id).value = ''; });
+  $('#sec-err').textContent = '';
+  renderSec();
+  toastOpt('🔒 ' + t('sec_saved'));
 }
 
 /* ---------- preencher controles ---------- */
@@ -76,8 +187,9 @@ function renderOptions() {
   $('#set-limit').value = String(g.sessionLimit != null ? g.sessionLimit : 15);
   $('#set-limit').options[0].text = t('no_limit');
   $('#set-sync').checked = !!g.sync;
+  renderSec();
   $('#imp-area').placeholder = t('imp_ph');
-  $('#opt-version').textContent = t('version') + ': 2.2.0';
+  $('#opt-version').textContent = t('version') + ': 2.3.0';
 }
 
 /* ---------- painel (S26 + S09) ---------- */
@@ -183,8 +295,22 @@ function bindOptions() {
     if (history.length > 1) history.back();
     else location.href = (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) ? chrome.runtime.getURL('game.html') : 'game.html';
   });
-  $('#gate-go').addEventListener('click', tryGate);
-  $('#gate-in').addEventListener('keydown', (e) => { if (e.key === 'Enter') tryGate(); });
+  // portão (v2.3)
+  $('#ge-go').addEventListener('click', tryGate);
+  $('#ge-pwd').addEventListener('keydown', (e) => { if (e.key === 'Enter') tryGate(); });
+  $('#ge-forgot').addEventListener('click', forgotPwd);
+  $('#ge-reset-show').addEventListener('click', () => { $('#ge-reset-form').classList.remove('hidden'); });
+  $('#ge-reset-go').addEventListener('click', tryResetGate);
+  $('#gc-go').addEventListener('click', tryCreateGate);
+  [['#gc-pwd', '#gc-go'], ['#gc-pwd2', '#gc-go'], ['#gc-hint', '#gc-go']].forEach(([inp, btn]) => {
+    $(inp).addEventListener('keydown', (e) => { if (e.key === 'Enter') $(btn).click(); });
+  });
+  [['#ge-eye', '#ge-pwd'], ['#gc-eye1', '#gc-pwd'], ['#gc-eye2', '#gc-pwd2']].forEach(([b, inp]) => {
+    $(b).addEventListener('click', () => { const i = $(inp); i.type = i.type === 'password' ? 'text' : 'password'; });
+  });
+  // segurança
+  $('#btn-sec-change').addEventListener('click', () => { $('#sec-form').classList.toggle('hidden'); $('#sec-err').textContent = ''; });
+  $('#btn-sec-save').addEventListener('click', tryChangePwd);
   $('#dash-prof').addEventListener('change', renderDash);
   $('#btn-new-prof').addEventListener('click', () => {
     if (DB.profiles.length >= 4) { toastOpt(t('max4')); return; }
@@ -247,8 +373,8 @@ async function bootOptions() {
   await initDB();
   TTS.init();
   TTS.onVoices = fillVoices;
-  newGate();
   bindOptions();
+  showGate();
   renderOptions();
 }
 window.CC = {};

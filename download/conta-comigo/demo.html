@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Conta Comigo v2.2 — demonstração e instalação</title>
+  <title>Conta Comigo v2.3 — demonstração e instalação</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
     body { width: auto; height: auto; min-height: 100vh; overflow: auto; }
@@ -33,7 +33,7 @@
   <div class="demo-wrap">
     <div class="demo-hero">
       <div class="mascot" style="font-size:72px"><span class="mascot-main">🦊</span></div>
-      <h1>Conta Comigo v2.2</h1>
+      <h1>Conta Comigo v2.3</h1>
       <p>Matemática lúdica para crianças a partir de 4 anos — extensão Chromium + Firefox</p>
     </div>
 
@@ -54,12 +54,13 @@
         </div>
 
         <div class="panel">
-          <h2>✨ Novidades da v2.2</h2>
+          <h2>✨ Novidades da v2.3</h2>
           <div class="feat-grid">
-            <div class="feat"><b>⚡</b> Pontos por rapidez e precisão: barra de tempo suave por questão; rápido e de primeira vale mais (até 160×nível)</div>
-            <div class="feat"><b>🏆</b> Recordes por modo, chip ⚡ durante o jogo e total no painel dos responsáveis — alicerce para o placar online futuro</div>
-            <div class="feat"><b>♿</b> Cronômetro opcional (área dos responsáveis): desligável para jogar sem pressa; pausa em overlays e aba oculta; nunca pune</div>
-            <div class="feat"><b>PKG</b> Builds separadas Chromium/Firefox mantidas (service worker × event page) — sem erros de manifest</div>
+            <div class="feat"><b>🔒</b> Portão parental por <b>senha criada pelos responsáveis</b> — o onboarding inicial convida o adulto a criar a senha com lembrete de segurança</div>
+            <div class="feat"><b>🚫</b> Adeus, portão de multiplicação: numa app de matemática, crianças resolviam a conta e entravam — agora só a senha abre as configurações</div>
+            <div class="feat"><b>🛡️</b> Segurança local: a senha nunca é guardada em texto (hash SHA-256 com sal), bloqueio progressivo após tentativas erradas, nada sai do dispositivo</div>
+            <div class="feat"><b>🔑</b> "Esqueci a senha" mostra o lembrete de segurança; alterar senha dentro da área dos responsáveis; redefinição extrema apaga o progresso (a criança não quer isso!)</div>
+            <div class="feat"><b>⚡</b> Mantidos os pontos por rapidez e precisão da v2.2 (barra de tempo suave, recordes por modo)</div>
           </div>
         </div>
 
@@ -90,7 +91,7 @@
             <div class="feat"><b>S22</b> Voz configurável (velocidade, tom, voz)</div>
             <div class="feat"><b>S23</b> Temas Clássico/Espaço/Jardim</div>
             <div class="feat"><b>S24</b> Modo calmo (respeita o sistema)</div>
-            <div class="feat"><b>S25</b> Portão parental (conta de multiplicar)</div>
+            <div class="feat"><b>S25</b> Portão parental por senha + lembrete de segurança (v2.3)</div>
             <div class="feat"><b>S26</b> Painel dos responsáveis</div>
             <div class="feat"><b>S27</b> Até 4 perfis de jogadores</div>
             <div class="feat"><b>S28</b> Limite de sessão com pausa gentil</div>
@@ -109,7 +110,7 @@
           <h2>🧩 Instalação no Chromium (Chrome, Edge, Brave, Opera)</h2>
           <ol>
             <li><b>Importante:</b> se já havia uma versão instalada, <b>remova-a</b> primeiro em <code>chrome://extensions</code> → <i>Remover</i> (os erros de CSP reportados vêm da build antiga ainda carregada).</li>
-            <li>Descompacte o arquivo <code>conta-comigo-chrome-2.2.0.zip</code>.</li>
+            <li>Descompacte o arquivo <code>conta-comigo-chrome-2.3.0.zip</code>.</li>
             <li>Abra <code>chrome://extensions</code> (ou <code>edge://extensions</code>).</li>
             <li>Ative o <b>Modo do desenvolvedor</b> (canto superior direito).</li>
             <li>Clique em <b>Carregar sem compactação</b> e escolha a pasta descompactada.</li>
@@ -121,7 +122,7 @@
         <div class="panel">
           <h2>🦊 Instalação no Firefox</h2>
           <ol>
-            <li>Descompacte o arquivo <code>conta-comigo-firefox-2.2.0.zip</code> (build própria do Firefox, com <i>event page</i>).</li>
+            <li>Descompacte o arquivo <code>conta-comigo-firefox-2.3.0.zip</code> (build própria do Firefox, com <i>event page</i>).</li>
             <li>Abra <code>about:debugging#/runtime/this-firefox</code>.</li>
             <li>Clique em <b>Carregar add-on temporário</b>.</li>
             <li>Selecione o <code>manifest.json</code> da pasta descompactada.</li>
@@ -131,7 +132,7 @@
 
         <div class="panel">
           <h2>🔒 Privacidade</h2>
-          <p>Tudo funciona offline e fica salvo apenas neste navegador (<code>chrome.storage.local</code>). Nenhum dado sai do computador — sem contas, sem anúncios, sem rastreamento. A sincronização (S32) é opcional e usa a própria conta do navegador.</p>
+          <p>Tudo funciona offline e fica salvo apenas neste navegador (<code>chrome.storage.local</code>). Nenhum dado sai do computador — sem contas, sem anúncios, sem rastreamento. A sincronização (S32) é opcional e usa a própria conta do navegador. A senha dos responsáveis (v2.3) é guardada apenas como <b>hash SHA-256 com sal aleatório</b>, junto do lembrete de segurança escolhido pelo adulto.</p>
         </div>
       </div>
     </div>

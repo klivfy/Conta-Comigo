@@ -830,6 +830,56 @@ function openOptions() {
   else window.open(url, '_blank');
 }
 
+/* ---------- onboarding da senha dos responsáveis (v2.3) ----------
+   Aparece uma única vez na sessão inicial do app (game/popup/web).
+   O adulto cria a senha + lembrete de segurança; pode adiar com "Configurar depois"
+   (neste caso a criação continua disponível no portão da área dos responsáveis). */
+function showOnboarding() {
+  showOverlay('<div class="ov-emoji">👨‍👩‍👧</div><h3>' + t('ob_title') + '</h3><p>' + t('ob_msg') + '</p>' +
+    '<div class="ob-form">' +
+    '<label class="pwd-lbl">' + t('ob_pwd') + '</label>' +
+    '<div class="pwd-box"><input id="ob-pwd" type="password" autocomplete="new-password"><button id="ob-eye1" class="eye-btn" type="button" aria-label="👁">👁</button></div>' +
+    '<label class="pwd-lbl">' + t('ob_pwd2') + '</label>' +
+    '<div class="pwd-box"><input id="ob-pwd2" type="password" autocomplete="new-password"><button id="ob-eye2" class="eye-btn" type="button" aria-label="👁">👁</button></div>' +
+    '<label class="pwd-lbl">' + t('ob_hint_lbl') + '</label>' +
+    '<input id="ob-hint" type="text" maxlength="80">' +
+    '<div class="gate-err" id="ob-err"></div>' +
+    '<button class="big-btn" id="btn-ob-create">' + t('ob_create') + '</button>' +
+    '<button class="big-btn alt" id="btn-ob-later">' + t('ob_later') + '</button>' +
+    '</div>');
+  $('#ob-hint').placeholder = t('ob_hint_ph');
+  $('#btn-ob-create').addEventListener('click', createObPwd);
+  $('#btn-ob-later').addEventListener('click', () => {
+    G().passOnboardDone = true; saveState(true); SFX.tap(); hideOverlay();
+  });
+  [['#ob-eye1', '#ob-pwd'], ['#ob-eye2', '#ob-pwd2']].forEach(([b, inp]) => {
+    $(b).addEventListener('click', () => { const i = $(inp); i.type = i.type === 'password' ? 'text' : 'password'; });
+  });
+  ['#ob-pwd', '#ob-pwd2', '#ob-hint'].forEach((id) => {
+    $(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') $('#btn-ob-create').click(); });
+  });
+}
+async function createObPwd() {
+  const a = $('#ob-pwd').value || '';
+  const b = $('#ob-pwd2').value || '';
+  const hint = ($('#ob-hint').value || '').trim();
+  if (a.length < 4) { $('#ob-err').textContent = t('sec_short'); SFX.wrong(); return; }
+  if (a !== b) { $('#ob-err').textContent = t('sec_mismatch'); SFX.wrong(); return; }
+  if (!hint) { $('#ob-err').textContent = t('sec_need_hint'); SFX.wrong(); return; }
+  const btn = $('#btn-ob-create');
+  btn.disabled = true;
+  const g = G();
+  g.passSalt = PASS.salt();
+  g.passHash = await PASS.hash(a, g.passSalt);
+  g.passHint = hint; g.passSetAt = Date.now();
+  g.passOnboardDone = true; g.passTries = 0; g.passLockUntil = 0;
+  saveState(true);
+  hideOverlay();
+  showBubble('🔒', t('ob_saved'));
+  TTS.speak(t('ob_saved'));
+  confetti(20); SFX.fanfare();
+}
+
 /* ==================== inicialização ==================== */
 function bindStatic() {
   $('#btn-home').addEventListener('click', () => { TTS.stop(); SFX.tap(); renderHome(); show('home'); });
@@ -920,6 +970,8 @@ async function boot() {
   ensureMissions();
   renderHome();
   show('home');
+  // v2.3: onboarding da senha dos responsáveis na sessão inicial (uma única vez)
+  if (!G().passHash && !G().passOnboardDone) setTimeout(showOnboarding, 700);
   if (HAS_EXT && typeof chrome !== 'undefined' && chrome.tabs) {
     try { chrome.runtime.sendMessage('cc-page-ready', () => void chrome.runtime.lastError); } catch (e) { /* ignora */ }
   }

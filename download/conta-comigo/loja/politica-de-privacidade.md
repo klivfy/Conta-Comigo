@@ -38,6 +38,24 @@ próprio navegador: os dados trafegam pela conta do usuário no navegador
 do Conta Comigo — nenhum servidor nosso participa desse fluxo, porque não
 existem servidores nossos.
 
+## Senha dos responsáveis (v2.3)
+
+A partir da versão 2.3, a área dos responsáveis pode ser protegida por uma
+senha criada pelo próprio adulto durante o onboarding inicial. Sobre essa senha:
+
+- ela é armazenada **apenas neste dispositivo**, na forma de **hash SHA-256 com
+  sal aleatório** — nunca em texto legível;
+- o **lembrete de segurança** (frase escolhida pelo adulto para ajudar a
+  lembrar a senha) é guardado em texto no dispositivo, pois serve justamente
+  para ser exibido a quem aciona "Esqueci a senha";
+- nenhuma senha, hash ou lembrete é enviado a qualquer servidor — a extensão
+  não possui conexão própria com a internet;
+- após tentativas incorretas repetidas, o acesso fica temporariamente
+  bloqueado por um intervalo progressivo (tempo de espera crescente);
+- como último recurso, existe a opção "Redefinir apagando TODO o progresso",
+  que exige digitar uma palavra de confirmação e apaga todos os dados locais
+  do jogo, permitindo criar uma nova senha.
+
 ## Permissões solicitadas
 
 - **storage**: necessária para salvar o progresso e as preferências no

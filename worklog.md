@@ -82,7 +82,7 @@ Work Log:
 
 Stage Summary:
 - Conta Comigo v2.0.0 entrega as 36 propostas S01–S36 implementadas e testadas.
-- Pasta: /home/z/my-project/download/conta-comigo/ · Pacote: /home/z/my-project/download/conta-comigo-extension.zip · Demo: demo.html (prévia + lista das 36 + instalação Chromium/Firefox).
+- Pasta: /home/z/my-project/download/conta-comigo/ (pasta para "Carregar sem compactação" no Chromium) · Pacote: /home/z/my-project/download/conta-comigo-extension.zip · Demo: demo.html (prévia + lista das 36 + instalação Chromium/Firefox).
 - Observações: nova aba vem ativada por padrão (desligável na própria página e nas opções); atalho global sem efeito no Firefox 109-120 (sem service worker); sincronização desativada por padrão.
 
 ---
@@ -153,3 +153,26 @@ Stage Summary:
 - Estudo entregue: download/Conta-Comigo-Estudo-de-Expansao-e-Seguranca.docx (~126 KB, 22 páginas, PT-BR): viabilidade Google-via-Supabase no MV3 (empacotar supabase-js, chrome.identity/browser.identity + PKCE, id estável via key), arquitetura cliente-não-confiável (RLS, edge function, view pública sem PII), proteção infantil (LGPD art. 14, COPPA, minimização, exclusão), antifraude em camadas, backlog a11y/usabilidade priorizado e plano de segurança STRIDE/OWASP; roteiro em 4 ondas (v2.3→v3.0).
 - Scripts reutilizáveis: estudo_data.js, gen_estudo_conta_comigo.js, postprocess_estudo.py, gen_chart_bonus.py.
 - QA: /home/z/my-project/qa/v22-01..02.png e qa/fig1-curva-pontos.png
+
+---
+Task ID: 8
+Agent: Z.ai (agente principal)
+Task: v2.3.0 — (a) estudo de voz mais humana e cordial (entregável); (b) trocar o portão parental de "conta de multiplicar" por senha criada pelo adulto com onboarding inicial + lembrete de segurança (implementação); (c) novo levantamento de 750 melhorias (250 alto / 250 médio / 250 baixo impacto).
+
+Work Log:
+- PORTÃO PARENTAL v2.3: removido o portão de multiplicação aleatória (S25 antigo) — em um app de matemática crianças resolviam fácil. Novo fluxo: (1) ONBOARDING na sessão inicial do app (game/popup/web, overlay no boot quando não há senha e passOnboardDone=false): adulto cria senha (mín. 4) + confirmação + lembrete de segurança obrigatório, com botão "Configurar depois"; (2) portão das opções em dois modos: CRIAR (sem senha) ou ENTRAR (senha), com "Esqueci a senha" que exibe o lembrete a partir da 2ª tentativa; (3) bloqueio progressivo após erros (0,0,10,30,60,120 s) persistido (passTries/passLockUntil) e visível no botão; (4) saída de emergência "redefinir apagando TODO o progresso" (só após 5 erros, exige digitar a palavra localizada APAGAR/ERASE/BORRAR + confirm) — a criança não quer apagar as próprias estrelas; (5) cartão "Segurança" novo nas opções com status da senha (data localizada) e troca de senha (senha atual + nova + confirmação + lembrete).
+- Criptografia: senha NUNCA em texto puro — sha256(sal + ':' + senha); sal de 16 bytes via crypto.getRandomValues; crypto.subtle quando disponível + fallback puro em JS (ccSha256Hex) testado contra vetores SHA-256 do Node (4/4 PASS, incluindo UTF-8 com acentos) — scripts/test_sha_cc.js.
+- Arquivos: engine.js (PASS + DEFAULT_SETTINGS pass* + normalizeDB), i18n.js (35+ chaves novas ×3 idiomas), ui.js (showOnboarding/createObPwd + gancho no boot), options.js (showGate/gateEnterIdle/tryGate/forgotPwd/tryCreateGate/savePassword/tryResetGate/renderSec/tryChangePwd, versão 2.3.0), options.html (gate redesenhado + cartão Segurança + estilos), css/style.css (seção portão/onboarding compartilhada), manifest.json 2.3.0.
+- Correção durante o QA: lembrete ficava oculto durante o bloqueio → gateEnterIdle agora mostra caixa do lembrete (tries≥2) e redefinição (tries≥5) mesmo com botão bloqueado; data do status localizada por idioma (TTS_LANG).
+- Documentação: demo.html (Novidades v2.3, S25 atualizado, zips 2.3.0, privacidade do hash), loja/README-publicacao.md (2.3.0), loja/politica-de-privacidade.md (nova seção "Senha dos responsáveis (v2.3)": hash local, lembrete em texto por design, bloqueio progressivo, redefinição extrema).
+- Build: build_packages.py VERSION=2.3.0 → conta-comigo-chrome-2.3.0.zip e conta-comigo-firefox-2.3.0.zip (63 KB cada; zips 2.2.0 removidos); scan_csp.py apontado para 2.3.0 — ZERO violações de CSP em ambas as pastas e zips.
+- QA agent-browser (1440×900 + popup 400×600): onboarding aparece com storage limpo e cria a senha (hash b3b0a2cb… persistido, passOnboardDone=true, overlay fecha); recarga NÃO repete onboarding; opções abrem em modo ENTRAR; 2 erros → mensagem + bloqueio 10 s (waits validados) + lembrete visível ("apelido da vovó"); senha correta entra; troca de senha (raposa123→abacate456) com toast 🔒 e lembrete atualizado; palavra errada de redefinição rejeitada sem apagar nada; rodada completa de Contar intocada (12⭐, 785⚡, recorde, cronômetro, TTS); i18n EN/ES no portão e onboarding; console/erros limpos. Capturas: qa/v23-01..06.png.
+- ESTUDO DE VOZ (PDF): scripts/voz_content.py (9 capítulos PT-BR sem emoji) + scripts/gen_estudo_voz.py (ReportLab, TocDocTemplate+multiBuild, paleta cascade seed 7, FreeSerif, tabelas 1-4, rodapé) + capa Template 01 (scripts/voz_cover.html validada por poster_validate + cover_validate, renderizada via html2poster.js --width 794px) → pypdf merge com normalização A4 estrita → pdf_qa PASS (1 aviso por design do template). Entregável: download/Conta-Comigo-Estudo-Voz-Natural-e-Cordial.pdf (150 KB, 8 páginas): diagnóstico da speechSynthesis atual, 4 caminhos (A: local aprimorado com heurística de vozes Natural/Neural + prosódia por pontuação + biblioteca cordial; B: vozes neurais do sistema grátis; C: nuvem com proxy/consentimento — adiar para v3.x; D: pacote gravado 80-120 frases, 3-8 MB Ogg Opus), recomendação em 3 fases (v2.4/v2.5/v3.x) e tabela antes/depois de falas.
+- 750 MELHORIAS (XLSX): 6 módulos de dados em scripts/melhorias_{alto,medio,baixo}_{a,b}.py com 750 itens originais (verificado 250/250/250); gen_750_melhorias.py com skill xlsx (paleta warm, canvas B2, cabeçalho linha 4, auto-filter, freeze C5, zebra, landscape fitToWidth) → download/Conta-Comigo-750-Melhorias.xlsx (78 KB): aba Resumo (metodologia + fórmulas vivas COUNTIF/COUNTA/SUM: totais 750, esforço × impacto, 23 domínios) + 3 abas com 250 itens cada (ID, Domínio, Melhoria, Descrição, Esforço, Faixa). Pipeline: recalc 39 fórmulas 0 erros, audit 0, scan, validate passed; inspeção visual OK; fixes de redação aplicados em 5 itens.
+
+Stage Summary:
+- Extensão v2.3.0: portão parental por senha criada no onboarding com lembrete de segurança, bloqueio progressivo, troca de senha e redefinição de emergência — pacotes chrome/firefox 2.3.0 atualizados e auditados (CSP zero, zero erros).
+- Estudo de voz entregue: download/Conta-Comigo-Estudo-Voz-Natural-e-Cordial.pdf (8 páginas; recomendação: Fase 1 v2.4 motor local aprimorado).
+- Levantamento 750 entregue: download/Conta-Comigo-750-Melhorias.xlsx (Resumo + 3 abas, 23 domínios, filtros e totais vivos).
+- Scripts reutilizáveis: test_sha_cc.js, voz_content.py, gen_estudo_voz.py, voz_cover.html, melhorias_*.py, gen_750_melhorias.py.
+- QA: qa/v23-01..06.png (extensão), qa/voz-p1/3/6.png (PDF), qa/xlsx-p1/3.png (planilha).
