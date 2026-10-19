@@ -176,3 +176,22 @@ Stage Summary:
 - Levantamento 750 entregue: download/Conta-Comigo-750-Melhorias.xlsx (Resumo + 3 abas, 23 domínios, filtros e totais vivos).
 - Scripts reutilizáveis: test_sha_cc.js, voz_content.py, gen_estudo_voz.py, voz_cover.html, melhorias_*.py, gen_750_melhorias.py.
 - QA: qa/v23-01..06.png (extensão), qa/voz-p1/3/6.png (PDF), qa/xlsx-p1/3.png (planilha).
+
+---
+Task ID: 9
+Agent: Z.ai (agente principal)
+Task: Continuação da rodada 8 — confirmar estudo de voz + portão parental (já entregues na v2.3.0) e elaborar o novo levantamento de 150 melhorias (50 alto / 50 médio / 50 baixo impacto), edição inédita e complementar à de 750.
+
+Work Log:
+- Verificação de estado: extensão v2.3.0 íntegra nas duas builds (manifest 2.3.0; Chrome service_worker, Firefox event page; portão parental/onboarding presentes em ui.js, engine.js, options.js); entregáveis anteriores confirmados em download/ (Conta-Comigo-Estudo-Voz-Natural-e-Cordial.pdf, zips chrome/firefox 2.3.0, Conta-Comigo-750-Melhorias.xlsx).
+- Anti-duplicação: extraídos os 750 títulos existentes (scripts/melhorias_*.py) para /tmp/titulos750.json; comparação normalizada (ASCII, minúsculas) garantiu ZERO choques entre os 150 novos e os 750.
+- Redação dos 150 itens inéditos em scripts/melhorias150_{alto,medio,baixo}.py (formato idêntico aos 750: Domínio, Melhoria, Descrição, Esforço Pequeno/Médio/Grande, Faixa v2.4-v2.5 / v2.6-v2.9 / v3.x; taxonomia dos 23 domínios reutilizada). Correções durante a redação: duplicata interna de display braille e de sugestor de senha eliminadas; "Termômetro pós-rodada" renomeado para "Como foi a rodada?" (choque de nome com o modo de temperatura); "Estúdio de questões" movido para Modos de Jogo e Conteúdo; item conceitualmente igual aos 750 ("Assinatura da versão no export") substituído por "Contagem por vibração"; validação final 50/50/50, zero duplicatas internas.
+- Gerador scripts/gen_150_melhorias.py (adaptado do gen_750, paleta warm da skill xlsx): aba Resumo (metodologia da edição de 150 + complementaridade com a de 750, COUNTA/COUNTIF/SUM vivas, esforço×impacto, 10 destaques de alto impacto, domínios por impacto) + 3 abas com 50 itens cada (ID A-150-001.., autofiltro B4:G54, freeze C5, zebra, landscape fitToWidth).
+- Correções de QA: sobreposição dos blocos Destaques×Domínios no Resumo (r = tr2+2 duplicado → hdr3+12); título do Resumo cortado na célula mesclada (encurtado); fitToWidth inócuo sem PageSetupProperties(fitToPage=True) (22 páginas portrait → 10 paisagem); alturas de linha calculadas por texto envolvido (style_data_row fixa altura única → transbordo de descrições).
+- Pipeline da skill xlsx: recalc 49 fórmulas 0 erros; audit 0 erros (3 zeros legítimos: sem "Grande" no médio e sem "Médio/Grande" no baixo por design); scan apenas 6 avisos de padrão intencional (fórmulas por aba distinta); validate PASSED; PDF de verificação 19 páginas inspecionado (Resumo 3-4 págs + 3 abas), sem cortes nem transbordos.
+- QA: /home/z/my-project/qa/xlsx150*.png (v1, v2 e v3).
+
+Stage Summary:
+- Entregável novo: download/Conta-Comigo-150-Melhorias.xlsx (~34 KB) — 150 melhorias inéditas (50 alto / 50 médio / 50 baixo), 33 domínios, filtros e totais vivos, complementar à edição de 750.
+- Confirmados os demais pedidos da rodada (já prontos): estudo de voz (PDF, 8 páginas, recomendação em 3 fases) e portão parental com onboarding + lembrete de segurança (v2.3.0, zips chrome/firefox).
+- Scripts reutilizáveis: melhorias150_{alto,medio,baixo}.py, gen_150_melhorias.py.
