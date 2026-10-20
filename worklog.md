@@ -297,3 +297,21 @@ Stage Summary:
 - Pesquisa documentada no PDF "Conta-Comigo-Estudo-Vozes-Humanizadas-v2.pdf": caminhos no navegador (implementado), WASM offline (recomendado p/ v3.x: Piper), nuvem (não recomendado agora).
 - Pacotes: conta-comigo-chrome-2.6.0.zip, conta-comigo-firefox-2.6.0.zip, conta-comigo-pwa-android-2.6.0.zip + pasta conta-comigo-pwa/.
 - Lições: selects com opções longas em flex-row PRECISAM de min-width:0 (min-content do item contagia o card inteiro); build_pwa.py não apaga o zip antigo — fazer na mão; pdf_qa reclama de '—'/'·' no início de linha da capa — usar palavra direto.
+
+---
+Task ID: 15
+Agent: Z.ai (agente principal)
+Task: Commit do projeto no GitHub (pedido do usuário)
+
+Work Log:
+- Auditado repo git local (branch main, 15 commits anteriores com mensagens-UUID, sem remotes)
+- Auditadas credenciais: sem gh CLI, sem GITHUB_TOKEN, sem chaves SSH, sem credential helpers
+- Higienizado: .gitignore atualizado (.env, .env.*, tool-results/, upload/, db/, *.log, .DS_Store)
+- Desrastreados arquivos internos: .env (sem segredos reais, só path local), tool-results/ (17), upload/ (1)
+- Commit fbc14c8: "v2.6.0: responsividade multi-tela + vozes humanizadas + PWA Android" (49 arquivos)
+- Tag anotada v2.6.0 criada
+- Verificado: working tree limpo, extensão/PWA/zip/QA no commit, .env permanece em disco sem rastreio
+
+Stage Summary:
+- Repositório local pronto para push: branch main @ fbc14c8, tag v2.6.0, 201 arquivos rastreados
+- Push pendente de credenciais GitHub do usuário (PAT com escopo repo, ou chave SSH + URL do repositório)
