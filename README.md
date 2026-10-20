@@ -1,0 +1,103 @@
+<div align="center">
+
+# 🧮 Conta Comigo
+
+### Matemática lúdica para crianças a partir de 4 anos
+
+![Versão](https://img.shields.io/badge/vers%C3%A3o-2.6.0-2EA043)
+![Plataformas](https://img.shields.io/badge/plataformas-Chrome%20%C2%B7%20Firefox%20%C2%B7%20PWA-0969DA)
+![Idiomas](https://img.shields.io/badge/idiomas-PT%20%C2%B7%20EN%20%C2%B7%20ES-E16F24)
+![Offline](https://img.shields.io/badge/100%25-offline-8250DF)
+![Conformidade](https://img.shields.io/badge/COPPA%20%C2%B7%20LGPD--K%20%C2%B7%20GDPR--K-conforme-1F883D)
+![Licença](https://img.shields.io/badge/licen%C3%A7a-propriet%C3%A1ria-D1242F)
+
+| | |
+|---|---|
+| ![Tela inicial](download/conta-comigo/loja/capturas/captura-1-home.png) | ![Comparar quantidades](download/conta-comigo/loja/capturas/captura-2-comparar.png) |
+| **Dinheiro e troco** | **Painel dos responsáveis** |
+| ![Dinheiro](download/conta-comigo/loja/capturas/captura-4-dinheiro.png) | ![Painel dos responsáveis](download/conta-comigo/loja/capturas/captura-6-painel-responsaveis.png) |
+
+**Desenvolvido por Klivfy Tecnologia** · trilíngue (PT/EN/ES) · funciona sem internet · sem coleta de dados
+
+</div>
+
+---
+
+## ✨ O que é
+
+O **Conta Comigo** é um jogo educativo que ensina os primeiros conceitos de matemática — contagem, comparação de quantidades, dinheiro e resolução de problemas — por meio de desafios curtos, voz amigável e recompensas colecionáveis. Cada criança tem o próprio perfil, com nome, mascote e preferências de voz, e os responsáveis acompanham tudo em um painel protegido por verificação adulta. Todo o conteúdo roda localmente no dispositivo: o jogo funciona 100% offline e não coleta nenhum dado pessoal.
+
+## 🎮 Modos de jogo
+
+- **Contar** — desafios de contagem com correção animada e voz
+- **Comparar** — mais/menos, maior/menor e quantidades
+- **Dinheiro** — pagamento e troco com cédulas e moedas
+- **Histórias** — problemas contextualizados em mini-narrativas
+- **Contra o Tempo** — 60 segundos de fôlego, com recorde por perfil (v2.5.0)
+
+## 🏆 Recompensas e progresso
+
+- ⭐ Estrelas e **ofensiva diária** com baús de recompensa em 3/7/14/21/30 dias
+- 🃏 **Álbum com 36 figurinhas** para colecionar
+- 🏅 **20 conquistas**, incluindo 2 secretas
+- 🛍️ **Loja** com mascotes adultas (raposa, panda, dino, unicórnio e robô), temas (Oceano, Doces, Neve…) e acessórios
+- 👧👦 **Perfis familiares**: o jogo chama cada criança pelo nome e guarda voz, velocidade e tonalidade preferidas de cada perfil
+- 💾 **Backup de um clique** na tela de Conquistas e no painel dos responsáveis
+
+## 🗣️ Vozes humanizadas
+
+A narração usa a síntese de voz do próprio sistema com **seleção inteligente de qualidade**: as vozes são agrupadas de 🌟 naturais → ⚡ neurais/rede → padrão → básicas, priorizando as mais humanas disponíveis (ex.: *"Online (Natural)"* do Edge, *Premium/Enhanced* da Apple, Google de rede) e afastando motores robóticos. As opções mostram a **nota "Voz ativa"**, permitem velocidade e tonalidade por perfil e há **guia gratuito** para instalar vozes melhores em cada plataforma (Edge, Windows, Android, iPhone/Mac e Linux/Piper) — tudo em PT, EN e ES.
+
+## 📦 Instalação
+
+**Chrome / Edge / Brave**
+1. Baixe `conta-comigo-chrome-2.6.0.zip` na [aba Releases](../../releases) e descompacte
+2. Abra `chrome://extensions`, ative o **modo do desenvolvedor**
+3. Clique em **Carregar sem compactação** e escolha a pasta descompactada
+
+**Firefox**
+1. Baixe `conta-comigo-firefox-2.6.0.zip` e descompacte
+2. Abra `about:debugging#/runtime/this-firefox` → **Carregar extensão temporária**
+3. Selecione qualquer arquivo da pasta descompactada
+
+**Android (PWA)**
+1. Baixe `conta-comigo-pwa-android-2.6.0.zip` e hospede a pasta em qualquer servidor (local ou web)
+2. Abra o endereço no Chrome do celular → menu ⋮ → **Adicionar à tela inicial**
+
+> **Atualização sem perder progresso:** recarregar a extensão (↻ em `chrome://extensions`) preserva estrelas, conquistas e perfis; remover e reinstalar apaga — antes, exporte o backup pelo botão 💾 e reimporte depois. Para confirmar a versão: o **selo `v2.6.0`** aparece no topo do jogo, ao lado de 🔥.
+
+## 🔐 Privacidade e público-infância
+
+- **Zero coleta**: nenhuma conta, nenhum dado pessoal, nenhuma telemetria — tudo fica no aparelho
+- **Portão dos responsáveis**: configurações e dados sensíveis atrás de verificação adulta (hash SHA-256 com bloqueio progressivo)
+- **Conformidade**: COPPA, LGPD (com atenção especial a crianças — LGPD-K) e GDPR-K
+- **Áudio local**: a narração usa a síntese de voz do próprio sistema; nada é enviado a servidores
+
+## 🧱 Estrutura do repositório
+
+```
+download/conta-comigo/         Código-fonte da extensão Chrome (MV3)
+download/conta-comigo-firefox/ Variante Firefox (event page)
+download/conta-comigo-pwa/     PWA para Android (manifest + service worker)
+download/*.zip                 Pacotes prontos das três plataformas
+download/conta-comigo/loja/    Materiais de publicação nas lojas
+qa/                            Evidências de teste em múltiplos viewports
+scripts/                       Ferramentas de build, empacotamento e QA
+```
+
+Tecnologia: **JavaScript vanilla**, Web Extensions **Manifest V3**, **PWA** com service worker e **Web Speech API** — sem frameworks, sem dependências externas, sem telemetria.
+
+## 🗺️ Histórico de versões
+
+| Versão | Destaques |
+|---|---|
+| **2.6.0** | Responsividade total (320px–1920px+), modo paisagem, toque aprimorado, vozes humanizadas (Fase 2), PWA Android |
+| **2.5.0** | Contra o Tempo, baús de ofensiva, 5 mascotes adultas, 3 temas novos, álbum com 36 figurinhas, 20 conquistas, backup de um clique |
+| **2.4.1** | Selo de versão visível no jogo |
+| **2.4.0** | Voz com o nome da criança, ritmo e tonalidade por perfil, narração/efeitos separados |
+
+## 📄 Licença
+
+**Software proprietário.** Copyright © 2026 **Klivfy Tecnologia** — Todos os direitos reservados.
+
+O código-fonte, a arte, os personagens e a marca **Conta Comigo** pertencem à Klivfy Tecnologia. A cópia, modificação, distribuição ou uso comercial sem autorização prévia por escrito são proibidos. Uso pessoal e familiar das versões oficiais é permitido. Consulte o arquivo [LICENSE](LICENSE) para os termos completos.

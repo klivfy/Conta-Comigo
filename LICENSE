@@ -1,24 +1,75 @@
-This is free and unencumbered software released into the public domain.
+LICENÇA DE SOFTWARE PROPRIETÁRIO
+================================================================================
 
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
+CONTA COMIGO — Jogo educativo de matemática
+(extensões de navegador Chrome/Firefox e aplicativo PWA para Android)
 
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
+Copyright © 2026 Klivfy Tecnologia. Todos os direitos reservados.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+1. PROPRIEDADE INTELECTUAL
+   Este software — incluindo, sem limitação, seu código-fonte, código-objeto,
+   interface, arte, ilustrações, animações, textos, áudios, vozes, sons,
+   personagens, mascotes, marcas e identidade visual — é propriedade exclusiva
+   da Klivfy Tecnologia e está protegido pela legislação de direitos autorais e
+   de propriedade intelectual brasileira e por tratados internacionais.
 
-For more information, please refer to <https://unlicense.org>
+2. LICENÇA DE USO LIMITADA
+   É concedida ao usuário final uma licença pessoal, familiar, não exclusiva,
+   revogável e intransferível para instalar e utilizar as versões oficiais do
+   CONTA COMIGO distribuídas pela Klivfy Tecnologia, exclusivamente para fins
+   lúdicos e educacionais domésticos e não comerciais.
+
+3. RESTRIÇÕES
+   Sem autorização prévia, expressa e por escrito da Klivfy Tecnologia, é
+   PROIBIDO a qualquer pessoa física ou jurídica:
+   a) copiar, reproduzir, distribuir, publicar ou redistribuir este software,
+      no todo ou em parte, em qualquer meio ou formato;
+   b) modificar, adaptar, traduzir, criar obras derivadas ou realizar
+      engenharia reversa, descompilação ou desmontagem do software;
+   c) sublicenciar, alugar, arrendar, emprestar, vender, revender ou
+      comercializar o software ou qualquer parte dele;
+   d) remover, ocultar ou alterar quaisquer avisos de propriedade, marcas ou
+      avisos legais incluídos no software;
+   e) utilizar o software, ou obras derivadas dele, para prestar serviços a
+      terceiros ou em produtos concorrentes.
+
+4. MARCAS
+   "Conta Comigo", o logotipo e os personagens/mascotes associados são marcas
+   ou elementos de identificação comercial da Klivfy Tecnologia. Nada neste
+   documento concede qualquer direito de uso de marca.
+
+5. PRIVACIDADE E PÚBLICO-INFÂNCIA
+   O CONTA COMIGO foi projetado para operar integralmente no dispositivo do
+   usuário (100% offline), sem coleta, transmissão ou venda de dados pessoais,
+   em conformidade com a Lei Geral de Proteção de Dados (LGPD), com atenção
+   especial ao disposto para crianças (LGPD-K), e com a Children's Online
+   Privacy Protection Act (COPPA) e o GDPR-K. O acesso ao painel de
+   responsáveis é protegido por verificação adulta.
+
+6. SEM GARANTIAS
+   O SOFTWARE É FORNECIDO "NO ESTADO EM QUE SE ENCONTRA", SEM GARANTIAS DE
+   QUALQUER NATUREZA, EXPRESSAS OU IMPLÍCITAS, INCLUINDO, SEM LIMITAÇÃO,
+   GARANTIAS DE COMERCIALIZAÇÃO, ADEQUAÇÃO A UM FIM ESPECÍFICO E NÃO
+   VIOLAÇÃO. EM NENHUMA HIPÓTESE A KLIVFY TECNOLOGIA RESPONDERÁ POR QUAISQUER
+   RECLAMAÇÕES, DANOS OU OUTRAS RESPONSABILIDADES DECORRENTES DO USO DO
+   SOFTWARE.
+
+7. RESCISÃO
+   O descumprimento de quaisquer termos desta licença implica a revogação
+   automática do direito de uso, sem prejuízo das demais medidas cabíveis.
+
+8. CONTATO
+   Autorizações, parcerias e licenciamento comercial devem ser solicitados
+   por meio dos canais oficiais da Klivfy Tecnologia.
+
+================================================================================
+
+ENGLISH SUMMARY (informational — the Portuguese text above prevails)
+
+Proprietary software. Copyright © 2026 Klivfy Tecnologia. All rights reserved.
+Copying, modification, distribution, sublicensing, resale and reverse
+engineering are prohibited without prior written authorization. Personal,
+family, non-commercial use of official builds is permitted. "Conta Comigo" and
+associated assets are trademarks of Klivfy Tecnologia. The software runs fully
+offline and does not collect personal data (COPPA / LGPD / GDPR-K aware).
+Contact Klivfy Tecnologia through official channels for licensing.
