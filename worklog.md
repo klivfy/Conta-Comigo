@@ -315,3 +315,19 @@ Work Log:
 Stage Summary:
 - Repositório local pronto para push: branch main @ fbc14c8, tag v2.6.0, 201 arquivos rastreados
 - Push pendente de credenciais GitHub do usuário (PAT com escopo repo, ou chave SSH + URL do repositório)
+
+---
+Task ID: 16
+Agent: Z.ai (agente principal)
+Task: Kit de publicação no GitHub (2º pedido repetido de commit no GitHub)
+
+Work Log:
+- Re-verificadas credenciais (env, gh CLI, SSH, credential files): nenhuma disponível
+- Pré-checagem GitHub: maior arquivo 0,4 MB, total 12,4 MB — sem risco de limite de 100 MB
+- Criado download/conta-comigo-repo.bundle (histórico completo + tag v2.6.0, verificado)
+- Criado download/push-para-github.sh (clone do bundle + push com token, main + tags)
+- Criado download/COMO-PUBLICAR-NO-GITHUB.md (3 caminhos: token ao agente / manual / script)
+
+Stage Summary:
+- Commit local íntegro (fbc14c8 + auto-commit da plataforma 73485ad), tag v2.6.0, tree limpa
+- Push bloqueado apenas por autenticação do usuário; kit de publicação entregue em download/

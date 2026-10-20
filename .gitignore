@@ -7,3 +7,4 @@ upload/
 db/
 *.log
 .DS_Store
+download/conta-comigo-repo.bundle
