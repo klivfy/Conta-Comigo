@@ -1,2 +1,9 @@
 skills/
 node_modules/
+.env
+.env.*
+tool-results/
+upload/
+db/
+*.log
+.DS_Store
