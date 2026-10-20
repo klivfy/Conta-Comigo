@@ -351,3 +351,18 @@ Stage Summary:
 - Release: https://github.com/klivfy/Conta-Comigo/releases/tag/v2.6.0 (3 pacotes baixáveis)
 - LICENSE = Unlicense (domínio público) — escolha do usuário na criação; passível de troca
 - Token presente no histórico do chat — usuário orientado a revogar
+
+---
+Task ID: 18
+Agent: Z.ai (agente principal)
+Task: Licença proprietária + Klivfy Tecnologia + README.md na raiz (pedido do usuário)
+
+Work Log:
+- LICENSE: substituída Unlicense por licença proprietária (© 2026 Klivfy Tecnologia, todos os direitos reservados; 8 cláusulas PT-BR + resumo EN; seção de privacidade infantil COPPA/LGPD-K/GDPR-K)
+- README.md na raiz: badges (versão/plataformas/idiomas/offline/conformidade/licença), grade 2x2 de capturas (loja/capturas, 1440x900), modos de jogo, recompensas, vozes humanizadas, instalação por plataforma (Chrome/Firefox/PWA), privacidade, estrutura do repo, histórico 2.4.0-2.6.0, licença
+- Commit 9d1ffe6 e push (4fd8616..9d1ffe6) — token ainda válido
+- Verificado no remoto: raw README/LICENSE HTTP 200, conteúdo da licença correto, HEAD remoto = 9d1ffe6
+
+Stage Summary:
+- GitHub exibe README com identidade Klivfy Tecnologia e licença proprietária
+- Token ainda ativo — reforçar revogação ao usuário
