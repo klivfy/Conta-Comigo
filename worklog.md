@@ -331,3 +331,23 @@ Work Log:
 Stage Summary:
 - Commit local íntegro (fbc14c8 + auto-commit da plataforma 73485ad), tag v2.6.0, tree limpa
 - Push bloqueado apenas por autenticação do usuário; kit de publicação entregue em download/
+
+---
+Task ID: 17
+Agent: Z.ai (agente principal)
+Task: Push do projeto para GitHub — klivfy/Conta-Comigo (token fornecido pelo usuário)
+
+Work Log:
+- Pré-checagem: repo local íntegro (a43f419 + tag v2.6.0, tree limpa); API confirmou repo público, vazio, token com push+admin
+- 1º push: tag v2.6.0 OK; main rejeitado (remoto tinha commit 727e83c "Initial commit" com LICENSE Unlicense — init do GitHub)
+- Tentativa de rebase (--allow-unrelated-histories): travou repetidamente em arquivos untracked (.env, tool-results/, upload/) que commits antigos adicionavam; abortado com segurança e arquivos restaurados do backup
+- Solução: merge --allow-unrelated-histories (af1f683) — integra LICENSE, mantém tag válida (fbc14c8 continua ancestral do main)
+- Push de main concluído (727e83c..af1f683), upstream configurado; token usado via credential helper inline (NÃO persistido em .git/config)
+- Release v2.6.0 criada via API (scripts/gh_publish_release.py + release-notes-v2.6.0.md) com 3 zips anexados (84-85 KB cada)
+- Verificação autenticada: main HEAD=af1f683, tag v2.6.0->fbc14c8, release com 3 assets "uploaded", página pública HTTP 200
+
+Stage Summary:
+- Projeto publicado: https://github.com/klivfy/Conta-Comigo (público)
+- Release: https://github.com/klivfy/Conta-Comigo/releases/tag/v2.6.0 (3 pacotes baixáveis)
+- LICENSE = Unlicense (domínio público) — escolha do usuário na criação; passível de troca
+- Token presente no histórico do chat — usuário orientado a revogar
