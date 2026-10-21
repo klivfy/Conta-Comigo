@@ -399,3 +399,25 @@ Stage Summary:
 - Entregável: download/Conta-Comigo-Estudo-Viabilidade-Nativas-Android-Windows.pdf (12 págs, 166 KB)
 - Veredito: Android VIÁVEL (TWA, voz preservada) · Windows VIÁVEL (Electron) — sem reescrita do jogo; roadmap de 4 fases; custo inicial R$ 0 (US$ 25 só na conta Play)
 - Fase 1 pronta para execução mediante aprovação: GitHub Pages + scaffolds + CI
+
+---
+Task ID: 21
+Agent: Z.ai (agente principal)
+Task: Fase 1 aprovada — implementar pacotes nativos (Android TWA + Windows Electron) + site GitHub Pages + CI
+
+Work Log:
+- Keystore upload.jks gerado (alias contacomico, validade 10.000 dias) e versionado em native/android/keystore/ com README de rotação; SHA256 C7:33:72:0C:...:D7:E9
+- native/android completo: Gradle 8.10.2 + AGP 8.7.3, BrowserHelper 2.5.0, minSdk 23/target 35, versionCode 260, LauncherActivity TWA apontando para https://klivfy.github.io/Conta-Comigo/, mipmaps 48–192px gerados de icon-512, assetlinks.json REAL + twa-manifest.json de referência
+- native/windows: Electron ^33 + electron-builder ^25 (NSIS por usuário + portable x64), main.js com sandbox/contextIsolation, navegação externa bloqueada, ícone .ico multi-tamanho (16–256) via PIL
+- 3 workflows Actions: pages.yml (build_pwa + assetlinks + política → deploy-pages), android.yml (assembleRelease bundleRelease + conferência fingerprint↔assetlinks), windows.yml (npm ci + electron-builder) — validados (YAML/XML/JSON/node --check)
+- build_pwa.py parametrizado via BASE (CI usa BASE=github.workspace); ensaio local do staging do site OK (site-preview temporário)
+- docs/politica-de-privacidade.html gerado do md (scripts/fase1_privacidade_html.py) p/ URL de privacidade na Play/Store
+- README raiz: seção "Versões nativas" + estrutura atualizada; web/ badge v2.1→v2.6.0; .gitignore de artefatos (app/, dist/, node_modules/, .gradle, build/)
+- package-lock.json gerado (417 pacotes) para npm ci do CI
+- Push: token SEM escopo workflow → rejeitado ao incluir .github/workflows/; separado em 2 commits: 8af3947 (feat, ENVIADO) + b5f9e94 (ci, local aguardando token com escopo); Pages via API 403 (precisa Administration) — clique manual
+- Kit entregue: download/kit-fase1/ (COMO-ATIVAR-CI.md + 3 workflows p/ caminho manual)
+
+Stage Summary:
+- Fase 1 implementada: fonte única → PWA → Pages / TWA Android / Electron Windows, tudo por CI
+- Pendente do usuário: (1) token com Contents+Workflows (+Administration p/ Pages) OU colar 3 workflows pela web; (2) Settings→Pages→Source "GitHub Actions"; (3) revogar token antigo
+- Ao ativar: artefatos APK/AAB/EXE aparecem na aba Actions; site em klivfy.github.io/Conta-Comigo

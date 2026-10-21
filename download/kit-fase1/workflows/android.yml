@@ -1,0 +1,56 @@
+name: Android (TWA — APK e AAB)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'native/android/**'
+      - '.github/workflows/android.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Instalar Gradle 8.10.2
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Build release (APK + AAB assinados)
+        run: |
+          cd native/android
+          gradle assembleRelease bundleRelease --no-daemon
+
+      - name: Conferir fingerprint do keystore vs assetlinks.json
+        run: |
+          FP=$(keytool -list -v -keystore native/android/keystore/upload.jks \
+               -storepass contacomico-upload -alias contacomico \
+               | sed -n 's/.*SHA256: //p' | head -1 | tr -d ':' | tr 'A-Z' 'a-z')
+          echo "fingerprint do keystore: $FP"
+          tr -d ':' < native/android/assetlinks.json | tr 'A-Z' 'a-z' | grep -q "$FP" \
+            && echo "[OK] assetlinks.json confere com o keystore" \
+            || { echo "[ERRO] fingerprint divergente — atualizar assetlinks.json"; exit 1; }
+
+      - name: Extrair versão
+        id: ver
+        run: echo "tag=$(grep -o 'versionName "[^"]*"' native/android/app/build.gradle | cut -d'"' -f2)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: conta-comigo-android-${{ steps.ver.outputs.tag }}
+          path: |
+            native/android/app/build/outputs/apk/release/*.apk
+            native/android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+          retention-days: 30
