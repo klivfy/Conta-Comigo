@@ -48,6 +48,16 @@ O **Conta Comigo** é um jogo educativo que ensina os primeiros conceitos de mat
 
 A narração usa a síntese de voz do próprio sistema com **seleção inteligente de qualidade**: as vozes são agrupadas de 🌟 naturais → ⚡ neurais/rede → padrão → básicas, priorizando as mais humanas disponíveis (ex.: *"Online (Natural)"* do Edge, *Premium/Enhanced* da Apple, Google de rede) e afastando motores robóticos. As opções mostram a **nota "Voz ativa"**, permitem velocidade e tonalidade por perfil e há **guia gratuito** para instalar vozes melhores em cada plataforma (Edge, Windows, Android, iPhone/Mac e Linux/Piper) — tudo em PT, EN e ES.
 
+## 📥 Downloads diretos — v2.6.0
+
+| Plataforma | Pacote |
+|---|---|
+| 🟢 Chrome / Edge / Brave | [conta-comigo-chrome-2.6.0.zip](https://github.com/klivfy/Conta-Comigo/releases/download/v2.6.0/conta-comigo-chrome-2.6.0.zip) |
+| 🦊 Firefox | [conta-comigo-firefox-2.6.0.zip](https://github.com/klivfy/Conta-Comigo/releases/download/v2.6.0/conta-comigo-firefox-2.6.0.zip) |
+| 🤖 Android (PWA) | [conta-comigo-pwa-android-2.6.0.zip](https://github.com/klivfy/Conta-Comigo/releases/download/v2.6.0/conta-comigo-pwa-android-2.6.0.zip) |
+
+> Para versões futuras, use sempre a [última release](https://github.com/klivfy/Conta-Comigo/releases/latest).
+
 ## 📦 Instalação
 
 **Chrome / Edge / Brave**
