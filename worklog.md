@@ -381,3 +381,21 @@ Work Log:
 
 Stage Summary:
 - Pendências manuais do usuário: colar descrição/topics na About (textos fornecidos), subir social preview em Settings→General, revogar token
+
+---
+Task ID: 20
+Agent: Z.ai (agente principal)
+Task: Verificar a aplicação + Estudo de viabilidade de versões nativas Android e Windows 10/11
+
+Work Log:
+- QA da aplicação (agent-browser): game.html em 1280px e 360px + PWA index.html; selo v2.6.0 ✔, onboarding/portão ✔, rodada de Contar com feedback gentil por nome de perfil ✔, speechSynthesis presente, zero erros JS; capturas qa/nativas-01/02.png
+- Pesquisa (5 consultas): ACHADO CRÍTICO — speechSynthesis NÃO funciona no Android WebView (Chromium issue 40417848) → Capacitor exigiria plugin TTS nativo; TWA (Chrome completo) preserva a voz; Microsoft Store sem taxa p/ devs individuais (2026); Play Families exige zero coleta (nosso caso)
+- Decisão de rotas: Android = TWA/Bubblewrap sobre PWA no GitHub Pages; Windows = Electron empacotado no GitHub Actions; Tauri 2 como otimização futura; reescritas nativas descartadas
+- Estudo PDF gerado pelo pipeline da série (Template 01 HUD + paleta seed 7): nativas_content_a/b.py + gen_estudo_nativas.py (TocDocTemplate/multiBuild, gráfico matplotlib de esforço) + nativas_cover.html (fontes locais Carlito — Google Fonts bloqueado no headless) + merge_estudo_nativas.py
+- Correções durante QA: Helvetica do TOC nível 1 removida; travessões em início de linha ligados com NBSP; células "—" da Tabela 2 substituídas
+- Validações: poster_validate PASS, cover_validate PASS, pdf_qa.py PASS (12 páginas), toc.check pass, font.check 0 issues, pages.clean 0 em branco
+
+Stage Summary:
+- Entregável: download/Conta-Comigo-Estudo-Viabilidade-Nativas-Android-Windows.pdf (12 págs, 166 KB)
+- Veredito: Android VIÁVEL (TWA, voz preservada) · Windows VIÁVEL (Electron) — sem reescrita do jogo; roadmap de 4 fases; custo inicial R$ 0 (US$ 25 só na conta Play)
+- Fase 1 pronta para execução mediante aprovação: GitHub Pages + scaffolds + CI
