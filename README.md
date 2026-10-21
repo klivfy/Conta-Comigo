@@ -91,11 +91,24 @@ download/conta-comigo-firefox/ Variante Firefox (event page)
 download/conta-comigo-pwa/     PWA para Android (manifest + service worker)
 download/*.zip                 Pacotes prontos das três plataformas
 download/conta-comigo/loja/    Materiais de publicação nas lojas
+native/android/                App nativo Android (TWA — Gradle + BrowserHelper)
+native/windows/                App nativo Windows 10/11 (Electron + electron-builder)
+.github/workflows/             CI: Pages, APK/AAB e instalador Windows
 qa/                            Evidências de teste em múltiplos viewports
 scripts/                       Ferramentas de build, empacotamento e QA
 ```
 
 Tecnologia: **JavaScript vanilla**, Web Extensions **Manifest V3**, **PWA** com service worker e **Web Speech API** — sem frameworks, sem dependências externas, sem telemetria.
+
+## 🚀 Versões nativas (Android e Windows 10/11)
+
+A partir da v2.6.0 o repositório gera **pacotes nativos por CI** (GitHub Actions), sem reescrever o jogo:
+
+- **Android (TWA)** — `native/android/`: APK para sideload + AAB para a Play Console, assinados com a upload key do repositório e validados contra o `assetlinks.json` publicado no site;
+- **Windows (Electron)** — `native/windows/`: instalador NSIS + versão portable (x64);
+- **Site (GitHub Pages)** — a mesma PWA publicada em `https://klivfy.github.io/Conta-Comigo/`, base do TWA.
+
+Os pacotes aparecem como **artefatos na aba Actions** a cada push nos diretórios correspondentes (ou executando o workflow manualmente). Detalhes: [native/README.md](native/README.md) · Estudo de viabilidade: [Release v2.6.0](https://github.com/klivfy/Conta-Comigo/releases/tag/v2.6.0).
 
 ## 🗺️ Histórico de versões
 

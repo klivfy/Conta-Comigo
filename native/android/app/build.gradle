@@ -1,0 +1,45 @@
+plugins { id 'com.android.application' }
+
+// Upload key versionada no repo (app 100% offline, sem backend).
+// A Play Store re-assina com a App Signing Key dela — ver keystore/README.md
+def ksFile = rootProject.file("keystore/upload.jks")
+def ksPass = "contacomico-upload"
+
+android {
+    namespace 'com.klivfy.contacomigo'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.klivfy.contacomigo"
+        minSdk 23
+        targetSdk 35
+        versionCode 260        // v2.6.0
+        versionName "2.6.0"
+    }
+
+    signingConfigs {
+        release {
+            storeFile ksFile
+            storePassword ksPass
+            keyAlias "contacomico"
+            keyPassword ksPass
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+}

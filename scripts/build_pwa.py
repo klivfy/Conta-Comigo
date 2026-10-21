@@ -14,9 +14,11 @@ Saída: download/conta-comigo-pwa/ e conta-comigo-pwa-android-<VERSAO>.zip
 import json, os, math, shutil, sys, zipfile
 from PIL import Image, ImageDraw, ImageFont
 
-SRC = "/home/z/my-project/download/conta-comigo"
-OUT = "/home/z/my-project/download/conta-comigo-pwa"
-DL = "/home/z/my-project/download"
+# BASE: raiz do projeto (padrão local; no CI usa a variável BASE do checkout)
+BASE = os.environ.get("BASE", "/home/z/my-project")
+SRC = os.path.join(BASE, "download/conta-comigo")
+OUT = os.path.join(BASE, "download/conta-comigo-pwa")
+DL = os.path.join(BASE, "download")
 
 VERSION = "2.5.0"
 for a in sys.argv[1:]:

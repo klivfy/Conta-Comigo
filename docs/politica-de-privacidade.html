@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Política de Privacidade — Conta Comigo</title>
+<style>
+  body { margin:0; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+         background:#eaf6ff; color:#1f2937; line-height:1.65; }
+  main { max-width: 800px; margin: 0 auto; padding: 32px 20px 64px;
+         background:#fff; min-height:100vh; }
+  h1, h2 { color:#c2410c; } h1 { font-size:1.6em; } h2 { font-size:1.25em; margin-top:1.6em; }
+  code { background:#f3f4f6; border-radius:6px; padding:2px 6px; font-size:.92em; }
+  a { color:#ea580c; }
+  .selo { display:inline-block; background:#16a34a; color:#fff; font-weight:700;
+          border-radius:999px; padding:6px 14px; font-size:.85em; margin-bottom:8px; }
+  footer { text-align:center; font-size:.85em; color:#6b7280; padding:24px 0 40px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="selo">✓ 100% offline · zero coleta de dados</div>
+<h2>Política de Privacidade — Conta Comigo</h2>
+<p>Última atualização: 19 de outubro de 2026
+</p>
+<h3>Princípio geral</h3>
+<p>O Conta Comigo é uma extensão de navegador educativa destinada a crianças. Ela
+ foi construída com <strong>privacidade por arquitetura</strong>: absolutamente nenhum dado
+ pessoal é coletado, transmitido, vendido ou compartilhado. Não existem
+ servidores do aplicativo, contas de usuário, anúncios, rastreadores ou
+ ferramentas de análise.
+</p>
+<h3>Dados armazenados no seu dispositivo</h3>
+<p>Para funcionar, o jogo salva localmente no navegador — usando as APIs
+ <code>chrome.storage.local</code> (extensão) e <code>localStorage</code> (versão web) — o seguinte
+ conteúdo, exclusivamente no seu computador:
+</p>
+<ul>
+<li><strong>Progresso do jogo</strong>: estrelas, níveis por operação, respostas certas e</li>
+<li>erradas, conquistas, figurinhas e itens comprados na loja do jogo;</li>
+<li><strong>Perfis de jogadores</strong>: até 4 perfis locais, contendo apenas um nome</li>
+<li>(apelido) e um avatar de emoji escolhidos por quem usa;</li>
+<li><strong>Preferências</strong>: idioma, tema, opções de som, voz e acessibilidade,</li>
+<li>dificuldade, metas e limites de sessão;</li>
+<li><strong>Dados de uso local</strong>: tempo de jogo acumulado e resultados de rodadas,</li>
+<li>usados apenas para o painel dos responsáveis exibido dentro da própria</li>
+<li>extensão.</li>
+</ul>
+<p>Esses dados <strong>nunca saem do dispositivo</strong> e podem ser apagados a qualquer
+ momento na área dos responsáveis ("Apagar tudo") ou desinstalando a extensão.
+</p>
+<h3>Sincronização opcional</h3>
+<p>Por opção dos responsáveis, é possível ativar a sincronização do progresso entre
+ computadores. Nesse caso o jogo utiliza a API nativa <code>chrome.storage.sync</code> do
+ próprio navegador: os dados trafegam pela conta do usuário no navegador
+ (Chrome/Firefox), sob o controle daquele fornecedor, e continuam fora do alcance
+ do Conta Comigo — nenhum servidor nosso participa desse fluxo, porque não
+ existem servidores nossos.
+</p>
+<h3>Narração por voz (v2.4)</h3>
+<p>A narração do jogo usa exclusivamente a <strong>Web Speech API local do navegador</strong>
+ (<code>speechSynthesis</code>), com as vozes que já estão instaladas no sistema
+ operacional do usuário. Sobre a voz:
+</p>
+<ul>
+<li>o texto falado (perguntas, elogios e incentivos) é sintetizado **dentro do</li>
+<li>próprio dispositivo** — nenhum texto da criança é enviado pela internet;</li>
+<li>quando o responsável não escolhe uma voz manualmente, o app seleciona</li>
+<li>automaticamente a voz mais natural disponível no sistema (heurística que</li>
+<li>prefere vozes "Natural"/"Neural"); se uma voz que exige conexão falhar,</li>
+<li>o app cai em silêncio para uma voz local;</li>
+<li>as preferências de voz (velocidade, tom, voz) podem ser ajustadas por</li>
+<li>perfil de jogador e ficam salvas apenas no dispositivo, junto do resto</li>
+<li>do progresso;</li>
+<li>a narração é interrompida automaticamente quando a aba/janela sai de</li>
+<li>primeiro plano.</li>
+</ul>
+<h3>Senha dos responsáveis (v2.3)</h3>
+<p>A partir da versão 2.3, a área dos responsáveis pode ser protegida por uma
+ senha criada pelo próprio adulto durante o onboarding inicial. Sobre essa senha:
+</p>
+<ul>
+<li>ela é armazenada <strong>apenas neste dispositivo</strong>, na forma de **hash SHA-256 com</li>
+<li>sal aleatório** — nunca em texto legível;</li>
+<li>o <strong>lembrete de segurança</strong> (frase escolhida pelo adulto para ajudar a</li>
+<li>lembrar a senha) é guardado em texto no dispositivo, pois serve justamente</li>
+<li>para ser exibido a quem aciona "Esqueci a senha";</li>
+<li>nenhuma senha, hash ou lembrete é enviado a qualquer servidor — a extensão</li>
+<li>não possui conexão própria com a internet;</li>
+<li>após tentativas incorretas repetidas, o acesso fica temporariamente</li>
+<li>bloqueado por um intervalo progressivo (tempo de espera crescente);</li>
+<li>como último recurso, existe a opção "Redefinir apagando TODO o progresso",</li>
+<li>que exige digitar uma palavra de confirmação e apaga todos os dados locais</li>
+<li>do jogo, permitindo criar uma nova senha.</li>
+</ul>
+<h3>Permissões solicitadas</h3>
+<ul>
+<li><strong>storage</strong>: necessária para salvar o progresso e as preferências no</li>
+<li>navegador. É a única permissão do jogo.</li>
+</ul>
+<h3>Crianças</h3>
+<p>O produto é destinado a famílias com crianças e está em conformidade com boas
+ práticas para produtos infantis: nenhuma coleta de dados de crianças, nenhuma
+ publicidade direcionada, nenhuma compra dentro do aplicativo e nenhuma
+ transferência para terceiros.
+</p>
+<h3>Alterações desta política</h3>
+<p>Mudanças nesta política serão acompanhadas de nova data e de notas de versão na
+ loja em que a extensão estiver publicada.
+</p>
+<h3>Contato</h3>
+<p>Dúvidas sobre privacidade podem ser tratadas com o publicador da extensão por
+ meio do canal indicado na página da loja em que ela foi instalada.
+</p>
+<h3>Backup do progresso (v2.5)</h3>
+<p>O progresso (estrelas, conquistas, figurinhas, perfis) fica apenas no dispositivo. A partir da
+ v2.5.0, o aplicativo oferece um botão de backup que gera um arquivo com data no nome, salvo onde o
+ responsável escolher (geralmente a pasta de downloads). Esse arquivo fica sob controle exclusivo da
+ família: o Conta Comigo não o envia a nenhum servidor. No Android via PWA, as regras são as mesmas:
+ tudo roda localmente, sem servidores, sem contas e sem anúncios.
+</p>
+  <footer>Conta Comigo © 2026 Klivfy Tecnologia · <a href="./index.html">Voltar ao jogo</a></footer>
+</main>
+</body>
+</html>

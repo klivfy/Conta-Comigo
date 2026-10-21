@@ -1,0 +1,5 @@
+// Conta Comigo — TWA (Trusted Web Activity) sobre a PWA hospedada no GitHub Pages
+// Build no CI: .github/workflows/android.yml (Gradle 8.10.2 + AGP 8.7.3)
+plugins {
+    id 'com.android.application' version '8.7.3' apply false
+}

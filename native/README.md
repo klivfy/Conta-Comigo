@@ -1,0 +1,62 @@
+# Versões nativas — Android (TWA) e Windows (Electron)
+
+> Estudo de viabilidade completo: `download/Conta-Comigo-Estudo-Viabilidade-Nativas-Android-Windows.pdf`
+> Veredito: **Android VIÁVEL (TWA)** · **Windows VIÁVEL (Electron)** — sem reescrita do jogo.
+
+## Arquitetura (Fase 1 — implementada)
+
+```
+download/conta-comigo/          ← fonte única do jogo (motor compartilhado)
+        │  scripts/build_pwa.py
+        ▼
+download/conta-comigo-pwa/      ← PWA autocontida (gerada)
+        │
+        ├─► GitHub Pages ──► https://klivfy.github.io/Conta-Comigo/
+        │                      (workflow: .github/workflows/pages.yml)
+        │
+        ├─► native/android/   ← TWA (Gradle + androidbrowserhelper)
+        │                      (workflow: .github/workflows/android.yml → APK + AAB)
+        │
+        └─► native/windows/   ← Electron + electron-builder
+                               (workflow: .github/workflows/windows.yml → instalador NSIS + portable)
+```
+
+O jogo tem **uma única fonte** — correções e recursos valem para as 5
+plataformas (Chrome, Firefox, Web/PWA, Android, Windows) numa tacada só.
+
+## Como o CI gera os pacotes
+
+| Workflow | Gatilho | Saída (aba *Actions* → artefatos) |
+|---|---|---|
+| `Android (TWA)` | push em `native/android/**` ou manual | `conta-comigo-android-2.6.0` — APK (sideload) + AAB (Play Console) |
+| `Windows (Electron)` | push em `native/windows/**` ou manual | `conta-comigo-windows-2.6.0` — instalador NSIS + portable (x64) |
+| `Site (GitHub Pages)` | push em `download/conta-comigo/**` ou manual | site PWA com `.well-known/assetlinks.json` + política de privacidade |
+
+Requisito de uma única vez para o Pages: **Settings → Pages → Build and
+deployment → Source: "GitHub Actions"** (exige conta com permissão de
+Administração no repositório — clique manual, sem custo).
+
+## TWA Android — por que tela cheia sem barra de URL
+
+O `assetlinks.json` publicado no site (`/.well-known/`) declara o pacote
+`com.klivfy.contacomigo` + fingerprint SHA256 do keystore versionado em
+`native/android/keystore/upload.jks`. O workflow Android confere a cada build
+que o fingerprint bate — se divergir, falha cedo com mensagem clara.
+
+Detalhes e rotação de chave: `native/android/keystore/README.md`.
+
+## Windows — privacidade e offline
+
+O Electron carrega o jogo via `file://` com `contextIsolation` e `sandbox`
+ativados, navegação externa bloqueada e sem chamadas de rede — o mesmo
+comportamento offline das outras plataformas. O progresso fica no
+`localStorage` do perfil do aplicativo.
+
+## Publicação nas lojas (Fases seguintes)
+
+1. **Google Play**: conta de desenvolvedor (US$ 25, única) → enviar o AAB →
+   Data Safety ("não coletamos nada") → programa **Families** (declarar
+   público infantil; o zero-coleta do app facilita a aprovação).
+2. **Microsoft Store**: conta de desenvolvedor (individual grátis) → enviar o
+   instalador/MSIX gerado do Electron → política de crianças da Microsoft.
+3. Atualizações: novas versões do jogo → push em `main` → CI regenera tudo.
