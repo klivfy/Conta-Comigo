@@ -366,3 +366,18 @@ Work Log:
 Stage Summary:
 - GitHub exibe README com identidade Klivfy Tecnologia e licença proprietária
 - Token ainda ativo — reforçar revogação ao usuário
+
+---
+Task ID: 19
+Agent: Z.ai (agente principal)
+Task: Próximos passos sugeridos — About, social preview e downloads diretos
+
+Work Log:
+- Token testado: válido, porém fine-grained com escopo somente Contents → PATCH /repos (descrição) e PUT /topics retornaram 403 (exigem Administration) → About deixada como passo manual
+- Gerado download/social-preview-1280x640.png via scripts/gen_social_preview.py (captura da home desfocada + overlay navy + ícone 123 + título/subtitle/plataformas/KLIVFY TECNOLOGIA; 202 KB, Carlito)
+- README.md: seção "Downloads diretos — v2.6.0" com os 3 zips da Release + link para releases/latest
+- Commits: b18b05f (README + script) e push; social preview commitado e enviado na sequência
+- Verificado: HEAD remoto b18b05f, 3 links releases/download no README
+
+Stage Summary:
+- Pendências manuais do usuário: colar descrição/topics na About (textos fornecidos), subir social preview em Settings→General, revogar token
