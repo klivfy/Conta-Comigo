@@ -38,10 +38,9 @@ Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo par
 | `conta-comigo-chrome-2.6.0.zip` | Pacote para Chrome/Edge/Brave (Manifest V3, service worker) |
 | `conta-comigo-firefox-2.6.0.zip` | Pacote para Firefox computador **e Android** (event page + `gecko_android` 113+) |
 | `conta-comigo-pwa-android-2.6.0.zip` | **Android/PWA**: jogo instalável e offline (manifest + service worker + ícones maskable) — hospedar em https e "Adicionar à tela inicial" |
-| `conta-comigo-pwa/` | Pasta do PWA pronta para hospedar (mesmo conteúdo do zip) |
 
 - Instalação e novidades: abra `conta-comigo/demo.html` no navegador.
-- Pasta `conta-comigo/` = código-fonte da build Chromium; pasta `conta-comigo-firefox/` = build Firefox.
+- Pasta `conta-comigo/` = fonte única (build Chromium). As pastas `conta-comigo-firefox/` e `conta-comigo-pwa/` são geradas por `python scripts/build_packages.py` e `python scripts/build_pwa.py` e não ficam no Git.
 - Novo na v2.4.1: **selo de versão visível no topo do jogo** (confirmação instantânea da build) e versão dinâmica nas opções.
 - O que há de novo na v2.4.0: **voz cordial (Fase 1 do estudo)** — seleção automática de vozes naturais/neurais do sistema, prosódia por pontuação, biblioteca de falas afetuosas com o nome da criança (PT/EN/ES), voz por perfil, botão ouvir amostra, narração/efeitos separados, tempo extra por questão, reduzir movimentos, medalhas de persistência e modo sem loja.
 - O que houve na v2.3.0: portão parental por senha (criada pelo adulto responsável em onboarding na primeira sessão, com lembrete de segurança, bloqueio progressivo após erros, troca de senha e redefinição de emergência) — a central de configurações deixou de ser aberta por conta de multiplicação.

@@ -23,3 +23,9 @@ native/android/keystore/*
 !native/android/keystore/README.md
 *.jks
 *.keystore
+
+# Builds gerados a partir de download/conta-comigo/ (fonte única) — ver README
+download/conta-comigo-firefox/
+download/conta-comigo-pwa/
+__pycache__/
+node_modules/

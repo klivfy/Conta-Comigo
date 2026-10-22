@@ -6,6 +6,8 @@ on:
     paths:
       - 'native/windows/**'
       - 'scripts/build_pwa.py'
+      - 'scripts/cc_build.py'
+      - 'scripts/fonts/**'
       - 'download/conta-comigo/**'
       - '.github/workflows/windows.yml'
   workflow_dispatch:
@@ -27,7 +29,7 @@ jobs:
         run: pip install pillow
 
       - name: Gerar PWA base (mesmo motor do jogo)
-        run: python scripts/build_pwa.py VERSION=2.6.0
+        run: python scripts/build_pwa.py
         env:
           BASE: ${{ github.workspace }}
 

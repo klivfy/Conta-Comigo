@@ -11,19 +11,14 @@ Cria download/conta-comigo-pwa/ autocontido (sem paths ../), com:
 
 Saída: download/conta-comigo-pwa/ e conta-comigo-pwa-android-<VERSAO>.zip
 """
-import json, os, math, shutil, sys, zipfile
+import glob, hashlib, json, os, math, shutil, sys, zipfile
 from PIL import Image, ImageDraw, ImageFont
 
-# BASE: raiz do projeto (padrão local; no CI usa a variável BASE do checkout)
-BASE = os.environ.get("BASE", "/home/z/my-project")
-SRC = os.path.join(BASE, "download/conta-comigo")
-OUT = os.path.join(BASE, "download/conta-comigo-pwa")
-DL = os.path.join(BASE, "download")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from cc_build import DL, FONT_BOLD, SRC, version  # noqa: E402
 
-VERSION = "2.5.0"
-for a in sys.argv[1:]:
-    if a.upper().startswith("VERSION="):
-        VERSION = a.split("=", 1)[1].strip()
+OUT = os.path.join(DL, "conta-comigo-pwa")
+VERSION = version()  # padrão: versão do manifest.json da fonte
 
 # ---------- 0) pasta limpa ANTES de gerar ícones (o rmtree apagava os PNGs) ----------
 if os.path.exists(OUT):
@@ -33,7 +28,7 @@ if os.path.exists(OUT):
 ICON_OUT = os.path.join(OUT, "icons")
 os.makedirs(ICON_OUT, exist_ok=True)
 TOP, BOT = (255, 154, 61), (255, 94, 126)
-FONT_PATH = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
+FONT_PATH = FONT_BOLD  # empacotada no repo: funciona em Linux, Windows e macOS
 
 def lerp(a, b, t):
     return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
@@ -128,6 +123,13 @@ ASSETS = ["./index.html", "./options.html", "./manifest.webmanifest", "./css/sty
           "./js/boot.js", "./js/engine.js", "./js/ui.js", "./js/i18n.js", "./js/options.js",
           "./icons/icon-192.png", "./icons/icon-512.png",
           "./icons/icon-maskable-192.png", "./icons/icon-maskable-512.png"]
+# chave do cache = versão + hash do conteúdo: qualquer mudança nos arquivos gera
+# um sw.js diferente, o navegador instala o novo e o activate apaga o cache velho
+digest = hashlib.sha256()
+for a in ASSETS:
+    with open(os.path.join(OUT, a[2:]), "rb") as fh:
+        digest.update(a.encode() + b"\0" + fh.read())
+CACHE_KEY = VERSION + "-" + digest.hexdigest()[:10]
 sw = """'use strict';
 /* Conta Comigo PWA — service worker (offline-first do app shell) */
 const CACHE = 'conta-comigo-__VER__';
@@ -148,14 +150,17 @@ self.addEventListener('fetch', (e) => {
   e.respondWith(
     caches.match(e.request).then((hit) => hit ||
       fetch(e.request).then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(() => {});
+        // só guarda respostas válidas do próprio site (404/erros não ficam presos no cache)
+        if (res.ok && res.type === 'basic') {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(() => {});
+        }
         return res;
-      }).catch(() => caches.match('./index.html'))
+      }).catch(() => (e.request.mode === 'navigate' ? caches.match('./index.html') : Response.error()))
     )
   );
 });
-""".replace('__VER__', VERSION).replace('__ASSETS__', json.dumps(ASSETS))
+""".replace('__VER__', CACHE_KEY).replace('__ASSETS__', json.dumps(ASSETS))
 open(os.path.join(OUT, "sw.js"), "w", encoding="utf-8").write(sw)
 
 # ---------- 5) leia-me-android.md ----------
@@ -197,8 +202,8 @@ open(os.path.join(OUT, "leia-me-android.md"), "w", encoding="utf-8").write(readm
 
 # ---------- 6) zip ----------
 zip_path = os.path.join(DL, f"conta-comigo-pwa-android-{VERSION}.zip")
-if os.path.exists(zip_path):
-    os.remove(zip_path)
+for old in glob.glob(os.path.join(DL, "conta-comigo-pwa-android-*.zip")):
+    os.remove(old)  # mantém só o pacote da versão atual (como build_packages.py)
 with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
     for root, _, files in os.walk(OUT):
         for f in sorted(files):

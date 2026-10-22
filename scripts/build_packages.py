@@ -7,7 +7,7 @@ Firefox não suporta 'background.service_worker'. A declaração dupla no
 mesmo manifest deixava uma mensagem de erro na página chrome://extensions
 (ainda que o Chrome funcionasse usando o service worker).
 
-Saída (em /home/z/my-project/download/):
+Saída (em download/ do repositório):
   - conta-comigo/               → pasta p/ Chromium (service_worker only)
   - conta-comigo-firefox/       → pasta p/ Firefox (event page + gecko id)
   - conta-comigo-chrome-2.1.1.zip
@@ -16,15 +16,13 @@ Saída (em /home/z/my-project/download/):
 """
 import json, os, shutil, zipfile, sys
 
-SRC = "/home/z/my-project/download/conta-comigo"
-FF  = "/home/z/my-project/download/conta-comigo-firefox"
-OUT = "/home/z/my-project/download"
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from cc_build import DL as OUT, SRC, version  # noqa: E402
+
+FF  = os.path.join(OUT, "conta-comigo-firefox")
 OLD_ZIP = os.path.join(OUT, "conta-comigo-extension.zip")
-# v2.4: VERSION aceito por argumento (build_packages.py VERSION=2.4.0) — padrão do manifest
-VERSION = "2.4.0"
-for a in sys.argv[1:]:
-    if a.upper().startswith("VERSION="):
-        VERSION = a.split("=", 1)[1].strip()
+# VERSION=x.y.z por argumento; padrão = versão do manifest.json da fonte
+VERSION = version()
 ZIP_CHROME = os.path.join(OUT, f"conta-comigo-chrome-{VERSION}.zip")
 ZIP_FF     = os.path.join(OUT, f"conta-comigo-firefox-{VERSION}.zip")
 

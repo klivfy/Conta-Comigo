@@ -86,10 +86,10 @@ A narração usa a síntese de voz do próprio sistema com **seleção inteligen
 ## 🧱 Estrutura do repositório
 
 ```
-download/conta-comigo/         Código-fonte da extensão Chrome (MV3)
-download/conta-comigo-firefox/ Variante Firefox (event page)
-download/conta-comigo-pwa/     PWA para Android (manifest + service worker)
+download/conta-comigo/         Fonte única do jogo (extensão Chrome MV3)
 download/*.zip                 Pacotes prontos das três plataformas
+                               (Firefox e PWA são gerados: python scripts/build_packages.py
+                                e python scripts/build_pwa.py — não são versionados)
 download/conta-comigo/loja/    Materiais de publicação nas lojas
 native/android/                App nativo Android (TWA — Gradle + BrowserHelper)
 native/windows/                App nativo Windows 10/11 (Electron + electron-builder)

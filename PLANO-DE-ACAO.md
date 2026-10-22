@@ -17,12 +17,12 @@ Legenda: **[eu]** código na branch · **[você]** ação em conta/GitHub/loja.
 - [x] 1.4 CSP no PWA/site/Electron
 - [x] 1.5 Contraste dos botões de resposta (`style.css:264-271`); remover verde fixo do 2º botão
 
-> Nota: a versão segue 2.6.0 — o service worker só entrega atualizações a quem já instalou depois do item 2.4 (cache por hash) ou de um bump de versão.
+> Nota: com o item 2.4, qualquer mudança nos arquivos gera um novo cache do service worker — as correções chegam a quem já instalou.
 
 ## Fase 2 — Build e CI confiáveis
-- [ ] 2.1 Caminhos relativos nos scripts · 2.2 versão a partir do manifest · 2.3 fonte empacotada
-- [ ] 2.4 Service worker (cache por hash, só `res.ok`, limpar versões antigas)
-- [ ] 2.5 Gradle `rootProject.name` sem espaço · 2.6 workflows em `.github/` · 2.7 `download/` como fonte única · 2.8 axe-core no CI
+- [x] 2.1 Caminhos relativos nos scripts (`scripts/cc_build.py`) · [x] 2.2 versão a partir do manifest · [x] 2.3 fonte dos ícones empacotada (`scripts/fonts/`)
+- [x] 2.4 Service worker (cache por versão + hash do conteúdo, só `res.ok`, fallback só para navegação; zips antigos da PWA removidos)
+- [x] 2.5 Gradle `rootProject.name` sem espaço · [ ] 2.6 workflows em `.github/` (depende do token — 0.4) · [x] 2.7 `download/conta-comigo/` como fonte única (Firefox/PWA fora do Git) · [x] 2.8 axe-core no CI (`scripts/a11y_check.cjs` + baseline; workflow `ci.yml` no kit)
 
 ## Fase 3 — Acessibilidade WCAG 2.1 AA
 - [ ] 3.1 aria-labels textuais via i18n · 3.2 labels nos campos de senha · 3.3 semântica/foco de modais

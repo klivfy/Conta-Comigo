@@ -9,7 +9,7 @@
 download/conta-comigo/          ← fonte única do jogo (motor compartilhado)
         │  scripts/build_pwa.py
         ▼
-download/conta-comigo-pwa/      ← PWA autocontida (gerada)
+download/conta-comigo-pwa/      ← PWA autocontida (gerada; fora do Git)
         │
         ├─► GitHub Pages ──► https://klivfy.github.io/Conta-Comigo/
         │                      (workflow: .github/workflows/pages.yml)
