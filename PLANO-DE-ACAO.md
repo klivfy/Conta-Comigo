@@ -25,8 +25,9 @@ Legenda: **[eu]** código na branch · **[você]** ação em conta/GitHub/loja.
 - [x] 2.5 Gradle `rootProject.name` sem espaço · [ ] 2.6 workflows em `.github/` (depende do token — 0.4) · [x] 2.7 `download/conta-comigo/` como fonte única (Firefox/PWA fora do Git) · [x] 2.8 axe-core no CI (`scripts/a11y_check.cjs` + baseline; workflow `ci.yml` no kit)
 
 ## Fase 3 — Acessibilidade WCAG 2.1 AA
-- [ ] 3.1 aria-labels textuais via i18n · 3.2 labels nos campos de senha · 3.3 semântica/foco de modais
-- [ ] 3.4 aria-live + nome acessível da cena · 3.5 foco ≥3:1 · 3.6 alvos ≥44px · 3.7 prefers-reduced-motion · 3.8 contrastes restantes
+- [x] 3.1 aria-labels textuais via i18n (`data-i18n-label`, pt/en/es) · [x] 3.2 labels em todos os campos do painel e do onboarding (`for`/`aria-labelledby`) · [x] 3.3 modal com `role=dialog`, fundo `inert`, foco preso e devolvido; popover de perfis com `aria-expanded` e Esc
+- [x] 3.4 região `aria-live` (pergunta, cena, elogios, avisos) + nome acessível da cena (“5 🍎 (2 riscados)”) · [x] 3.5 anel de foco na cor do texto (≥3:1 em todos os temas) · [x] 3.6 alvos ≥44px no jogo e no painel · [x] 3.7 `prefers-reduced-motion` também no painel, nos confetes e ao vivo · [x] 3.8 contrastes restantes (texto secundário dos 7 temas, botões azuis/verdes, vermelhos, cartões bloqueados)
+- Check de CI cobre início, perfis, loja, conquistas, rodada, portão e painel nos temas claro, escuro e alto contraste — baseline zerado.
 
 ## Fase 4 — Experiência da criança
 - [ ] 4.1 "Jogar" acima da dobra no celular · 4.2 só modos desbloqueados + próximo prêmio · 4.3 adiar senha · 4.4 calendário de missões · 4.5 fonte própria

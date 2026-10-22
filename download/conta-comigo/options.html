@@ -14,12 +14,16 @@
     .opt-card > h2 { font-size: 18px; font-weight: 900; margin-bottom: 12px; color: var(--ink); }
     .opt-row { display: flex; align-items: center; gap: 12px; padding: 7px 0; flex-wrap: wrap; }
     .opt-row label { flex: 1 1 220px; font-weight: 700; font-size: 14.5px; }
-    .opt-row select, .opt-row input[type="number"] { font-family: inherit; font-size: 14px; padding: 8px 10px; border-radius: 10px; border: 2px solid var(--line); background: var(--card); color: var(--ink); }
+    .opt-row select, .opt-row input[type="number"] { min-height: 44px; font-family: inherit; font-size: 14px; padding: 8px 10px; border-radius: 10px; border: 2px solid var(--line); background: var(--card); color: var(--ink); }
     /* v2.6: nomes de vozes são longos — o select NÃO pode arrastar a largura
        mínima do card (min-width:0 deixa o flex item encolher e cortar o texto) */
     .opt-row select { min-width: 0; max-width: 100%; }
     .opt-row input[type="range"] { width: 180px; }
-    .opt-row input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--blue); }
+    .opt-row input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--ans-1); }
+    /* a caixa é pequena, mas o rótulo (label for) amplia a área clicável */
+    .opt-row label[for] { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
+    .file-in { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    .file-in:focus-visible + label, label:has(+ .file-in:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
     .opt-note { font-size: 12.5px; color: var(--ink-soft); font-weight: 700; margin-top: 4px; }
     .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
     .stat { background: rgba(var(--sh), .06); border-radius: 14px; padding: 12px; text-align: center; }
@@ -29,7 +33,7 @@
     .map-row:last-child { border-bottom: none; }
     .map-mode { flex: 0 0 170px; font-weight: 800; font-size: 14px; display: flex; gap: 7px; align-items: center; }
     .map-bar { flex: 1; height: 12px; background: rgba(var(--sh), .1); border-radius: 999px; overflow: hidden; min-width: 80px; }
-    .map-bar i { display: block; height: 100%; background: var(--green); border-radius: 999px; }
+    .map-bar i { display: block; height: 100%; background: var(--success-strong); border-radius: 999px; }
     .map-dots { display: flex; gap: 4px; }
     /* v2.6 — telas estreitas (PWA/Android e janela reduzida): a área dos
        responsáveis também se adapta — linhas do mapa quebram, ranges encolhem */
@@ -50,31 +54,30 @@
       .prof-line input { width: 118px; }
     }
     .lv-dot { width: 22px; height: 22px; border-radius: 50%; font-size: 10px; font-weight: 900; display: flex; align-items: center; justify-content: center; color: #fff; background: rgba(var(--sh), .18); }
-    .lv-dot.g { background: var(--green); } .lv-dot.y { background: var(--yellow); color: #5c4300; } .lv-dot.r { background: var(--red); }
+    .lv-dot.g { background: var(--success-strong); } .lv-dot.y { background: var(--yellow); color: #5c4300; } .lv-dot.r { background: var(--danger); }
     .week-bars { display: flex; gap: 14px; align-items: flex-end; height: 90px; padding-top: 6px; }
     .week-bar { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
     .week-bar i { width: 34px; background: var(--blue); border-radius: 8px 8px 0 0; display: block; }
     .week-bar span { font-size: 11px; font-weight: 800; color: var(--ink-soft); }
     .prof-line { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--line); flex-wrap: wrap; }
     .prof-line .av-row { margin: 0; }
-    .prof-line .av-row .av { width: 36px; height: 36px; font-size: 19px; }
-    .prof-line input { font-family: inherit; font-size: 14px; padding: 7px 10px; border-radius: 10px; border: 2px solid var(--line); background: var(--card); color: var(--ink); width: 150px; }
-    .danger-btn { background: var(--red); box-shadow: 0 3px 0 var(--red-dark); }
+    .prof-line .av-row .av { width: 44px; height: 44px; font-size: 21px; }
+    .prof-line input { min-height: 44px; font-family: inherit; font-size: 14px; padding: 7px 10px; border-radius: 10px; border: 2px solid var(--line); background: var(--card); color: var(--ink); width: 150px; }
+    .danger-btn { background: var(--danger); box-shadow: 0 3px 0 var(--danger-edge); }
     .gate-card { max-width: 470px; margin: 44px auto; text-align: center; background: var(--card); border-radius: 24px; padding: 30px 32px; box-shadow: 0 10px 26px rgba(0, 0, 0, .18); }
     .gate-card h2 { font-size: 22px; font-weight: 900; margin-bottom: 6px; }
     .gate-card input { font-family: inherit; font-size: 16px; width: 100%; box-sizing: border-box; padding: 11px 13px; border-radius: 12px; border: 2.5px solid var(--line); background: var(--card); color: var(--ink); font-weight: 700; }
-    .gate-card input:focus { outline: 3px solid rgba(var(--sh), .15); }
+    .gate-card input:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
     .pwd-lbl { display: block; text-align: left; font-size: 12.5px; font-weight: 800; color: var(--ink-soft); margin: 10px 0 4px; }
     .pwd-box { position: relative; }
     .pwd-box input { padding-right: 42px; }
-    .eye-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 17px; padding: 4px; }
-    .link-btn { background: none; border: none; color: var(--blue); font-family: inherit; font-weight: 800; font-size: 13.5px; cursor: pointer; text-decoration: underline; margin-top: 12px; }
+    .link-btn { background: none; border: none; color: var(--link); font-family: inherit; font-weight: 800; font-size: 13.5px; cursor: pointer; text-decoration: underline; margin-top: 12px; min-height: 44px; padding: 0 8px; }
     .hint-line { font-size: 13.5px; background: rgba(var(--sh), .06); border-radius: 12px; padding: 10px 12px; margin-top: 10px; }
     .hint-line b { display: block; font-size: 12px; color: var(--ink-soft); margin-bottom: 2px; }
-    .reset-warn { font-size: 12.5px; color: var(--red); font-weight: 700; margin: 8px 0; }
-    .gate-err { color: var(--red); font-weight: 800; min-height: 22px; margin-top: 8px; font-size: 14px; }
+    .reset-warn { font-size: 12.5px; color: var(--danger-text, var(--danger)); font-weight: 700; margin: 8px 0; }
+    .gate-err { color: var(--danger-text, var(--danger)); font-weight: 800; min-height: 22px; margin-top: 8px; font-size: 14px; }
     #gate .big-btn { margin-top: 4px; width: 100%; }
-    .opt-row input[type="text"], .opt-row input[type="password"] { font-family: inherit; font-size: 14px; padding: 8px 10px; border-radius: 10px; border: 2px solid var(--line); background: var(--card); color: var(--ink); width: 220px; max-width: 100%; box-sizing: border-box; }
+    .opt-row input[type="text"], .opt-row input[type="password"] { min-height: 44px; font-family: inherit; font-size: 14px; padding: 8px 10px; border-radius: 10px; border: 2px solid var(--line); background: var(--card); color: var(--ink); width: 220px; max-width: 100%; box-sizing: border-box; }
     textarea#imp-area { width: 100%; min-height: 90px; font-family: monospace; font-size: 12px; padding: 10px; border-radius: 12px; border: 2px solid var(--line); background: var(--card); color: var(--ink); margin: 8px 0; }
     .btn-line { display: flex; gap: 10px; flex-wrap: wrap; }
   </style>
@@ -84,7 +87,7 @@
   <div id="app">
     <div class="opt-wrap">
       <header class="opt-head">
-        <button id="opt-back" class="icon-btn" aria-label="🏠">🏠</button>
+        <button id="opt-back" class="icon-btn" data-i18n-label="a_back_game" aria-label="Voltar ao jogo">🏠</button>
         <h1>🛠️ <span data-i18n="gate_title">Área dos responsáveis</span></h1>
       </header>
 
@@ -96,24 +99,24 @@
         <!-- modo criar (quando ainda não existe senha) -->
         <div id="gate-create" class="hidden">
           <p data-i18n="gate_create_msg">Ainda não existe senha nesta área.</p>
-          <label class="pwd-lbl" data-i18n="ob_pwd">Crie uma senha</label>
+          <label class="pwd-lbl" for="gc-pwd" data-i18n="ob_pwd">Crie uma senha</label>
           <div class="pwd-box"><input id="gc-pwd" type="password" autocomplete="new-password">
-            <button id="gc-eye1" class="eye-btn" type="button" aria-label="👁">👁</button></div>
-          <label class="pwd-lbl" data-i18n="ob_pwd2">Confirme a senha</label>
+            <button id="gc-eye1" class="eye-btn" type="button" data-i18n-label="a_show_pwd" aria-label="Mostrar senha" aria-pressed="false">👁</button></div>
+          <label class="pwd-lbl" for="gc-pwd2" data-i18n="ob_pwd2">Confirme a senha</label>
           <div class="pwd-box"><input id="gc-pwd2" type="password" autocomplete="new-password">
-            <button id="gc-eye2" class="eye-btn" type="button" aria-label="👁">👁</button></div>
-          <label class="pwd-lbl" data-i18n="ob_hint_lbl">Lembrete de segurança</label>
+            <button id="gc-eye2" class="eye-btn" type="button" data-i18n-label="a_show_pwd" aria-label="Mostrar senha" aria-pressed="false">👁</button></div>
+          <label class="pwd-lbl" for="gc-hint" data-i18n="ob_hint_lbl">Lembrete de segurança</label>
           <input id="gc-hint" type="text" maxlength="80">
-          <div class="gate-err" id="gc-err"></div>
+          <div class="gate-err" id="gc-err" role="alert"></div>
           <button id="gc-go" class="big-btn" data-i18n="ob_create">Salvar senha</button>
         </div>
 
         <!-- modo entrar -->
         <div id="gate-enter">
-          <p data-i18n="gate_pwd_msg">Para entrar, digite a senha dos responsáveis:</p>
-          <div class="pwd-box"><input id="ge-pwd" type="password" autocomplete="current-password">
-            <button id="ge-eye" class="eye-btn" type="button" aria-label="👁">👁</button></div>
-          <div class="gate-err" id="ge-err"></div>
+          <p id="ge-pwd-lbl" data-i18n="gate_pwd_msg">Para entrar, digite a senha dos responsáveis:</p>
+          <div class="pwd-box"><input id="ge-pwd" aria-labelledby="ge-pwd-lbl" type="password" autocomplete="current-password">
+            <button id="ge-eye" class="eye-btn" type="button" data-i18n-label="a_show_pwd" aria-label="Mostrar senha" aria-pressed="false">👁</button></div>
+          <div class="gate-err" id="ge-err" role="alert"></div>
           <button id="ge-go" class="big-btn" data-i18n="gate_enter">Entrar</button>
           <button id="ge-forgot" class="link-btn" type="button" data-i18n="gate_forgot">Esqueci a senha</button>
           <div id="ge-forgot-box" class="hidden">
@@ -122,9 +125,9 @@
           <div id="ge-reset-box" class="hidden">
             <button id="ge-reset-show" class="link-btn" type="button" data-i18n="gate_reset_show">Redefinir apagando tudo</button>
             <div id="ge-reset-form" class="hidden">
-              <p class="reset-warn" data-i18n="gate_reset_warn"></p>
-              <input id="ge-reset-in" type="text" autocomplete="off">
-              <div class="gate-err" id="ge-reset-err"></div>
+              <p class="reset-warn" id="ge-reset-lbl" data-i18n="gate_reset_warn"></p>
+              <input id="ge-reset-in" aria-labelledby="ge-reset-lbl" type="text" autocomplete="off">
+              <div class="gate-err" id="ge-reset-err" role="alert"></div>
               <button id="ge-reset-go" class="mini-btn danger-btn" type="button" data-i18n="gate_reset_go">Apagar tudo</button>
             </div>
           </div>
@@ -137,7 +140,7 @@
         <div class="opt-card">
           <h2>📊 <span data-i18n="dash">Painel de progresso</span></h2>
           <div class="opt-row">
-            <label data-i18n="profiles">Jogadores</label>
+            <label for="dash-prof" data-i18n="profiles">Jogadores</label>
             <select id="dash-prof"></select>
           </div>
           <div class="stat-grid" id="stat-grid"></div>
@@ -155,31 +158,31 @@
 
         <div class="opt-card">
           <h2>🎮 <span data-i18n="game_set">Jogo</span></h2>
-          <div class="opt-row"><label data-i18n="s_diff">Dificuldade</label>
+          <div class="opt-row"><label for="set-diff" data-i18n="s_diff">Dificuldade</label>
             <select id="set-diff">
               <option value="auto">🤖 Auto</option><option value="1">🌱 1</option><option value="2">🌿 2</option>
               <option value="3">🌳 3</option><option value="4">⛰️ 4</option><option value="5">🚀 5</option>
             </select>
           </div>
-          <div class="opt-row"><label data-i18n="s_unlock">Destravar todos os modos</label><input type="checkbox" id="set-unlock"></div>
-          <div class="opt-row"><label data-i18n="s_newtab">Continha na nova aba</label><input type="checkbox" id="set-newtab"></div>
+          <div class="opt-row"><label for="set-unlock" data-i18n="s_unlock">Destravar todos os modos</label><input type="checkbox" id="set-unlock"></div>
+          <div class="opt-row"><label for="set-newtab" data-i18n="s_newtab">Continha na nova aba</label><input type="checkbox" id="set-newtab"></div>
           <p class="opt-note" data-i18n="s_newtab_note"></p>
-          <div class="opt-row"><label data-i18n="s_noshop">Esconder a loja</label><input type="checkbox" id="set-noshop"></div>
+          <div class="opt-row"><label for="set-noshop" data-i18n="s_noshop">Esconder a loja</label><input type="checkbox" id="set-noshop"></div>
         </div>
 
         <div class="opt-card">
           <h2>🔊 <span data-i18n="sound_set">Som e voz</span></h2>
-          <div class="opt-row"><label data-i18n="s_lang">Idioma</label>
+          <div class="opt-row"><label for="set-lang" data-i18n="s_lang">Idioma</label>
             <select id="set-lang"><option value="pt">Português (BR)</option><option value="en">English</option><option value="es">Español</option></select>
           </div>
-          <div class="opt-row"><label data-i18n="s_mute">Silenciar</label><input type="checkbox" id="set-mute"></div>
-          <div class="opt-row"><label data-i18n="s_voice_on">Narração (voz)</label><input type="checkbox" id="set-voice-on"></div>
-          <div class="opt-row"><label data-i18n="s_sfx_on">Efeitos sonoros</label><input type="checkbox" id="set-sfx-on"></div>
-          <div class="opt-row"><label data-i18n="s_vol">Volume</label><input type="range" id="set-vol" min="0" max="100" step="5"></div>
-          <div class="opt-row"><label data-i18n="s_rate">Velocidade da voz</label><input type="range" id="set-rate" min="60" max="140" step="5"></div>
-          <div class="opt-row"><label data-i18n="s_pitch">Tom da voz</label><input type="range" id="set-pitch" min="50" max="200" step="5"></div>
-          <div class="opt-row"><label data-i18n="s_voice">Voz da narração</label><select id="set-voice"></select></div>
-          <div class="opt-row"><label data-i18n="s_sample">Ouvir amostra</label><button class="mini-btn" id="btn-voice-sample">🔊</button></div>
+          <div class="opt-row"><label for="set-mute" data-i18n="s_mute">Silenciar</label><input type="checkbox" id="set-mute"></div>
+          <div class="opt-row"><label for="set-voice-on" data-i18n="s_voice_on">Narração (voz)</label><input type="checkbox" id="set-voice-on"></div>
+          <div class="opt-row"><label for="set-sfx-on" data-i18n="s_sfx_on">Efeitos sonoros</label><input type="checkbox" id="set-sfx-on"></div>
+          <div class="opt-row"><label for="set-vol" data-i18n="s_vol">Volume</label><input type="range" id="set-vol" min="0" max="100" step="5"></div>
+          <div class="opt-row"><label for="set-rate" data-i18n="s_rate">Velocidade da voz</label><input type="range" id="set-rate" min="60" max="140" step="5"></div>
+          <div class="opt-row"><label for="set-pitch" data-i18n="s_pitch">Tom da voz</label><input type="range" id="set-pitch" min="50" max="200" step="5"></div>
+          <div class="opt-row"><label for="set-voice" data-i18n="s_voice">Voz da narração</label><select id="set-voice"></select></div>
+          <div class="opt-row"><label for="btn-voice-sample" data-i18n="s_sample">Ouvir amostra</label><button class="mini-btn" id="btn-voice-sample">🔊</button></div>
           <p class="opt-note" data-i18n="s_natural_note"></p>
           <p id="voice-tier-note" class="opt-note">·</p>
           <details class="voice-guide">
@@ -197,34 +200,34 @@
 
         <div class="opt-card">
           <h2>🎨 <span data-i18n="a11y_set">Aparência e acessibilidade</span></h2>
-          <div class="opt-row"><label data-i18n="s_theme">Tema</label>
+          <div class="opt-row"><label for="set-theme" data-i18n="s_theme">Tema</label>
             <select id="set-theme">
               <option value="classico"></option><option value="espaco"></option>
               <option value="jardim"></option><option value="arcoiris"></option>
             </select>
           </div>
-          <div class="opt-row"><label data-i18n="s_hc">Alto contraste</label><input type="checkbox" id="set-hc"></div>
-          <div class="opt-row"><label data-i18n="s_dys">Fonte para dislexia</label><input type="checkbox" id="set-dys"></div>
-          <div class="opt-row"><label data-i18n="s_rm">Reduzir movimentos</label><input type="checkbox" id="set-rm"></div>
-          <div class="opt-row"><label data-i18n="s_calmo">Modo calmo</label>
+          <div class="opt-row"><label for="set-hc" data-i18n="s_hc">Alto contraste</label><input type="checkbox" id="set-hc"></div>
+          <div class="opt-row"><label for="set-dys" data-i18n="s_dys">Fonte para dislexia</label><input type="checkbox" id="set-dys"></div>
+          <div class="opt-row"><label for="set-rm" data-i18n="s_rm">Reduzir movimentos</label><input type="checkbox" id="set-rm"></div>
+          <div class="opt-row"><label for="set-calmo" data-i18n="s_calmo">Modo calmo</label>
             <select id="set-calmo"><option value="auto"></option><option value="on"></option><option value="off"></option></select>
           </div>
         </div>
 
         <div class="opt-card">
           <h2>⏱️ <span data-i18n="time_set">Tempo e metas</span></h2>
-          <div class="opt-row"><label data-i18n="s_timer">Cronômetro de pontos</label><input type="checkbox" id="set-timer"></div>
+          <div class="opt-row"><label for="set-timer" data-i18n="s_timer">Cronômetro de pontos</label><input type="checkbox" id="set-timer"></div>
           <p class="opt-note" data-i18n="s_timer_note"></p>
-          <div class="opt-row"><label data-i18n="s_tscale">Tempo por questão</label>
+          <div class="opt-row"><label for="set-tscale" data-i18n="s_tscale">Tempo por questão</label>
             <select id="set-tscale"><option value="1"></option><option value="1.5"></option><option value="2"></option></select>
           </div>
-          <div class="opt-row"><label data-i18n="s_goal">Meta diária (rodadas)</label>
+          <div class="opt-row"><label for="set-goal" data-i18n="s_goal">Meta diária (rodadas)</label>
             <select id="set-goal"><option value="0"></option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option></select>
           </div>
-          <div class="opt-row"><label data-i18n="s_limit">Limite de sessão (minutos)</label>
+          <div class="opt-row"><label for="set-limit" data-i18n="s_limit">Limite de sessão (minutos)</label>
             <select id="set-limit"><option value="0"></option><option value="10">10</option><option value="15">15</option><option value="20">20</option><option value="30">30</option></select>
           </div>
-          <div class="opt-row"><label data-i18n="s_sync">Sincronizar entre computadores</label><input type="checkbox" id="set-sync"></div>
+          <div class="opt-row"><label for="set-sync" data-i18n="s_sync">Sincronizar entre computadores</label><input type="checkbox" id="set-sync"></div>
           <p class="opt-note" data-i18n="s_sync_note"></p>
         </div>
 
@@ -233,11 +236,11 @@
           <p class="opt-note" id="sec-status"></p>
           <button class="mini-btn" id="btn-sec-change" data-i18n="sec_change">Alterar senha</button>
           <div id="sec-form" class="hidden" style="margin-top:12px">
-            <div class="opt-row"><label data-i18n="sec_cur">Senha atual</label><input type="password" id="sec-cur" autocomplete="current-password"></div>
-            <div class="opt-row"><label data-i18n="sec_new">Nova senha</label><input type="password" id="sec-new" autocomplete="new-password"></div>
-            <div class="opt-row"><label data-i18n="ob_pwd2">Confirme a senha</label><input type="password" id="sec-new2" autocomplete="new-password"></div>
-            <div class="opt-row"><label data-i18n="sec_hint">Lembrete de segurança</label><input type="text" id="sec-hint" maxlength="80"></div>
-            <div class="gate-err" id="sec-err"></div>
+            <div class="opt-row"><label for="sec-cur" data-i18n="sec_cur">Senha atual</label><input type="password" id="sec-cur" autocomplete="current-password"></div>
+            <div class="opt-row"><label for="sec-new" data-i18n="sec_new">Nova senha</label><input type="password" id="sec-new" autocomplete="new-password"></div>
+            <div class="opt-row"><label for="sec-new2" data-i18n="ob_pwd2">Confirme a senha</label><input type="password" id="sec-new2" autocomplete="new-password"></div>
+            <div class="opt-row"><label for="sec-hint" data-i18n="sec_hint">Lembrete de segurança</label><input type="text" id="sec-hint" maxlength="80"></div>
+            <div class="gate-err" id="sec-err" role="alert"></div>
             <button class="mini-btn" id="btn-sec-save" data-i18n="sec_save">Salvar nova senha</button>
           </div>
         </div>
@@ -250,9 +253,9 @@
             <button class="mini-btn" id="btn-copy" data-i18n="exp_copy">Copiar</button>
             <button class="mini-btn" id="btn-import" data-i18n="imp_btn">Importar do texto</button>
             <label class="mini-btn" for="imp-file" style="display:inline-flex;align-items:center" data-i18n="imp_file">Importar arquivo</label>
-            <input type="file" id="imp-file" accept=".json,application/json" style="display:none">
+            <input type="file" id="imp-file" class="file-in" accept=".json,application/json">
           </div>
-          <textarea id="imp-area" placeholder="…"></textarea>
+          <textarea id="imp-area" placeholder="…" data-i18n-label="a_imp_text" aria-label="Texto do backup"></textarea>
           <p class="opt-note" id="bk-hint"></p>
           <div class="btn-line" style="margin-top:10px">
             <button class="mini-btn danger-btn" id="btn-reset-p" data-i18n="reset_p">Apagar progresso deste jogador</button>
@@ -264,7 +267,7 @@
 
       </div>
     </div>
-    <div id="toast" class="hidden"></div>
+    <div id="toast" class="hidden" role="status" aria-live="polite"></div>
   </div>
 
   <script src="js/i18n.js"></script>

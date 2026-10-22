@@ -150,6 +150,7 @@ function renderOptions() {
   const g = G(), p = P();
   LANG = g.lang || 'pt';
   $$('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+  applyI18nLabels(document);
   document.title = t('appName') + ' — ' + t('gate_title');
   document.documentElement.lang = TTS_LANG[g.lang] || 'pt-BR';
   document.body.dataset.theme = g.theme || 'classico';
@@ -273,19 +274,19 @@ function renderProfList() {
     const pp = pf.id === ppOpen ? (
       '<div class="pp-row">' +
       '<span class="pp-t">🎙️ ' + t('pp_voice') + '</span>' +
-      '<label>' + t('s_rate') + '</label><input type="range" min="60" max="160" step="5" value="' + Math.round((pf.vRate != null ? pf.vRate : (g.vRate || 0.95)) * 100) + '" data-pprate="' + escHtml(pf.id) + '">' +
-      '<label>' + t('s_pitch') + '</label><input type="range" min="50" max="200" step="5" value="' + Math.round(pf.vPitch != null ? pf.vPitch : (g.vPitch || 1.15) * 100) + '" data-pppitch="' + escHtml(pf.id) + '">' +
-      '<select data-ppvoice="' + escHtml(pf.id) + '">' + voiceOptionsHtml(pf.vVoice || '') + '</select>' +
+      '<label for="pp-rate">' + t('s_rate') + '</label><input id="pp-rate" type="range" min="60" max="160" step="5" value="' + Math.round((pf.vRate != null ? pf.vRate : (g.vRate || 0.95)) * 100) + '" data-pprate="' + escHtml(pf.id) + '">' +
+      '<label for="pp-pitch">' + t('s_pitch') + '</label><input id="pp-pitch" type="range" min="50" max="200" step="5" value="' + Math.round(pf.vPitch != null ? pf.vPitch : (g.vPitch || 1.15) * 100) + '" data-pppitch="' + escHtml(pf.id) + '">' +
+      '<select aria-label="' + escHtml(t('s_voice')) + '" data-ppvoice="' + escHtml(pf.id) + '">' + voiceOptionsHtml(pf.vVoice || '') + '</select>' +
       '<button class="mini-btn" data-ppreset="' + escHtml(pf.id) + '">' + t('pp_default') + '</button>' +
       '</div>'
     ) : '';
     return '<div class="prof-line" data-pid="' + escHtml(pf.id) + '">' +
-      '<span style="font-size:24px">' + escHtml(pf.avatar) + '</span>' +
-      '<input value="' + escHtml(pf.name) + '" maxlength="' + NAME_MAX + '" data-name="' + escHtml(pf.id) + '">' +
-      '<div class="av-row">' + AVATARS.map((a) => '<button class="av' + (a === pf.avatar ? ' sel' : '') + '" data-setav="' + escHtml(pf.id) + '">' + a + '</button>').join('') + '</div>' +
-      '<button class="mini-btn' + (cur ? ' using' : '') + '" data-use="' + escHtml(pf.id) + '">' + (cur ? t('in_use') : t('equip')) + '</button>' +
-      '<button class="mini-btn" data-pp="' + escHtml(pf.id) + '" title="' + t('pp_voice') + '">🎙️</button>' +
-      (DB.profiles.length > 1 ? '<button class="mini-btn danger-btn" data-del="' + escHtml(pf.id) + '">✕</button>' : '') +
+      '<span style="font-size:24px" aria-hidden="true">' + escHtml(pf.avatar) + '</span>' +
+      '<input value="' + escHtml(pf.name) + '" maxlength="' + NAME_MAX + '" aria-label="' + escHtml(t('name_ph')) + '" data-name="' + escHtml(pf.id) + '">' +
+      '<div class="av-row" role="group" aria-label="' + escHtml(t('a_avatar') + ' — ' + pf.name) + '">' + AVATARS.map((a) => '<button class="av' + (a === pf.avatar ? ' sel' : '') + '" aria-pressed="' + (a === pf.avatar) + '" data-av="' + a + '" data-setav="' + escHtml(pf.id) + '">' + a + '</button>').join('') + '</div>' +
+      '<button class="mini-btn' + (cur ? ' using' : '') + '" data-use="' + escHtml(pf.id) + '" aria-label="' + escHtml((cur ? t('in_use') : t('equip')) + ' — ' + pf.name) + '">' + (cur ? t('in_use') : t('equip')) + '</button>' +
+      '<button class="mini-btn" data-pp="' + escHtml(pf.id) + '" title="' + escHtml(t('pp_voice')) + '" aria-label="' + escHtml(t('pp_voice') + ' — ' + pf.name) + '" aria-expanded="' + (pf.id === ppOpen) + '">🎙️</button>' +
+      (DB.profiles.length > 1 ? '<button class="mini-btn danger-btn" data-del="' + escHtml(pf.id) + '" title="' + escHtml(t('del_prof') + ' — ' + pf.name) + '" aria-label="' + escHtml(t('del_prof') + ' — ' + pf.name) + '">✕</button>' : '') +
       pp +
       '</div>';
   }).join('');
@@ -295,7 +296,7 @@ function renderProfList() {
   }));
   $$('#prof-list [data-setav]').forEach((b) => b.addEventListener('click', () => {
     const pf = DB.profiles.find((x) => x.id === b.dataset.setav);
-    if (pf) { pf.avatar = b.dataset.setav; saveState(true); renderProfList(); }
+    if (pf) { pf.avatar = b.dataset.av; saveState(true); renderProfList(); } // antes gravava o id do perfil no avatar
   }));
   $$('#prof-list [data-use]').forEach((b) => b.addEventListener('click', () => {
     DB.activeId = b.dataset.use; saveState(true); renderOptions();
@@ -414,7 +415,7 @@ function bindOptions() {
     $(inp).addEventListener('keydown', (e) => { if (e.key === 'Enter') $(btn).click(); });
   });
   [['#ge-eye', '#ge-pwd'], ['#gc-eye1', '#gc-pwd'], ['#gc-eye2', '#gc-pwd2']].forEach(([b, inp]) => {
-    $(b).addEventListener('click', () => { const i = $(inp); i.type = i.type === 'password' ? 'text' : 'password'; });
+    $(b).addEventListener('click', () => { const i = $(inp); i.type = i.type === 'password' ? 'text' : 'password'; $(b).setAttribute('aria-pressed', String(i.type === 'text')); });
   });
   // segurança
   $('#btn-sec-change').addEventListener('click', () => { $('#sec-form').classList.toggle('hidden'); $('#sec-err').textContent = ''; });

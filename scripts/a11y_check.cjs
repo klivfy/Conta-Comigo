@@ -2,7 +2,8 @@
 /* Conta Comigo — verificação de acessibilidade (axe-core + Playwright).
  *
  * Abre a PWA gerada (download/conta-comigo-pwa) num servidor local, passa por
- * início, rodada e painel dos responsáveis, roda o axe (WCAG 2.1 A/AA) e compara
+ * início, perfis, loja, conquistas, rodada, portão e painel dos responsáveis
+ * (temas claro, escuro e alto contraste), roda o axe (WCAG 2.1 A/AA) e compara
  * as violações sérias/críticas com scripts/a11y-baseline.json.
  *   - violação nova (página|regra fora do baseline) → sai com código 1
  *   - violação corrigida → avisa para atualizar o baseline
@@ -40,7 +41,8 @@ async function audit(page, label, found) {
   const v = await page.evaluate(async () => (await axe.run(document, {
     runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'],
   })).violations.filter((x) => x.impact === 'serious' || x.impact === 'critical')
-    .map((x) => ({ id: x.id, impact: x.impact, n: x.nodes.length, help: x.help })));
+    .map((x) => ({ id: x.id, impact: x.impact, n: x.nodes.length, help: x.help,
+      at: x.nodes.slice(0, 3).map((n) => n.target.join(' ')) })));
   v.forEach((x) => { found[label + '|' + x.id] = x; });
 }
 
@@ -73,19 +75,36 @@ async function answerContrast(page, label, found, min) {
   page.on('pageerror', (e) => errors.push(e.message));
   const found = {};
 
-  await page.goto(base + 'index.html');
-  await page.evaluate(() => localStorage.setItem('cc_state', JSON.stringify({
-    v: 2, activeId: 'p1', profiles: [{ id: 'p1', name: 'Teste', avatar: '🦊' }], settings: { passOnboardDone: true },
-  })));
-  await page.reload(); await page.waitForTimeout(1200);
-  await audit(page, 'inicio', found);
+  // claro, escuro e alto contraste: os três extremos da paleta
+  for (const theme of ['classico', 'espaco', 'hc']) {
+    const tag = (k) => (theme === 'classico' ? k : theme + ':' + k);
+    await page.goto(base + 'index.html');
+    await page.evaluate((th) => { localStorage.clear(); localStorage.setItem('cc_state', JSON.stringify({
+      v: 2, activeId: 'p1', profiles: [{ id: 'p1', name: 'Teste', avatar: '🦊' }],
+      settings: { passOnboardDone: true, theme: th === 'hc' ? 'classico' : th, hc: th === 'hc' },
+    })); }, theme);
+    await page.reload(); await page.waitForTimeout(1200);
+    await audit(page, tag('inicio'), found);
+    await page.click('#btn-profile'); await page.waitForTimeout(300);
+    await audit(page, tag('perfil'), found);
+    await page.keyboard.press('Escape');
+    await page.click('#btn-shop'); await page.waitForTimeout(300);
+    await audit(page, tag('loja'), found);
+    await page.click('#shop-back'); await page.click('#btn-ach'); await page.waitForTimeout(300);
+    await audit(page, tag('conquistas'), found);
+    await page.click('#ach-back');
 
-  await page.locator('#modes-grid > *').first().click(); await page.waitForTimeout(1500);
-  await audit(page, 'rodada', found);
-  await answerContrast(page, 'rodada', found, 4.5);
+    await page.locator('#modes-grid > *').first().click(); await page.waitForTimeout(1500);
+    await audit(page, tag('rodada'), found);
+    await answerContrast(page, tag('rodada'), found, 4.5);
 
-  await page.goto(base + 'options.html'); await page.waitForTimeout(1000);
-  await audit(page, 'opcoes', found);
+    await page.goto(base + 'options.html'); await page.waitForTimeout(1000);
+    await audit(page, tag('opcoes'), found);
+    // cria a senha para auditar o painel inteiro (campos, perfis, dados)
+    await page.fill('#gc-pwd', 'teste123'); await page.fill('#gc-pwd2', 'teste123'); await page.fill('#gc-hint', 'dica');
+    await page.click('#gc-go'); await page.waitForTimeout(1000);
+    await audit(page, tag('painel'), found);
+  }
 
   await browser.close(); srv.close();
   if (errors.length) { console.error('Erros de JavaScript:\n  ' + errors.join('\n  ')); process.exit(1); }
@@ -98,7 +117,8 @@ async function answerContrast(page, label, found, min) {
   const known = fs.existsSync(BASELINE) ? JSON.parse(fs.readFileSync(BASELINE, 'utf8')) : [];
   const added = keys.filter((k) => !known.includes(k));
   const fixed = known.filter((k) => !keys.includes(k));
-  keys.forEach((k) => console.log((added.includes(k) ? 'NOVA  ' : 'conh. ') + k + ' (' + found[k].impact + ', ' + found[k].n + ' nós) ' + found[k].help));
+  keys.forEach((k) => console.log((added.includes(k) ? 'NOVA  ' : 'conh. ') + k + ' (' + found[k].impact + ', ' + found[k].n + ' nós) ' + found[k].help +
+    (found[k].at ? '\n      em: ' + found[k].at.join(' · ') : '')));
   if (fixed.length) console.log('\nCorrigidas (rode com --update-baseline): ' + fixed.join(', '));
   if (added.length) { console.error('\n' + added.length + ' violação(ões) nova(s) de acessibilidade.'); process.exit(1); }
   console.log('\nOK — nenhuma violação nova (' + keys.length + ' conhecidas no baseline).');

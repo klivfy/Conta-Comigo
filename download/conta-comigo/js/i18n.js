@@ -80,6 +80,10 @@ const I18N = {
     survive_hits: '{n} acertos', survive_end: 'Você acertou {n} em 60 segundos!', survive_great: 'Incríveis {n} acertos em 60 segundos!', survive_record: 'Recorde de fôlego!',
     chest_title: 'Baú da ofensiva!', chest_msg: '{n} dias seguidos jogando — você ganhou um baú:', chest_claim: 'Abrir o baú!', chest_sticker: 'Figurinha nova: {s}',
     backup_done: 'Backup baixado!',
+    /* v2.6.1 — nomes acessíveis (leitores de tela) */
+    a_profiles: 'Trocar de jogador', a_close: 'Fechar', a_back: 'Voltar ao início', a_back_game: 'Voltar ao jogo',
+    a_backup: 'Baixar backup', a_show_pwd: 'Mostrar senha', a_answers: 'Respostas', a_imp_text: 'Texto do backup',
+    a_avatar: 'Avatar', sc_crossed: '{n} riscados', del_prof: 'Remover jogador',
     backup_btn: 'Baixar backup datado',
     backup_hint_new: '💾 Conquistas e progresso ficam neste dispositivo. Recarregar (↻) preserva tudo; remover a extensão apaga. Faça backups regulares aqui.',
     backup_hint_old: '⚠️ Último backup há {n} dias — baixe um novo para proteger as conquistas.',
@@ -259,6 +263,9 @@ const I18N = {
     survive_hits: '{n} right answers', survive_end: 'You got {n} right in 60 seconds!', survive_great: 'Amazing {n} answers in 60 seconds!', survive_record: 'Stamina record!',
     chest_title: 'Streak chest!', chest_msg: '{n} days playing in a row — you earned a chest:', chest_claim: 'Open the chest!', chest_sticker: 'New sticker: {s}',
     backup_done: 'Backup downloaded!',
+    a_profiles: 'Switch player', a_close: 'Close', a_back: 'Back to start', a_back_game: 'Back to the game',
+    a_backup: 'Download backup', a_show_pwd: 'Show password', a_answers: 'Answers', a_imp_text: 'Backup text',
+    a_avatar: 'Avatar', sc_crossed: '{n} crossed out', del_prof: 'Remove player',
     backup_btn: 'Download dated backup',
     backup_hint_new: '💾 Achievements and progress stay on this device. Reloading (↻) keeps everything; removing the extension erases it. Download regular backups here.',
     backup_hint_old: '⚠️ Last backup was {n} days ago — download a new one to protect the achievements.',
@@ -428,6 +435,9 @@ const I18N = {
     survive_hits: '{n} aciertos', survive_end: '¡Acertaste {n} en 60 segundos!', survive_great: '¡Increíbles {n} aciertos en 60 segundos!', survive_record: '¡Récord de aliento!',
     chest_title: '¡Cofre de la racha!', chest_msg: '{n} días seguidos jugando — ganaste un cofre:', chest_claim: '¡Abrir el cofre!', chest_sticker: 'Cromo nuevo: {s}',
     backup_done: '¡Copia descargada!',
+    a_profiles: 'Cambiar de jugador', a_close: 'Cerrar', a_back: 'Volver al inicio', a_back_game: 'Volver al juego',
+    a_backup: 'Descargar copia', a_show_pwd: 'Mostrar contraseña', a_answers: 'Respuestas', a_imp_text: 'Texto de la copia',
+    a_avatar: 'Avatar', sc_crossed: '{n} tachados', del_prof: 'Eliminar jugador',
     backup_btn: 'Descargar copia con fecha',
     backup_hint_new: '💾 Los logros y el progreso quedan en este dispositivo. Recargar (↻) lo conserva todo; quitar la extensión lo borra. Descarga copias regulares aquí.',
     backup_hint_old: '⚠️ La última copia fue hace {n} días — descarga una nueva para proteger los logros.',
@@ -544,6 +554,16 @@ function applyLang() {
   document.documentElement.lang = TTS_LANG[LANG] || 'pt-BR';
   document.title = t('appName') + ' — ' + t('subtitle');
   document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+  applyI18nLabels(document);
+}
+/* Botões só com emoji ganham nome acessível traduzido: data-i18n-label="chave"
+   vira aria-label (e, nos botões, também a dica do mouse) */
+function applyI18nLabels(root) {
+  root.querySelectorAll('[data-i18n-label]').forEach((el) => {
+    const s = t(el.dataset.i18nLabel);
+    el.setAttribute('aria-label', s);
+    if (el.tagName === 'BUTTON') el.title = s;
+  });
 }
 
 /* Números por extenso (0–59) para narração (S21/S22) */
