@@ -440,3 +440,5 @@ Stage Summary:
 - Veredito: Android VIÁVEL (TWA em produção) · iOS VIÁVEL (Capacitor + voz AVSpeech + Preferences, adaptações 4-5 dias) · Windows VIÁVEL (Electron em produção) — sem reescrita do jogo
 - Plano de ação: Fase A motor bimodal (voz+armazenamento, 1 sem, R$ 0) → Fase B scaffold iOS + CI macOS (2 sem, R$ 0) → Fase C conta Apple + TestFlight + App Store (US$ 99/ano) → Fase D evolução
 - Recomendação: manter TWA no Android (voz plena + update sem revisão de loja), Capacitor só no iOS
+
+Nota Task 22: push exigiu cirurgia de histórico — commit de workflows ee86426 preservado no branch ci-workflows; main realinhada (40030d2) + Estudo II publicado (3b42d21). Ao receber token com escopo workflow: git cherry-pick ci-workflows && push.
