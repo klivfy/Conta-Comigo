@@ -36,8 +36,7 @@ function focusScreen(el) {
 
 function applySettings() {
   const g = G();
-  document.body.dataset.theme = g.theme || 'classico';
-  document.body.classList.toggle('hc', !!g.hc);
+  applyTheme(g);
   document.body.classList.toggle('dys', !!g.dys);
   // v2.4 (A-050): menos movimento — também respeitado nas confetes em JS
   document.body.classList.toggle('rm', !!g.reduceMotion);
@@ -163,7 +162,7 @@ function confetti(n) {
       el.textContent = pick(['⭐', '✨', '💫']);
       el.style.fontSize = rand(10, 18) + 'px';
       el.style.width = 'auto'; el.style.height = 'auto'; el.style.background = 'transparent';
-    } else el.style.background = pick(CONF_THEMES[G().theme] || CONF_COLORS);
+    } else el.style.background = pick(CONF_THEMES[resolvedTheme(G())] || CONF_COLORS);
     el.style.left = (Math.random() * 100) + '%';
     el.style.animationDelay = (Math.random() * 0.5) + 's';
     el.style.animationDuration = (1.4 + Math.random() * 1.4) + 's';
@@ -973,7 +972,7 @@ function renderShop() {
   const themeRow = $('#shop-themes');
   themeRow.innerHTML = SHOP_THEMES.map((th) => {
     const owned = th.price === 0 || p.owned.themes.includes(th.id);
-    const inUse = (G().theme === th.id);
+    const inUse = (resolvedTheme(G()) === th.id);
     return '<div class="shop-item th-' + th.id + '"><span class="swatch"></span><b>' + t(th.key) + '</b>' +
       (owned
         ? '<button class="mini-btn' + (inUse ? ' using' : '') + '" data-th="' + th.id + '"' + itemLbl(inUse ? t('in_use') : t('equip'), t(th.key)) + '>' + (inUse ? t('in_use') : t('equip')) + '</button>'

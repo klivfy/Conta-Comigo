@@ -8,20 +8,21 @@
   <link rel="stylesheet" href="css/style.css">
   <style>
     body { width: auto; height: auto; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-    .nt-card { background: var(--card); border-radius: 26px; box-shadow: 0 12px 30px rgba(0, 0, 0, .18); padding: 34px 40px; text-align: center; max-width: 520px; width: 92%; }
-    .nt-title { font-size: 30px; font-weight: 900; margin: 6px 0 2px; }
-    .nt-sub { color: var(--ink-soft); font-weight: 700; font-size: 14.5px; margin-bottom: 16px; }
+    .nt-card { background: var(--card); border-radius: var(--r-xl); box-shadow: var(--float-3); padding: 34px 40px; text-align: center; max-width: 520px; width: 92%; }
+    .nt-title { font-size: var(--fs-3xl); font-weight: 900; margin: 6px 0 2px; }
+    .nt-sub { color: var(--ink-soft); font-weight: 700; font-size: var(--fs-md); margin-bottom: 16px; }
     .nt-stats { display: flex; gap: 10px; justify-content: center; margin-bottom: 18px; flex-wrap: wrap; }
-    .nt-stat { background: rgba(var(--sh), .07); border-radius: 999px; padding: 8px 16px; font-weight: 800; font-size: 15px; }
+    .nt-stat { background: rgba(var(--sh), .07); border-radius: var(--r-pill); padding: 8px 16px; font-weight: 800; font-size: var(--fs-lg); }
     .nt-q { font-size: 44px; font-weight: 900; margin: 8px 0 14px; }
     .nt-ans { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .nt-ans button { font-family: inherit; font-size: 26px; font-weight: 900; color: #fff; background: var(--blue); border: none; border-radius: 18px; padding: 13px 0; cursor: pointer; box-shadow: 0 5px 0 var(--blue-dark); }
-    .nt-ans button:nth-child(2) { background: var(--green); box-shadow: 0 5px 0 var(--green-dark); }
-    .nt-ans button:nth-child(3) { background: var(--orange); box-shadow: 0 5px 0 var(--orange-dark); }
-    .nt-ans button:nth-child(4) { background: var(--purple); box-shadow: 0 5px 0 #6b3fd4; }
+    .nt-ans button { font-family: inherit; font-size: 26px; font-weight: 900; color: var(--on-accent); background: var(--ans-1); border: none; border-radius: var(--r-lg); padding: 13px 0; cursor: pointer; box-shadow: 0 5px 0 var(--ans-1-edge); }
+    .nt-ans button:nth-child(2) { background: var(--ans-2); box-shadow: 0 5px 0 var(--ans-2-edge); }
+    .nt-ans button:nth-child(3) { background: var(--ans-3); box-shadow: 0 5px 0 var(--ans-3-edge); }
+    .nt-ans button:nth-child(4) { background: var(--ans-4); box-shadow: 0 5px 0 var(--ans-4-edge); }
     .nt-ans button.good { animation: pop .5s; }
     .nt-foot { margin-top: 18px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
     .nt-off { color: var(--ink-soft); font-weight: 700; }
+    body.hc .nt-card { border: 2px solid var(--line); }
   </style>
   <script src="js/boot.js"></script>
 </head>

@@ -34,6 +34,9 @@ jobs:
       - name: Sintaxe do JavaScript
         run: for f in download/conta-comigo/js/*.js download/conta-comigo/background.js; do node --check "$f"; done
 
+      - name: Textos em pt/en/es (nenhuma chave faltando)
+        run: node scripts/i18n_check.cjs
+
       - name: Instalar Playwright + axe-core
         run: |
           npm install --no-save --no-package-lock playwright@1.56.1 axe-core@4.10.2

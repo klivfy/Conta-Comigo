@@ -95,8 +95,23 @@ function newProfile(id, name, avatar) {
     today: { d: '', rounds: 0, done: false }, reviewWins: 0, persistRounds: 0,
   };
 }
+/* ---------- tema (Fase 5.4): 'auto' acompanha prefers-color-scheme ao vivo ---------- */
+const DARK_QUERY = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+function resolvedTheme(g) {
+  const th = (g && g.theme) || 'auto';
+  if (th !== 'auto') return th;
+  return DARK_QUERY && DARK_QUERY.matches ? 'espaco' : 'classico';
+}
+function applyTheme(g) {
+  document.body.dataset.theme = resolvedTheme(g);
+  document.body.classList.toggle('hc', !!(g && g.hc));
+}
+if (DARK_QUERY && DARK_QUERY.addEventListener) {
+  DARK_QUERY.addEventListener('change', () => { try { if (G().theme === 'auto') applyTheme(G()); } catch (e) { /* antes do boot */ } });
+}
 const DEFAULT_SETTINGS = {
-  lang: 'pt', theme: 'classico', hc: false, dys: false, calmo: null,
+  /* Fase 5: 'auto' segue o sistema (claro = Clássico, escuro = Espaço; ambos grátis) */
+  lang: 'pt', theme: 'auto', hc: false, dys: false, calmo: null,
   mute: false, volume: 0.9, vRate: 0.95, vPitch: 1.15, vVoice: '',
   diffMode: 'auto', goalRounds: 3, sessionLimit: 15, sync: false,
   unlockAll: false, newtabOn: true, timer: true,

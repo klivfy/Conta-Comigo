@@ -38,7 +38,45 @@ Legenda: **[eu]** código na branch · **[você]** ação em conta/GitHub/loja.
 - Bônus: o balão do mascote ficava preso na tela do jogo e nunca aparecia na inicial (saudação e avisos só por voz) — agora aparece na tela ativa
 
 ## Fase 5 — Design system
-- [ ] 5.1 tokens semânticos · 5.2 escalas (tipografia/espaço/raio/motion) · 5.3 eliminar cores soltas · 5.4 prefers-color-scheme · 5.5 `/impeccable init` + polish
+- [x] 5.1 **Tokens semânticos** em três camadas no topo de `css/style.css`:
+  - Primitivos: matizes, `--ans-*`, `--on-accent`, `--on-yellow`, `--glow`, `--scrim` e as escalas.
+  - Semânticos por tema: `--ink`, `--card`, `--line`, `--tint`, `--pick-*`, `--sel-bg`, `--success-bg/-text`, `--attention`, `--link` e `--danger-text`.
+  - Derivados em `body`, que resolvem com o tema ativo: `--lift-0..4`, `--float-1..3` e `--track`.
+  - Cada tema e o `body.hc` redefinem só a camada semântica. Saíram as regras `body.hc .x` e `[data-theme=espaco] .x` que repintavam componentes.
+- [x] 5.2 **Escalas**:
+  - Tipografia `--fs-2xs..display` (10/11/12,5/14/16/19/24/28/40), aplicada a todo texto de interface fora dos overrides por breakpoint.
+  - Raio `--r-xs..pill` (8/12/16/20/24/999), aplicado em 100% das regras do CSS e das páginas.
+  - Sombra `--lift-*`/`--float-*`, em 100%.
+  - Movimento `--dur-1..3`, em todas as `transition`.
+  - Espaço `--sp-1..8`, definido e documentado.
+  - Os tamanhos de emoji e de número do jogo ficam fora, porque são ilustração.
+- [x] 5.3 **Cores soltas eliminadas**. Hex só nas prévias de tema da loja (`.swatch`) e nos confetes por tema.
+  - Sobre `--yellow` o texto agora é `--on-yellow`.
+  - Os botões da nova aba usavam `--green`/`--orange` com texto branco (cerca de 2:1) e agora usam `--ans-1..4`.
+  - `.big-btn` e o botão da demo passaram de `--blue` para `--ans-1`.
+  - Correção: o fundo dos grupos de objetos no alto contraste era creme com tinta branca; agora é preto.
+  - O selo da versão web virou a classe `.web-stamp`.
+  - Inputs e seleção seguem o tema (`accent-color`, `::selection`), e o `color-scheme` é escuro no Espaço e no alto contraste.
+- [x] 5.4 **`prefers-color-scheme`**:
+  - Novo tema `auto`, padrão de perfis novos: Clássico no claro, Espaço no escuro (os dois grátis).
+  - Ele troca ao vivo, sem recarregar, e quem já escolheu um tema continua nele.
+  - Fica em `applyTheme()`/`resolvedTheme()` em `engine.js`, usado no jogo, no painel e na nova aba. A nova aba antes ignorava o tema.
+  - O painel ganhou a opção "Automático" e mostra o tema comprado (Oceano, Doces, Neve) em vez de deixar o seletor em branco. A loja marca "em uso" o tema resolvido.
+- [x] 5.5 **`/impeccable init` e documentação**:
+  - `PRODUCT.md`: usuários, propósito, restrições e princípios, confirmados nas respostas.
+  - `DESIGN.md`: North Star "A Caixa de Brinquedos", tokens no frontmatter e regras nomeadas, com o sidecar `.impeccable/design.json`.
+  - Polish:
+    - O botão "Salvar senha" do painel mostrava `ob_create`, chave removida por engano na Fase 4.
+    - `fixed_lbl` (chip de nível com dificuldade fixa) e `t_2x2` (enunciado de estrela = 5 reais) nunca tinham existido.
+    - As chaves `pp_*` faltavam em espanhol.
+    - A nova aba no alto contraste ficou sem contorno do cartão.
+    - Novo `scripts/i18n_check.cjs`, já incluído no `kit-fase1/workflows/ci.yml`, impede chave faltando em pt/en/es.
+  - Verificado:
+    - axe color-contrast com 0 violações nos 8 modos de cor × 5 páginas;
+    - `a11y_check` com 0;
+    - teclado OK;
+    - topbar sem estouro de 320 a 1024px;
+    - antes/depois nos 7 temas e no alto contraste, com variação de no máximo ±1px de texto.
 
 ## Fase 6 — Funcionalidade e distribuição
 - [ ] 6.1 [eu] Fase A: voz/armazenamento bimodais · 6.2 [você] ativar Pages · 6.3 [você] AAB assinado + teste em aparelho

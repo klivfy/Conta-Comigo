@@ -64,6 +64,7 @@ function ntShowOff() {
 async function bootNewtab() {
   await initDB();
   applyLang();
+  applyTheme(G()); // a nova aba também segue o tema do jogo (e o modo escuro no 'auto')
   $('#nt-toggle').textContent = G().newtabOn ? '⏻' : '⏻';
   if (G().newtabOn) ntShowGame(); else ntShowOff();
   $('#nt-open').addEventListener('click', () => {

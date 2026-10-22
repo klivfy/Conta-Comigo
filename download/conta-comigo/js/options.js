@@ -5,6 +5,8 @@
 
 let gateTriesTimer = null;
 let ppOpen = null; // v2.4: linha de voz por perfil aberta no painel (id do perfil ou null)
+/* ícone de cada tema no seletor do painel ('auto' = segue o aparelho) */
+const THEME_ICONS = { auto: '🖥️', classico: '☀️', espaco: '🌙', jardim: '🌸', arcoiris: '🌈', oceano: '🌊', doces: '🍬', neve: '❄️' };
 
 /* ---------- portão parental (v2.3: senha + lembrete + bloqueio progressivo) ---------- */
 function gateHasPass() { return !!G().passHash && !!G().passSalt; }
@@ -153,8 +155,7 @@ function renderOptions() {
   applyI18nLabels(document);
   document.title = t('appName') + ' — ' + t('gate_title');
   document.documentElement.lang = TTS_LANG[g.lang] || 'pt-BR';
-  document.body.dataset.theme = g.theme || 'classico';
-  document.body.classList.toggle('hc', !!g.hc);
+  applyTheme(g);
   document.body.classList.toggle('dys', !!g.dys);
 
   // seletor de jogador do painel
@@ -182,11 +183,14 @@ function renderOptions() {
   $('#set-rate').value = String(Math.round((g.vRate || 0.95) * 100));
   $('#set-pitch').value = String(Math.round((g.vPitch || 1.15) * 100));
   fillVoices();
-  $('#set-theme').value = g.theme || 'classico';
-  $('#set-theme').options[0].text = '☀️ ' + t('th_classico');
-  $('#set-theme').options[1].text = '🌙 ' + t('th_espaco');
-  $('#set-theme').options[2].text = '🌸 ' + t('th_jardim');
-  $('#set-theme').options[3].text = '🌈 ' + t('th_arcoiris');
+  const thSel = $('#set-theme');
+  // tema comprado na loja (Oceano, Doces, Neve) aparece no seletor para não ficar em branco
+  const cur = g.theme || 'auto';
+  if (!thSel.querySelector('option[value="' + cur + '"]') && THEME_ICONS[cur]) {
+    const o = document.createElement('option'); o.value = cur; thSel.appendChild(o);
+  }
+  thSel.value = cur;
+  $$('#set-theme option').forEach((o) => { o.text = THEME_ICONS[o.value] + ' ' + t('th_' + o.value); });
   $('#set-hc').checked = !!g.hc;
   $('#set-dys').checked = !!g.dys;
   $('#set-calmo').value = g.calmo == null ? 'auto' : (g.calmo ? 'on' : 'off');
