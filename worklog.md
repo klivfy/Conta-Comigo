@@ -421,3 +421,22 @@ Stage Summary:
 - Fase 1 implementada: fonte única → PWA → Pages / TWA Android / Electron Windows, tudo por CI
 - Pendente do usuário: (1) token com Contents+Workflows (+Administration p/ Pages) OU colar 3 workflows pela web; (2) Settings→Pages→Source "GitHub Actions"; (3) revogar token antigo
 - Ao ativar: artefatos APK/AAB/EXE aparecem na aba Actions; site em klivfy.github.io/Conta-Comigo
+
+Correção Task 21: hashes finais — feat 8af3947 e kit 40030d2 ENVIADOS; workflows = ee86426 (local, aguarda token com escopo workflow). Kit: download/kit-fase1/.
+
+---
+Task ID: 22
+Agent: Z.ai (agente principal)
+Task: Estudo de Viabilidade II — instalação nativa Android, iOS e Windows (pedido do usuário)
+
+Work Log:
+- Pesquisa em 2 rodadas (9 consultas): iOS expõe speechSynthesis no WKWebView desde 2018 com particularidades (cancel() antes de speak(), vozes variáveis iOS 17/18, gesto obrigatório); localStorage em WKWebView é TRANSIENTE (docs Capacitor) → mitigação Preferences API; Kids Category (diretriz 1.3) proíbe analytics/anúncios de terceiros; Apple US$ 99/ano (TestFlight incluído); iOS 26 padronizou web apps na Home Screen; Apple reverteu remoção na UE; guideline 4.2 é o risco de review para wrappers
+- Pipeline da série reutilizado: nativas2_content_a/b.py (12 capítulos) + gen_estudo_nativas2.py (TocDocTemplate/multiBuild, gráfico matplotlib com rotas iOS) + nativas2_cover.html (Template 01 HUD, Carlito local) + merge_estudo_nativas2.py (normalização A4)
+- Correções durante QA: summary da capa encurtado (cover_validate pegou overlap de 17px com o meta) → PASS
+- Validações: cover_validate PASS, pdf_qa.py PASS (13 págs, sem overflow, fill adequado), font.check 0 issues, toc.check pass=true (warning falso-negativo; sumário populado e conferido por extração), previews qa/estudo2-pag1/5/10/11.png conferidos visualmente
+
+Stage Summary:
+- Entregável: download/Conta-Comigo-Estudo-Viabilidade-Nativa-Android-iOS-Windows.pdf (13 págs, 176 KB) + fonte da capa download/nativas2-cover-fonte.html
+- Veredito: Android VIÁVEL (TWA em produção) · iOS VIÁVEL (Capacitor + voz AVSpeech + Preferences, adaptações 4-5 dias) · Windows VIÁVEL (Electron em produção) — sem reescrita do jogo
+- Plano de ação: Fase A motor bimodal (voz+armazenamento, 1 sem, R$ 0) → Fase B scaffold iOS + CI macOS (2 sem, R$ 0) → Fase C conta Apple + TestFlight + App Store (US$ 99/ano) → Fase D evolução
+- Recomendação: manter TWA no Android (voz plena + update sem revisão de loja), Capacitor só no iOS
