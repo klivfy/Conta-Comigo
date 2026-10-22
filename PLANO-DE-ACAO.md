@@ -11,11 +11,13 @@ Legenda: **[eu]** código na branch · **[você]** ação em conta/GitHub/loja.
 - [ ] 0.5 [você] Decidir hospedagem do `assetlinks.json` na raiz do domínio (repo `klivfy.github.io` ou domínio próprio)
 
 ## Fase 1 — Bugs que quebram o produto
-- [ ] 1.1 PWA: incluir `options.html`/`options.js`/`boot.js` (`build_pwa.py:74-75`)
-- [ ] 1.2 Escapar nome/avatar (`ui.js`, `options.js`)
-- [ ] 1.3 Validar schema na importação de backup (`engine.js parseDB`)
-- [ ] 1.4 CSP no PWA/site/Electron
-- [ ] 1.5 Contraste dos botões de resposta (`style.css:264-271`); remover verde fixo do 2º botão
+- [x] 1.1 PWA: incluir `options.html`/`options.js`/`boot.js` (`build_pwa.py:74-75`)
+- [x] 1.2 Escapar nome/avatar (`ui.js`, `options.js`)
+- [x] 1.3 Validar schema na importação de backup (`engine.js parseDB`)
+- [x] 1.4 CSP no PWA/site/Electron
+- [x] 1.5 Contraste dos botões de resposta (`style.css:264-271`); remover verde fixo do 2º botão
+
+> Nota: a versão segue 2.6.0 — o service worker só entrega atualizações a quem já instalou depois do item 2.4 (cache por hash) ou de um bump de versão.
 
 ## Fase 2 — Build e CI confiáveis
 - [ ] 2.1 Caminhos relativos nos scripts · 2.2 versão a partir do manifest · 2.3 fonte empacotada

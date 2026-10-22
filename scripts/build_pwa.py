@@ -72,13 +72,14 @@ print("[OK] ícones 192/512 + maskable")
 # ---------- 2) base = cópia autocontida ----------
 os.makedirs(OUT, exist_ok=True)
 shutil.copytree(os.path.join(SRC, "js"), os.path.join(OUT, "js"),
-                ignore=shutil.ignore_patterns("newtab.js", "options.js", "boot.js"))
+                ignore=shutil.ignore_patterns("newtab.js", "boot.js"))
 shutil.copytree(os.path.join(SRC, "css"), os.path.join(OUT, "css"))
-# boot.js do PWA: classe html-page + registro do service worker
+# boot.js do PWA: boot da extensão (html-page + ccVersion) + rota do jogo + service worker
+boot_src = open(os.path.join(SRC, "js", "boot.js"), encoding="utf-8").read()
 with open(os.path.join(OUT, "js", "boot.js"), "w", encoding="utf-8") as f:
-    f.write("""'use strict';
-/* Conta Comigo PWA — boot: molde de página cheia + registro do service worker */
-document.documentElement.classList.add('html-page');
+    f.write(boot_src + """
+/* PWA: o jogo é index.html (o “voltar” das opções usa esta rota) */
+window.CC_GAME_URL = 'index.html';
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => { /* offline opcional */ });
@@ -91,6 +92,11 @@ game = open(os.path.join(SRC, "game.html"), encoding="utf-8").read()
 game = game.replace('href="css/style.css"', 'href="css/style.css"')
 game = game.replace('</title>', '</title>\n  <meta name="theme-color" content="#ff9a3d">\n  <meta name="cc-version" content="' + VERSION + '">\n  <meta name="mobile-web-app-capable" content="yes">\n  <link rel="manifest" href="manifest.webmanifest">\n  <link rel="icon" href="icons/icon-192.png">\n  <link rel="apple-touch-icon" href="icons/icon-192.png">')
 open(os.path.join(OUT, "index.html"), "w", encoding="utf-8").write(game)
+
+# options.html (painel dos responsáveis — aberto pelo ⚙️ do jogo)
+opts = open(os.path.join(SRC, "options.html"), encoding="utf-8").read()
+opts = opts.replace('</title>', '</title>\n  <meta name="theme-color" content="#ff9a3d">\n  <link rel="manifest" href="manifest.webmanifest">\n  <link rel="icon" href="icons/icon-192.png">', 1)
+open(os.path.join(OUT, "options.html"), "w", encoding="utf-8").write(opts)
 
 # ---------- 3) manifest.webmanifest ----------
 manifest = {
@@ -118,8 +124,8 @@ with open(os.path.join(OUT, "manifest.webmanifest"), "w", encoding="utf-8") as f
     f.write("\n")
 
 # ---------- 4) sw.js (cache-first do app shell) ----------
-ASSETS = ["./index.html", "./manifest.webmanifest", "./css/style.css",
-          "./js/boot.js", "./js/engine.js", "./js/ui.js", "./js/i18n.js",
+ASSETS = ["./index.html", "./options.html", "./manifest.webmanifest", "./css/style.css",
+          "./js/boot.js", "./js/engine.js", "./js/ui.js", "./js/i18n.js", "./js/options.js",
           "./icons/icon-192.png", "./icons/icon-512.png",
           "./icons/icon-maskable-192.png", "./icons/icon-maskable-512.png"]
 sw = """'use strict';

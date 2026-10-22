@@ -158,7 +158,7 @@ function renderOptions() {
 
   // seletor de jogador do painel
   const dp = $('#dash-prof');
-  dp.innerHTML = DB.profiles.map((pf) => '<option value="' + pf.id + '"' + (pf.id === DB.activeId ? ' selected' : '') + '>' + pf.avatar + ' ' + pf.name + '</option>').join('');
+  dp.innerHTML = DB.profiles.map((pf) => '<option value="' + escHtml(pf.id) + '"' + (pf.id === DB.activeId ? ' selected' : '') + '>' + escHtml(pf.avatar + ' ' + pf.name) + '</option>').join('');
   renderDash();
   renderProfList();
   paintBackupHint(); // v2.5: estado do backup das conquistas
@@ -234,7 +234,7 @@ function renderDash() {
   const weeks = p.weeks.slice(-5);
   const maxR = Math.max(1, ...weeks.map((w) => w.rounds));
   $('#week-bars').innerHTML = weeks.length
-    ? weeks.map((w) => '<div class="week-bar"><span>' + w.rounds + '</span><i style="height:' + Math.max(6, Math.round(70 * w.rounds / maxR)) + 'px"></i><span>' + w.k.replace(/^\d{4}-/, '') + '</span></div>').join('')
+    ? weeks.map((w) => '<div class="week-bar"><span>' + w.rounds + '</span><i style="height:' + Math.max(6, Math.round(70 * w.rounds / maxR)) + 'px"></i><span>' + escHtml(w.k.replace(/^\d{4}-/, '')) + '</span></div>').join('')
     : '<span class="opt-note">—</span>';
 }
 
@@ -273,25 +273,25 @@ function renderProfList() {
     const pp = pf.id === ppOpen ? (
       '<div class="pp-row">' +
       '<span class="pp-t">🎙️ ' + t('pp_voice') + '</span>' +
-      '<label>' + t('s_rate') + '</label><input type="range" min="60" max="160" step="5" value="' + Math.round((pf.vRate != null ? pf.vRate : (g.vRate || 0.95)) * 100) + '" data-pprate="' + pf.id + '">' +
-      '<label>' + t('s_pitch') + '</label><input type="range" min="50" max="200" step="5" value="' + Math.round(pf.vPitch != null ? pf.vPitch : (g.vPitch || 1.15) * 100) + '" data-pppitch="' + pf.id + '">' +
-      '<select data-ppvoice="' + pf.id + '">' + voiceOptionsHtml(pf.vVoice || '') + '</select>' +
-      '<button class="mini-btn" data-ppreset="' + pf.id + '">' + t('pp_default') + '</button>' +
+      '<label>' + t('s_rate') + '</label><input type="range" min="60" max="160" step="5" value="' + Math.round((pf.vRate != null ? pf.vRate : (g.vRate || 0.95)) * 100) + '" data-pprate="' + escHtml(pf.id) + '">' +
+      '<label>' + t('s_pitch') + '</label><input type="range" min="50" max="200" step="5" value="' + Math.round(pf.vPitch != null ? pf.vPitch : (g.vPitch || 1.15) * 100) + '" data-pppitch="' + escHtml(pf.id) + '">' +
+      '<select data-ppvoice="' + escHtml(pf.id) + '">' + voiceOptionsHtml(pf.vVoice || '') + '</select>' +
+      '<button class="mini-btn" data-ppreset="' + escHtml(pf.id) + '">' + t('pp_default') + '</button>' +
       '</div>'
     ) : '';
-    return '<div class="prof-line" data-pid="' + pf.id + '">' +
-      '<span style="font-size:24px">' + pf.avatar + '</span>' +
-      '<input value="' + pf.name.replace(/"/g, '&quot;') + '" data-name="' + pf.id + '">' +
-      '<div class="av-row">' + AVATARS.map((a) => '<button class="av' + (a === pf.avatar ? ' sel' : '') + '" data-setav="' + pf.id + '">' + a + '</button>').join('') + '</div>' +
-      '<button class="mini-btn' + (cur ? ' using' : '') + '" data-use="' + pf.id + '">' + (cur ? t('in_use') : t('equip')) + '</button>' +
-      '<button class="mini-btn" data-pp="' + pf.id + '" title="' + t('pp_voice') + '">🎙️</button>' +
-      (DB.profiles.length > 1 ? '<button class="mini-btn danger-btn" data-del="' + pf.id + '">✕</button>' : '') +
+    return '<div class="prof-line" data-pid="' + escHtml(pf.id) + '">' +
+      '<span style="font-size:24px">' + escHtml(pf.avatar) + '</span>' +
+      '<input value="' + escHtml(pf.name) + '" maxlength="' + NAME_MAX + '" data-name="' + escHtml(pf.id) + '">' +
+      '<div class="av-row">' + AVATARS.map((a) => '<button class="av' + (a === pf.avatar ? ' sel' : '') + '" data-setav="' + escHtml(pf.id) + '">' + a + '</button>').join('') + '</div>' +
+      '<button class="mini-btn' + (cur ? ' using' : '') + '" data-use="' + escHtml(pf.id) + '">' + (cur ? t('in_use') : t('equip')) + '</button>' +
+      '<button class="mini-btn" data-pp="' + escHtml(pf.id) + '" title="' + t('pp_voice') + '">🎙️</button>' +
+      (DB.profiles.length > 1 ? '<button class="mini-btn danger-btn" data-del="' + escHtml(pf.id) + '">✕</button>' : '') +
       pp +
       '</div>';
   }).join('');
   $$('#prof-list [data-name]').forEach((inp) => inp.addEventListener('change', () => {
     const pf = DB.profiles.find((x) => x.id === inp.dataset.name);
-    if (pf) { pf.name = inp.value.trim() || pf.name; saveState(true); toastOpt('✅'); }
+    if (pf) { pf.name = inp.value.trim() ? cleanName(inp.value) : pf.name; saveState(true); toastOpt('✅'); }
   }));
   $$('#prof-list [data-setav]').forEach((b) => b.addEventListener('click', () => {
     const pf = DB.profiles.find((x) => x.id === b.dataset.setav);
@@ -401,7 +401,7 @@ function doImport(text) {
 function bindOptions() {
   $('#opt-back').addEventListener('click', () => {
     if (history.length > 1) history.back();
-    else location.href = (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) ? chrome.runtime.getURL('game.html') : 'game.html';
+    else location.href = (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) ? chrome.runtime.getURL('game.html') : (window.CC_GAME_URL || 'game.html');
   });
   // portão (v2.3)
   $('#ge-go').addEventListener('click', tryGate);

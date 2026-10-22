@@ -127,7 +127,7 @@ function renderMascot() {
   const p = P(); if (!p) return;
   const st = mascotStage();
   const m = $('#mascot-home');
-  if (m) m.innerHTML = '<span class="mascot-main">' + st.emoji + '</span>' + (p.hat ? '<span class="mascot-hat">' + p.hat + '</span>' : '');
+  if (m) m.innerHTML = '<span class="mascot-main">' + st.emoji + '</span>' + (p.hat ? '<span class="mascot-hat">' + escHtml(p.hat) + '</span>' : '');
   const ms = $('#mascot-side');
   if (ms) ms.textContent = st.emoji;
   const lbl = $('#mascot-stage');
@@ -198,6 +198,7 @@ function renderMissions() {
   const p = P();
   el.innerHTML = p.missions.list.map((m) => {
     const def = MISSION_DEFS.find((d) => d.id === m.id);
+    if (!def) return '';
     return '<span class="mission' + (m.done ? ' done' : '') + '">' + (m.done ? '✅ ' : '🔸 ') + t(def.key) + ' ' + m.p + '/' + def.goal + '</span>';
   }).join('');
 }
@@ -986,8 +987,8 @@ function breakOverlay() {
 function renderProfilePop() {
   const wrap = $('#pop-profile');
   wrap.innerHTML = '<b>' + t('who') + '</b>' + DB.profiles.map((pf) =>
-    '<button class="prof-row' + (pf.id === DB.activeId ? ' cur' : '') + '" data-pid="' + pf.id + '">' +
-    '<span class="pf-av">' + pf.avatar + '</span><span class="pf-name">' + pf.name + '</span><span class="pf-st">⭐ ' + pf.stars + ' · ⚡ ' + (pf.points || 0) + '</span></button>').join('') +
+    '<button class="prof-row' + (pf.id === DB.activeId ? ' cur' : '') + '" data-pid="' + escHtml(pf.id) + '">' +
+    '<span class="pf-av">' + escHtml(pf.avatar) + '</span><span class="pf-name">' + escHtml(pf.name) + '</span><span class="pf-st">⭐ ' + pf.stars + ' · ⚡ ' + (pf.points || 0) + '</span></button>').join('') +
     (DB.profiles.length < 4
       ? '<div class="prof-add"><input id="new-prof-name" maxlength="14" placeholder="' + t('name_ph') + '">' +
         '<div class="av-row">' + AVATARS.map((a, i) => '<button class="av' + (i === 0 ? ' sel' : '') + '" data-av="' + a + '">' + a + '</button>').join('') + '</div>' +
@@ -1003,7 +1004,8 @@ function renderProfilePop() {
   }));
   const add = $('#btn-add-prof');
   if (add) add.addEventListener('click', () => {
-    const name = ($('#new-prof-name').value || '').trim() || ('Jogador ' + (DB.profiles.length + 1));
+    const raw = ($('#new-prof-name').value || '').trim();
+    const name = raw ? cleanName(raw) : ('Jogador ' + (DB.profiles.length + 1));
     const av = ($('#pop-profile .av.sel') || { dataset: { av: '🦊' } }).dataset.av;
     DB.profiles.push(newProfile(null, name, av));
     DB.activeId = DB.profiles[DB.profiles.length - 1].id;
@@ -1031,7 +1033,7 @@ function openOptions() {
   ensureAudio(); SFX.tap();
   const url = HAS_EXT ? chrome.runtime.getURL('options.html') : 'options.html';
   if (HAS_EXT) chrome.tabs ? chrome.tabs.create({ url }) : window.open(url, '_blank');
-  else window.open(url, '_blank');
+  else location.href = url; // PWA/TWA/Electron: mesma janela; o “voltar” das opções retorna ao jogo
 }
 
 /* ---------- onboarding da senha dos responsáveis (v2.3) ----------

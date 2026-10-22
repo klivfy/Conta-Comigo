@@ -7,6 +7,13 @@
   --orange: #ff9a3d; --orange-dark: #e0761f; --red: #ff6b6b; --red-dark: #d94b4b;
   --yellow: #ffc93c; --purple: #9b6bff; --cyan: #2bc0c4; --pink: #ff7eb0;
   --violet: #7c5cff; --gold: #e8b520; --teal: #2bb3a3; --brown: #c98a4b;
+  /* v2.6.1 — botões de resposta: texto branco ≥4,5:1 e nenhuma cor de "certo/errado"
+     fixa numa posição (o verde fica só para o feedback de acerto) */
+  --ans-1: #2f5ce0; --ans-1-edge: #1f3f9e;
+  --ans-2: #0e7c86; --ans-2-edge: #0a5960;
+  --ans-3: #b85500; --ans-3-edge: #8a4000;
+  --ans-4: #6b3fd4; --ans-4-edge: #4b2a9e;
+  --success-strong: #15803d; --success-strong-edge: #0f5c2c;
 }
 body[data-theme="espaco"] {
   --ink: #eaf0ff; --ink-soft: #aab3d6; --sh: 0, 0, 0;
@@ -263,14 +270,14 @@ body[data-theme="espaco"] .cmp-side { background: rgba(255, 255, 255, .08); }
 #answers.locked { pointer-events: none; }
 .ans {
   font-family: inherit; font-size: 30px; font-weight: 900; color: #fff;
-  background: var(--blue); border: none; border-radius: 20px; padding: 14px 0 12px;
-  cursor: pointer; box-shadow: 0 6px 0 var(--blue-dark); transition: transform .1s, box-shadow .1s;
+  background: var(--ans-1); border: none; border-radius: 20px; padding: 14px 0 12px;
+  cursor: pointer; box-shadow: 0 6px 0 var(--ans-1-edge); transition: transform .1s, box-shadow .1s;
 }
-.ans:nth-child(2) { background: var(--green); box-shadow: 0 6px 0 var(--green-dark); }
-.ans:nth-child(3) { background: var(--orange); box-shadow: 0 6px 0 var(--orange-dark); }
-.ans:nth-child(4) { background: var(--purple); box-shadow: 0 6px 0 #6b3fd4; }
+.ans:nth-child(2) { background: var(--ans-2); box-shadow: 0 6px 0 var(--ans-2-edge); }
+.ans:nth-child(3) { background: var(--ans-3); box-shadow: 0 6px 0 var(--ans-3-edge); }
+.ans:nth-child(4) { background: var(--ans-4); box-shadow: 0 6px 0 var(--ans-4-edge); }
 .ans:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0, 0, 0, .2); }
-.ans.good { background: var(--green) !important; box-shadow: 0 6px 0 var(--green-dark) !important; animation: pop .5s; }
+.ans.good { background: var(--success-strong) !important; box-shadow: 0 6px 0 var(--success-strong-edge) !important; animation: pop .5s; }
 .ans.bad { opacity: .45; animation: shake .4s; }
 .ans.hint { animation: pulse 1s infinite; outline: 4px solid var(--yellow); }
 @keyframes pop { 0% { transform: scale(.5); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }

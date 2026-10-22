@@ -13,6 +13,11 @@ const $$ = (s) => Array.from(document.querySelectorAll(s));
 const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const pick = (arr) => arr[rand(0, arr.length - 1)];
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+/* v2.6.1: escapa texto antes de ir para innerHTML (nomes vêm do usuário e do backup) */
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 function shuffle(arr) {
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) { const j = rand(0, i); [a[i], a[j]] = [a[j], a[i]]; }
@@ -130,9 +135,42 @@ function parseDB(raw) {
   } catch (e) { /* ignora */ }
   return null;
 }
+/* v2.6.1: o backup importado é entrada não confiável — cada campo volta ao
+   tipo do molde (newProfile/DEFAULT_SETTINGS); id, nome e avatar são validados */
+const MAX_PROFILES = 4;
+const NAME_MAX = 24;
+function cleanName(v) {
+  const n = typeof v === 'string' ? v.replace(/[\u0000-\u001f\u007f<>]/g, '').trim().slice(0, NAME_MAX) : '';
+  return n || 'Jogador';
+}
+function coerceLike(tpl, obj) {
+  Object.keys(tpl).forEach((k) => {
+    const want = tpl[k];
+    if (typeof want === 'number') { const n = Number(obj[k]); obj[k] = Number.isFinite(n) ? n : want; }
+    else if (typeof want === 'boolean') obj[k] = !!obj[k];
+    else if (typeof want === 'string') { if (typeof obj[k] !== 'string') obj[k] = want; }
+    else if (Array.isArray(want)) { if (!Array.isArray(obj[k])) obj[k] = want; }
+    else if (want && typeof want === 'object') { if (!obj[k] || typeof obj[k] !== 'object' || Array.isArray(obj[k])) obj[k] = want; }
+  });
+  return obj;
+}
 /* v2.2: campos novos de pontos · v2.3: campos da senha dos responsáveis */
 function normalizeDB(d) {
-  (d.profiles || []).forEach((p) => {
+  const seen = {};
+  d.profiles = (Array.isArray(d.profiles) ? d.profiles : [])
+    .filter((p) => p && typeof p === 'object' && !Array.isArray(p)).slice(0, MAX_PROFILES);
+  d.profiles.forEach((p, i) => {
+    coerceLike(newProfile('x'), p);
+    if (!/^[A-Za-z0-9_-]{1,40}$/.test(p.id) || seen[p.id]) p.id = 'p' + (i + 1) + '_' + Date.now();
+    seen[p.id] = true;
+    p.name = cleanName(p.name);
+    if (AVATARS.indexOf(p.avatar) < 0) p.avatar = AVATARS[0];
+    if (/[<>&"']/.test(p.hat) || p.hat.length > 8) p.hat = '';
+    p.missions.list = (Array.isArray(p.missions.list) ? p.missions.list : [])
+      .filter((m) => m && typeof m.id === 'string')
+      .map((m) => ({ id: m.id, p: Number(m.p) || 0, done: !!m.done }));
+    p.weeks = p.weeks.filter((w) => w && typeof w.k === 'string' && /^[0-9A-Za-z-]{1,12}$/.test(w.k))
+      .map((w) => ({ k: w.k, rounds: Number(w.rounds) || 0, rights: Number(w.rights) || 0 }));
     p.points = Number(p.points) || 0;
     p.bestPts = (p.bestPts && typeof p.bestPts === 'object') ? p.bestPts : {};
     /* v2.5: persistência blindada de conquistas/coleções — nada some em migração */
@@ -147,7 +185,13 @@ function normalizeDB(d) {
     p.bestSurvive = Number(p.bestSurvive) || 0;
     p.firstPet = !!p.firstPet;
   });
-  const s = d.settings || {};
+  if (typeof d.activeId !== 'string') d.activeId = '';
+  const s = d.settings = (d.settings && typeof d.settings === 'object') ? d.settings : Object.assign({}, DEFAULT_SETTINGS);
+  const diffMode = s.diffMode, calmo = s.calmo;
+  coerceLike(DEFAULT_SETTINGS, s);
+  s.diffMode = (diffMode === 1 || diffMode === 2 || diffMode === 3) ? diffMode : 'auto';
+  s.calmo = (calmo === true || calmo === false) ? calmo : null;
+  s.lastBackupAt = Number(s.lastBackupAt) || 0;
   ['passHash', 'passSalt', 'passHint'].forEach((k) => { if (typeof s[k] !== 'string') s[k] = ''; });
   ['passSetAt', 'passTries', 'passLockUntil'].forEach((k) => { s[k] = Number(s[k]) || 0; });
   s.passOnboardDone = !!s.passOnboardDone;
