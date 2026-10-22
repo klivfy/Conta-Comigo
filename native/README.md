@@ -39,9 +39,14 @@ Administração no repositório — clique manual, sem custo).
 ## TWA Android — por que tela cheia sem barra de URL
 
 O `assetlinks.json` publicado no site (`/.well-known/`) declara o pacote
-`com.klivfy.contacomigo` + fingerprint SHA256 do keystore versionado em
-`native/android/keystore/upload.jks`. O workflow Android confere a cada build
+`com.klivfy.contacomigo` + fingerprint SHA256 da upload key, que fica fora do
+repositório (GitHub Secrets no CI). O workflow Android confere a cada build
 que o fingerprint bate — se divergir, falha cedo com mensagem clara.
+
+O Android só lê `/.well-known/assetlinks.json` na **raiz do domínio**
+(`https://klivfy.github.io/.well-known/…`), não em `/Conta-Comigo/.well-known/`.
+Enquanto não houver um repositório `klivfy.github.io` ou domínio próprio, o
+TWA abre com barra de URL.
 
 Detalhes e rotação de chave: `native/android/keystore/README.md`.
 

@@ -1,38 +1,47 @@
 # Keystore Android — Conta Comigo (upload key)
 
-| Campo       | Valor                    |
-|-------------|--------------------------|
-| Arquivo     | `upload.jks`             |
-| Alias       | `contacomico`            |
-| Store pass  | `contacomico-upload`     |
-| Key pass    | `contacomico-upload`     |
-| Validade    | 10.000 dias (até ~2053)  |
-| SHA256      | `C7:33:72:0C:57:CC:9B:BA:9F:07:67:A9:A6:0C:EA:38:29:0A:49:5A:15:F0:79:A9:24:8B:45:BC:E4:C6:D7:E9` |
+O keystore **não fica no repositório**. A chave anterior (`upload.jks`, alias
+`contacomico`) foi publicada junto com a senha e deve ser considerada
+**comprometida**: não a use mais. Ela continua no histórico do Git, por isso a
+única correção é a rotação abaixo.
 
-## Por que a chave está versionada no repositório?
+## 1. Gerar a nova chave (fora do repositório)
 
-Decisão consciente da Fase 1: o Conta Comigo é um app **100% offline, sem
-servidores, sem contas e sem compras** — a chave não protege nada além da
-assinatura do APK/AAB. Versioná-la permite que o **GitHub Actions gere builds
-reprodutíveis** com o mesmo fingerprint, que é o que o `assetlinks.json`
-(Digital Asset Links) exige para o TWA abrir em tela cheia sem barra de URL.
+```bash
+bash scripts/fase1_keystore.sh ~/conta-comigo-keys/upload.jks
+```
 
-## Quando rotacionar?
+O script pede a senha (não a grava em lugar nenhum) e imprime o fingerprint SHA256.
+Guarde o `.jks` e a senha num cofre (ex.: 1Password). Se perder a chave, o
+Google Play permite resetar a upload key pelo suporte.
 
-Antes de publicar na Play Store com pretenção comercial, recomenda-se:
+## 2. Cadastrar os GitHub Secrets
 
-1. Gerar um novo keystore **fora** do repositório:
-   ```bash
-   keytool -genkeypair -v -keystore upload-prod.jks -alias contacomico-prod \
-     -keyalg RSA -keysize 2048 -validity 10000 \
-     -storepass <SENHA_FORTE> -dname "CN=Conta Comigo, O=Klivfy Tecnologia, C=BR"
-   ```
-2. Salvar como **GitHub Secrets**: `ANDROID_KEYSTORE_BASE64`,
-   `ANDROID_KEYSTORE_PASS`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASS`.
-3. Atualizar `sha256_cert_fingerprints` no `assetlinks.json` e no
-   `strings.xml` com o novo fingerprint (`keytool -list -v`).
-4. Redeployar o site (workflow "Site (GitHub Pages)").
+Em *Settings → Secrets and variables → Actions*:
 
-Na Play Store, o **App Signing do Google** assina o pacote final com chave
-própria — a upload key apenas autentica quem envia; se vazar, é resetável
-junto ao suporte do Google Play.
+| Secret                    | Valor                                              |
+|---------------------------|----------------------------------------------------|
+| `ANDROID_KEYSTORE_BASE64` | `base64 -w0 ~/conta-comigo-keys/upload.jks`        |
+| `ANDROID_KEYSTORE_PASS`   | senha do keystore                                  |
+| `ANDROID_KEY_ALIAS`       | alias (padrão do script: `contacomigo-upload`)     |
+| `ANDROID_KEY_PASS`        | senha da chave (o script usa a mesma do keystore)  |
+
+## 3. Atualizar o fingerprint
+
+Troque o valor em `sha256_cert_fingerprints` de `native/android/assetlinks.json`
+pelo fingerprint novo e republique o site. O workflow Android falha se o
+keystore e o `assetlinks.json` divergirem.
+
+## Build local
+
+Exporte as mesmas variáveis antes do Gradle (ou defina `contaComigo.keystorePath`,
+`contaComigo.keystorePass`, `contaComigo.keyAlias`, `contaComigo.keyPass` em
+`~/.gradle/gradle.properties`):
+
+```bash
+export ANDROID_KEYSTORE_PATH=~/conta-comigo-keys/upload.jks
+export ANDROID_KEYSTORE_PASS=... ANDROID_KEY_ALIAS=contacomigo-upload ANDROID_KEY_PASS=...
+cd native/android && gradle assembleRelease bundleRelease
+```
+
+Sem essas variáveis o release é gerado **sem assinatura**.
