@@ -120,6 +120,7 @@ with open(os.path.join(OUT, "manifest.webmanifest"), "w", encoding="utf-8") as f
 
 # ---------- 4) sw.js (cache-first do app shell) ----------
 ASSETS = ["./index.html", "./options.html", "./manifest.webmanifest", "./css/style.css",
+          "./css/fonts/nunito-latin.woff2",
           "./js/boot.js", "./js/engine.js", "./js/ui.js", "./js/i18n.js", "./js/options.js",
           "./icons/icon-192.png", "./icons/icon-512.png",
           "./icons/icon-maskable-192.png", "./icons/icon-maskable-512.png"]

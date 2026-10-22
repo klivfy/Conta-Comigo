@@ -65,11 +65,22 @@ function refreshChrome() {
     bp.classList.toggle('fr-gold', n >= 5 && n < 10);
     bp.classList.toggle('fr-rb', n >= 10);
   }
+  /* 4.3: a senha não interrompe a primeira brincadeira — o portão do ⚙️ a cria
+     quando o adulto entrar; até lá, um ponto discreto lembra que falta configurar */
+  const gear = $('#btn-gear');
+  if (gear) {
+    const pending = !G().passHash;
+    gear.classList.toggle('needs-setup', pending);
+    gear.dataset.i18nLabel = pending ? 'a_gate_new' : 'gate_title';
+    applyI18nLabels(gear.parentNode);
+  }
 }
 
 /* ---------- balão, toast e overlays ---------- */
 function showBubble(emoji, text) {
   const b = $('#bubble'); if (!b) return;
+  // o balão mora na tela ativa (antes ficava preso na do jogo e sumia no início)
+  const scr = $('.screen.active'); if (scr && b.parentNode !== scr) scr.appendChild(b);
   $('#bubble-emoji').textContent = emoji;
   $('#bubble-text').textContent = text;
   announce(text);
@@ -188,7 +199,13 @@ function renderMascot() {
   if (nx) nx.textContent = st.next != null ? t('to_next', { n: st.next }) : '⭐ ' + p.stars;
 }
 
-/* ---------- ofensiva / semana (S15) ---------- */
+/* ---------- ofensiva / semana (S15) ----------
+   Nomes dos dias pelo Intl no idioma do app ("Seg", "Ter"… em vez de "S T Q"),
+   hoje com anel e dia sem jogo como círculo vazado — legível também em alto contraste. */
+function dayName(d, style) {
+  const s = new Intl.DateTimeFormat(TTS_LANG[LANG] || 'pt-BR', { weekday: style }).format(d).replace(/\.$/, '');
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 function renderWeekStrip() {
   const el = $('#week-strip'); if (!el) return;
   const p = P();
@@ -205,7 +222,11 @@ function renderWeekStrip() {
         played = diffDays >= 0 && diffDays < p.streak;
       }
     }
-    html += '<span class="wday' + (played ? ' on' : '') + '" title="' + ds + '"><i>' + 'DSTQQSS'[d.getDay()] + '</i>' + (played ? '🔥' : '·') + '</span>';
+    const sr = dayName(d, 'long') + (i === 0 ? ' (' + t('wk_today') + ')' : '') + ': ' + t(played ? 'wk_played' : 'wk_missed');
+    html += '<span class="wday' + (played ? ' on' : '') + (i === 0 ? ' today' : '') + '">' +
+      '<i aria-hidden="true">' + escHtml(dayName(d, 'short')) + '</i>' +
+      (played ? '<b aria-hidden="true">🔥</b>' : '<b class="wdot" aria-hidden="true"></b>') +
+      '<span class="sr-only">' + escHtml(sr) + '</span></span>';
   }
   el.innerHTML = html;
 }
@@ -264,23 +285,45 @@ function renderGoal() {
     : '⭐ ' + p.stars;
 }
 
-/* ---------- metas de estrelas por modo / desbloqueio ---------- */
+/* ---------- metas de estrelas por modo / desbloqueio ----------
+   4.2: a grade mostra só o que dá para jogar e um único "próximo prêmio" com a
+   barra de estrelas — em vez de 10 cadeados no primeiro uso. */
+function nextLockedMode() {
+  return Object.keys(MODES).filter((m) => !modeUnlocked(m))
+    .sort((a, b) => MODES[a].unlock - MODES[b].unlock)[0] || null;
+}
 function renderModes() {
   const grid = $('#modes-grid'); if (!grid) return;
   const p = P();
-  grid.innerHTML = Object.keys(MODES).map((m) => {
+  let html = Object.keys(MODES).filter(modeUnlocked).map((m) => {
     const md = MODES[m];
-    const ok = modeUnlocked(m);
-    return '<button class="mode-card c-' + md.color + '" data-mode="' + m + '" ' + (ok ? '' : 'data-locked="' + md.unlock + '"') + '>' +
+    return '<button class="mode-card c-' + md.color + '" data-mode="' + m + '">' +
       (m === 'mistar' ? '<span class="badge">' + t('d_mistar') + '</span>' : '') +
-      '<span class="mode-emoji">' + (ok ? md.emoji : '🔒') + '</span>' +
+      '<span class="mode-emoji">' + md.emoji + '</span>' +
       '<span class="mode-name">' + t('m_' + m) + '</span>' +
-      '<span class="mode-desc">' + (ok ? t('d_' + m) : t('locked', { n: md.unlock })) + '</span></button>';
+      '<span class="mode-desc">' + t('d_' + m) + '</span></button>';
   }).join('');
-  $$('.mode-card').forEach((card) => {
+  const nx = nextLockedMode();
+  if (nx) {
+    const md = MODES[nx];
+    const have = p ? p.stars : 0;
+    const pct = Math.max(4, Math.min(100, Math.round(100 * have / md.unlock)));
+    html += '<button class="mode-card next-prize c-' + md.color + '" data-next="' + nx + '" aria-label="' +
+      escHtml(t('next_prize') + ': ' + t('m_' + nx) + ' — ' + t('next_need', { n: md.unlock - have })) + '">' +
+      '<span class="badge">' + t('next_prize') + '</span>' +
+      '<span class="mode-emoji">' + md.emoji + '<i aria-hidden="true">🔒</i></span>' +
+      '<span class="mode-name">' + t('m_' + nx) + '</span>' +
+      '<span class="np-bar" aria-hidden="true"><i style="width:' + pct + '%"></i></span>' +
+      '<span class="mode-desc">' + have + ' / ' + md.unlock + ' ⭐</span></button>';
+  }
+  grid.innerHTML = html;
+  $$('#modes-grid .mode-card').forEach((card) => {
     card.addEventListener('click', () => {
       ensureAudio(); SFX.tap();
-      if (card.dataset.locked) { showBubble('🔒', t('locked', { n: card.dataset.locked })); return; }
+      if (card.dataset.next) {
+        const msg = t('next_say', { n: MODES[card.dataset.next].unlock - (P() ? P().stars : 0), m: t('m_' + card.dataset.next) });
+        showBubble('🎁', msg); TTS.speak(msg); return;
+      }
       startRound(card.dataset.mode);
     });
   });
@@ -1140,56 +1183,6 @@ function openOptions() {
   else location.href = url; // PWA/TWA/Electron: mesma janela; o “voltar” das opções retorna ao jogo
 }
 
-/* ---------- onboarding da senha dos responsáveis (v2.3) ----------
-   Aparece uma única vez na sessão inicial do app (game/popup/web).
-   O adulto cria a senha + lembrete de segurança; pode adiar com "Configurar depois"
-   (neste caso a criação continua disponível no portão da área dos responsáveis). */
-function showOnboarding() {
-  showOverlay('<div class="ov-emoji">👨‍👩‍👧</div><h3>' + t('ob_title') + '</h3><p>' + t('ob_msg') + '</p>' +
-    '<div class="ob-form">' +
-    '<label class="pwd-lbl" for="ob-pwd">' + t('ob_pwd') + '</label>' +
-    '<div class="pwd-box"><input id="ob-pwd" type="password" autocomplete="new-password"><button id="ob-eye1" class="eye-btn" type="button" aria-label="' + t('a_show_pwd') + '" aria-pressed="false">👁</button></div>' +
-    '<label class="pwd-lbl" for="ob-pwd2">' + t('ob_pwd2') + '</label>' +
-    '<div class="pwd-box"><input id="ob-pwd2" type="password" autocomplete="new-password"><button id="ob-eye2" class="eye-btn" type="button" aria-label="' + t('a_show_pwd') + '" aria-pressed="false">👁</button></div>' +
-    '<label class="pwd-lbl" for="ob-hint">' + t('ob_hint_lbl') + '</label>' +
-    '<input id="ob-hint" type="text" maxlength="80">' +
-    '<div class="gate-err" id="ob-err" role="alert"></div>' +
-    '<button class="big-btn" id="btn-ob-create">' + t('ob_create') + '</button>' +
-    '<button class="big-btn alt" id="btn-ob-later">' + t('ob_later') + '</button>' +
-    '</div>');
-  $('#ob-hint').placeholder = t('ob_hint_ph');
-  $('#btn-ob-create').addEventListener('click', createObPwd);
-  $('#btn-ob-later').addEventListener('click', () => {
-    G().passOnboardDone = true; saveState(true); SFX.tap(); hideOverlay();
-  });
-  [['#ob-eye1', '#ob-pwd'], ['#ob-eye2', '#ob-pwd2']].forEach(([b, inp]) => {
-    $(b).addEventListener('click', () => { const i = $(inp); i.type = i.type === 'password' ? 'text' : 'password'; $(b).setAttribute('aria-pressed', String(i.type === 'text')); });
-  });
-  ['#ob-pwd', '#ob-pwd2', '#ob-hint'].forEach((id) => {
-    $(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') $('#btn-ob-create').click(); });
-  });
-}
-async function createObPwd() {
-  const a = $('#ob-pwd').value || '';
-  const b = $('#ob-pwd2').value || '';
-  const hint = ($('#ob-hint').value || '').trim();
-  if (a.length < 4) { $('#ob-err').textContent = t('sec_short'); SFX.wrong(); return; }
-  if (a !== b) { $('#ob-err').textContent = t('sec_mismatch'); SFX.wrong(); return; }
-  if (!hint) { $('#ob-err').textContent = t('sec_need_hint'); SFX.wrong(); return; }
-  const btn = $('#btn-ob-create');
-  btn.disabled = true;
-  const g = G();
-  g.passSalt = PASS.salt();
-  g.passHash = await PASS.hash(a, g.passSalt);
-  g.passHint = hint; g.passSetAt = Date.now();
-  g.passOnboardDone = true; g.passTries = 0; g.passLockUntil = 0;
-  saveState(true);
-  hideOverlay();
-  showBubble('🔒', t('ob_saved'));
-  TTS.speak(t('ob_saved'));
-  confetti(20); SFX.fanfare();
-}
-
 /* ==================== inicialização ==================== */
 function bindStatic() {
   $('#btn-home').addEventListener('click', () => { TTS.stop(); SFX.tap(); renderHome(); show('home'); });
@@ -1298,14 +1291,13 @@ async function boot() {
   // v2.4 (A-198): saudação cordial com o nome — o 1º toque libera o áudio no navegador
   const greet = () => {
     const home = $('#screen-home');
-    if (!home || !home.classList.contains('active') || overlayOpen()) return;
+    // não atropela um balão que o próprio toque abriu (ex.: próximo prêmio)
+    if (!home || !home.classList.contains('active') || overlayOpen() || !$('#bubble').classList.contains('hidden')) return;
     const line = tpick('greet', { name: P().name });
     showBubble(mascotStage().emoji, line);
     TTS.speak(line);
   };
   document.addEventListener('pointerdown', () => setTimeout(greet, 350), { once: true });
-  // v2.3: onboarding da senha dos responsáveis na sessão inicial (uma única vez)
-  if (!G().passHash && !G().passOnboardDone) setTimeout(showOnboarding, 700);
   if (HAS_EXT && typeof chrome !== 'undefined' && chrome.tabs) {
     try { chrome.runtime.sendMessage('cc-page-ready', () => void chrome.runtime.lastError); } catch (e) { /* ignora */ }
   }

@@ -58,11 +58,22 @@ body.hc {
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 .hidden { display: none !important; }
 
+/* Fonte própria empacotada (Nunito, SIL OFL 1.1 — css/fonts/OFL.txt): a mesma
+   personalidade em Windows, macOS, Android, iOS e Linux, também offline.
+   Só o subconjunto latino (pt/en/es, ×, ÷, −); emojis seguem a fonte do sistema. */
+@font-face {
+  font-family: 'Conta';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 1000;
+  src: url(fonts/nunito-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 html { width: 400px; height: 600px; overflow: hidden; }
 html.html-page { width: auto; height: auto; overflow: auto; }
 body {
   width: 400px; height: 600px; overflow: hidden;
-  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', 'Fredoka', 'Nunito', 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Conta', 'Nunito', 'Segoe UI', system-ui, sans-serif;
   color: var(--ink);
   background: linear-gradient(180deg, var(--bg-a) 0%, var(--bg-b) 55%, var(--bg-c) 100%);
   user-select: none;
@@ -83,21 +94,21 @@ body.calmo .mascot-main, body.calmo .deco { animation: none !important; }
 @keyframes floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
 
 /* barra superior */
-#topbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px 6px; position: relative; z-index: 6; }
+#topbar { display: flex; justify-content: space-between; align-items: center; gap: 4px; padding: 10px 8px 6px; position: relative; z-index: 6; }
 .icon-btn {
   width: 44px; height: 44px; font-size: 21px; background: var(--card); color: var(--ink);
   border: none; border-radius: 14px; box-shadow: 0 3px 0 rgba(var(--sh), .12); cursor: pointer; transition: transform .1s;
 }
 .icon-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(var(--sh), .12); }
 #star-chip {
-  background: var(--card); border-radius: 999px; padding: 9px 18px; font-weight: 800; font-size: 18px;
+  background: var(--card); border-radius: 999px; padding: 8px 10px; font-weight: 800; font-size: 16px; white-space: nowrap;
   box-shadow: 0 3px 0 rgba(var(--sh), .12);
 }
 #star-chip.bump { animation: bump .5s; }
 @keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.25); } 100% { transform: scale(1); } }
-.btn-group { display: flex; gap: 8px; align-items: center; }
+.btn-group { display: flex; gap: 5px; align-items: center; }
 #chip-streak {
-  background: var(--card); border-radius: 999px; padding: 8px 12px; font-weight: 800; font-size: 15px;
+  background: var(--card); border-radius: 999px; padding: 7px 8px; font-weight: 800; font-size: 14px;
   box-shadow: 0 3px 0 rgba(var(--sh), .12); white-space: nowrap;
 }
 #combo-chip {
@@ -118,15 +129,20 @@ body.calmo .mascot-main, body.calmo .deco { animation: none !important; }
 @keyframes bounce { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-9px) scale(1.04); } }
 /* herói da tela inicial: marca à esquerda, cartões de status à direita */
 .home-hero { display: flex; flex-direction: column; align-items: center; width: 100%; margin-bottom: 4px; }
-.hero-brand { display: flex; flex-direction: column; align-items: center; }
-.hero-titlebox { display: flex; flex-direction: column; align-items: center; }
-.hero-side { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%; }
+.hero-brand { display: flex; flex-direction: row; align-items: center; gap: 10px; }
+.hero-brand .mascot { font-size: 44px; }
+.hero-titlebox { display: flex; flex-direction: column; align-items: flex-start; }
+.hero-titlebox .subtitle { text-align: left; margin-bottom: 4px; }
+.hero-side { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%; margin-top: 10px; }
 .side-card { display: flex; align-items: center; gap: 10px; width: 100%; max-width: 350px; padding: 3px 10px; border-radius: 16px; }
 .pet-card { justify-content: center; }
 .pet-emoji { font-size: 30px; line-height: 1.1; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .15)); }
 .pet-lines { display: flex; flex-direction: column; gap: 2px; font-weight: 800; font-size: 12.5px; color: var(--ink-soft); text-align: left; }
 #mascot-stage { color: var(--ink); font-size: 13.5px; }
 .missions-card { flex-direction: column; align-items: center; gap: 4px; max-width: none; padding: 3px 6px 0; }
+#btn-gear { position: relative; }
+#btn-gear.needs-setup::after { content: ''; position: absolute; top: 4px; right: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--orange); box-shadow: 0 0 0 2px var(--card); }
+body.hc #btn-gear.needs-setup::after { background: #ffff00; }
 .icon-btn.icon-close { color: var(--red-dark); font-weight: 900; }
 .title {
   font-size: 27px; font-weight: 800; letter-spacing: .5px; margin-top: 2px;
@@ -137,9 +153,11 @@ body.hc .title { background: none; color: #ffff00; -webkit-text-fill-color: #fff
 .subtitle { font-size: 12.5px; color: var(--ink-soft); margin: 1px 0 7px; font-weight: 700; text-align: center; }
 
 #week-strip { display: flex; gap: 4px; }
-.wday { display: flex; flex-direction: column; align-items: center; font-size: 13px; color: var(--ink-soft); width: 26px; }
-.wday i { font-style: normal; font-size: 9px; font-weight: 800; }
-.wday.on { color: var(--orange); }
+.wday { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 14px; color: var(--ink-soft); width: 34px; padding: 3px 0 4px; border-radius: 10px; }
+.wday i { font-style: normal; font-size: 10.5px; font-weight: 800; }
+.wday b { line-height: 18px; height: 18px; }
+.wday .wdot { width: 14px; height: 14px; margin: 2px 0; border: 2px solid currentColor; border-radius: 50%; box-sizing: border-box; }
+.wday.today { color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink-soft); }
 
 #mission-row { display: flex; flex-direction: column; gap: 4px; align-items: center; width: 100%; }
 .m-title { font-size: 11px; font-weight: 800; color: var(--ink-soft); }
@@ -148,7 +166,7 @@ body.hc .title { background: none; color: #ffff00; -webkit-text-fill-color: #fff
 body.hc .mission.done { background: #000; color: #7fff7f; border: 1px solid #7fff7f; }
 
 /* faixa de controles: atalhos + dificuldade */
-.home-controls { display: flex; flex-direction: column; gap: 8px; width: 100%; margin-bottom: 8px; }
+.home-controls { display: flex; flex-direction: column; gap: 8px; width: 100%; margin: 12px 0 8px; }
 .home-controls .special-row, .home-controls .diff-row { margin-bottom: 0; }
 .sec-title { width: 100%; text-align: center; font-size: 11.5px; font-weight: 800; letter-spacing: .4px; color: var(--ink-soft); margin: 2px 0 7px; }
 
@@ -191,12 +209,17 @@ body.hc .diff-chip.active { background: #333; color: #fff; }
 .mode-card.c-teal { border-top: 5px solid var(--teal); } .mode-card.c-brown { border-top: 5px solid var(--brown); }
 .mode-card.c-pink { border-top: 5px solid var(--pink); } .mode-card.c-red { border-top: 5px solid var(--red); }
 /* bloqueado: emoji apagado e borda tracejada — o texto mantém o contraste */
-.mode-card[data-locked] { border-style: dashed; }
-.mode-card[data-locked] .mode-emoji { opacity: .55; filter: grayscale(.6); }
+.mode-card.next-prize { border-style: dashed; }
+.mode-card.next-prize .mode-emoji { position: relative; }
+.mode-card.next-prize .mode-emoji i { position: absolute; right: -14px; bottom: -2px; font-size: .55em; font-style: normal; }
+.np-bar { display: block; width: 78%; height: 8px; margin: 4px 0 2px; border-radius: 999px; background: rgba(var(--sh), .12); overflow: hidden; }
+.np-bar i { display: block; height: 100%; border-radius: inherit; background: var(--orange); }
+body.hc .np-bar { background: #000; border: 1px solid #fff; }
+body.hc .np-bar i { background: #ffff00; }
 .mode-emoji { font-size: 23px; line-height: 1.25; }
 .mode-name { font-size: 13.5px; font-weight: 800; color: var(--ink); }
 .mode-desc { font-size: 9.5px; color: var(--ink-soft); font-weight: 700; text-align: center; }
-.badge { position: absolute; top: -8px; right: -5px; background: var(--yellow); color: #33355c; font-size: 9px; font-weight: 800; padding: 2px 7px; border-radius: 999px; box-shadow: 0 2px 0 rgba(0, 0, 0, .08); }
+.badge { position: absolute; top: -8px; right: -5px; white-space: nowrap; background: var(--yellow); color: #33355c; font-size: 9px; font-weight: 800; padding: 2px 7px; border-radius: 999px; box-shadow: 0 2px 0 rgba(0, 0, 0, .08); }
 
 .link-row { display: flex; gap: 8px; width: 100%; margin-top: 9px; }
 .link-row button {
@@ -432,22 +455,20 @@ body.hc .av-row .av.sel { background: #333; }
 .prof-add input { font-family: inherit; font-size: 13px; padding: 8px; border-radius: 10px; border: 2px solid var(--line); background: var(--card); color: var(--ink); }
 .max-note { font-size: 11px; color: var(--ink-soft); font-weight: 700; text-align: center; }
 
-/* ---------- portão/onboarding da senha dos responsáveis (v2.3) ---------- */
-.ob-form { display: flex; flex-direction: column; gap: 2px; width: min(320px, 100%); margin: 6px auto 0; text-align: left; }
+/* ---------- campos de senha dos responsáveis (v2.3) ---------- */
 .pwd-lbl { display: block; text-align: left; font-size: 12.5px; font-weight: 800; color: var(--ink-soft); margin: 8px 0 4px; }
 .pwd-box { position: relative; }
 .pwd-box input { padding-right: 42px; }
-.pwd-box input, .ob-form input[type="text"] {
+.pwd-box input {
   font-family: inherit; font-size: 15px; font-weight: 700; width: 100%; box-sizing: border-box;
   padding: 10px 13px; border-radius: 12px; border: 2.5px solid var(--line);
   background: var(--card); color: var(--ink);
 }
-.pwd-box input:focus-visible, .ob-form input[type="text"]:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
+.pwd-box input:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
 .eye-btn { position: absolute; right: 2px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 17px; width: 44px; height: 44px; border-radius: 10px; }
 .eye-btn[aria-pressed="true"] { background: rgba(var(--sh), .1); }
 .gate-err { color: var(--danger-text, var(--danger)); font-weight: 800; min-height: 20px; margin-top: 8px; font-size: 13.5px; }
-.ob-form .big-btn { margin-top: 6px; }
-body.hc .pwd-box input, body.hc .ob-form input[type="text"] { border: 2px solid #fff; }
+body.hc .pwd-box input { border: 2px solid #fff; }
 
 /* ==================== página dedicada (wide) ==================== */
 body.page-mode, body.wide { width: auto; height: auto; overflow: auto; min-height: 100vh; }
@@ -458,13 +479,23 @@ body.page-mode #topbar {
   border-radius: 0 0 22px 22px;
 }
 body.page-mode #star-chip { font-size: 21px; padding: 10px 22px; }
+body.page-mode #chip-streak { font-size: 15px; padding: 8px 12px; }
+body.page-mode .btn-group { gap: 8px; }
 body.page-mode .icon-btn { width: 50px; height: 50px; font-size: 24px; }
 
-/* ---- tela inicial: herói 2 colunas + faixa de controles + grade fluida ---- */
-body.page-mode #screen-home.active { padding-top: 2px; }
-body.page-mode .home-hero { display: grid; grid-template-columns: 1.06fr .94fr; gap: 10px 36px; align-items: center; padding: 8px 4px 12px; }
-body.page-mode .mascot { font-size: 92px; }
-body.page-mode .title { font-size: 46px; }
+/* ---- tela inicial: herói 2 colunas (marca | status) + grade de modos + controles ----
+   No HTML os modos vêm logo após a marca (4.1: jogar primeiro no celular); no
+   desktop a grade coloca o status ao lado da marca. Status não tem foco, então
+   a ordem de tabulação continua igual à visual. */
+body.page-mode #screen-home.active { display: grid; grid-template-columns: 1.06fr .94fr; column-gap: 36px; align-content: start; align-items: center; padding-top: 2px; }
+body.page-mode #screen-home > * { grid-column: 1 / -1; }
+body.page-mode #screen-home > .home-hero { grid-column: 1; grid-row: 1; padding: 8px 4px 12px; }
+body.page-mode #screen-home > .hero-side { grid-column: 2; grid-row: 1; margin-top: 0; }
+body.page-mode .hero-brand { flex-direction: column; gap: 0; }
+body.page-mode .hero-titlebox { align-items: center; }
+body.page-mode .hero-titlebox .subtitle { text-align: center; }
+body.page-mode .mascot, body.page-mode .hero-brand .mascot { font-size: 92px; }
+body.page-mode .title { font-size: clamp(32px, 4vw, 46px); white-space: nowrap; }
 body.page-mode .subtitle { font-size: 17px; margin: 3px 0 0; }
 body.page-mode .hero-side { gap: 12px; }
 body.page-mode .side-card { background: var(--card); box-shadow: 0 4px 0 rgba(var(--sh), .08); border-radius: 20px; padding: 14px 20px; max-width: none; }
@@ -476,12 +507,12 @@ body.page-mode .missions-card { align-items: flex-start; gap: 7px; }
 body.page-mode .m-title { font-size: 13.5px; }
 body.page-mode #mission-row { flex-direction: row; flex-wrap: wrap; justify-content: flex-start; gap: 6px; }
 body.page-mode .mission { font-size: 13px; padding: 5px 12px; }
-body.page-mode #week-strip { gap: 9px; }
-body.page-mode .wday { font-size: 14px; width: 30px; }
-body.page-mode .wday i { font-size: 10px; }
-body.page-mode .home-controls { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 30px; }
+body.page-mode #week-strip { gap: 6px; }
+body.page-mode .wday { font-size: 15px; width: 40px; }
+body.page-mode .wday i { font-size: 11.5px; }
+body.page-mode .home-controls { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 30px; margin-top: 20px; }
 body.page-mode .special-row { width: auto; }
-body.page-mode .special-row button { flex-direction: row; gap: 8px; padding: 10px 18px; font-size: 14px; border-radius: 999px; }
+body.page-mode .special-row button { flex-direction: row; gap: 8px; padding: 10px 18px; font-size: 14px; border-radius: 999px; white-space: nowrap; }
 body.page-mode .special-row button b { font-size: 21px; }
 body.page-mode .diff-row { width: auto; }
 body.page-mode .diff-chip { flex: 0 0 auto; min-width: 0; max-width: none; padding: 8px 16px; font-size: 13.5px; border-radius: 999px; }
@@ -609,15 +640,22 @@ body.page-mode #app, body.wide #app {
    grande do desktop vira fluida (clamp) — sem transbordar em 360–430px. */
 @media (max-width: 760px) {
   body.page-mode #app { padding-left: max(14px, env(safe-area-inset-left)); padding-right: max(14px, env(safe-area-inset-right)); }
-  /* topbar: permite quebra em 2 linhas e devolve botões ao tamanho de toque */
-  body.page-mode #topbar { flex-wrap: wrap; gap: 6px 10px; padding: 10px 8px 8px; }
+  /* topbar em uma linha só (4.1), com botões no tamanho de toque */
+  body.page-mode #topbar { gap: 6px; padding: 8px 6px 8px; }
+  body.page-mode #topbar .btn-group { gap: 6px; }
   body.page-mode .icon-btn { width: 44px; height: 44px; font-size: 21px; }
   body.page-mode #star-chip { font-size: 18px; padding: 8px 16px; }
   body.page-mode .cc-ver { font-size: 10px; padding: 4px 8px; }
   /* herói empilhado e fluido */
-  body.page-mode .home-hero { grid-template-columns: 1fr; gap: 6px; padding: 6px 0 10px; }
-  body.page-mode .mascot { font-size: clamp(52px, 15vw, 68px); }
-  body.page-mode .title { font-size: clamp(30px, 8.5vw, 42px); }
+  /* tela inicial em coluna: marca compacta numa linha, modos, status, controles */
+  body.page-mode #screen-home.active { display: flex; }
+  body.page-mode #screen-home > .home-hero { padding: 4px 0 8px; }
+  body.page-mode #screen-home > .hero-side { margin-top: 14px; }
+  body.page-mode .hero-brand { flex-direction: row; gap: 12px; }
+  body.page-mode .hero-titlebox { align-items: flex-start; }
+  body.page-mode .hero-titlebox .subtitle { text-align: left; }
+  body.page-mode .mascot, body.page-mode .hero-brand .mascot { font-size: clamp(44px, 12vw, 56px); }
+  body.page-mode .title { font-size: clamp(28px, 8vw, 40px); }
   body.page-mode .subtitle { font-size: clamp(13px, 3.8vw, 16px); margin: 2px 0 0; }
   body.page-mode .side-card { max-width: 440px; padding: 10px 14px; }
   body.page-mode .pet-emoji { font-size: 40px; }
@@ -667,13 +705,16 @@ body.page-mode #app, body.wide #app {
 
 /* ---------- celulares pequenos (≤ 430px) ---------- */
 @media (max-width: 430px) {
+  /* o selo de versão sai da topbar (continua no painel dos responsáveis) */
+  body.page-mode .cc-ver { display: none; }
+  body.page-mode #star-chip { font-size: 17px; padding: 8px 13px; }
+  body.page-mode #chip-streak { padding: 8px 10px; }
   body.page-mode #app { padding-left: max(10px, env(safe-area-inset-left)); padding-right: max(10px, env(safe-area-inset-right)); }
   .screen { padding: 4px 10px 12px; }
   body.page-mode .modes { grid-template-columns: repeat(2, 1fr); gap: 8px; }
   body.page-mode .special-row { flex-wrap: wrap; }
   body.page-mode .special-row button { flex: 1 1 44%; }
   body.page-mode .diff-label { width: 100%; text-align: center; }
-  body.page-mode .mascot { font-size: clamp(48px, 16vw, 60px); }
   body.page-mode .side-card { max-width: none; }
   body.page-mode #answers.n3 { gap: 8px; }
   body.page-mode #answers.n3 .ans { font-size: clamp(20px, 6.4vw, 26px); padding: 12px 0 10px; }
@@ -689,20 +730,22 @@ body.page-mode #app, body.wide #app {
   body.page-mode #topbar { position: static; padding: 6px 8px 4px; backdrop-filter: none; -webkit-backdrop-filter: none; }
   body.page-mode .icon-btn { width: 44px; height: 44px; font-size: 19px; }
   body.page-mode #star-chip { font-size: 15px; padding: 6px 14px; }
-  body.page-mode #screen-home.active { padding-top: 2px; }
-  body.page-mode .home-hero { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; padding: 0 0 6px; }
+  body.page-mode #screen-home.active { display: grid; grid-template-columns: auto 1fr; column-gap: 12px; padding-top: 2px; }
+  body.page-mode #screen-home > .home-hero { padding: 0 0 6px; }
+  body.page-mode #screen-home > .hero-side { margin-top: 0; justify-content: flex-end; }
   body.page-mode .hero-brand { flex-direction: row; gap: 12px; }
-  body.page-mode .mascot { font-size: 38px; }
+  body.page-mode .hero-titlebox { align-items: flex-start; }
+  body.page-mode .mascot, body.page-mode .hero-brand .mascot { font-size: 38px; }
   body.page-mode .title { font-size: 24px; }
   body.page-mode .subtitle { font-size: 11.5px; margin: 0; }
-  body.page-mode .hero-side { flex-direction: row; gap: 8px; max-width: 58%; }
+  body.page-mode .hero-side { flex-direction: row; gap: 8px; }
   body.page-mode .side-card { padding: 6px 12px; }
   body.page-mode .pet-emoji { font-size: 28px; }
   body.page-mode .pet-lines { font-size: 10.5px; }
   body.page-mode .missions-card { padding: 4px 10px; }
   body.page-mode .m-title { font-size: 10px; }
   body.page-mode .mission { font-size: 10px; padding: 2px 8px; }
-  body.page-mode .wday { font-size: 11px; width: 20px; }
+  body.page-mode .wday { font-size: 11px; width: 30px; padding: 1px 0 2px; }
   body.page-mode .home-controls { flex-direction: row; flex-wrap: wrap; gap: 6px 16px; margin-bottom: 4px; }
   body.page-mode .special-row button { padding: 6px 12px; font-size: 11.5px; min-height: 44px; }
   body.page-mode .special-row button b { font-size: 16px; }
@@ -751,6 +794,20 @@ body.page-mode #app, body.wide #app {
   .prof-row { padding: 10px 11px; min-height: 44px; }
   .av-row .av { width: 48px; height: 48px; }
   .stk { padding: 9px 0; }
+}
+
+/* topbar numa linha só no celular (4.1): tela cheia sai no app instalado e nos
+   celulares; abaixo de 350px a ofensiva fica só no calendário das missões */
+@media (display-mode: standalone), (display-mode: fullscreen), (max-width: 430px) {
+  body.page-mode #btn-full { display: none; }
+}
+@media (max-width: 380px) {
+  body.page-mode #topbar, body.page-mode #topbar .btn-group { gap: 4px; }
+  body.page-mode #star-chip { font-size: 15px; padding: 7px 10px; }
+  body.page-mode #chip-streak { font-size: 14px; padding: 7px 8px; }
+}
+@media (max-width: 350px) {
+  body.page-mode #chip-streak { display: none; }
 }
 
 /* ---------- muito estreito (<330px): última defesa ---------- */

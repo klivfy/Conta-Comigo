@@ -104,7 +104,7 @@ const DEFAULT_SETTINGS = {
   voiceOn: true, sfxOn: true, timeScale: 1, reduceMotion: false, shopOff: false,
   /* v2.3 — portão parental por senha (tudo fica no dispositivo) */
   passHash: '', passSalt: '', passHint: '', passSetAt: 0,
-  passTries: 0, passLockUntil: 0, passOnboardDone: false,
+  passTries: 0, passLockUntil: 0,
 };
 let DB = { v: 2, updatedAt: 0, activeId: '', profiles: [], settings: Object.assign({}, DEFAULT_SETTINGS) };
 function P() { return DB.profiles.find((p) => p.id === DB.activeId) || DB.profiles[0]; }
@@ -194,7 +194,6 @@ function normalizeDB(d) {
   s.lastBackupAt = Number(s.lastBackupAt) || 0;
   ['passHash', 'passSalt', 'passHint'].forEach((k) => { if (typeof s[k] !== 'string') s[k] = ''; });
   ['passSetAt', 'passTries', 'passLockUntil'].forEach((k) => { s[k] = Number(s[k]) || 0; });
-  s.passOnboardDone = !!s.passOnboardDone;
   return d;
 }
 function loadRaw() {

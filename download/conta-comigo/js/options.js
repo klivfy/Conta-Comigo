@@ -101,7 +101,7 @@ async function savePassword(pw, hint) {
   g.passHash = await PASS.hash(pw, g.passSalt);
   g.passHint = hint;
   g.passSetAt = Date.now();
-  g.passTries = 0; g.passLockUntil = 0; g.passOnboardDone = true;
+  g.passTries = 0; g.passLockUntil = 0;
   saveState(true);
 }
 function tryResetGate() {

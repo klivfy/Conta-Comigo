@@ -81,7 +81,7 @@ async function answerContrast(page, label, found, min) {
     await page.goto(base + 'index.html');
     await page.evaluate((th) => { localStorage.clear(); localStorage.setItem('cc_state', JSON.stringify({
       v: 2, activeId: 'p1', profiles: [{ id: 'p1', name: 'Teste', avatar: '🦊' }],
-      settings: { passOnboardDone: true, theme: th === 'hc' ? 'classico' : th, hc: th === 'hc' },
+      settings: { theme: th === 'hc' ? 'classico' : th, hc: th === 'hc' },
     })); }, theme);
     await page.reload(); await page.waitForTimeout(1200);
     await audit(page, tag('inicio'), found);

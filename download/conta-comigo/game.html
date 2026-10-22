@@ -44,22 +44,25 @@
               <p class="subtitle" data-i18n="subtitle">Vamos brincar com os números!</p>
             </div>
           </div>
-          <aside class="hero-side">
-            <div class="side-card pet-card">
-              <span class="pet-emoji" id="mascot-side" aria-hidden="true">🥚</span>
-              <div class="pet-lines">
-                <div id="mascot-stage"></div>
-                <div id="mascot-next"></div>
-                <div id="goal-line"></div>
-              </div>
-            </div>
-            <div class="side-card missions-card">
-              <div class="m-title" data-i18n="missions">Missões de hoje</div>
-              <div id="week-strip"></div>
-              <div id="mission-row"></div>
-            </div>
-          </aside>
         </div>
+        <!-- 4.1: jogar primeiro — os modos vêm logo após a marca; status e ajustes depois -->
+        <h2 class="sec-title" data-i18n="pick_game">Escolha um jogo</h2>
+        <div class="modes" id="modes-grid"></div>
+        <aside class="hero-side">
+          <div class="side-card pet-card">
+            <span class="pet-emoji" id="mascot-side" aria-hidden="true">🥚</span>
+            <div class="pet-lines">
+              <div id="mascot-stage"></div>
+              <div id="mascot-next"></div>
+              <div id="goal-line"></div>
+            </div>
+          </div>
+          <div class="side-card missions-card">
+            <div class="m-title" data-i18n="missions">Missões de hoje</div>
+            <div id="week-strip"></div>
+            <div id="mission-row"></div>
+          </div>
+        </aside>
         <div class="home-controls">
           <div class="special-row">
             <button id="sp-review" class="hidden"><b>📚</b><span>Revisar</span></button>
@@ -77,8 +80,6 @@
             <button class="diff-chip" data-d="5">🚀 5</button>
           </div>
         </div>
-        <h2 class="sec-title" data-i18n="pick_game">Escolha um jogo</h2>
-        <div class="modes" id="modes-grid"></div>
         <div class="link-row">
           <button id="btn-shop">🛒 <span data-i18n="shop">Loja</span></button>
           <button id="btn-ach">🏅 <span data-i18n="ach">Conquistas</span></button>

@@ -30,7 +30,12 @@ Legenda: **[eu]** código na branch · **[você]** ação em conta/GitHub/loja.
 - Check de CI cobre início, perfis, loja, conquistas, rodada, portão e painel nos temas claro, escuro e alto contraste — baseline zerado.
 
 ## Fase 4 — Experiência da criança
-- [ ] 4.1 "Jogar" acima da dobra no celular · 4.2 só modos desbloqueados + próximo prêmio · 4.3 adiar senha · 4.4 calendário de missões · 4.5 fonte própria
+- [x] 4.1 "Jogar" acima da dobra: os modos vêm logo após a marca (1º jogo em y≈190 em vez de 741 num celular de 844px; popup 515→154); topbar numa linha de 320 a 1024px (tela cheia sai no app instalado e em celulares ≤430px, versão fica no painel)
+- [x] 4.2 só os modos desbloqueados + um card "Próximo prêmio" com barra de estrelas (no 1º uso: 3 modos + 1 prêmio em vez de 10 cadeados); tocar fala quanto falta
+- [x] 4.3 senha adiada: sem modal no primeiro uso — o portão do ⚙️ cria a senha quando o adulto entrar; até lá o ⚙️ tem um ponto e o nome "senha ainda não criada"
+- [x] 4.4 calendário de missões: dias pelo `Intl` no idioma do app ("Seg Ter Qua…"/"Mon Tue…"), hoje com anel, dia sem jogo como círculo vazado e texto por extenso para leitor de tela
+- [x] 4.5 fonte própria empacotada: Nunito variável (OFL, subconjunto latino, 39 KB) em `css/fonts/`, também no cache do service worker
+- Bônus: o balão do mascote ficava preso na tela do jogo e nunca aparecia na inicial (saudação e avisos só por voz) — agora aparece na tela ativa
 
 ## Fase 5 — Design system
 - [ ] 5.1 tokens semânticos · 5.2 escalas (tipografia/espaço/raio/motion) · 5.3 eliminar cores soltas · 5.4 prefers-color-scheme · 5.5 `/impeccable init` + polish
