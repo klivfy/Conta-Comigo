@@ -1,0 +1,82 @@
+name: iOS (Capacitor — build de teste)
+
+# Fase 6.5 ("Fase B" do estudo de apps nativos): compila o casco iOS sem conta
+# Apple, sem assinatura. Prova que o projeto está saudável a cada mudança no
+# jogo. A assinatura, o TestFlight e a App Store dependem do Apple Developer
+# Program (Fase C) e entram como um job separado quando os secrets existirem.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'native/ios/**'
+      - 'scripts/build_pwa.py'
+      - 'scripts/build_ios_www.py'
+      - 'scripts/cc_build.py'
+      - 'scripts/fonts/**'
+      - 'download/conta-comigo/**'
+      - '.github/workflows/ios.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar Pillow (ícones)
+        run: pip install pillow
+
+      - name: Gerar o jogo para o app (PWA → native/ios/www, ícone e splash)
+        run: python scripts/build_ios_www.py
+        env:
+          BASE: ${{ github.workspace }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Dependências (Capacitor + plugins de voz e armazenamento)
+        working-directory: native/ios
+        run: npm ci
+
+      - name: Copiar o jogo para o projeto Xcode
+        working-directory: native/ios
+        run: npx cap sync ios
+
+      - name: Compilar para o Simulador (sem assinatura)
+        working-directory: native/ios/ios/App
+        run: |
+          xcodebuild -project App.xcodeproj -scheme App -configuration Debug \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
+
+      - name: Compilar para aparelho (Release, sem assinatura — só verificação)
+        working-directory: native/ios/ios/App
+        run: |
+          xcodebuild -project App.xcodeproj -scheme App -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
+
+      - name: Empacotar o app do Simulador
+        run: |
+          cd native/ios/ios/App/build/Build/Products/Debug-iphonesimulator
+          ditto -c -k --keepParent App.app "$GITHUB_WORKSPACE/conta-comigo-ios-simulator.zip"
+
+      - name: Extrair versão
+        id: ver
+        run: echo "tag=$(node -p "require('./download/conta-comigo/manifest.json').version")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: conta-comigo-ios-simulator-${{ steps.ver.outputs.tag }}
+          path: conta-comigo-ios-simulator.zip
+          if-no-files-found: error
+          retention-days: 30

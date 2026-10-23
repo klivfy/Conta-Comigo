@@ -1,0 +1,3 @@
+node_modules/
+# gerado por scripts/build_ios_www.py a partir da PWA
+www/

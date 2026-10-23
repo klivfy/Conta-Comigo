@@ -1190,6 +1190,8 @@ function bindStatic() {
     if (G().mute) TTS.stop(); else { ensureAudio(); SFX.tap(); }
   });
   $('#btn-full').addEventListener('click', toggleFullscreen);
+  // app nativo (já é tela cheia) ou navegador sem a API (Safari do iPhone): o botão não faria nada
+  if (IN_NATIVE_APP || (!HAS_EXT && !document.documentElement.requestFullscreen)) $('#btn-full').classList.add('hidden');
   $('#btn-gear').addEventListener('click', openOptions);
   $('#btn-profile').addEventListener('click', () => { SFX.tap(); toggleProfilePop(); });
   $('#btn-again').addEventListener('click', () => { ensureAudio(); SFX.tap(); R.kind === 'duel' ? startDuelSetup() : startRound(R.mode || 'somar'); });

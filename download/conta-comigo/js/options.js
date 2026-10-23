@@ -115,11 +115,7 @@ function tryResetGate() {
     return;
   }
   if (!confirm(t('confirm_reset'))) return;
-  try { localStorage.removeItem('cc_state'); } catch (e) { /* ignora */ }
-  try {
-    if (typeof chrome !== 'undefined' && chrome.storage) { chrome.storage.local.clear(); chrome.storage.sync.clear(); }
-  } catch (e) { /* ignora */ }
-  location.reload();
+  clearSavedState().then(() => location.reload());
 }
 
 /* ---------- cartão Segurança (alterar senha) ---------- */
@@ -483,11 +479,7 @@ function bindOptions() {
   });
   $('#btn-reset-all').addEventListener('click', () => {
     if (!confirm(t('confirm_reset'))) return;
-    try { localStorage.removeItem('cc_state'); } catch (e) { /* ignora */ }
-    try {
-      if (typeof chrome !== 'undefined' && chrome.storage) { chrome.storage.local.clear(); chrome.storage.sync.clear(); }
-    } catch (e) { /* ignora */ }
-    location.reload();
+    clearSavedState().then(() => location.reload());
   });
 }
 

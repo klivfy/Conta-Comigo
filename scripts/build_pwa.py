@@ -12,10 +12,9 @@ Cria download/conta-comigo-pwa/ autocontido (sem paths ../), com:
 Saída: download/conta-comigo-pwa/ e conta-comigo-pwa-android-<VERSAO>.zip
 """
 import glob, hashlib, json, os, math, shutil, sys, zipfile
-from PIL import Image, ImageDraw, ImageFont
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from cc_build import DL, FONT_BOLD, SRC, version  # noqa: E402
+from cc_build import DL, SRC, draw_icon, version  # noqa: E402
 
 OUT = os.path.join(DL, "conta-comigo-pwa")
 VERSION = version()  # padrão: versão do manifest.json da fonte
@@ -27,38 +26,6 @@ if os.path.exists(OUT):
 # ---------- 1) ícones 192/512 (+ maskable com zona de segurança 80%) ----------
 ICON_OUT = os.path.join(OUT, "icons")
 os.makedirs(ICON_OUT, exist_ok=True)
-TOP, BOT = (255, 154, 61), (255, 94, 126)
-FONT_PATH = FONT_BOLD  # empacotada no repo: funciona em Linux, Windows e macOS
-
-def lerp(a, b, t):
-    return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
-
-def star_points(cx, cy, r_out, r_in, points=5, rot=-math.pi / 2):
-    pts = []
-    for i in range(points * 2):
-        r = r_out if i % 2 == 0 else r_in
-        a = rot + i * math.pi / points
-        pts.append((cx + r * math.cos(a), cy + r * math.sin(a)))
-    return pts
-
-def draw_icon(size, maskable=False):
-    img = Image.new('RGB', (size, size), lerp(TOP, BOT, 0.5))
-    gd = ImageDraw.Draw(img)
-    for y in range(size):
-        gd.line([(0, y), (size, y)], fill=lerp(TOP, BOT, y / max(1, size - 1)))
-    d = ImageDraw.Draw(img)
-    # maskable: conteúdo dentro do círculo central de 80% do diâmetro
-    k = 0.62 if maskable else 0.78
-    d.polygon(star_points(size * 0.78, size * 0.22, size * 0.15 * k / 0.78, size * 0.07 * k / 0.78),
-              fill=(255, 213, 74), outline=(255, 255, 255))
-    fs = int(size * 0.40 * (k / 0.78))
-    font = ImageFont.truetype(FONT_PATH, fs)
-    bbox = d.textbbox((0, 0), '123', font=font)
-    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
-    d.text(((size - tw) / 2 - bbox[0], size * 0.62 - th / 2 - bbox[1]), '123',
-           font=font, fill=(255, 255, 255))
-    return img
-
 for size in (192, 512):
     draw_icon(size, maskable=False).save(os.path.join(ICON_OUT, f'icon-{size}.png'))
     draw_icon(size, maskable=True).save(os.path.join(ICON_OUT, f'icon-maskable-{size}.png'))

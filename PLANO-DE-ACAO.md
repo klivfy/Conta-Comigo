@@ -79,5 +79,32 @@ Legenda: **[eu]** código na branch · **[você]** ação em conta/GitHub/loja.
     - antes/depois nos 7 temas e no alto contraste, com variação de no máximo ±1px de texto.
 
 ## Fase 6 — Funcionalidade e distribuição
-- [ ] 6.1 [eu] Fase A: voz/armazenamento bimodais · 6.2 [você] ativar Pages · 6.3 [você] AAB assinado + teste em aparelho
-- [ ] 6.4 [você] testar instaladores Windows · 6.5 [eu] iOS/Capacitor (Preferences, speechSynthesis) · 6.6 [você] contas de loja + política de privacidade
+- [x] 6.1 [eu] **"Fase A": voz e armazenamento bimodais** (`js/engine.js`):
+  - **Detecção:** `capPlugin()` reconhece o app Capacitor sem bundler.
+  - **Armazenamento:**
+    - No app, o progresso vai para o **Preferences** nativo, que o sistema não recolhe. O `localStorage` fica como 2ª cópia, e na leitura vale a cópia gravada por último.
+    - `clearSavedState()` apaga todas as camadas antes do reset do painel recarregar.
+    - Na PWA instalada, `navigator.storage.persist()` pede armazenamento persistente.
+  - **Voz:**
+    - No app, usa o **AVSpeechSynthesizer** via plugin TextToSpeech, com a mesma escolha de voz, velocidade, tonalidade e prosódia.
+    - O contador `gen` impede que uma fala cancelada avance a fila.
+    - No Safari do iOS, há um `cancel()` antes de cada `speak()`.
+  - **Tela cheia:** o botão some no app e nos navegadores sem a API (iPhone).
+  - **Teste:** fiz com um Capacitor simulado. Passaram evicção do `localStorage`, cópia mais nova, voz nativa com a voz 🌟, cancelamento no meio e reset. A web, a extensão e a PWA não mudaram: a11y, teclado, topbar e contraste continuam iguais.
+- [ ] 6.2 [você] ativar o Pages · 6.3 [você] AAB assinado e teste em aparelho
+- [ ] 6.4 [você] testar os instaladores do Windows
+- [x] 6.5 [eu] **iOS/Capacitor ("Fase B")** em `native/ios/`:
+  - **Projeto:** Capacitor 8 com Swift Package Manager e os plugins Preferences e TextToSpeech, gerado e versionado.
+  - **`scripts/build_ios_www.py`:**
+    - parte da PWA, sem service worker nem manifest;
+    - gera o ícone 1024 sem alfa e a splash na cor da marca;
+    - copia a versão do jogo para o `MARKETING_VERSION`.
+  - **Info.plist:** pt-BR/en/es, `ITSAppUsesNonExemptEncryption=false` e arm64.
+  - **`kit-fase1/workflows/ios.yml`:** em macOS-15, compila para o Simulador e para aparelho sem assinatura e publica o `.app` do Simulador.
+  - O ícone do PWA passou para `cc_build.draw_icon()` e saiu byte a byte igual.
+  - Guia em `native/ios/README.md`.
+  - **Falta:** compilar de verdade no Xcode, que só roda no CI macOS ou num Mac. A assinatura e o TestFlight dependem da conta Apple ("Fase C").
+- [ ] 6.6 [você] contas de loja e política de privacidade:
+  - **Lojas:** Google Play (US$ 25), Microsoft Store e Apple (US$ 99/ano).
+  - **Política de privacidade:** já sai no Pages.
+  - **Kids Category da Apple:** o app não tem links externos nem compras, então não precisa de portão extra.
