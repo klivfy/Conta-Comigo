@@ -7,7 +7,7 @@ Legenda: **[eu]** código na branch · **[você]** ação em conta/GitHub/loja.
 - [ ] 0.1 [você] Gerar novo keystore fora do repo e guardar em GitHub Secrets (`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASS`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASS`)
 - [x] 0.2 [eu] Remover `upload.jks`, `sha256.txt` e senhas do repo; ignorar `native/android/keystore/`
 - [x] 0.3 [eu] Gradle e workflow Android leem o keystore de secrets/variáveis de ambiente
-- [ ] 0.4 [você] Revogar token antigo; criar novo com escopo Workflows → mover `download/kit-fase1/workflows/` para `.github/workflows/`
+- [ ] 0.4 [você] Revogar o token antigo exposto (os workflows já estão em `.github/workflows/` — 2.6)
 - [ ] 0.5 [você] Decidir hospedagem do `assetlinks.json` na raiz do domínio (repo `klivfy.github.io` ou domínio próprio)
 
 ## Fase 1 — Bugs que quebram o produto
@@ -22,7 +22,7 @@ Legenda: **[eu]** código na branch · **[você]** ação em conta/GitHub/loja.
 ## Fase 2 — Build e CI confiáveis
 - [x] 2.1 Caminhos relativos nos scripts (`scripts/cc_build.py`) · [x] 2.2 versão a partir do manifest · [x] 2.3 fonte dos ícones empacotada (`scripts/fonts/`)
 - [x] 2.4 Service worker (cache por versão + hash do conteúdo, só `res.ok`, fallback só para navegação; zips antigos da PWA removidos)
-- [x] 2.5 Gradle `rootProject.name` sem espaço · [ ] 2.6 workflows em `.github/` (depende do token — 0.4) · [x] 2.7 `download/conta-comigo/` como fonte única (Firefox/PWA fora do Git) · [x] 2.8 axe-core no CI (`scripts/a11y_check.cjs` + baseline; workflow `ci.yml` no kit)
+- [x] 2.5 Gradle `rootProject.name` sem espaço · [x] 2.6 workflows em `.github/workflows/` (ci, pages, android, windows, ios) · [x] 2.7 `download/conta-comigo/` como fonte única (Firefox/PWA fora do Git) · [x] 2.8 axe-core no CI (`scripts/a11y_check.cjs` + baseline; workflow `ci.yml` no kit)
 
 ## Fase 3 — Acessibilidade WCAG 2.1 AA
 - [x] 3.1 aria-labels textuais via i18n (`data-i18n-label`, pt/en/es) · [x] 3.2 labels em todos os campos do painel e do onboarding (`for`/`aria-labelledby`) · [x] 3.3 modal com `role=dialog`, fundo `inert`, foco preso e devolvido; popover de perfis com `aria-expanded` e Esc
