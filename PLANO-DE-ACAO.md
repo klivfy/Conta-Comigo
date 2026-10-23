@@ -7,7 +7,7 @@ Legenda: **[eu]** código na branch · **[você]** ação em conta/GitHub/loja.
 - [ ] 0.1 [você] Gerar novo keystore fora do repo e guardar em GitHub Secrets (`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASS`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASS`)
 - [x] 0.2 [eu] Remover `upload.jks`, `sha256.txt` e senhas do repo; ignorar `native/android/keystore/`
 - [x] 0.3 [eu] Gradle e workflow Android leem o keystore de secrets/variáveis de ambiente
-- [ ] 0.4 [você] Revogar o token antigo exposto (os workflows já estão em `.github/workflows/` — 2.6)
+- [ ] 0.4 [você] Revogar o token pessoal usado no primeiro push, que foi compartilhado numa sessão anterior (os workflows já estão em `.github/workflows/` — 2.6)
 - [ ] 0.5 [você] Decidir hospedagem do `assetlinks.json` na raiz do domínio (repo `klivfy.github.io` ou domínio próprio)
 
 ## Fase 1 — Bugs que quebram o produto
