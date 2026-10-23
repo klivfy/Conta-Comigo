@@ -31,7 +31,7 @@ Chrome Web Store e no Firefox Add-ons (AMO).
    - Distribuição: pública ou oculta por link.
 3. **Firefox Add-ons** (<https://addons.mozilla.org/developers/>):
    - Enviar o zip `conta-comigo-firefox-2.6.0.zip` ("Carregar uma nova versão");
-   - Notas de revisão destacando o id `conta-comigo@kidmath.app`;
+   - Notas de revisão destacando o id `conta-comigo@klivfy.com`;
    - A nova aba pode ser revertida pelo usuário nas configurações de início do Firefox;
    - O background é uma event page (`background.scripts`), suportada no
      Firefox 109+ — ícone, atalho Ctrl+Shift+U e nova aba funcionam nessa faixa completa.

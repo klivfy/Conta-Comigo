@@ -76,7 +76,7 @@ def main():
     mf = load_manifest(mf_path)
     mf["background"] = {"scripts": ["background.js"]}          # event page MV3
     mf["browser_specific_settings"] = {
-        "gecko": {"id": "conta-comigo@kidmath.app", "strict_min_version": "109.0"},
+        "gecko": {"id": "conta-comigo@klivfy.com", "strict_min_version": "109.0"},
         # v2.5: declara compatibilidade com o Firefox para Android (AMO)
         "gecko_android": {"strict_min_version": "113.0"},
     }
