@@ -213,18 +213,22 @@ Emojis e números do jogo (`.mascot`, `.obj`, `.mode-emoji`, `.ans`, `#equation`
 
 ## Layout
 
-- **Popup** (400×600, extensão): coluna única com rolagem interna.
-- **Página cheia** (`body.page-mode`): contêiner de até 1120px (1320px a partir de 1500px).
-  - Na tela inicial, a marca e o status ficam lado a lado (grade `1.06fr .94fr`), e a grade de modos (`auto-fill, minmax(158px, 1fr)`) ocupa toda a largura logo abaixo.
-- **Ordem no HTML:** jogar vem primeiro, com os modos logo depois da marca. Assim, no celular o primeiro modo aparece a cerca de 190px do topo.
-- **Breakpoints:**
-  - 760px: tudo empilha e a tipografia passa a usar `clamp`.
-  - 430px: o selo de versão e o botão de tela cheia saem.
-  - 380px: os chips encolhem.
-  - 350px: a ofensiva sai da barra superior.
-  - Paisagem com até 500px de altura: modo compacto, sem rolagem no jogo.
-- O layout respeita `safe-area` (notch e barra de gestos) e usa `dvh` quando o navegador suporta.
-- **Ritmo:** escala `--sp-*` de 2, 4, 6, 8, 12, 16, 24 e 36px. Os gaps entre peças vão de 6 a 12px, e os respiros entre blocos de 16 a 24px.
+**Responsivo por natureza: o arranjo é decidido pelo espaço disponível, nunca pelo aparelho** (HIG › Layout: "Determine layout based on size classes, not device type or orientation"). As funções são as mesmas em qualquer tamanho; muda só o arranjo.
+
+- **Popup** (400×600, extensão): coluna única com rolagem interna, sem `page-mode`.
+- **Página cheia** (`body.page-mode`, que cobre PWA, Electron, extensão em tela cheia e web): contêiner de até 1120px (1320px a partir de 1500px).
+- **Ordem no HTML:** jogar vem primeiro, com os modos logo depois da marca. No celular o primeiro modo aparece a cerca de 190px do topo.
+- **Faixas de tamanho** (largura): ≤329 · ≤350 · ≤380 · ≤430 (celular) · ≤560 · ≤760 (tablet retrato) · ≥761 (2 colunas na home) · ≥1500.
+- **Faixas de altura:**
+  - ≤500px de altura em paisagem: modo compacto (celular deitado), com topbar estática.
+  - ≤820px de altura, paisagem e ≥560px de largura (celular deitado, iPad, notebook): **o jogo vira duas colunas**, com visual e conta à esquerda e respostas e "ouvir" à direita. Nada rola.
+  - ≤600px de altura em retrato (iPhone SE): espaços verticais enxutos.
+- **Home em paisagem curta:** 2 colunas só a partir de 700px de largura. Abaixo disso segue em coluna única, e os cartões de status quebram linha em vez de se espremer.
+- **Unidades:** `dvh` com `vh` de reserva (barras do navegador móvel), `clamp()` na tipografia do jogo, `env(safe-area-inset-*)` nas bordas e no popover.
+- **Alvos de toque:** nenhum controle com menos de 44×44px (botões, chips, objetos tocáveis). Texto de interface nunca abaixo de 11px.
+- **Elementos flutuantes** (popover, balão, modal) ficam sempre dentro da tela: `max-height` pela altura real e rolagem interna.
+- **Ritmo:** escala `--sp-*` de 2, 4, 6, 8, 12, 16, 24 e 36px. (Ainda definida, mas pouco aplicada: veja o item 7.2 do plano.)
+- **Teste:** `scripts/resp_check.cjs` mede 8 aparelhos emulados × 15 telas e roda no CI.
 
 ## Elevation & Depth
 
@@ -290,7 +294,7 @@ A raposa (🥚 → 🐣 → 🦊, com chapéu da loja) quica em loop. O balão d
 ### Do:
 - **Do** use os tokens semânticos (`--ink`, `--card`, `--line`, `--tint`, `--success-*`, `--attention`, `--on-accent`, `--on-yellow`) e deixe o tema decidir a cor.
 - **Do** dê a todo controle tocável no mínimo 44×44px e uma aresta que afunda no `:active`.
-- **Do** teste cada mudança visual nos 8 modos de cor (7 temas mais alto contraste) e nos dois tamanhos: popup 400×600 e página cheia de 320 a 1920px.
+- **Do** teste cada mudança visual nos 8 modos de cor (7 temas mais alto contraste), no popup 400×600 e em celulares e tablets emulados, retrato e paisagem (`node scripts/resp_check.cjs`).
 - **Do** mantenha `game.html`, `popup.html` e `web/index.html` com a mesma marcação da tela inicial.
 - **Do** desligue animação em `body.calmo`, `body.rm` e `prefers-reduced-motion`.
 
@@ -298,5 +302,6 @@ A raposa (🥚 → 🐣 → 🦊, com chapéu da loja) quica em loop. O balão d
 - **Don't** use os matizes de enfeite (`--green` #2ed573, `--blue` #4c7dff, `--orange` #ff9a3d) como fundo de texto branco: ficam abaixo de 4,5:1.
 - **Don't** pinte uma posição de resposta de verde nem use vermelho como "errado". O erro é dica, não castigo.
 - **Don't** carregue fonte, imagem ou script de fora. O jogo é 100% offline e sem coleta (COPPA, LGPD-K e GDPR-K).
+- **Don't** decida layout pela orientação ou pelo aparelho: use largura e altura disponíveis. Não dê a um controle largura fixa de desktop sem `min-width: 0` e `flex`, que estoura em 320px.
 - **Don't** crie hex novo num componente. Se falta um papel, crie um token semântico e defina-o em todos os temas e no `body.hc`.
 - **Don't** troque o emoji por ilustração rasterizada sem decisão de marca: o 🦊 e os emojis do sistema são a identidade.
