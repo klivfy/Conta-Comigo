@@ -1,0 +1,68 @@
+name: Windows (Electron — instalador e portable)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'native/windows/**'
+      - 'scripts/build_pwa.py'
+      - 'scripts/cc_build.py'
+      - 'scripts/fonts/**'
+      - 'download/conta-comigo/**'
+      - '.github/workflows/windows.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar Pillow (ícones)
+        run: pip install pillow
+
+      - name: Gerar PWA base (mesmo motor do jogo)
+        run: python scripts/build_pwa.py
+        env:
+          BASE: ${{ github.workspace }}
+
+      - name: Copiar PWA para dentro do Electron
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path native/windows/app | Out-Null
+          Copy-Item download/conta-comigo-pwa/* native/windows/app -Recurse -Force
+          Remove-Item native/windows/app/leia-me-android.md -ErrorAction SilentlyContinue
+          Get-ChildItem native/windows/app | Select-Object Name
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Dependências (npm ci)
+        working-directory: native/windows
+        run: npm ci
+
+      - name: Build instalador NSIS + portable (x64)
+        working-directory: native/windows
+        run: npx electron-builder --win nsis portable --publish never
+
+      - name: Extrair versão
+        id: ver
+        shell: pwsh
+        run: |
+          $v = (Get-Content native/windows/package.json | ConvertFrom-Json).version
+          "tag=$v" >> $env:GITHUB_OUTPUT
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: conta-comigo-windows-${{ steps.ver.outputs.tag }}
+          path: native/windows/dist/*.exe
+          if-no-files-found: error
+          retention-days: 30

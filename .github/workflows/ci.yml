@@ -1,0 +1,52 @@
+name: CI (build + acessibilidade)
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-e-a11y:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar Pillow (ícones)
+        run: pip install pillow
+
+      - name: Builds das extensões (Chrome + Firefox) e da PWA
+        run: |
+          python scripts/build_packages.py
+          python scripts/build_pwa.py
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Sintaxe do JavaScript
+        run: for f in download/conta-comigo/js/*.js download/conta-comigo/background.js; do node --check "$f"; done
+
+      - name: Textos em pt/en/es (nenhuma chave faltando)
+        run: node scripts/i18n_check.cjs
+
+      - name: Instalar Playwright + axe-core
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1 axe-core@4.10.2
+          npx playwright install --with-deps chromium
+
+      - name: Acessibilidade (falha em violação nova)
+        run: node scripts/a11y_check.cjs
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pacotes-ci
+          path: download/conta-comigo-*.zip
+          retention-days: 7

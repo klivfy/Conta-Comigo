@@ -16,6 +16,16 @@ on:
       - 'scripts/fonts/**'
       - 'download/conta-comigo/**'
       - '.github/workflows/ios.yml'
+  # no PR também: a compilação iOS é a única prova de que o casco continua saudável
+  pull_request:
+    paths:
+      - 'native/ios/**'
+      - 'scripts/build_pwa.py'
+      - 'scripts/build_ios_www.py'
+      - 'scripts/cc_build.py'
+      - 'scripts/fonts/**'
+      - 'download/conta-comigo/**'
+      - '.github/workflows/ios.yml'
   workflow_dispatch:
 
 permissions:
