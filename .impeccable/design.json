@@ -1,0 +1,472 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-22T23:55:34Z",
+  "title": "Design System: Conta Comigo",
+  "extensions": {
+    "colorMeta": {
+      "answer-blue": {
+        "role": "primary",
+        "displayName": "Azul Resposta",
+        "canonical": "#2f5ce0",
+        "tonalRamp": [
+          "#02003c",
+          "#030a71",
+          "#0b26aa",
+          "#234dd0",
+          "#4374fa",
+          "#659bff",
+          "#97c6ff",
+          "#c8edff"
+        ]
+      },
+      "fox-orange": {
+        "role": "primary",
+        "displayName": "Laranja Raposa",
+        "canonical": "#ff9a3d",
+        "tonalRamp": [
+          "#290000",
+          "#540000",
+          "#771a00",
+          "#9b3e00",
+          "#c36300",
+          "#ec8825",
+          "#ffaf55",
+          "#ffdb9c"
+        ]
+      },
+      "answer-teal": {
+        "role": "secondary",
+        "displayName": "Verde-Petróleo",
+        "canonical": "#0e7c86",
+        "tonalRamp": [
+          "#00121c",
+          "#002e38",
+          "#004c56",
+          "#006b75",
+          "#2e8f99",
+          "#58b5bf",
+          "#80dce6",
+          "#a4ffff"
+        ]
+      },
+      "answer-amber": {
+        "role": "secondary",
+        "displayName": "Âmbar Queimado",
+        "canonical": "#b85500",
+        "tonalRamp": [
+          "#2b0000",
+          "#550000",
+          "#781600",
+          "#9c3b00",
+          "#c46018",
+          "#ed8545",
+          "#ffac6d",
+          "#ffd7a5"
+        ]
+      },
+      "answer-violet": {
+        "role": "secondary",
+        "displayName": "Violeta Brinquedo",
+        "canonical": "#6b3fd4",
+        "tonalRamp": [
+          "#110038",
+          "#2b006b",
+          "#4801a2",
+          "#6335ca",
+          "#845ef4",
+          "#a785ff",
+          "#cab6ff",
+          "#ede1ff"
+        ]
+      },
+      "success-strong": {
+        "role": "secondary",
+        "displayName": "Verde Acerto",
+        "canonical": "#15803d",
+        "tonalRamp": [
+          "#001500",
+          "#003300",
+          "#00520e",
+          "#00722f",
+          "#349652",
+          "#5dbc75",
+          "#84e49a",
+          "#b3ffc4"
+        ]
+      },
+      "sun-yellow": {
+        "role": "tertiary",
+        "displayName": "Amarelo-Sol",
+        "canonical": "#ffc93c",
+        "tonalRamp": [
+          "#1f0000",
+          "#441300",
+          "#633300",
+          "#845200",
+          "#a97600",
+          "#d09c00",
+          "#f8c232",
+          "#ffe98d"
+        ]
+      },
+      "on-yellow": {
+        "role": "tertiary",
+        "displayName": "Marrom-Mel",
+        "canonical": "#5c4300",
+        "tonalRamp": [
+          "#1a0500",
+          "#361f00",
+          "#543b00",
+          "#73591f",
+          "#977c44",
+          "#bda168",
+          "#e4c78d",
+          "#ffebaf"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Tinta Noturna",
+        "canonical": "#33355c",
+        "tonalRamp": [
+          "#080526",
+          "#1e1f44",
+          "#393b63",
+          "#565983",
+          "#787ca8",
+          "#9ca0cf",
+          "#c1c6f7",
+          "#e5eaff"
+        ]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Tinta Suave",
+        "canonical": "#60647c",
+        "tonalRamp": [
+          "#08091b",
+          "#1f2236",
+          "#3b3e54",
+          "#585c74",
+          "#7a7e98",
+          "#9ea3bd",
+          "#c4c9e4",
+          "#e8edff"
+        ]
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Cartão",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#242424",
+          "#404040",
+          "#5d5d5d",
+          "#808080",
+          "#a4a4a4",
+          "#cacaca",
+          "#eeeeee"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Borda Nuvem",
+        "canonical": "#e3e6f2",
+        "tonalRamp": [
+          "#090b12",
+          "#21242c",
+          "#3d3f49",
+          "#5b5d67",
+          "#7d808a",
+          "#a1a4af",
+          "#c7cad6",
+          "#ebeefa"
+        ]
+      },
+      "sky-bg": {
+        "role": "neutral",
+        "displayName": "Céu",
+        "canonical": "#eaf6ff",
+        "tonalRamp": [
+          "#050c12",
+          "#1c252c",
+          "#384148",
+          "#555f67",
+          "#77828a",
+          "#9ba6af",
+          "#c1ccd5",
+          "#e4f0f9"
+        ]
+      },
+      "warm-tint": {
+        "role": "neutral",
+        "displayName": "Tinta Morna",
+        "canonical": "#fff4dc",
+        "tonalRamp": [
+          "#110a00",
+          "#2b2310",
+          "#483f2b",
+          "#665d48",
+          "#897f6a",
+          "#aea48d",
+          "#d4cab2",
+          "#f8eed6"
+        ]
+      },
+      "space-bg": {
+        "role": "neutral",
+        "displayName": "Noite do Espaço",
+        "canonical": "#131a33",
+        "tonalRamp": [
+          "#050920",
+          "#1b223c",
+          "#353e5a",
+          "#535c7a",
+          "#757f9f",
+          "#98a4c5",
+          "#becaec",
+          "#e1eeff"
+        ]
+      },
+      "danger": {
+        "role": "neutral",
+        "displayName": "Vermelho Aviso",
+        "canonical": "#c62828",
+        "tonalRamp": [
+          "#2d0000",
+          "#5c0000",
+          "#8a0000",
+          "#b10414",
+          "#dc403b",
+          "#ff695f",
+          "#ff9d90",
+          "#ffcfc3"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Equação",
+        "purpose": "Equação e números das respostas."
+      },
+      "headline": {
+        "displayName": "Título",
+        "purpose": "Título em degradê e título da tela final."
+      },
+      "title": {
+        "displayName": "Título de tela",
+        "purpose": "Telas, botões grandes, modais."
+      },
+      "body": {
+        "displayName": "Texto",
+        "purpose": "Histórias, mensagens, campos."
+      },
+      "label": {
+        "displayName": "Rótulo",
+        "purpose": "Modos, chips, missões, selos."
+      }
+    },
+    "shadows": [
+      {
+        "name": "lift-0",
+        "value": "0 1px 0 rgba(var(--sh), .12)",
+        "purpose": "Botão pressionado."
+      },
+      {
+        "name": "lift-1",
+        "value": "0 2px 0 rgba(var(--sh), .08)",
+        "purpose": "Chips, pílulas, selos."
+      },
+      {
+        "name": "lift-2",
+        "value": "0 3px 0 rgba(var(--sh), .12)",
+        "purpose": "Botões de ícone, contadores, cartões pequenos."
+      },
+      {
+        "name": "lift-3",
+        "value": "0 4px 0 rgba(var(--sh), .1)",
+        "purpose": "Cartões de modo, painéis."
+      },
+      {
+        "name": "lift-4",
+        "value": "0 6px 0 rgba(var(--sh), .15)",
+        "purpose": "Botão grande secundário."
+      },
+      {
+        "name": "float-1",
+        "value": "0 6px 14px rgba(0,0,0,.15)",
+        "purpose": "Balão de fala."
+      },
+      {
+        "name": "float-2",
+        "value": "0 10px 26px rgba(0,0,0,.22)",
+        "purpose": "Popover."
+      },
+      {
+        "name": "float-3",
+        "value": "0 12px 30px rgba(0,0,0,.3)",
+        "purpose": "Modal."
+      }
+    ],
+    "motion": [
+      {
+        "name": "dur-1",
+        "value": ".1s",
+        "purpose": "Resposta ao toque (afundar)."
+      },
+      {
+        "name": "dur-2",
+        "value": ".2s",
+        "purpose": "Troca de estado."
+      },
+      {
+        "name": "dur-3",
+        "value": ".3s",
+        "purpose": "Entrada/saída (toast)."
+      },
+      {
+        "name": "pop",
+        "value": "pop .5s",
+        "purpose": "Acerto, estrelas, balão."
+      },
+      {
+        "name": "bounce",
+        "value": "bounce 2.2s ease-in-out infinite",
+        "purpose": "Mascote; desligado no modo calmo."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "tiny",
+        "value": "329px"
+      },
+      {
+        "name": "xs",
+        "value": "350px"
+      },
+      {
+        "name": "sm",
+        "value": "380px"
+      },
+      {
+        "name": "phone",
+        "value": "430px"
+      },
+      {
+        "name": "tablet",
+        "value": "760px"
+      },
+      {
+        "name": "wide",
+        "value": "1500px"
+      },
+      {
+        "name": "landscape-short",
+        "value": "max-height 500px + landscape"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botão de resposta",
+      "kind": "button",
+      "refersTo": "answer-button",
+      "description": "Uma das quatro respostas; aresta sólida que afunda.",
+      "html": "<button class=\"ds-ans\">5</button><button class=\"ds-ans ds-ans-2\">4</button>",
+      "css": ".ds-ans{font-family:Nunito,system-ui,sans-serif;font-size:30px;font-weight:900;color:#fff;background:#2f5ce0;border:none;border-radius:20px;padding:14px 32px 12px;box-shadow:0 6px 0 #1f3f9e;cursor:pointer;transition:transform .1s,box-shadow .1s;margin:4px}.ds-ans-2{background:#0e7c86;box-shadow:0 6px 0 #0a5960}.ds-ans:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.2)}.ds-ans:focus-visible{outline:4px solid #33355c;outline-offset:2px}"
+    },
+    {
+      "name": "Botão principal",
+      "kind": "button",
+      "refersTo": "big-button",
+      "description": "Ação principal das telas (Jogar de novo).",
+      "html": "<button class=\"ds-big\">Jogar de novo</button> <button class=\"ds-big ds-big-alt\">Início</button>",
+      "css": ".ds-big{font-family:Nunito,system-ui,sans-serif;font-size:19px;font-weight:800;color:#fff;background:#2f5ce0;border:none;border-radius:20px;padding:13px 26px;box-shadow:0 6px 0 #1f3f9e;cursor:pointer;transition:transform .1s,box-shadow .1s}.ds-big:active{transform:translateY(4px);box-shadow:0 2px 0 #1f3f9e}.ds-big-alt{background:#fff;color:#33355c;box-shadow:0 6px 0 rgba(51,53,92,.15)}.ds-big:focus-visible{outline:4px solid #33355c;outline-offset:2px}"
+    },
+    {
+      "name": "Cartão de modo",
+      "kind": "card",
+      "refersTo": "mode-card",
+      "description": "Entrada de um modo de jogo; faixa superior na cor do modo.",
+      "html": "<button class=\"ds-mode\"><span class=\"ds-mode-e\">🍎</span><b>Contar</b><small>Quantos tem?</small></button>",
+      "css": ".ds-mode{display:flex;flex-direction:column;align-items:center;width:150px;background:#fff;border:none;border-top:5px solid #ff9a3d;border-radius:20px;padding:8px 6px 7px;box-shadow:0 4px 0 rgba(51,53,92,.1);font-family:Nunito,system-ui,sans-serif;color:#33355c;cursor:pointer;transition:transform .12s}.ds-mode:hover{transform:translateY(-2px)}.ds-mode:active{transform:translateY(3px)}.ds-mode-e{font-size:23px}.ds-mode b{font-size:14px;font-weight:800}.ds-mode small{font-size:10px;font-weight:700;color:#60647c}.ds-mode:focus-visible{outline:4px solid #33355c;outline-offset:2px}"
+    },
+    {
+      "name": "Chip de contador",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Estrelas, ofensiva e nível na barra superior.",
+      "html": "<span class=\"ds-chip\">⭐ 40</span> <span class=\"ds-chip ds-pick\">Fácil</span>",
+      "css": ".ds-chip{display:inline-block;background:#fff;color:#33355c;border-radius:999px;padding:8px 12px;font:800 16px Nunito,system-ui,sans-serif;box-shadow:0 3px 0 rgba(51,53,92,.12);white-space:nowrap}.ds-pick{background:#fff8e0;border:2px solid #ffc93c;border-radius:12px;font-size:12.5px;box-shadow:0 3px 0 rgba(255,201,60,.45)}"
+    },
+    {
+      "name": "Selo",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Selo amarelo (Próximo prêmio, Novo).",
+      "html": "<span class=\"ds-badge\">Próximo prêmio</span>",
+      "css": ".ds-badge{background:#ffc93c;color:#5c4300;font:800 10px Nunito,system-ui,sans-serif;padding:2px 7px;border-radius:999px;box-shadow:0 2px 0 rgba(51,53,92,.08)}"
+    },
+    {
+      "name": "Campo",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo de senha e nome (painel dos responsáveis).",
+      "html": "<input class=\"ds-input\" placeholder=\"Senha\">",
+      "css": ".ds-input{font:700 16px Nunito,system-ui,sans-serif;min-height:44px;padding:10px 13px;border-radius:12px;border:2.5px solid #e3e6f2;background:#fff;color:#33355c}.ds-input:focus-visible{outline:3px solid #33355c;outline-offset:1px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "A Caixa de Brinquedos",
+    "overview": "Cada controle é uma peça grossa e arredondada, do tamanho de um dedo de criança, com aresta inferior sólida que afunda quando tocada. As cores funcionam como peças de encaixe; os fundos são degradês de céu claro. A interface fala com quem ainda não lê: emoji como ilustração, voz narrando, texto curto e grosso. Tátil e fofinho; nunca pune.",
+    "keyCharacteristics": [
+      "Botões em 3D: aresta sólida que some no :active.",
+      "Raios generosos (12–24px) e pílulas.",
+      "Quatro cores de resposta com texto branco ≥4,5:1; verde reservado ao acerto.",
+      "Sete temas e alto contraste pela mesma camada semântica.",
+      "Fonte própria empacotada (Nunito) e emojis do sistema."
+    ],
+    "rules": [
+      {
+        "name": "The Enfeite-Não-Lê Rule",
+        "body": "Matizes de marca nunca levam texto em cima nem são cor de texto.",
+        "section": "colors"
+      },
+      {
+        "name": "The Verde-É-Acerto Rule",
+        "body": "O verde forte só aparece quando a criança acerta ou num item em uso.",
+        "section": "colors"
+      },
+      {
+        "name": "The Token-Antes-de-Hex Rule",
+        "body": "Componente usa token; hex solto só em prévias de tema, confetes e definição de tokens.",
+        "section": "colors"
+      },
+      {
+        "name": "The Peso-Mínimo-700 Rule",
+        "body": "Nenhum texto de interface abaixo de 700.",
+        "section": "typography"
+      },
+      {
+        "name": "The Aresta-Afunda Rule",
+        "body": "Todo botão tocável tem aresta sólida e afunda no :active.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** use os tokens semânticos (`--ink`, `--card`, `--line`, `--tint`, `--success-*`, `--attention`, `--on-accent`, `--on-yellow`) e deixe o tema decidir a cor.",
+      "**Do** dê a todo controle tocável no mínimo 44×44px e uma aresta que afunda no `:active`.",
+      "**Do** teste cada mudança visual nos 8 modos de cor (7 temas mais alto contraste) e nos dois tamanhos: popup 400×600 e página cheia de 320 a 1920px.",
+      "**Do** mantenha `game.html`, `popup.html` e `web/index.html` com a mesma marcação da tela inicial.",
+      "**Do** desligue animação em `body.calmo`, `body.rm` e `prefers-reduced-motion`."
+    ],
+    "donts": [
+      "**Don't** use os matizes de enfeite (`--green` #2ed573, `--blue` #4c7dff, `--orange` #ff9a3d) como fundo de texto branco: ficam abaixo de 4,5:1.",
+      "**Don't** pinte uma posição de resposta de verde nem use vermelho como \"errado\". O erro é dica, não castigo.",
+      "**Don't** carregue fonte, imagem ou script de fora. O jogo é 100% offline e sem coleta (COPPA, LGPD-K e GDPR-K).",
+      "**Don't** crie hex novo num componente. Se falta um papel, crie um token semântico e defina-o em todos os temas e no `body.hc`.",
+      "**Don't** troque o emoji por ilustração rasterizada sem decisão de marca: o 🦊 e os emojis do sistema são a identidade."
+    ]
+  }
+}

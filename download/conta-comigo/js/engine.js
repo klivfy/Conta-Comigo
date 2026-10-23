@@ -13,6 +13,11 @@ const $$ = (s) => Array.from(document.querySelectorAll(s));
 const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const pick = (arr) => arr[rand(0, arr.length - 1)];
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+/* v2.6.1: escapa texto antes de ir para innerHTML (nomes vêm do usuário e do backup) */
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 function shuffle(arr) {
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) { const j = rand(0, i); [a[i], a[j]] = [a[j], a[i]]; }
@@ -90,8 +95,23 @@ function newProfile(id, name, avatar) {
     today: { d: '', rounds: 0, done: false }, reviewWins: 0, persistRounds: 0,
   };
 }
+/* ---------- tema (Fase 5.4): 'auto' acompanha prefers-color-scheme ao vivo ---------- */
+const DARK_QUERY = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+function resolvedTheme(g) {
+  const th = (g && g.theme) || 'auto';
+  if (th !== 'auto') return th;
+  return DARK_QUERY && DARK_QUERY.matches ? 'espaco' : 'classico';
+}
+function applyTheme(g) {
+  document.body.dataset.theme = resolvedTheme(g);
+  document.body.classList.toggle('hc', !!(g && g.hc));
+}
+if (DARK_QUERY && DARK_QUERY.addEventListener) {
+  DARK_QUERY.addEventListener('change', () => { try { if (G().theme === 'auto') applyTheme(G()); } catch (e) { /* antes do boot */ } });
+}
 const DEFAULT_SETTINGS = {
-  lang: 'pt', theme: 'classico', hc: false, dys: false, calmo: null,
+  /* Fase 5: 'auto' segue o sistema (claro = Clássico, escuro = Espaço; ambos grátis) */
+  lang: 'pt', theme: 'auto', hc: false, dys: false, calmo: null,
   mute: false, volume: 0.9, vRate: 0.95, vPitch: 1.15, vVoice: '',
   diffMode: 'auto', goalRounds: 3, sessionLimit: 15, sync: false,
   unlockAll: false, newtabOn: true, timer: true,
@@ -99,7 +119,7 @@ const DEFAULT_SETTINGS = {
   voiceOn: true, sfxOn: true, timeScale: 1, reduceMotion: false, shopOff: false,
   /* v2.3 — portão parental por senha (tudo fica no dispositivo) */
   passHash: '', passSalt: '', passHint: '', passSetAt: 0,
-  passTries: 0, passLockUntil: 0, passOnboardDone: false,
+  passTries: 0, passLockUntil: 0,
 };
 let DB = { v: 2, updatedAt: 0, activeId: '', profiles: [], settings: Object.assign({}, DEFAULT_SETTINGS) };
 function P() { return DB.profiles.find((p) => p.id === DB.activeId) || DB.profiles[0]; }
@@ -130,9 +150,42 @@ function parseDB(raw) {
   } catch (e) { /* ignora */ }
   return null;
 }
+/* v2.6.1: o backup importado é entrada não confiável — cada campo volta ao
+   tipo do molde (newProfile/DEFAULT_SETTINGS); id, nome e avatar são validados */
+const MAX_PROFILES = 4;
+const NAME_MAX = 24;
+function cleanName(v) {
+  const n = typeof v === 'string' ? v.replace(/[\u0000-\u001f\u007f<>]/g, '').trim().slice(0, NAME_MAX) : '';
+  return n || 'Jogador';
+}
+function coerceLike(tpl, obj) {
+  Object.keys(tpl).forEach((k) => {
+    const want = tpl[k];
+    if (typeof want === 'number') { const n = Number(obj[k]); obj[k] = Number.isFinite(n) ? n : want; }
+    else if (typeof want === 'boolean') obj[k] = !!obj[k];
+    else if (typeof want === 'string') { if (typeof obj[k] !== 'string') obj[k] = want; }
+    else if (Array.isArray(want)) { if (!Array.isArray(obj[k])) obj[k] = want; }
+    else if (want && typeof want === 'object') { if (!obj[k] || typeof obj[k] !== 'object' || Array.isArray(obj[k])) obj[k] = want; }
+  });
+  return obj;
+}
 /* v2.2: campos novos de pontos · v2.3: campos da senha dos responsáveis */
 function normalizeDB(d) {
-  (d.profiles || []).forEach((p) => {
+  const seen = {};
+  d.profiles = (Array.isArray(d.profiles) ? d.profiles : [])
+    .filter((p) => p && typeof p === 'object' && !Array.isArray(p)).slice(0, MAX_PROFILES);
+  d.profiles.forEach((p, i) => {
+    coerceLike(newProfile('x'), p);
+    if (!/^[A-Za-z0-9_-]{1,40}$/.test(p.id) || seen[p.id]) p.id = 'p' + (i + 1) + '_' + Date.now();
+    seen[p.id] = true;
+    p.name = cleanName(p.name);
+    if (AVATARS.indexOf(p.avatar) < 0) p.avatar = AVATARS[0];
+    if (/[<>&"']/.test(p.hat) || p.hat.length > 8) p.hat = '';
+    p.missions.list = (Array.isArray(p.missions.list) ? p.missions.list : [])
+      .filter((m) => m && typeof m.id === 'string')
+      .map((m) => ({ id: m.id, p: Number(m.p) || 0, done: !!m.done }));
+    p.weeks = p.weeks.filter((w) => w && typeof w.k === 'string' && /^[0-9A-Za-z-]{1,12}$/.test(w.k))
+      .map((w) => ({ k: w.k, rounds: Number(w.rounds) || 0, rights: Number(w.rights) || 0 }));
     p.points = Number(p.points) || 0;
     p.bestPts = (p.bestPts && typeof p.bestPts === 'object') ? p.bestPts : {};
     /* v2.5: persistência blindada de conquistas/coleções — nada some em migração */
@@ -147,17 +200,45 @@ function normalizeDB(d) {
     p.bestSurvive = Number(p.bestSurvive) || 0;
     p.firstPet = !!p.firstPet;
   });
-  const s = d.settings || {};
+  if (typeof d.activeId !== 'string') d.activeId = '';
+  const s = d.settings = (d.settings && typeof d.settings === 'object') ? d.settings : Object.assign({}, DEFAULT_SETTINGS);
+  const diffMode = s.diffMode, calmo = s.calmo;
+  coerceLike(DEFAULT_SETTINGS, s);
+  s.diffMode = (diffMode === 1 || diffMode === 2 || diffMode === 3) ? diffMode : 'auto';
+  s.calmo = (calmo === true || calmo === false) ? calmo : null;
+  s.lastBackupAt = Number(s.lastBackupAt) || 0;
   ['passHash', 'passSalt', 'passHint'].forEach((k) => { if (typeof s[k] !== 'string') s[k] = ''; });
   ['passSetAt', 'passTries', 'passLockUntil'].forEach((k) => { s[k] = Number(s[k]) || 0; });
-  s.passOnboardDone = !!s.passOnboardDone;
   return d;
 }
-function loadRaw() {
+/* ---------- casco nativo (Fase 6.1 — "Fase A" do estudo de apps nativos) ----------
+   Dentro do app iOS (Capacitor) o jogo usa plugins nativos: Preferences para o
+   progresso (o localStorage do WKWebView pode ser recolhido pelo sistema) e
+   TextToSpeech para a voz. Sem bundler: plugin nativo instalado aparece em
+   Capacitor.Plugins. Fora do app tudo segue pelas APIs web de sempre. */
+function capPlugin(name) {
   try {
-    const ls = localStorage.getItem('cc_state');
-    if (ls) { const d = parseDB(ls); if (d) return Promise.resolve(d); }
+    const C = typeof window !== 'undefined' && window.Capacitor;
+    if (C && typeof C.isNativePlatform === 'function' && C.isNativePlatform() &&
+        (typeof C.isPluginAvailable !== 'function' || C.isPluginAvailable(name)) && C.Plugins && C.Plugins[name]) return C.Plugins[name];
   } catch (e) { /* ignora */ }
+  return null;
+}
+const IN_NATIVE_APP = (() => { try { return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()); } catch (e) { return false; } })();
+const NATIVE_PREFS = capPlugin('Preferences');
+const NATIVE_TTS = capPlugin('TextToSpeech');
+
+/* entre duas cópias válidas, vale a gravada por último */
+function newerDB(a, b) { if (!a) return b; if (!b) return a; return (b.updatedAt || 0) > (a.updatedAt || 0) ? b : a; }
+async function loadNative() {
+  try { const r = await NATIVE_PREFS.get({ key: 'cc_state' }); return r && r.value ? parseDB(r.value) : null; }
+  catch (e) { return null; }
+}
+function loadRaw() {
+  let ld = null;
+  try { const ls = localStorage.getItem('cc_state'); if (ls) ld = parseDB(ls); } catch (e) { /* ignora */ }
+  if (NATIVE_PREFS) return loadNative().then((nd) => newerDB(nd, ld));
+  if (ld) return Promise.resolve(ld);
   return new Promise((resolve) => {
     let done = false;
     const fin = (v) => { if (!done) { done = true; resolve(v); } };
@@ -191,7 +272,29 @@ async function initDB() {
   d.settings = Object.assign({}, DEFAULT_SETTINGS, d.settings || {});
   normalizeDB(d);
   DB = d;
+  askPersistentStorage();
   return DB;
+}
+/* PWA instalada: pede ao navegador para não recolher o armazenamento sob pouco
+   espaço (Chrome concede sem perguntar a apps instalados). Só no modo app, para
+   não abrir pergunta de permissão numa aba comum. */
+function askPersistentStorage() {
+  try {
+    if (NATIVE_PREFS || !navigator.storage || !navigator.storage.persist) return;
+    if (!(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)) return;
+    navigator.storage.persisted().then((ok) => { if (!ok) return navigator.storage.persist(); }).catch(() => { /* ignora */ });
+  } catch (e) { /* ignora */ }
+}
+/* apaga o progresso em todas as camadas (reset do painel); resolve quando a
+   cópia nativa também saiu — recarregar antes disso traria o progresso de volta */
+function clearSavedState() {
+  clearTimeout(saveTimer);
+  try { localStorage.removeItem('cc_state'); } catch (e) { /* ignora */ }
+  try {
+    if (typeof chrome !== 'undefined' && chrome.storage) { chrome.storage.local.clear(); chrome.storage.sync.clear(); }
+  } catch (e) { /* ignora */ }
+  if (!NATIVE_PREFS) return Promise.resolve();
+  return NATIVE_PREFS.remove({ key: 'cc_state' }).catch(() => { /* ignora */ });
 }
 let saveTimer = null;
 function saveState(immediate) {
@@ -199,6 +302,7 @@ function saveState(immediate) {
   const json = JSON.stringify(DB);
   const write = () => {
     try { localStorage.setItem('cc_state', json); } catch (e) { /* ignora */ }
+    if (NATIVE_PREFS) { try { NATIVE_PREFS.set({ key: 'cc_state', value: json }).catch(() => { /* ignora */ }); } catch (e) { /* ignora */ } }
     try {
       if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
         chrome.storage.local.set({ cc_state: JSON.parse(json) }, () => { void chrome.runtime.lastError; });
@@ -258,8 +362,14 @@ const SFX = {
    fila com pausas calculadas · A-196 sem duplicatas em rajada · A-179 preferências
    por perfil (pf.vRate/vPitch/vVoice) · fallback silencioso p/ voz local quando
    uma voz Online falha · A-087/A-083 nenhum áudio continua fora de cena */
+/* iOS/iPadOS no Safari: a fila de fala às vezes silencia sem um cancel() antes
+   de cada speak() (receita da comunidade; estudo de apps nativos, cap. 4) */
+const IOS_WEBKIT = typeof navigator !== 'undefined' &&
+  (/iP(hone|ad|od)/.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 const TTS = {
-  ok: typeof window !== 'undefined' && 'speechSynthesis' in window,
+  ok: !!NATIVE_TTS || (typeof window !== 'undefined' && 'speechSynthesis' in window),
+  native: !!NATIVE_TTS,
+  gen: 0,          // muda a cada cancelamento: falas nativas antigas não avançam a fila
   voices: [],
   queue: [],
   runner: null,
@@ -267,6 +377,17 @@ const TTS = {
   lastText: '', lastAt: 0,
   init() {
     if (!this.ok) return;
+    if (this.native) {
+      NATIVE_TTS.getSupportedVoices().then((r) => {
+        this.voices = (r && r.voices) || [];
+        if (window.CC && window.CC.onVoices) window.CC.onVoices();
+      }).catch(() => { /* sem lista: o sistema escolhe a voz do idioma */ });
+      try {
+        document.addEventListener('visibilitychange', () => { if (document.hidden) this.stop(); });
+        window.addEventListener('pagehide', () => this.stop());
+      } catch (e) { /* ignora */ }
+      return;
+    }
     const upd = () => {
       try { this.voices = window.speechSynthesis.getVoices() || []; } catch (e) { /* ignora */ }
       if (window.CC && window.CC.onVoices) window.CC.onVoices();
@@ -361,14 +482,25 @@ const TTS = {
       const prof = (typeof P === 'function' && P()) || {};
       const rate = (typeof prof.vRate === 'number' ? prof.vRate : (g.vRate || 0.95)) * (seg.calm ? 0.85 : 1);
       const pitch = (typeof prof.vPitch === 'number' ? prof.vPitch : (g.vPitch || 1.15));
+      const v = this.pickVoice(want.slice(0, 2).toLowerCase());
+      const self = this;
+      if (this.native) {
+        // AVSpeechSynthesizer (iOS) via plugin: a promessa resolve no fim da fala
+        const gen = this.gen;
+        const idx = v ? this.voices.indexOf(v) : -1;
+        const opt = { text: seg.text, lang: want, rate: clamp(rate, 0.5, 1.6), pitch: clamp(pitch, 0.5, 2), volume: 1, category: 'ambient' };
+        if (idx >= 0) opt.voice = idx;
+        NATIVE_TTS.speak(opt)
+          .then(() => { if (gen === self.gen) self.runner = setTimeout(() => self.next(), seg.pause); })
+          .catch(() => { if (gen === self.gen) self.speakingNow = false; });
+        return;
+      }
       const u = new SpeechSynthesisUtterance(seg.text);
       u.lang = want;
-      const v = this.pickVoice(want.slice(0, 2).toLowerCase());
       if (v) u.voice = v;
       u.rate = clamp(rate, 0.5, 1.6);
       u.pitch = clamp(pitch, 0.5, 2);
       u.volume = 1;
-      const self = this;
       u.onerror = () => {
         // caminho B do estudo: voz Online falhou (sem rede) → cai em silêncio p/ voz local
         if (v && v.localService === false) {
@@ -384,12 +516,15 @@ const TTS = {
         }
       };
       u.onend = () => { self.runner = setTimeout(() => self.next(), seg.pause); };
+      if (IOS_WEBKIT) { try { window.speechSynthesis.cancel(); } catch (e) { /* ignora */ } }
       window.speechSynthesis.speak(u);
     } catch (e) { this.speakingNow = false; }
   },
   cancelQueue() {
     this.queue = [];
+    this.gen++;
     if (this.runner) { clearTimeout(this.runner); this.runner = null; }
+    if (this.native) { try { NATIVE_TTS.stop().catch(() => { /* ignora */ }); } catch (e) { /* ignora */ } return; }
     try { window.speechSynthesis.cancel(); } catch (e) { /* ignora */ }
   },
   stop() { if (this.ok) { this.speakingNow = false; this.cancelQueue(); } },

@@ -3,29 +3,30 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Conta Comigo v2.4 — demonstração e instalação</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
     body { width: auto; height: auto; min-height: 100vh; overflow: auto; }
     .demo-wrap { max-width: 1060px; margin: 0 auto; padding: 26px 22px 70px; }
     .demo-hero { text-align: center; margin-bottom: 18px; }
-    .demo-hero h1 { font-size: 40px; font-weight: 900; background: linear-gradient(90deg, #ff8a3d, #ff5e7e); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .demo-hero h1 { font-size: 40px; font-weight: 900; background: linear-gradient(90deg, var(--brand-a), var(--brand-b)); -webkit-background-clip: text; background-clip: text; color: transparent; }
     .demo-hero p { font-weight: 700; color: var(--ink-soft); }
     .demo-grid { display: grid; grid-template-columns: 430px 1fr; gap: 24px; align-items: start; }
-    .phone { background: var(--card); border-radius: 30px; padding: 12px; box-shadow: 0 14px 34px rgba(0, 0, 0, .16); }
-    .phone iframe { width: 400px; height: 600px; border: 0; border-radius: 22px; background: #fff; }
-    .panel { background: var(--card); border-radius: 24px; box-shadow: 0 8px 22px rgba(0, 0, 0, .1); padding: 22px 26px; margin-bottom: 20px; }
-    .panel h2 { font-size: 21px; font-weight: 900; margin-bottom: 10px; }
-    .panel p, .panel li { font-size: 14.5px; font-weight: 600; color: var(--ink); line-height: 1.55; }
+    .phone { background: var(--card); border-radius: var(--r-xl); padding: 12px; box-shadow: var(--float-3); }
+    .phone iframe { width: 400px; height: 600px; border: 0; border-radius: var(--r-xl); background: var(--card); }
+    .panel { background: var(--card); border-radius: var(--r-xl); box-shadow: var(--float-2); padding: 22px 26px; margin-bottom: 20px; }
+    .panel h2 { font-size: var(--fs-xl); font-weight: 900; margin-bottom: 10px; }
+    .panel p, .panel li { font-size: var(--fs-md); font-weight: 600; color: var(--ink); line-height: 1.55; }
     .panel ol, .panel ul { padding-left: 20px; }
     .btn-line { display: flex; gap: 12px; flex-wrap: wrap; margin: 12px 0; }
-    .demo-btn { font-family: inherit; font-weight: 800; font-size: 15px; color: #fff; background: var(--blue); border: none; border-radius: 14px; padding: 12px 18px; cursor: pointer; box-shadow: 0 5px 0 var(--blue-dark); text-decoration: none; display: inline-block; }
-    .demo-btn.alt { background: var(--card); color: var(--ink); box-shadow: 0 5px 0 rgba(var(--sh), .15); border: 2px solid var(--line); }
+    .demo-btn { font-family: inherit; font-weight: 800; font-size: var(--fs-lg); color: var(--on-accent); background: var(--ans-1); border: none; border-radius: var(--r-md); padding: 12px 18px; cursor: pointer; box-shadow: 0 5px 0 var(--ans-1-edge); text-decoration: none; display: inline-block; }
+    .demo-btn.alt { background: var(--card); color: var(--ink); box-shadow: var(--lift-3); border: 2px solid var(--line); }
     .feat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 8px 18px; }
-    .feat { font-size: 13.5px; font-weight: 700; padding: 5px 0; border-bottom: 1px dashed var(--line); }
-    .feat b { color: var(--blue); font-size: 12px; }
-    .kbd { background: rgba(var(--sh), .08); border-radius: 6px; padding: 1px 7px; font-family: monospace; font-weight: 800; }
-    code { background: rgba(var(--sh), .08); border-radius: 6px; padding: 1px 6px; font-size: 13px; }
+    .feat { font-size: var(--fs-md); font-weight: 700; padding: 5px 0; border-bottom: 1px dashed var(--line); }
+    .feat b { color: var(--link); font-size: var(--fs-sm); }
+    .kbd { background: rgba(var(--sh), .08); border-radius: var(--r-xs); padding: 1px 7px; font-family: monospace; font-weight: 800; }
+    code { background: rgba(var(--sh), .08); border-radius: var(--r-xs); padding: 1px 6px; font-size: var(--fs-sm); }
   </style>
   <script src="js/boot.js"></script>
 </head>
@@ -53,7 +54,7 @@
           <p>A partir da v2.1, clicar no ícone da extensão abre o jogo <b>sempre numa janela nativa em tela cheia</b> — nunca mais no popup pequeno. O iframe ao lado mostra apenas a versão mini de demonstração; o ⛶ dentro dela continua abrindo a janela cheia.</p>
         </div>
 
-        <div class="panel" style="border:3px solid #ff9a3d; background:#fff7e8;">
+        <div class="panel" style="border:3px solid var(--orange); background:var(--bg-b);">
           <h2>⚠️ A extensão parece igual? Confira a versão em 1 segundo</h2>
           <p>As versões carregadas manualmente <b>não se atualizam sozinhas</b> — se o jogo não mudou nada, o navegador provavelmente ainda está com a build antiga. Agora ficou fácil confirmar:</p>
           <ol>

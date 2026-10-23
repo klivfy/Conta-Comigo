@@ -22,7 +22,7 @@ const I18N = {
     t_mul: 'Quanto é {a} vezes {b}?', t_div: 'Quanto é {a} dividido por {b}?',
     t_miss: '{a} mais quanto faz {s}?', t_cmp: 'Qual grupo é maior?', t_eq: 'São iguais?',
     t_seq: 'Qual número vem depois?', t_double: 'Qual é o dobro de {n}?', t_half: 'Qual é a metade de {n}?',
-    t_m_coins: 'Quantos reais há aqui?', t_change: 'Custou {p} reais. Você pagou {v}. Qual é o troco?',
+    t_m_coins: 'Quantos reais há aqui?', t_2x2: 'Cada estrela vale 5 reais e cada moeda vale 1. Quantos reais há ao todo?', fixed_lbl: 'fixo', t_change: 'Custou {p} reais. Você pagou {v}. Qual é o troco?',
     st_1: '{name} tinha {a} {item} e ganhou mais {b}. Quantos tem agora?',
     st_2: '{name} tinha {a} {item} e deu {b} para um amigo. Quantos sobraram?',
     st_3: 'Cada amigo recebeu {k} {item}. São {g} amigos. Qual é o total?',
@@ -80,6 +80,12 @@ const I18N = {
     survive_hits: '{n} acertos', survive_end: 'Você acertou {n} em 60 segundos!', survive_great: 'Incríveis {n} acertos em 60 segundos!', survive_record: 'Recorde de fôlego!',
     chest_title: 'Baú da ofensiva!', chest_msg: '{n} dias seguidos jogando — você ganhou um baú:', chest_claim: 'Abrir o baú!', chest_sticker: 'Figurinha nova: {s}',
     backup_done: 'Backup baixado!',
+    /* v2.6.1 — nomes acessíveis (leitores de tela) */
+    next_prize: 'Próximo prêmio', next_need: 'faltam {n} ⭐', next_say: 'Junte mais {n} estrelas para abrir {m}!',
+    wk_today: 'hoje', wk_played: 'jogou', wk_missed: 'sem jogo', a_gate_new: 'Área dos responsáveis (senha ainda não criada)',
+    a_profiles: 'Trocar de jogador', a_close: 'Fechar', a_back: 'Voltar ao início', a_back_game: 'Voltar ao jogo',
+    a_backup: 'Baixar backup', a_show_pwd: 'Mostrar senha', a_answers: 'Respostas', a_imp_text: 'Texto do backup',
+    a_avatar: 'Avatar', sc_crossed: '{n} riscados', del_prof: 'Remover jogador',
     backup_btn: 'Baixar backup datado',
     backup_hint_new: '💾 Conquistas e progresso ficam neste dispositivo. Recarregar (↻) preserva tudo; remover a extensão apaga. Faça backups regulares aqui.',
     backup_hint_old: '⚠️ Último backup há {n} dias — baixe um novo para proteger as conquistas.',
@@ -126,7 +132,7 @@ const I18N = {
     shop: 'Loja', shop_themes: 'Temas', shop_hats: 'Acessórios', shop_pets: 'Mascotes (fase adulta)', shop_stickers: 'Figurinhas (5 ⭐)',
     buy: 'Comprar', equip: 'Usar', in_use: 'Em uso', buy_sticker: 'Comprar figurinha',
     dup: 'Figurinha repetida! +2 ⭐', album: 'Meu álbum: {a}/36', hat_none: 'Nenhum',
-    th_classico: 'Clássico', th_espaco: 'Espaço', th_jardim: 'Jardim', th_arcoiris: 'Arco-íris',
+    th_auto: 'Automático (claro/escuro do aparelho)', th_classico: 'Clássico', th_espaco: 'Espaço', th_jardim: 'Jardim', th_arcoiris: 'Arco-íris',
     th_oceano: 'Oceano', th_doces: 'Doces', th_neve: 'Neve',
     hat_none_d: 'Sem adereço', hat_bone: 'Boné', hat_laco: 'Laço', hat_coroa: 'Coroa',
     hat_cartola: 'Cartola', hat_oculos: 'Óculos escuros', hat_formatura: 'Formatura',
@@ -141,12 +147,8 @@ const I18N = {
     gate_title: 'Área dos responsáveis', gate_msg: 'Para entrar, resolva esta conta:',
     gate_wrong: 'Não é isso. Tente outra vez!', gate_enter: 'Entrar',
     // portão parental por senha (v2.3)
-    ob_title: 'Área segura para os adultos',
-    ob_msg: 'Crie uma senha para proteger a área dos responsáveis. Assim as configurações ficam só com vocês!',
-    ob_pwd: 'Crie uma senha (mínimo 4 caracteres)', ob_pwd2: 'Confirme a senha',
+    ob_create: 'Salvar senha', ob_pwd: 'Crie uma senha (mínimo 4 caracteres)', ob_pwd2: 'Confirme a senha',
     ob_hint_lbl: 'Lembrete de segurança (ajuda se você esquecer)', ob_hint_ph: 'Ex.: o apelido da vovó',
-    ob_create: 'Salvar senha', ob_later: 'Configurar depois',
-    ob_saved: 'Prontinho! A área dos responsáveis está protegida. 🔒',
     gate_pwd_msg: 'Para entrar, digite a senha dos responsáveis:', gate_pwd_ph: 'Senha dos responsáveis',
     gate_wrong_pwd: 'Senha incorreta. Tente outra vez!', gate_forgot: 'Esqueci a senha',
     gate_hint_lbl: 'Seu lembrete de segurança:', gate_locked: 'Muitas tentativas! Aguarde {n} s.',
@@ -203,7 +205,7 @@ const I18N = {
     t_mul: 'What is {a} times {b}?', t_div: 'What is {a} divided by {b}?',
     t_miss: '{a} plus what makes {s}?', t_cmp: 'Which group is bigger?', t_eq: 'Are they equal?',
     t_seq: 'Which number comes next?', t_double: 'What is double {n}?', t_half: 'What is half of {n}?',
-    t_m_coins: 'How many reais are here?', t_change: 'It cost {p} reais. You paid {v}. How much change?',
+    t_m_coins: 'How many reais are here?', t_2x2: 'Each star is worth 5 reais and each coin is worth 1. How many reais in all?', fixed_lbl: 'fixed', t_change: 'It cost {p} reais. You paid {v}. How much change?',
     st_1: '{name} had {a} {item} and got {b} more. How many now?',
     st_2: '{name} had {a} {item} and gave {b} to a friend. How many are left?',
     st_3: 'Each friend got {k} {item}. There are {g} friends. How many in total?',
@@ -259,6 +261,11 @@ const I18N = {
     survive_hits: '{n} right answers', survive_end: 'You got {n} right in 60 seconds!', survive_great: 'Amazing {n} answers in 60 seconds!', survive_record: 'Stamina record!',
     chest_title: 'Streak chest!', chest_msg: '{n} days playing in a row — you earned a chest:', chest_claim: 'Open the chest!', chest_sticker: 'New sticker: {s}',
     backup_done: 'Backup downloaded!',
+    next_prize: 'Next prize', next_need: '{n} ⭐ to go', next_say: 'Collect {n} more stars to open {m}!',
+    wk_today: 'today', wk_played: 'played', wk_missed: 'no game', a_gate_new: 'Parent area (password not set yet)',
+    a_profiles: 'Switch player', a_close: 'Close', a_back: 'Back to start', a_back_game: 'Back to the game',
+    a_backup: 'Download backup', a_show_pwd: 'Show password', a_answers: 'Answers', a_imp_text: 'Backup text',
+    a_avatar: 'Avatar', sc_crossed: '{n} crossed out', del_prof: 'Remove player',
     backup_btn: 'Download dated backup',
     backup_hint_new: '💾 Achievements and progress stay on this device. Reloading (↻) keeps everything; removing the extension erases it. Download regular backups here.',
     backup_hint_old: '⚠️ Last backup was {n} days ago — download a new one to protect the achievements.',
@@ -299,7 +306,7 @@ const I18N = {
     shop: 'Shop', shop_themes: 'Themes', shop_hats: 'Accessories', shop_pets: 'Pets (grown-up)', shop_stickers: 'Stickers (5 ⭐)',
     buy: 'Buy', equip: 'Use', in_use: 'In use', buy_sticker: 'Buy sticker',
     dup: 'Duplicate sticker! +2 ⭐', album: 'My album: {a}/36', hat_none: 'None',
-    th_classico: 'Classic', th_espaco: 'Space', th_jardim: 'Garden', th_arcoiris: 'Rainbow',
+    th_auto: 'Automatic (device light/dark)', th_classico: 'Classic', th_espaco: 'Space', th_jardim: 'Garden', th_arcoiris: 'Rainbow',
     th_oceano: 'Ocean', th_doces: 'Candy', th_neve: 'Snow',
     hat_none_d: 'No accessory', hat_bone: 'Cap', hat_laco: 'Bow', hat_coroa: 'Crown',
     hat_cartola: 'Top hat', hat_oculos: 'Sunglasses', hat_formatura: 'Graduation cap',
@@ -310,12 +317,8 @@ const I18N = {
     st_egg: 'Egg', st_baby: 'Baby', st_big: 'Grown-up', to_next: '{n} ⭐ to grow!',
     gate_title: 'Parent area', gate_msg: 'To enter, solve this:',
     gate_wrong: 'Not it. Try again!', gate_enter: 'Enter',
-    ob_title: 'Grown-ups only area',
-    ob_msg: 'Create a password to protect the parent area. That way the settings stay with you!',
-    ob_pwd: 'Create a password (min. 4 characters)', ob_pwd2: 'Confirm the password',
+    ob_create: 'Save password', ob_pwd: 'Create a password (min. 4 characters)', ob_pwd2: 'Confirm the password',
     ob_hint_lbl: 'Security reminder (helps if you forget)', ob_hint_ph: 'E.g.: grandma\'s nickname',
-    ob_create: 'Save password', ob_later: 'Set up later',
-    ob_saved: 'All set! The parent area is protected. 🔒',
     gate_pwd_msg: 'To enter, type the parent password:', gate_pwd_ph: 'Parent password',
     gate_wrong_pwd: 'Wrong password. Try again!', gate_forgot: 'I forgot the password',
     gate_hint_lbl: 'Your security reminder:', gate_locked: 'Too many attempts! Wait {n}s.',
@@ -373,7 +376,7 @@ const I18N = {
     t_mul: '¿Cuánto es {a} por {b}?', t_div: '¿Cuánto es {a} dividido entre {b}?',
     t_miss: '{a} más ¿cuánto hace {s}?', t_cmp: '¿Qué grupo es mayor?', t_eq: '¿Son iguales?',
     t_seq: '¿Qué número viene después?', t_double: '¿Cuál es el doble de {n}?', t_half: '¿Cuál es la mitad de {n}?',
-    t_m_coins: '¿Cuántos reales hay aquí?', t_change: 'Costó {p} reales. Pagaste {v}. ¿Cuál es el vuelto?',
+    pp_voice: 'Voz del perfil', pp_default: 'Usar el ajuste general', pp_saved: '¡Voz del perfil guardada!', t_m_coins: '¿Cuántos reales hay aquí?', t_2x2: 'Cada estrella vale 5 reales y cada moneda vale 1. ¿Cuántos reales hay en total?', fixed_lbl: 'fijo', t_change: 'Costó {p} reales. Pagaste {v}. ¿Cuál es el vuelto?',
     st_1: '{name} tenía {a} {item} y recibió {b} más. ¿Cuántos tiene ahora?',
     st_2: '{name} tenía {a} {item} y dio {b} a un amigo. ¿Cuántos le quedan?',
     st_3: 'Cada amigo recibió {k} {item}. Son {g} amigos. ¿Cuál es el total?',
@@ -428,6 +431,11 @@ const I18N = {
     survive_hits: '{n} aciertos', survive_end: '¡Acertaste {n} en 60 segundos!', survive_great: '¡Increíbles {n} aciertos en 60 segundos!', survive_record: '¡Récord de aliento!',
     chest_title: '¡Cofre de la racha!', chest_msg: '{n} días seguidos jugando — ganaste un cofre:', chest_claim: '¡Abrir el cofre!', chest_sticker: 'Cromo nuevo: {s}',
     backup_done: '¡Copia descargada!',
+    next_prize: 'Próximo premio', next_need: 'faltan {n} ⭐', next_say: '¡Junta {n} estrellas más para abrir {m}!',
+    wk_today: 'hoy', wk_played: 'jugó', wk_missed: 'sin juego', a_gate_new: 'Área de familia (contraseña aún no creada)',
+    a_profiles: 'Cambiar de jugador', a_close: 'Cerrar', a_back: 'Volver al inicio', a_back_game: 'Volver al juego',
+    a_backup: 'Descargar copia', a_show_pwd: 'Mostrar contraseña', a_answers: 'Respuestas', a_imp_text: 'Texto de la copia',
+    a_avatar: 'Avatar', sc_crossed: '{n} tachados', del_prof: 'Eliminar jugador',
     backup_btn: 'Descargar copia con fecha',
     backup_hint_new: '💾 Los logros y el progreso quedan en este dispositivo. Recargar (↻) lo conserva todo; quitar la extensión lo borra. Descarga copias regulares aquí.',
     backup_hint_old: '⚠️ La última copia fue hace {n} días — descarga una nueva para proteger los logros.',
@@ -468,7 +476,7 @@ const I18N = {
     shop: 'Tienda', shop_themes: 'Temas', shop_hats: 'Accesorios', shop_pets: 'Mascotas (fase adulta)', shop_stickers: 'Cromos (5 ⭐)',
     buy: 'Comprar', equip: 'Usar', in_use: 'En uso', buy_sticker: 'Comprar cromo',
     dup: '¡Cromo repetido! +2 ⭐', album: 'Mi álbum: {a}/36', hat_none: 'Ninguno',
-    th_classico: 'Clásico', th_espaco: 'Espacio', th_jardim: 'Jardín', th_arcoiris: 'Arcoíris',
+    th_auto: 'Automático (claro/oscuro del dispositivo)', th_classico: 'Clásico', th_espaco: 'Espacio', th_jardim: 'Jardín', th_arcoiris: 'Arcoíris',
     th_oceano: 'Océano', th_doces: 'Dulces', th_neve: 'Nieve',
     hat_none_d: 'Sin accesorio', hat_bone: 'Gorra', hat_laco: 'Lazo', hat_coroa: 'Corona',
     hat_cartola: 'Sombrero de copa', hat_oculos: 'Gafas de sol', hat_formatura: 'Birrete',
@@ -479,12 +487,8 @@ const I18N = {
     st_egg: 'Huevo', st_baby: 'Cría', st_big: 'Fase adulta', to_next: '¡{n} ⭐ para crecer!',
     gate_title: 'Área de familia', gate_msg: 'Para entrar, resuelve esta cuenta:',
     gate_wrong: 'No es eso. ¡Inténtalo otra vez!', gate_enter: 'Entrar',
-    ob_title: 'Zona segura de adultos',
-    ob_msg: 'Crea una contraseña para proteger el área de familia. ¡Los ajustes quedan con ustedes!',
-    ob_pwd: 'Crea una contraseña (mínimo 4 caracteres)', ob_pwd2: 'Confirma la contraseña',
+    ob_create: 'Guardar contraseña', ob_pwd: 'Crea una contraseña (mínimo 4 caracteres)', ob_pwd2: 'Confirma la contraseña',
     ob_hint_lbl: 'Recordatorio de seguridad (ayuda si la olvidas)', ob_hint_ph: 'Ej.: el apodo de la abuela',
-    ob_create: 'Guardar contraseña', ob_later: 'Configurar después',
-    ob_saved: '¡Listo! El área de familia está protegida. 🔒',
     gate_pwd_msg: 'Para entrar, escribe la contraseña de familia:', gate_pwd_ph: 'Contraseña de familia',
     gate_wrong_pwd: 'Contraseña incorrecta. ¡Inténtalo otra vez!', gate_forgot: 'Olvidé la contraseña',
     gate_hint_lbl: 'Tu recordatorio de seguridad:', gate_locked: '¡Muchos intentos! Espera {n}s.',
@@ -544,6 +548,16 @@ function applyLang() {
   document.documentElement.lang = TTS_LANG[LANG] || 'pt-BR';
   document.title = t('appName') + ' — ' + t('subtitle');
   document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+  applyI18nLabels(document);
+}
+/* Botões só com emoji ganham nome acessível traduzido: data-i18n-label="chave"
+   vira aria-label (e, nos botões, também a dica do mouse) */
+function applyI18nLabels(root) {
+  root.querySelectorAll('[data-i18n-label]').forEach((el) => {
+    const s = t(el.dataset.i18nLabel);
+    el.setAttribute('aria-label', s);
+    if (el.tagName === 'BUTTON') el.title = s;
+  });
 }
 
 /* Números por extenso (0–59) para narração (S21/S22) */

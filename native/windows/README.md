@@ -23,7 +23,7 @@ workflow) → artefato `conta-comigo-windows-<versão>` com:
 ## Build local (opcional)
 
 ```bash
-python scripts/build_pwa.py VERSION=2.6.0          # gera download/conta-comigo-pwa
+python scripts/build_pwa.py                        # gera download/conta-comigo-pwa (versão do manifest)
 mkdir -p native/windows/app
 cp -r download/conta-comigo-pwa/* native/windows/app/
 rm -f native/windows/app/leia-me-android.md

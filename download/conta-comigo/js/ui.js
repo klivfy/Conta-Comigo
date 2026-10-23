@@ -21,25 +21,37 @@ let bubbleTimer = null, toastTimer = null;
 
 /* ---------- navegação de telas ---------- */
 function show(name) {
+  const prev = document.activeElement;
   $$('.screen').forEach((s) => s.classList.remove('active'));
   const el = $('#screen-' + name);
   if (el) el.classList.add('active');
+  // teclado/leitor de tela: se o foco ficou numa tela que sumiu, ele vai para a nova
+  if (el && prev && prev.closest && prev.closest('.screen') && !el.contains(prev)) focusScreen(el);
+}
+function focusScreen(el) {
+  if (overlayOpen()) return;
+  if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
+  el.focus({ preventScroll: true });
 }
 
 function applySettings() {
   const g = G();
-  document.body.dataset.theme = g.theme || 'classico';
-  document.body.classList.toggle('hc', !!g.hc);
+  applyTheme(g);
   document.body.classList.toggle('dys', !!g.dys);
   // v2.4 (A-050): menos movimento — também respeitado nas confetes em JS
   document.body.classList.toggle('rm', !!g.reduceMotion);
   // v2.4 (A-101): modo sem loja — esconde o botão das crianças
   const bs = $('#btn-shop'); if (bs) bs.classList.toggle('hidden', !!g.shopOff);
-  const sysReduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const calm = g.calmo == null ? sysReduce : !!g.calmo;
+  const calm = g.calmo == null ? sysReducedMotion() : !!g.calmo;
   document.body.classList.toggle('calmo', !!calm);
-  const bm = $('#btn-mute'); if (bm) bm.textContent = g.mute ? '🔇' : '🔊';
+  // calmo desligado de propósito pelo adulto: o CSS de prefers-reduced-motion não interfere
+  document.body.classList.toggle('motion-ok', g.calmo === false && !g.reduceMotion);
+  const bm = $('#btn-mute'); if (bm) { bm.textContent = g.mute ? '🔇' : '🔊'; bm.setAttribute('aria-pressed', String(!!g.mute)); }
 }
+const RM_QUERY = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+function sysReducedMotion() { return !!(RM_QUERY && RM_QUERY.matches); }
+// segue a preferência do sistema ao vivo (sem recarregar)
+if (RM_QUERY && RM_QUERY.addEventListener) RM_QUERY.addEventListener('change', () => { try { applySettings(); } catch (e) { /* antes do boot */ } });
 function refreshChrome() {
   const p = P();
   $('#star-total').textContent = String(p ? p.stars : 0);
@@ -52,13 +64,25 @@ function refreshChrome() {
     bp.classList.toggle('fr-gold', n >= 5 && n < 10);
     bp.classList.toggle('fr-rb', n >= 10);
   }
+  /* 4.3: a senha não interrompe a primeira brincadeira — o portão do ⚙️ a cria
+     quando o adulto entrar; até lá, um ponto discreto lembra que falta configurar */
+  const gear = $('#btn-gear');
+  if (gear) {
+    const pending = !G().passHash;
+    gear.classList.toggle('needs-setup', pending);
+    gear.dataset.i18nLabel = pending ? 'a_gate_new' : 'gate_title';
+    applyI18nLabels(gear.parentNode);
+  }
 }
 
 /* ---------- balão, toast e overlays ---------- */
 function showBubble(emoji, text) {
   const b = $('#bubble'); if (!b) return;
+  // o balão mora na tela ativa (antes ficava preso na do jogo e sumia no início)
+  const scr = $('.screen.active'); if (scr && b.parentNode !== scr) scr.appendChild(b);
   $('#bubble-emoji').textContent = emoji;
   $('#bubble-text').textContent = text;
+  announce(text);
   b.classList.remove('hidden', 'pop'); void b.offsetWidth; b.classList.add('pop');
   clearTimeout(bubbleTimer);
   bubbleTimer = setTimeout(hideBubble, 2400);
@@ -67,15 +91,52 @@ function hideBubble() { const b = $('#bubble'); if (b) b.classList.add('hidden')
 function toast(msg) {
   const el = $('#toast'); if (!el) return;
   el.textContent = msg; el.classList.remove('hidden', 'show'); void el.offsetWidth; el.classList.add('show');
+  announce(msg);
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
 }
-function showOverlay(html) {
-  const o = $('#overlay');
-  $('#overlay-card').innerHTML = html;
-  o.classList.remove('hidden');
+/* Região viva (#sr-live): frases ditas no mesmo instante saem juntas, numa
+   única leitura — p.ex. "vez do jogador 2" + a pergunta no duelo */
+let liveBuf = [], liveTimer = null;
+function announce(text) {
+  const el = $('#sr-live'); if (!el || !text) return;
+  if (!liveBuf.length) el.textContent = '';
+  liveBuf.push(String(text));
+  clearTimeout(liveTimer);
+  liveTimer = setTimeout(() => { el.textContent = liveBuf.join(' '); liveBuf = []; }, 100);
 }
-function hideOverlay() { $('#overlay').classList.add('hidden'); }
+/* Modal: título vira o nome do diálogo, o fundo fica inerte (sem foco nem
+   clique), o foco entra no modal e volta ao botão de origem ao fechar */
+let overlayReturn = null;
+function setBackgroundInert(on) {
+  ['#topbar', '#screens', '#pop-profile'].forEach((sel) => { const el = $(sel); if (el) el.inert = on; });
+}
+function showOverlay(html) {
+  const o = $('#overlay'), card = $('#overlay-card');
+  if (o.classList.contains('hidden')) overlayReturn = document.activeElement;
+  card.innerHTML = html;
+  const h = card.querySelector('h3');
+  if (h) { h.id = 'overlay-title'; card.setAttribute('aria-labelledby', 'overlay-title'); }
+  else card.removeAttribute('aria-labelledby');
+  o.classList.remove('hidden');
+  setBackgroundInert(true);
+  (card.querySelector('input, button:not([disabled])') || card).focus();
+}
+/* Tab no modal dá a volta (último → primeiro) em vez de sair para o navegador */
+function trapTab(e) {
+  const els = $$('#overlay-card input, #overlay-card button:not([disabled])');
+  if (!els.length) { e.preventDefault(); return; }
+  const first = els[0], last = els[els.length - 1], a = document.activeElement;
+  if (e.shiftKey && (a === first || !$('#overlay-card').contains(a))) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && (a === last || !$('#overlay-card').contains(a))) { e.preventDefault(); first.focus(); }
+}
+function hideOverlay() {
+  $('#overlay').classList.add('hidden');
+  setBackgroundInert(false);
+  const back = overlayReturn; overlayReturn = null;
+  if (back && back !== document.body && document.contains(back) && back.offsetParent !== null) back.focus();
+  else { const scr = $('.screen.active'); if (scr) focusScreen(scr); }
+}
 function overlayOpen() { return !$('#overlay').classList.contains('hidden'); }
 
 /* ---------- confetes (respeitam modo calmo S24) ---------- */
@@ -91,6 +152,7 @@ const CONF_THEMES = {
 };
 function confetti(n) {
   if (G().reduceMotion) return; // v2.4 (A-050): sem movimentos, sem confetes
+  if (sysReducedMotion() && G().calmo !== false) return; // sistema pediu menos movimento
   if (document.body.classList.contains('calmo')) n = Math.min(n, 8);
   const fx = $('#fx');
   for (let i = 0; i < n; i++) {
@@ -100,7 +162,7 @@ function confetti(n) {
       el.textContent = pick(['⭐', '✨', '💫']);
       el.style.fontSize = rand(10, 18) + 'px';
       el.style.width = 'auto'; el.style.height = 'auto'; el.style.background = 'transparent';
-    } else el.style.background = pick(CONF_THEMES[G().theme] || CONF_COLORS);
+    } else el.style.background = pick(CONF_THEMES[resolvedTheme(G())] || CONF_COLORS);
     el.style.left = (Math.random() * 100) + '%';
     el.style.animationDelay = (Math.random() * 0.5) + 's';
     el.style.animationDuration = (1.4 + Math.random() * 1.4) + 's';
@@ -127,7 +189,7 @@ function renderMascot() {
   const p = P(); if (!p) return;
   const st = mascotStage();
   const m = $('#mascot-home');
-  if (m) m.innerHTML = '<span class="mascot-main">' + st.emoji + '</span>' + (p.hat ? '<span class="mascot-hat">' + p.hat + '</span>' : '');
+  if (m) m.innerHTML = '<span class="mascot-main">' + st.emoji + '</span>' + (p.hat ? '<span class="mascot-hat">' + escHtml(p.hat) + '</span>' : '');
   const ms = $('#mascot-side');
   if (ms) ms.textContent = st.emoji;
   const lbl = $('#mascot-stage');
@@ -136,7 +198,13 @@ function renderMascot() {
   if (nx) nx.textContent = st.next != null ? t('to_next', { n: st.next }) : '⭐ ' + p.stars;
 }
 
-/* ---------- ofensiva / semana (S15) ---------- */
+/* ---------- ofensiva / semana (S15) ----------
+   Nomes dos dias pelo Intl no idioma do app ("Seg", "Ter"… em vez de "S T Q"),
+   hoje com anel e dia sem jogo como círculo vazado — legível também em alto contraste. */
+function dayName(d, style) {
+  const s = new Intl.DateTimeFormat(TTS_LANG[LANG] || 'pt-BR', { weekday: style }).format(d).replace(/\.$/, '');
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 function renderWeekStrip() {
   const el = $('#week-strip'); if (!el) return;
   const p = P();
@@ -153,7 +221,11 @@ function renderWeekStrip() {
         played = diffDays >= 0 && diffDays < p.streak;
       }
     }
-    html += '<span class="wday' + (played ? ' on' : '') + '" title="' + ds + '"><i>' + 'DSTQQSS'[d.getDay()] + '</i>' + (played ? '🔥' : '·') + '</span>';
+    const sr = dayName(d, 'long') + (i === 0 ? ' (' + t('wk_today') + ')' : '') + ': ' + t(played ? 'wk_played' : 'wk_missed');
+    html += '<span class="wday' + (played ? ' on' : '') + (i === 0 ? ' today' : '') + '">' +
+      '<i aria-hidden="true">' + escHtml(dayName(d, 'short')) + '</i>' +
+      (played ? '<b aria-hidden="true">🔥</b>' : '<b class="wdot" aria-hidden="true"></b>') +
+      '<span class="sr-only">' + escHtml(sr) + '</span></span>';
   }
   el.innerHTML = html;
 }
@@ -198,6 +270,7 @@ function renderMissions() {
   const p = P();
   el.innerHTML = p.missions.list.map((m) => {
     const def = MISSION_DEFS.find((d) => d.id === m.id);
+    if (!def) return '';
     return '<span class="mission' + (m.done ? ' done' : '') + '">' + (m.done ? '✅ ' : '🔸 ') + t(def.key) + ' ' + m.p + '/' + def.goal + '</span>';
   }).join('');
 }
@@ -211,23 +284,45 @@ function renderGoal() {
     : '⭐ ' + p.stars;
 }
 
-/* ---------- metas de estrelas por modo / desbloqueio ---------- */
+/* ---------- metas de estrelas por modo / desbloqueio ----------
+   4.2: a grade mostra só o que dá para jogar e um único "próximo prêmio" com a
+   barra de estrelas — em vez de 10 cadeados no primeiro uso. */
+function nextLockedMode() {
+  return Object.keys(MODES).filter((m) => !modeUnlocked(m))
+    .sort((a, b) => MODES[a].unlock - MODES[b].unlock)[0] || null;
+}
 function renderModes() {
   const grid = $('#modes-grid'); if (!grid) return;
   const p = P();
-  grid.innerHTML = Object.keys(MODES).map((m) => {
+  let html = Object.keys(MODES).filter(modeUnlocked).map((m) => {
     const md = MODES[m];
-    const ok = modeUnlocked(m);
-    return '<button class="mode-card c-' + md.color + '" data-mode="' + m + '" ' + (ok ? '' : 'data-locked="' + md.unlock + '"') + '>' +
+    return '<button class="mode-card c-' + md.color + '" data-mode="' + m + '">' +
       (m === 'mistar' ? '<span class="badge">' + t('d_mistar') + '</span>' : '') +
-      '<span class="mode-emoji">' + (ok ? md.emoji : '🔒') + '</span>' +
+      '<span class="mode-emoji">' + md.emoji + '</span>' +
       '<span class="mode-name">' + t('m_' + m) + '</span>' +
-      '<span class="mode-desc">' + (ok ? t('d_' + m) : t('locked', { n: md.unlock })) + '</span></button>';
+      '<span class="mode-desc">' + t('d_' + m) + '</span></button>';
   }).join('');
-  $$('.mode-card').forEach((card) => {
+  const nx = nextLockedMode();
+  if (nx) {
+    const md = MODES[nx];
+    const have = p ? p.stars : 0;
+    const pct = Math.max(4, Math.min(100, Math.round(100 * have / md.unlock)));
+    html += '<button class="mode-card next-prize c-' + md.color + '" data-next="' + nx + '" aria-label="' +
+      escHtml(t('next_prize') + ': ' + t('m_' + nx) + ' — ' + t('next_need', { n: md.unlock - have })) + '">' +
+      '<span class="badge">' + t('next_prize') + '</span>' +
+      '<span class="mode-emoji">' + md.emoji + '<i aria-hidden="true">🔒</i></span>' +
+      '<span class="mode-name">' + t('m_' + nx) + '</span>' +
+      '<span class="np-bar" aria-hidden="true"><i style="width:' + pct + '%"></i></span>' +
+      '<span class="mode-desc">' + have + ' / ' + md.unlock + ' ⭐</span></button>';
+  }
+  grid.innerHTML = html;
+  $$('#modes-grid .mode-card').forEach((card) => {
     card.addEventListener('click', () => {
       ensureAudio(); SFX.tap();
-      if (card.dataset.locked) { showBubble('🔒', t('locked', { n: card.dataset.locked })); return; }
+      if (card.dataset.next) {
+        const msg = t('next_say', { n: MODES[card.dataset.next].unlock - (P() ? P().stars : 0), m: t('m_' + card.dataset.next) });
+        showBubble('🎁', msg); TTS.speak(msg); return;
+      }
       startRound(card.dataset.mode);
     });
   });
@@ -253,10 +348,39 @@ function renderHome() {
 
 /* ---------- dificuldade manual (chips auto + 1..5) ---------- */
 function renderDiffChips() {
-  $$('.diff-chip').forEach((c) => c.classList.toggle('active', String(G().diffMode) === c.dataset.d));
+  $$('.diff-chip').forEach((c) => {
+    const on = String(G().diffMode) === c.dataset.d;
+    c.classList.toggle('active', on); c.setAttribute('aria-pressed', String(on));
+  });
 }
 
 /* ==================== rodadas ==================== */
+/* Nome acessível da cena: conta os objetos em sequência (🍎🍎🍎 → "3 🍎") e
+   mantém textos como sinais, letras A/B e números da sequência */
+function describeVisual(root) {
+  const out = []; let run = null;
+  const flush = () => {
+    if (run) out.push(run.n + ' ' + run.e + (run.x ? ' (' + t('sc_crossed', { n: run.x }) + ')' : ''));
+    run = null;
+  };
+  (function walk(node) {
+    node.childNodes.forEach((c) => {
+      if (c.nodeType === 1 && c.classList.contains('obj')) {
+        const e = c.textContent.trim();
+        if (!run || run.e !== e) { flush(); run = { e, n: 0, x: 0 }; }
+        run.n++; if (c.classList.contains('crossed')) run.x++;
+      } else if (c.nodeType === 1) { flush(); walk(c); flush(); }
+      else if (c.nodeType === 3 && c.textContent.trim()) { flush(); out.push(c.textContent.trim()); }
+    });
+  })(root);
+  flush();
+  return out.join(' ');
+}
+/* botões de escolha única (avatares): classe .sel + aria-pressed */
+function markPicked(all, b) {
+  all.forEach((x) => { x.classList.remove('sel'); x.setAttribute('aria-pressed', 'false'); });
+  b.classList.add('sel'); b.setAttribute('aria-pressed', 'true');
+}
 function resetRound(kind, mode, total) {
   R = {
     kind, mode: mode || null, total: total || QUESTIONS_PER_ROUND, qIndex: 0, misses: 0, wrongs: 0,
@@ -315,7 +439,8 @@ function startDuelSetup() {
       const b = document.createElement('button');
       b.className = 'av' + (i === defIdx ? ' sel' : '');
       b.textContent = a;
-      b.addEventListener('click', () => { $$(sel + ' .av').forEach((x) => x.classList.remove('sel')); b.classList.add('sel'); SFX.tap(); });
+      b.setAttribute('aria-pressed', String(i === defIdx));
+      b.addEventListener('click', () => { markPicked($$(sel + ' .av'), b); SFX.tap(); });
       el.appendChild(b);
     });
   };
@@ -356,8 +481,12 @@ function nextQuestion() {
     if (R.kind === 'boss') q = GENS[pick(Object.keys(MODES).filter((m) => m !== 'mistar' && modeUnlocked(m)))](Math.min(MAX_LEVEL, level + 1));
   }
   R.current = q; R.level = level;
-  $('#visual').innerHTML = q.visual || '';
-  $('#visual').classList.toggle('naked', !q.visual);
+  const vis = $('#visual');
+  vis.innerHTML = q.visual || '';
+  vis.classList.toggle('naked', !q.visual);
+  const scene = q.visual ? describeVisual(vis) : '';
+  if (scene) { vis.setAttribute('role', 'img'); vis.setAttribute('aria-label', scene); vis.removeAttribute('aria-hidden'); }
+  else { vis.removeAttribute('role'); vis.removeAttribute('aria-label'); vis.setAttribute('aria-hidden', 'true'); }
   $('#equation').textContent = q.display;
   $('#equation').classList.toggle('small-text', String(q.display).length > 16);
   bindCounting(q);
@@ -383,7 +512,12 @@ function nextQuestion() {
     b.addEventListener('click', () => onAnswer(b));
     box.appendChild(b);
   });
+  const hadFocus = document.activeElement === document.body || box.contains(document.activeElement);
   renderProgress();
+  // leitor de tela: progresso + pergunta + o que a cena mostra, numa leitura só
+  const chipTxt = $('#level-chip') ? $('#level-chip').textContent : '';
+  announce((chipTxt ? chipTxt + '. ' : '') + q.tts + (scene ? ' ' + scene : ''));
+  if (hadFocus && $('#screen-game').classList.contains('active')) focusScreen($('#screen-game'));
   if (R.kind !== 'tempo') Timer.start(timeBudget(level, currentMode()));
   // v2.4: incentivo do chefe falado na 1ª questão (fila prosódica junta as duas frases)
   const intro = R.bossIntro ? tpick('pr_boss', { name: p.name }) + ' ' + q.tts : q.tts;
@@ -830,17 +964,19 @@ const SHOP_HATS = [
   { id: '🕶️', price: 45, emoji: '🕶️', key: 'hat_oculos' },
   { id: '🎓', price: 50, emoji: '🎓', key: 'hat_formatura' },
 ];
+/* "Usar", "Comprar 60⭐"... repetem em todo cartão: o leitor de tela ouve também o item */
+function itemLbl(action, item) { return ' aria-label="' + escHtml(action + ' — ' + item) + '"'; }
 function renderShop() {
   const p = P();
   $('#shop-stars').textContent = String(p.stars);
   const themeRow = $('#shop-themes');
   themeRow.innerHTML = SHOP_THEMES.map((th) => {
     const owned = th.price === 0 || p.owned.themes.includes(th.id);
-    const inUse = (G().theme === th.id);
+    const inUse = (resolvedTheme(G()) === th.id);
     return '<div class="shop-item th-' + th.id + '"><span class="swatch"></span><b>' + t(th.key) + '</b>' +
       (owned
-        ? '<button class="mini-btn' + (inUse ? ' using' : '') + '" data-th="' + th.id + '">' + (inUse ? t('in_use') : t('equip')) + '</button>'
-        : '<button class="mini-btn" data-buyth="' + th.id + '">' + t('buy') + ' ' + th.price + '⭐</button>') +
+        ? '<button class="mini-btn' + (inUse ? ' using' : '') + '" data-th="' + th.id + '"' + itemLbl(inUse ? t('in_use') : t('equip'), t(th.key)) + '>' + (inUse ? t('in_use') : t('equip')) + '</button>'
+        : '<button class="mini-btn" data-buyth="' + th.id + '"' + itemLbl(t('buy') + ' ' + th.price + '⭐', t(th.key)) + '>' + t('buy') + ' ' + th.price + '⭐</button>') +
       '</div>';
   }).join('');
   const hatRow = $('#shop-hats');
@@ -849,8 +985,8 @@ function renderShop() {
     const inUse = (p.hat || '') === h.id;
     return '<div class="shop-item"><span class="shop-emoji">' + (h.emoji || '🦊') + '</span><b>' + t(h.key) + '</b>' +
       (owned
-        ? '<button class="mini-btn' + (inUse ? ' using' : '') + '" data-hat="' + h.id + '">' + (inUse ? t('in_use') : t('equip')) + '</button>'
-        : '<button class="mini-btn" data-buyhat="' + h.id + '">' + t('buy') + ' ' + h.price + '⭐</button>') +
+        ? '<button class="mini-btn' + (inUse ? ' using' : '') + '" data-hat="' + h.id + '"' + itemLbl(inUse ? t('in_use') : t('equip'), t(h.key)) + '>' + (inUse ? t('in_use') : t('equip')) + '</button>'
+        : '<button class="mini-btn" data-buyhat="' + h.id + '"' + itemLbl(t('buy') + ' ' + h.price + '⭐', t(h.key)) + '>' + t('buy') + ' ' + h.price + '⭐</button>') +
       '</div>';
   }).join('');
   /* v2.5: mascotes adultas escolhíveis */
@@ -862,8 +998,8 @@ function renderShop() {
       const ready = p.stars >= 100;
       return '<div class="shop-item"><span class="shop-emoji">' + pt.emoji + '</span><b>' + t(pt.key) + '</b>' +
         (owned
-          ? '<button class="mini-btn' + (inUse ? ' using' : '') + '" data-pet="' + pt.id + '">' + (inUse ? t('in_use') : t('equip')) + '</button>'
-          : '<button class="mini-btn" data-buypet="' + pt.id + '">' + t('buy') + ' ' + pt.price + '⭐</button>') +
+          ? '<button class="mini-btn' + (inUse ? ' using' : '') + '" data-pet="' + pt.id + '"' + itemLbl(inUse ? t('in_use') : t('equip'), t(pt.key)) + '>' + (inUse ? t('in_use') : t('equip')) + '</button>'
+          : '<button class="mini-btn" data-buypet="' + pt.id + '"' + itemLbl(t('buy') + ' ' + pt.price + '⭐', t(pt.key)) + '>' + t('buy') + ' ' + pt.price + '⭐</button>') +
         (!ready && !owned ? '<small class="pet-note">' + t('pet_note') + '</small>' : '') +
         '</div>';
     }).join('');
@@ -985,25 +1121,24 @@ function breakOverlay() {
 /* ---------- perfis (S27) ---------- */
 function renderProfilePop() {
   const wrap = $('#pop-profile');
-  wrap.innerHTML = '<b>' + t('who') + '</b>' + DB.profiles.map((pf) =>
-    '<button class="prof-row' + (pf.id === DB.activeId ? ' cur' : '') + '" data-pid="' + pf.id + '">' +
-    '<span class="pf-av">' + pf.avatar + '</span><span class="pf-name">' + pf.name + '</span><span class="pf-st">⭐ ' + pf.stars + ' · ⚡ ' + (pf.points || 0) + '</span></button>').join('') +
+  wrap.setAttribute('aria-labelledby', 'pop-who');
+  wrap.innerHTML = '<b id="pop-who">' + t('who') + '</b>' + DB.profiles.map((pf) =>
+    '<button class="prof-row' + (pf.id === DB.activeId ? ' cur' : '') + '" data-pid="' + escHtml(pf.id) + '">' +
+    '<span class="pf-av">' + escHtml(pf.avatar) + '</span><span class="pf-name">' + escHtml(pf.name) + '</span><span class="pf-st">⭐ ' + pf.stars + ' · ⚡ ' + (pf.points || 0) + '</span></button>').join('') +
     (DB.profiles.length < 4
-      ? '<div class="prof-add"><input id="new-prof-name" maxlength="14" placeholder="' + t('name_ph') + '">' +
-        '<div class="av-row">' + AVATARS.map((a, i) => '<button class="av' + (i === 0 ? ' sel' : '') + '" data-av="' + a + '">' + a + '</button>').join('') + '</div>' +
+      ? '<div class="prof-add"><input id="new-prof-name" maxlength="14" placeholder="' + t('name_ph') + '" aria-label="' + t('name_ph') + '">' +
+        '<div class="av-row" role="group" aria-label="' + t('a_avatar') + '">' + AVATARS.map((a, i) => '<button class="av' + (i === 0 ? ' sel' : '') + '" aria-pressed="' + (i === 0) + '" data-av="' + a + '">' + a + '</button>').join('') + '</div>' +
         '<button class="mini-btn" id="btn-add-prof">' + t('add_profile') + '</button></div>'
       : '<small class="max-note">' + t('max4') + '</small>');
   $$('#pop-profile .prof-row').forEach((b) => b.addEventListener('click', () => {
     DB.activeId = b.dataset.pid; saveState(true);
     closePopovers(); renderHome(); applyLang(); toast(t('switch_to', { n: P().name })); SFX.tap();
   }));
-  $$('#pop-profile .av').forEach((b) => b.addEventListener('click', () => {
-    $$('#pop-profile .av').forEach((x) => x.classList.remove('sel'));
-    b.classList.add('sel'); SFX.tap();
-  }));
+  $$('#pop-profile .av').forEach((b) => b.addEventListener('click', () => { markPicked($$('#pop-profile .av'), b); SFX.tap(); }));
   const add = $('#btn-add-prof');
   if (add) add.addEventListener('click', () => {
-    const name = ($('#new-prof-name').value || '').trim() || ('Jogador ' + (DB.profiles.length + 1));
+    const raw = ($('#new-prof-name').value || '').trim();
+    const name = raw ? cleanName(raw) : ('Jogador ' + (DB.profiles.length + 1));
     const av = ($('#pop-profile .av.sel') || { dataset: { av: '🦊' } }).dataset.av;
     DB.profiles.push(newProfile(null, name, av));
     DB.activeId = DB.profiles[DB.profiles.length - 1].id;
@@ -1011,7 +1146,20 @@ function renderProfilePop() {
     closePopovers(); renderHome(); refreshChrome(); SFX.fanfare();
   });
 }
-function closePopovers() { $$('.popover').forEach((p) => p.classList.add('hidden')); }
+function closePopovers() {
+  const pop = $('#pop-profile'), was = pop && !pop.classList.contains('hidden');
+  $$('.popover').forEach((p) => p.classList.add('hidden'));
+  const bp = $('#btn-profile'); if (bp) bp.setAttribute('aria-expanded', 'false');
+  if (was && pop.contains(document.activeElement)) bp.focus();
+}
+function toggleProfilePop() {
+  const pop = $('#pop-profile');
+  if (!pop.classList.contains('hidden')) { closePopovers(); return; }
+  renderProfilePop(); pop.classList.remove('hidden');
+  $('#btn-profile').setAttribute('aria-expanded', 'true');
+  const first = pop.querySelector('.prof-row.cur') || pop.querySelector('button');
+  if (first) first.focus();
+}
 
 /* ---------- tela cheia (popup → janela nativa; página → Fullscreen API) ---------- */
 function toggleFullscreen() {
@@ -1031,57 +1179,7 @@ function openOptions() {
   ensureAudio(); SFX.tap();
   const url = HAS_EXT ? chrome.runtime.getURL('options.html') : 'options.html';
   if (HAS_EXT) chrome.tabs ? chrome.tabs.create({ url }) : window.open(url, '_blank');
-  else window.open(url, '_blank');
-}
-
-/* ---------- onboarding da senha dos responsáveis (v2.3) ----------
-   Aparece uma única vez na sessão inicial do app (game/popup/web).
-   O adulto cria a senha + lembrete de segurança; pode adiar com "Configurar depois"
-   (neste caso a criação continua disponível no portão da área dos responsáveis). */
-function showOnboarding() {
-  showOverlay('<div class="ov-emoji">👨‍👩‍👧</div><h3>' + t('ob_title') + '</h3><p>' + t('ob_msg') + '</p>' +
-    '<div class="ob-form">' +
-    '<label class="pwd-lbl">' + t('ob_pwd') + '</label>' +
-    '<div class="pwd-box"><input id="ob-pwd" type="password" autocomplete="new-password"><button id="ob-eye1" class="eye-btn" type="button" aria-label="👁">👁</button></div>' +
-    '<label class="pwd-lbl">' + t('ob_pwd2') + '</label>' +
-    '<div class="pwd-box"><input id="ob-pwd2" type="password" autocomplete="new-password"><button id="ob-eye2" class="eye-btn" type="button" aria-label="👁">👁</button></div>' +
-    '<label class="pwd-lbl">' + t('ob_hint_lbl') + '</label>' +
-    '<input id="ob-hint" type="text" maxlength="80">' +
-    '<div class="gate-err" id="ob-err"></div>' +
-    '<button class="big-btn" id="btn-ob-create">' + t('ob_create') + '</button>' +
-    '<button class="big-btn alt" id="btn-ob-later">' + t('ob_later') + '</button>' +
-    '</div>');
-  $('#ob-hint').placeholder = t('ob_hint_ph');
-  $('#btn-ob-create').addEventListener('click', createObPwd);
-  $('#btn-ob-later').addEventListener('click', () => {
-    G().passOnboardDone = true; saveState(true); SFX.tap(); hideOverlay();
-  });
-  [['#ob-eye1', '#ob-pwd'], ['#ob-eye2', '#ob-pwd2']].forEach(([b, inp]) => {
-    $(b).addEventListener('click', () => { const i = $(inp); i.type = i.type === 'password' ? 'text' : 'password'; });
-  });
-  ['#ob-pwd', '#ob-pwd2', '#ob-hint'].forEach((id) => {
-    $(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') $('#btn-ob-create').click(); });
-  });
-}
-async function createObPwd() {
-  const a = $('#ob-pwd').value || '';
-  const b = $('#ob-pwd2').value || '';
-  const hint = ($('#ob-hint').value || '').trim();
-  if (a.length < 4) { $('#ob-err').textContent = t('sec_short'); SFX.wrong(); return; }
-  if (a !== b) { $('#ob-err').textContent = t('sec_mismatch'); SFX.wrong(); return; }
-  if (!hint) { $('#ob-err').textContent = t('sec_need_hint'); SFX.wrong(); return; }
-  const btn = $('#btn-ob-create');
-  btn.disabled = true;
-  const g = G();
-  g.passSalt = PASS.salt();
-  g.passHash = await PASS.hash(a, g.passSalt);
-  g.passHint = hint; g.passSetAt = Date.now();
-  g.passOnboardDone = true; g.passTries = 0; g.passLockUntil = 0;
-  saveState(true);
-  hideOverlay();
-  showBubble('🔒', t('ob_saved'));
-  TTS.speak(t('ob_saved'));
-  confetti(20); SFX.fanfare();
+  else location.href = url; // PWA/TWA/Electron: mesma janela; o “voltar” das opções retorna ao jogo
 }
 
 /* ==================== inicialização ==================== */
@@ -1092,8 +1190,10 @@ function bindStatic() {
     if (G().mute) TTS.stop(); else { ensureAudio(); SFX.tap(); }
   });
   $('#btn-full').addEventListener('click', toggleFullscreen);
+  // app nativo (já é tela cheia) ou navegador sem a API (Safari do iPhone): o botão não faria nada
+  if (IN_NATIVE_APP || (!HAS_EXT && !document.documentElement.requestFullscreen)) $('#btn-full').classList.add('hidden');
   $('#btn-gear').addEventListener('click', openOptions);
-  $('#btn-profile').addEventListener('click', () => { SFX.tap(); renderProfilePop(); $('#pop-profile').classList.toggle('hidden'); });
+  $('#btn-profile').addEventListener('click', () => { SFX.tap(); toggleProfilePop(); });
   $('#btn-again').addEventListener('click', () => { ensureAudio(); SFX.tap(); R.kind === 'duel' ? startDuelSetup() : startRound(R.mode || 'somar'); });
   $('#btn-menu').addEventListener('click', () => { TTS.stop(); SFX.tap(); renderHome(); show('home'); });
   $('#btn-repeat').addEventListener('click', () => { ensureAudio(); SFX.tap(); if (R.current) TTS.speak(R.current.tts, { calm: true }); });
@@ -1144,7 +1244,11 @@ function bindStatic() {
 /* ---------- teclado (S20) ---------- */
 function onKey(e) {
   if (overlayOpen()) {
-    if (e.key === 'Enter') { const b = $('#overlay-card .big-btn:not([disabled])'); if (b) b.click(); }
+    if (e.key === 'Tab') { trapTab(e); return; }
+    // botões e campos já tratam o próprio Enter — sem isso, Enter em "Configurar
+    // depois" clicava também no primeiro botão do modal
+    const tag = e.target && e.target.tagName;
+    if (e.key === 'Enter' && tag !== 'BUTTON' && tag !== 'INPUT') { const b = $('#overlay-card .big-btn:not([disabled])'); if (b) b.click(); }
     return;
   }
   if ($('#screen-game').classList.contains('active')) {
@@ -1188,14 +1292,13 @@ async function boot() {
   // v2.4 (A-198): saudação cordial com o nome — o 1º toque libera o áudio no navegador
   const greet = () => {
     const home = $('#screen-home');
-    if (!home || !home.classList.contains('active') || overlayOpen()) return;
+    // não atropela um balão que o próprio toque abriu (ex.: próximo prêmio)
+    if (!home || !home.classList.contains('active') || overlayOpen() || !$('#bubble').classList.contains('hidden')) return;
     const line = tpick('greet', { name: P().name });
     showBubble(mascotStage().emoji, line);
     TTS.speak(line);
   };
   document.addEventListener('pointerdown', () => setTimeout(greet, 350), { once: true });
-  // v2.3: onboarding da senha dos responsáveis na sessão inicial (uma única vez)
-  if (!G().passHash && !G().passOnboardDone) setTimeout(showOnboarding, 700);
   if (HAS_EXT && typeof chrome !== 'undefined' && chrome.tabs) {
     try { chrome.runtime.sendMessage('cc-page-ready', () => void chrome.runtime.lastError); } catch (e) { /* ignora */ }
   }

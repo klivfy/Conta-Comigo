@@ -1,0 +1,22 @@
+{
+  "name": "conta-comigo-ios",
+  "version": "2.6.0",
+  "description": "Casco iOS (Capacitor) do Conta Comigo — o jogo é o mesmo motor da web, com voz e armazenamento nativos",
+  "author": "Klivfy Tecnologia",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "www": "python3 ../../scripts/build_ios_www.py",
+    "sync": "npm run www && cap sync ios",
+    "open": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor-community/text-to-speech": "^8.0.2",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/ios": "^8.5.3",
+    "@capacitor/preferences": "^8.0.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.3"
+  }
+}

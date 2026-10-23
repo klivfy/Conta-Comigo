@@ -11,19 +11,13 @@ Cria download/conta-comigo-pwa/ autocontido (sem paths ../), com:
 
 Saída: download/conta-comigo-pwa/ e conta-comigo-pwa-android-<VERSAO>.zip
 """
-import json, os, math, shutil, sys, zipfile
-from PIL import Image, ImageDraw, ImageFont
+import glob, hashlib, json, os, math, shutil, sys, zipfile
 
-# BASE: raiz do projeto (padrão local; no CI usa a variável BASE do checkout)
-BASE = os.environ.get("BASE", "/home/z/my-project")
-SRC = os.path.join(BASE, "download/conta-comigo")
-OUT = os.path.join(BASE, "download/conta-comigo-pwa")
-DL = os.path.join(BASE, "download")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from cc_build import DL, SRC, draw_icon, version  # noqa: E402
 
-VERSION = "2.5.0"
-for a in sys.argv[1:]:
-    if a.upper().startswith("VERSION="):
-        VERSION = a.split("=", 1)[1].strip()
+OUT = os.path.join(DL, "conta-comigo-pwa")
+VERSION = version()  # padrão: versão do manifest.json da fonte
 
 # ---------- 0) pasta limpa ANTES de gerar ícones (o rmtree apagava os PNGs) ----------
 if os.path.exists(OUT):
@@ -32,38 +26,6 @@ if os.path.exists(OUT):
 # ---------- 1) ícones 192/512 (+ maskable com zona de segurança 80%) ----------
 ICON_OUT = os.path.join(OUT, "icons")
 os.makedirs(ICON_OUT, exist_ok=True)
-TOP, BOT = (255, 154, 61), (255, 94, 126)
-FONT_PATH = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
-
-def lerp(a, b, t):
-    return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
-
-def star_points(cx, cy, r_out, r_in, points=5, rot=-math.pi / 2):
-    pts = []
-    for i in range(points * 2):
-        r = r_out if i % 2 == 0 else r_in
-        a = rot + i * math.pi / points
-        pts.append((cx + r * math.cos(a), cy + r * math.sin(a)))
-    return pts
-
-def draw_icon(size, maskable=False):
-    img = Image.new('RGB', (size, size), lerp(TOP, BOT, 0.5))
-    gd = ImageDraw.Draw(img)
-    for y in range(size):
-        gd.line([(0, y), (size, y)], fill=lerp(TOP, BOT, y / max(1, size - 1)))
-    d = ImageDraw.Draw(img)
-    # maskable: conteúdo dentro do círculo central de 80% do diâmetro
-    k = 0.62 if maskable else 0.78
-    d.polygon(star_points(size * 0.78, size * 0.22, size * 0.15 * k / 0.78, size * 0.07 * k / 0.78),
-              fill=(255, 213, 74), outline=(255, 255, 255))
-    fs = int(size * 0.40 * (k / 0.78))
-    font = ImageFont.truetype(FONT_PATH, fs)
-    bbox = d.textbbox((0, 0), '123', font=font)
-    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
-    d.text(((size - tw) / 2 - bbox[0], size * 0.62 - th / 2 - bbox[1]), '123',
-           font=font, fill=(255, 255, 255))
-    return img
-
 for size in (192, 512):
     draw_icon(size, maskable=False).save(os.path.join(ICON_OUT, f'icon-{size}.png'))
     draw_icon(size, maskable=True).save(os.path.join(ICON_OUT, f'icon-maskable-{size}.png'))
@@ -72,13 +34,14 @@ print("[OK] ícones 192/512 + maskable")
 # ---------- 2) base = cópia autocontida ----------
 os.makedirs(OUT, exist_ok=True)
 shutil.copytree(os.path.join(SRC, "js"), os.path.join(OUT, "js"),
-                ignore=shutil.ignore_patterns("newtab.js", "options.js", "boot.js"))
+                ignore=shutil.ignore_patterns("newtab.js", "boot.js"))
 shutil.copytree(os.path.join(SRC, "css"), os.path.join(OUT, "css"))
-# boot.js do PWA: classe html-page + registro do service worker
+# boot.js do PWA: boot da extensão (html-page + ccVersion) + rota do jogo + service worker
+boot_src = open(os.path.join(SRC, "js", "boot.js"), encoding="utf-8").read()
 with open(os.path.join(OUT, "js", "boot.js"), "w", encoding="utf-8") as f:
-    f.write("""'use strict';
-/* Conta Comigo PWA — boot: molde de página cheia + registro do service worker */
-document.documentElement.classList.add('html-page');
+    f.write(boot_src + """
+/* PWA: o jogo é index.html (o “voltar” das opções usa esta rota) */
+window.CC_GAME_URL = 'index.html';
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => { /* offline opcional */ });
@@ -91,6 +54,11 @@ game = open(os.path.join(SRC, "game.html"), encoding="utf-8").read()
 game = game.replace('href="css/style.css"', 'href="css/style.css"')
 game = game.replace('</title>', '</title>\n  <meta name="theme-color" content="#ff9a3d">\n  <meta name="cc-version" content="' + VERSION + '">\n  <meta name="mobile-web-app-capable" content="yes">\n  <link rel="manifest" href="manifest.webmanifest">\n  <link rel="icon" href="icons/icon-192.png">\n  <link rel="apple-touch-icon" href="icons/icon-192.png">')
 open(os.path.join(OUT, "index.html"), "w", encoding="utf-8").write(game)
+
+# options.html (painel dos responsáveis — aberto pelo ⚙️ do jogo)
+opts = open(os.path.join(SRC, "options.html"), encoding="utf-8").read()
+opts = opts.replace('</title>', '</title>\n  <meta name="theme-color" content="#ff9a3d">\n  <link rel="manifest" href="manifest.webmanifest">\n  <link rel="icon" href="icons/icon-192.png">', 1)
+open(os.path.join(OUT, "options.html"), "w", encoding="utf-8").write(opts)
 
 # ---------- 3) manifest.webmanifest ----------
 manifest = {
@@ -118,10 +86,18 @@ with open(os.path.join(OUT, "manifest.webmanifest"), "w", encoding="utf-8") as f
     f.write("\n")
 
 # ---------- 4) sw.js (cache-first do app shell) ----------
-ASSETS = ["./index.html", "./manifest.webmanifest", "./css/style.css",
-          "./js/boot.js", "./js/engine.js", "./js/ui.js", "./js/i18n.js",
+ASSETS = ["./index.html", "./options.html", "./manifest.webmanifest", "./css/style.css",
+          "./css/fonts/nunito-latin.woff2",
+          "./js/boot.js", "./js/engine.js", "./js/ui.js", "./js/i18n.js", "./js/options.js",
           "./icons/icon-192.png", "./icons/icon-512.png",
           "./icons/icon-maskable-192.png", "./icons/icon-maskable-512.png"]
+# chave do cache = versão + hash do conteúdo: qualquer mudança nos arquivos gera
+# um sw.js diferente, o navegador instala o novo e o activate apaga o cache velho
+digest = hashlib.sha256()
+for a in ASSETS:
+    with open(os.path.join(OUT, a[2:]), "rb") as fh:
+        digest.update(a.encode() + b"\0" + fh.read())
+CACHE_KEY = VERSION + "-" + digest.hexdigest()[:10]
 sw = """'use strict';
 /* Conta Comigo PWA — service worker (offline-first do app shell) */
 const CACHE = 'conta-comigo-__VER__';
@@ -142,14 +118,17 @@ self.addEventListener('fetch', (e) => {
   e.respondWith(
     caches.match(e.request).then((hit) => hit ||
       fetch(e.request).then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(() => {});
+        // só guarda respostas válidas do próprio site (404/erros não ficam presos no cache)
+        if (res.ok && res.type === 'basic') {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(() => {});
+        }
         return res;
-      }).catch(() => caches.match('./index.html'))
+      }).catch(() => (e.request.mode === 'navigate' ? caches.match('./index.html') : Response.error()))
     )
   );
 });
-""".replace('__VER__', VERSION).replace('__ASSETS__', json.dumps(ASSETS))
+""".replace('__VER__', CACHE_KEY).replace('__ASSETS__', json.dumps(ASSETS))
 open(os.path.join(OUT, "sw.js"), "w", encoding="utf-8").write(sw)
 
 # ---------- 5) leia-me-android.md ----------
@@ -191,8 +170,8 @@ open(os.path.join(OUT, "leia-me-android.md"), "w", encoding="utf-8").write(readm
 
 # ---------- 6) zip ----------
 zip_path = os.path.join(DL, f"conta-comigo-pwa-android-{VERSION}.zip")
-if os.path.exists(zip_path):
-    os.remove(zip_path)
+for old in glob.glob(os.path.join(DL, "conta-comigo-pwa-android-*.zip")):
+    os.remove(old)  # mantém só o pacote da versão atual (como build_packages.py)
 with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
     for root, _, files in os.walk(OUT):
         for f in sorted(files):

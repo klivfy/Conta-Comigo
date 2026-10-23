@@ -5,6 +5,8 @@
 
 let gateTriesTimer = null;
 let ppOpen = null; // v2.4: linha de voz por perfil aberta no painel (id do perfil ou null)
+/* ícone de cada tema no seletor do painel ('auto' = segue o aparelho) */
+const THEME_ICONS = { auto: '🖥️', classico: '☀️', espaco: '🌙', jardim: '🌸', arcoiris: '🌈', oceano: '🌊', doces: '🍬', neve: '❄️' };
 
 /* ---------- portão parental (v2.3: senha + lembrete + bloqueio progressivo) ---------- */
 function gateHasPass() { return !!G().passHash && !!G().passSalt; }
@@ -101,7 +103,7 @@ async function savePassword(pw, hint) {
   g.passHash = await PASS.hash(pw, g.passSalt);
   g.passHint = hint;
   g.passSetAt = Date.now();
-  g.passTries = 0; g.passLockUntil = 0; g.passOnboardDone = true;
+  g.passTries = 0; g.passLockUntil = 0;
   saveState(true);
 }
 function tryResetGate() {
@@ -113,11 +115,7 @@ function tryResetGate() {
     return;
   }
   if (!confirm(t('confirm_reset'))) return;
-  try { localStorage.removeItem('cc_state'); } catch (e) { /* ignora */ }
-  try {
-    if (typeof chrome !== 'undefined' && chrome.storage) { chrome.storage.local.clear(); chrome.storage.sync.clear(); }
-  } catch (e) { /* ignora */ }
-  location.reload();
+  clearSavedState().then(() => location.reload());
 }
 
 /* ---------- cartão Segurança (alterar senha) ---------- */
@@ -150,15 +148,15 @@ function renderOptions() {
   const g = G(), p = P();
   LANG = g.lang || 'pt';
   $$('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+  applyI18nLabels(document);
   document.title = t('appName') + ' — ' + t('gate_title');
   document.documentElement.lang = TTS_LANG[g.lang] || 'pt-BR';
-  document.body.dataset.theme = g.theme || 'classico';
-  document.body.classList.toggle('hc', !!g.hc);
+  applyTheme(g);
   document.body.classList.toggle('dys', !!g.dys);
 
   // seletor de jogador do painel
   const dp = $('#dash-prof');
-  dp.innerHTML = DB.profiles.map((pf) => '<option value="' + pf.id + '"' + (pf.id === DB.activeId ? ' selected' : '') + '>' + pf.avatar + ' ' + pf.name + '</option>').join('');
+  dp.innerHTML = DB.profiles.map((pf) => '<option value="' + escHtml(pf.id) + '"' + (pf.id === DB.activeId ? ' selected' : '') + '>' + escHtml(pf.avatar + ' ' + pf.name) + '</option>').join('');
   renderDash();
   renderProfList();
   paintBackupHint(); // v2.5: estado do backup das conquistas
@@ -181,11 +179,14 @@ function renderOptions() {
   $('#set-rate').value = String(Math.round((g.vRate || 0.95) * 100));
   $('#set-pitch').value = String(Math.round((g.vPitch || 1.15) * 100));
   fillVoices();
-  $('#set-theme').value = g.theme || 'classico';
-  $('#set-theme').options[0].text = '☀️ ' + t('th_classico');
-  $('#set-theme').options[1].text = '🌙 ' + t('th_espaco');
-  $('#set-theme').options[2].text = '🌸 ' + t('th_jardim');
-  $('#set-theme').options[3].text = '🌈 ' + t('th_arcoiris');
+  const thSel = $('#set-theme');
+  // tema comprado na loja (Oceano, Doces, Neve) aparece no seletor para não ficar em branco
+  const cur = g.theme || 'auto';
+  if (!thSel.querySelector('option[value="' + cur + '"]') && THEME_ICONS[cur]) {
+    const o = document.createElement('option'); o.value = cur; thSel.appendChild(o);
+  }
+  thSel.value = cur;
+  $$('#set-theme option').forEach((o) => { o.text = THEME_ICONS[o.value] + ' ' + t('th_' + o.value); });
   $('#set-hc').checked = !!g.hc;
   $('#set-dys').checked = !!g.dys;
   $('#set-calmo').value = g.calmo == null ? 'auto' : (g.calmo ? 'on' : 'off');
@@ -234,7 +235,7 @@ function renderDash() {
   const weeks = p.weeks.slice(-5);
   const maxR = Math.max(1, ...weeks.map((w) => w.rounds));
   $('#week-bars').innerHTML = weeks.length
-    ? weeks.map((w) => '<div class="week-bar"><span>' + w.rounds + '</span><i style="height:' + Math.max(6, Math.round(70 * w.rounds / maxR)) + 'px"></i><span>' + w.k.replace(/^\d{4}-/, '') + '</span></div>').join('')
+    ? weeks.map((w) => '<div class="week-bar"><span>' + w.rounds + '</span><i style="height:' + Math.max(6, Math.round(70 * w.rounds / maxR)) + 'px"></i><span>' + escHtml(w.k.replace(/^\d{4}-/, '')) + '</span></div>').join('')
     : '<span class="opt-note">—</span>';
 }
 
@@ -273,29 +274,29 @@ function renderProfList() {
     const pp = pf.id === ppOpen ? (
       '<div class="pp-row">' +
       '<span class="pp-t">🎙️ ' + t('pp_voice') + '</span>' +
-      '<label>' + t('s_rate') + '</label><input type="range" min="60" max="160" step="5" value="' + Math.round((pf.vRate != null ? pf.vRate : (g.vRate || 0.95)) * 100) + '" data-pprate="' + pf.id + '">' +
-      '<label>' + t('s_pitch') + '</label><input type="range" min="50" max="200" step="5" value="' + Math.round(pf.vPitch != null ? pf.vPitch : (g.vPitch || 1.15) * 100) + '" data-pppitch="' + pf.id + '">' +
-      '<select data-ppvoice="' + pf.id + '">' + voiceOptionsHtml(pf.vVoice || '') + '</select>' +
-      '<button class="mini-btn" data-ppreset="' + pf.id + '">' + t('pp_default') + '</button>' +
+      '<label for="pp-rate">' + t('s_rate') + '</label><input id="pp-rate" type="range" min="60" max="160" step="5" value="' + Math.round((pf.vRate != null ? pf.vRate : (g.vRate || 0.95)) * 100) + '" data-pprate="' + escHtml(pf.id) + '">' +
+      '<label for="pp-pitch">' + t('s_pitch') + '</label><input id="pp-pitch" type="range" min="50" max="200" step="5" value="' + Math.round(pf.vPitch != null ? pf.vPitch : (g.vPitch || 1.15) * 100) + '" data-pppitch="' + escHtml(pf.id) + '">' +
+      '<select aria-label="' + escHtml(t('s_voice')) + '" data-ppvoice="' + escHtml(pf.id) + '">' + voiceOptionsHtml(pf.vVoice || '') + '</select>' +
+      '<button class="mini-btn" data-ppreset="' + escHtml(pf.id) + '">' + t('pp_default') + '</button>' +
       '</div>'
     ) : '';
-    return '<div class="prof-line" data-pid="' + pf.id + '">' +
-      '<span style="font-size:24px">' + pf.avatar + '</span>' +
-      '<input value="' + pf.name.replace(/"/g, '&quot;') + '" data-name="' + pf.id + '">' +
-      '<div class="av-row">' + AVATARS.map((a) => '<button class="av' + (a === pf.avatar ? ' sel' : '') + '" data-setav="' + pf.id + '">' + a + '</button>').join('') + '</div>' +
-      '<button class="mini-btn' + (cur ? ' using' : '') + '" data-use="' + pf.id + '">' + (cur ? t('in_use') : t('equip')) + '</button>' +
-      '<button class="mini-btn" data-pp="' + pf.id + '" title="' + t('pp_voice') + '">🎙️</button>' +
-      (DB.profiles.length > 1 ? '<button class="mini-btn danger-btn" data-del="' + pf.id + '">✕</button>' : '') +
+    return '<div class="prof-line" data-pid="' + escHtml(pf.id) + '">' +
+      '<span style="font-size:24px" aria-hidden="true">' + escHtml(pf.avatar) + '</span>' +
+      '<input value="' + escHtml(pf.name) + '" maxlength="' + NAME_MAX + '" aria-label="' + escHtml(t('name_ph')) + '" data-name="' + escHtml(pf.id) + '">' +
+      '<div class="av-row" role="group" aria-label="' + escHtml(t('a_avatar') + ' — ' + pf.name) + '">' + AVATARS.map((a) => '<button class="av' + (a === pf.avatar ? ' sel' : '') + '" aria-pressed="' + (a === pf.avatar) + '" data-av="' + a + '" data-setav="' + escHtml(pf.id) + '">' + a + '</button>').join('') + '</div>' +
+      '<button class="mini-btn' + (cur ? ' using' : '') + '" data-use="' + escHtml(pf.id) + '" aria-label="' + escHtml((cur ? t('in_use') : t('equip')) + ' — ' + pf.name) + '">' + (cur ? t('in_use') : t('equip')) + '</button>' +
+      '<button class="mini-btn" data-pp="' + escHtml(pf.id) + '" title="' + escHtml(t('pp_voice')) + '" aria-label="' + escHtml(t('pp_voice') + ' — ' + pf.name) + '" aria-expanded="' + (pf.id === ppOpen) + '">🎙️</button>' +
+      (DB.profiles.length > 1 ? '<button class="mini-btn danger-btn" data-del="' + escHtml(pf.id) + '" title="' + escHtml(t('del_prof') + ' — ' + pf.name) + '" aria-label="' + escHtml(t('del_prof') + ' — ' + pf.name) + '">✕</button>' : '') +
       pp +
       '</div>';
   }).join('');
   $$('#prof-list [data-name]').forEach((inp) => inp.addEventListener('change', () => {
     const pf = DB.profiles.find((x) => x.id === inp.dataset.name);
-    if (pf) { pf.name = inp.value.trim() || pf.name; saveState(true); toastOpt('✅'); }
+    if (pf) { pf.name = inp.value.trim() ? cleanName(inp.value) : pf.name; saveState(true); toastOpt('✅'); }
   }));
   $$('#prof-list [data-setav]').forEach((b) => b.addEventListener('click', () => {
     const pf = DB.profiles.find((x) => x.id === b.dataset.setav);
-    if (pf) { pf.avatar = b.dataset.setav; saveState(true); renderProfList(); }
+    if (pf) { pf.avatar = b.dataset.av; saveState(true); renderProfList(); } // antes gravava o id do perfil no avatar
   }));
   $$('#prof-list [data-use]').forEach((b) => b.addEventListener('click', () => {
     DB.activeId = b.dataset.use; saveState(true); renderOptions();
@@ -401,7 +402,7 @@ function doImport(text) {
 function bindOptions() {
   $('#opt-back').addEventListener('click', () => {
     if (history.length > 1) history.back();
-    else location.href = (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) ? chrome.runtime.getURL('game.html') : 'game.html';
+    else location.href = (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) ? chrome.runtime.getURL('game.html') : (window.CC_GAME_URL || 'game.html');
   });
   // portão (v2.3)
   $('#ge-go').addEventListener('click', tryGate);
@@ -414,7 +415,7 @@ function bindOptions() {
     $(inp).addEventListener('keydown', (e) => { if (e.key === 'Enter') $(btn).click(); });
   });
   [['#ge-eye', '#ge-pwd'], ['#gc-eye1', '#gc-pwd'], ['#gc-eye2', '#gc-pwd2']].forEach(([b, inp]) => {
-    $(b).addEventListener('click', () => { const i = $(inp); i.type = i.type === 'password' ? 'text' : 'password'; });
+    $(b).addEventListener('click', () => { const i = $(inp); i.type = i.type === 'password' ? 'text' : 'password'; $(b).setAttribute('aria-pressed', String(i.type === 'text')); });
   });
   // segurança
   $('#btn-sec-change').addEventListener('click', () => { $('#sec-form').classList.toggle('hidden'); $('#sec-err').textContent = ''; });
@@ -478,11 +479,7 @@ function bindOptions() {
   });
   $('#btn-reset-all').addEventListener('click', () => {
     if (!confirm(t('confirm_reset'))) return;
-    try { localStorage.removeItem('cc_state'); } catch (e) { /* ignora */ }
-    try {
-      if (typeof chrome !== 'undefined' && chrome.storage) { chrome.storage.local.clear(); chrome.storage.sync.clear(); }
-    } catch (e) { /* ignora */ }
-    location.reload();
+    clearSavedState().then(() => location.reload());
   });
 }
 

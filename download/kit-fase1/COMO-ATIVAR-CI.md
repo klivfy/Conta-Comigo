@@ -29,6 +29,7 @@ o GitHub exige um token com escopo **Workflows** para aceitar arquivos em
    - `.github/workflows/pages.yml` ← `workflows/pages.yml`
    - `.github/workflows/android.yml` ← `workflows/android.yml`
    - `.github/workflows/windows.yml` ← `workflows/windows.yml`
+   - `.github/workflows/ci.yml` ← `workflows/ci.yml` (build + acessibilidade em todo PR)
    (commit direto no `main`)
 2. Depois **apague o commit local duplicado**: me avise e eu sincronizo
    (`git pull --rebase`) — ou rode `git pull --rebase origin main`.
@@ -41,6 +42,13 @@ token atual — por isso é um clique manual).
 
 Sem isso, o workflow "Site (GitHub Pages)" falha no deploy; Android e Windows
 funcionam independentemente.
+
+## Secrets do Android (obrigatório para o workflow Android)
+
+A upload key não fica mais no repositório. Cadastre `ANDROID_KEYSTORE_BASE64`,
+`ANDROID_KEYSTORE_PASS`, `ANDROID_KEY_ALIAS` e `ANDROID_KEY_PASS` em
+*Settings → Secrets and variables → Actions* — passo a passo em
+`native/android/keystore/README.md`.
 
 ---
 

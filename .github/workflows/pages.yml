@@ -1,0 +1,67 @@
+name: Site (GitHub Pages)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'download/conta-comigo/**'
+      - 'scripts/build_pwa.py'
+      - 'scripts/cc_build.py'
+      - 'scripts/fonts/**'
+      - 'native/android/assetlinks.json'
+      - 'docs/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar Pillow (ícones)
+        run: pip install pillow
+
+      - name: Gerar PWA autocontida
+        run: python scripts/build_pwa.py
+        env:
+          BASE: ${{ github.workspace }}
+
+      - name: Montar site (PWA + assetlinks + privacidade)
+        run: |
+          mkdir -p site/.well-known
+          cp -r download/conta-comigo-pwa/* site/
+          cp native/android/assetlinks.json site/.well-known/assetlinks.json
+          cp docs/politica-de-privacidade.html site/politica-de-privacidade.html
+          echo "Site montado:" && ls -la site/ && ls -la site/.well-known/
+
+      - name: Configurar Pages
+        uses: actions/configure-pages@v5
+
+      - name: Publicar artefato
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy no GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

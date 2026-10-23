@@ -1,9 +1,15 @@
 plugins { id 'com.android.application' }
 
-// Upload key versionada no repo (app 100% offline, sem backend).
-// A Play Store re-assina com a App Signing Key dela — ver keystore/README.md
-def ksFile = rootProject.file("keystore/upload.jks")
-def ksPass = "contacomico-upload"
+// Upload key fora do repositório — ver keystore/README.md.
+// Lida de variáveis de ambiente (CI: GitHub Secrets) ou de ~/.gradle/gradle.properties.
+def signProp = { String env, String prop ->
+    System.getenv(env) ?: (project.hasProperty(prop) ? project.property(prop) : null)
+}
+def ksPath  = signProp("ANDROID_KEYSTORE_PATH", "contaComigo.keystorePath")
+def ksPass  = signProp("ANDROID_KEYSTORE_PASS", "contaComigo.keystorePass")
+def ksAlias = signProp("ANDROID_KEY_ALIAS", "contaComigo.keyAlias")
+def keyPass = signProp("ANDROID_KEY_PASS", "contaComigo.keyPass")
+def hasSigning = ksPath && ksPass && ksAlias && keyPass && file(ksPath).exists()
 
 android {
     namespace 'com.klivfy.contacomigo'
@@ -18,17 +24,20 @@ android {
     }
 
     signingConfigs {
-        release {
-            storeFile ksFile
-            storePassword ksPass
-            keyAlias "contacomico"
-            keyPassword ksPass
+        if (hasSigning) {
+            release {
+                storeFile file(ksPath)
+                storePassword ksPass
+                keyAlias ksAlias
+                keyPassword keyPass
+            }
         }
     }
 
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+            // Sem keystore configurado, o release sai sem assinatura (não instalável).
+            if (hasSigning) signingConfig signingConfigs.release
             minifyEnabled false
         }
     }

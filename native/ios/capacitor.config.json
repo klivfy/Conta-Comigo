@@ -1,0 +1,11 @@
+{
+  "appId": "com.klivfy.contacomigo",
+  "appName": "Conta Comigo",
+  "webDir": "www",
+  "backgroundColor": "#eaf6ff",
+  "ios": {
+    "contentInset": "never",
+    "scheme": "Conta Comigo",
+    "limitsNavigationsToAppBoundDomains": false
+  }
+}

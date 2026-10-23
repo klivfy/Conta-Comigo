@@ -3,30 +3,31 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Conta Comigo — Tela cheia</title>
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/boot.js"></script>
 </head>
 <body class="page-mode">
-  <div class="deco d1">➕</div>
-  <div class="deco d2">🔢</div>
-  <div class="deco d3">✨</div>
+  <div class="deco d1" aria-hidden="true">➕</div>
+  <div class="deco d2" aria-hidden="true">🔢</div>
+  <div class="deco d3" aria-hidden="true">✨</div>
 
   <div id="app">
     <header id="topbar">
       <div class="btn-group">
-        <button id="btn-home" class="icon-btn" data-i18n-title="home" aria-label="🏠">🏠</button>
-        <button id="btn-profile" class="icon-btn" aria-label=" 👥">🧑‍🤝‍🧑</button>
+        <button id="btn-home" class="icon-btn" data-i18n-label="home" aria-label="Início">🏠</button>
+        <button id="btn-profile" class="icon-btn" data-i18n-label="a_profiles" aria-label="Trocar de jogador" aria-haspopup="dialog" aria-expanded="false" aria-controls="pop-profile">🧑‍🤝‍🧑</button>
       </div>
       <div class="btn-group">
         <div id="star-chip" title="⭐">⭐ <span id="star-total">0</span></div>
         <div id="chip-streak">🔥 <b>0</b></div>
       </div>
       <div class="btn-group">
-        <button id="btn-mute" class="icon-btn" aria-label="🔊">🔊</button>
-        <button id="btn-full" class="icon-btn" aria-label="⛶">⛶</button>
-        <button id="btn-gear" class="icon-btn" aria-label="⚙️">⚙️</button>
-        <button id="btn-close" class="icon-btn icon-close hidden" title="✕ Fechar" aria-label="✕">✕</button>
+        <button id="btn-mute" class="icon-btn" data-i18n-label="s_mute" aria-label="Silenciar" aria-pressed="false">🔊</button>
+        <button id="btn-full" class="icon-btn" data-i18n-label="fullscreen" aria-label="Tela cheia">⛶</button>
+        <button id="btn-gear" class="icon-btn" data-i18n-label="gate_title" aria-label="Área dos responsáveis">⚙️</button>
+        <button id="btn-close" class="icon-btn icon-close hidden" data-i18n-label="a_close" aria-label="Fechar">✕</button>
       </div>
     </header>
 
@@ -36,28 +37,31 @@
       <section id="screen-home" class="screen">
         <div class="home-hero">
           <div class="hero-brand">
-            <div class="mascot" id="mascot-home"><span class="mascot-main">🥚</span></div>
+            <div class="mascot" id="mascot-home" aria-hidden="true"><span class="mascot-main">🥚</span></div>
             <div class="hero-titlebox">
               <h1 class="title" data-i18n="appName">Conta Comigo</h1>
               <p class="subtitle" data-i18n="subtitle">Vamos brincar com os números!</p>
             </div>
           </div>
-          <aside class="hero-side">
-            <div class="side-card pet-card">
-              <span class="pet-emoji" id="mascot-side">🥚</span>
-              <div class="pet-lines">
-                <div id="mascot-stage"></div>
-                <div id="mascot-next"></div>
-                <div id="goal-line"></div>
-              </div>
-            </div>
-            <div class="side-card missions-card">
-              <div class="m-title" data-i18n="missions">Missões de hoje</div>
-              <div id="week-strip"></div>
-              <div id="mission-row"></div>
-            </div>
-          </aside>
         </div>
+        <!-- 4.1: jogar primeiro — os modos vêm logo após a marca; status e ajustes depois -->
+        <h2 class="sec-title" data-i18n="pick_game">Escolha um jogo</h2>
+        <div class="modes" id="modes-grid"></div>
+        <aside class="hero-side">
+          <div class="side-card pet-card">
+            <span class="pet-emoji" id="mascot-side" aria-hidden="true">🥚</span>
+            <div class="pet-lines">
+              <div id="mascot-stage"></div>
+              <div id="mascot-next"></div>
+              <div id="goal-line"></div>
+            </div>
+          </div>
+          <div class="side-card missions-card">
+            <div class="m-title" data-i18n="missions">Missões de hoje</div>
+            <div id="week-strip"></div>
+            <div id="mission-row"></div>
+          </div>
+        </aside>
         <div class="home-controls">
           <div class="special-row">
             <button id="sp-review" class="hidden"><b>📚</b><span>Revisar</span></button>
@@ -65,8 +69,8 @@
             <button id="sp-duel"><b>👥</b><span data-i18n="sp_duel">Duelo</span></button>
             <button id="sp-diag"><b>🎯</b><span data-i18n="sp_diag">Meu nível</span></button>
           </div>
-          <div class="diff-row" role="group" aria-label="Dificuldade">
-            <span class="diff-label" data-i18n="difficulty">Dificuldade:</span>
+          <div class="diff-row" role="group" aria-labelledby="diff-label">
+            <span class="diff-label" id="diff-label" data-i18n="difficulty">Dificuldade:</span>
             <button class="diff-chip" data-d="auto">🤖 Auto</button>
             <button class="diff-chip" data-d="1">🌱 1</button>
             <button class="diff-chip" data-d="2">🌿 2</button>
@@ -75,8 +79,6 @@
             <button class="diff-chip" data-d="5">🚀 5</button>
           </div>
         </div>
-        <h2 class="sec-title" data-i18n="pick_game">Escolha um jogo</h2>
-        <div class="modes" id="modes-grid"></div>
         <div class="link-row">
           <button id="btn-shop">🛒 <span data-i18n="shop">Loja</span></button>
           <button id="btn-ach">🏅 <span data-i18n="ach">Conquistas</span></button>
@@ -86,13 +88,13 @@
 
       <!-- TELA DO JOGO -->
       <section id="screen-game" class="screen">
-        <div id="progress"><div id="dots"></div><span id="combo-chip" class="hidden"></span><span id="level-chip"></span></div>
+        <div id="progress"><div id="dots" aria-hidden="true"></div><span id="combo-chip" class="hidden"></span><span id="level-chip"></span></div>
         <div id="visual"></div>
         <div id="equation"></div>
-        <div id="answers"></div>
+        <div id="answers" role="group" data-i18n-label="a_answers" aria-label="Respostas"></div>
         <button id="btn-repeat">🔊 <span data-i18n="repeat">Ouvir de novo</span></button>
         <div id="bubble" class="hidden">
-          <span id="bubble-emoji">🦊</span>
+          <span id="bubble-emoji" aria-hidden="true">🦊</span>
           <span id="bubble-text"></span>
         </div>
       </section>
@@ -129,7 +131,7 @@
       <!-- TELA DA LOJA -->
       <section id="screen-shop" class="screen">
         <div class="shop-head">
-          <button id="shop-back" class="icon-btn" aria-label="🏠">🏠</button>
+          <button id="shop-back" class="icon-btn" data-i18n-label="a_back" aria-label="Voltar ao início">🏠</button>
           <h2 data-i18n="shop">Loja</h2>
           <div id="shop-stars">⭐ 0</div>
         </div>
@@ -147,7 +149,7 @@
       <!-- TELA DE CONQUISTAS -->
       <section id="screen-ach" class="screen">
         <div class="shop-head">
-          <button id="ach-back" class="icon-btn" aria-label="🏠">🏠</button>
+          <button id="ach-back" class="icon-btn" data-i18n-label="a_back" aria-label="Voltar ao início">🏠</button>
           <h2 data-i18n="ach">Conquistas</h2>
           <div style="width:44px"></div>
         </div>
@@ -156,11 +158,12 @@
 
     </main>
 
-    <div id="pop-profile" class="popover hidden"></div>
-    <div id="overlay" class="hidden"><div id="overlay-card"></div></div>
-    <div id="toast" class="hidden"></div>
-    <div id="fx"></div>
-  <div style="position:fixed;bottom:10px;right:14px;font-size:11px;font-weight:800;opacity:.55;z-index:80;background:rgba(255,255,255,.7);border-radius:999px;padding:4px 10px">Conta Comigo Web · versão para escolas · v2.6.0</div>
+    <div id="pop-profile" class="popover hidden" role="dialog"></div>
+    <div id="overlay" class="hidden"><div id="overlay-card" role="dialog" aria-modal="true" tabindex="-1"></div></div>
+    <div id="toast" class="hidden" aria-hidden="true"></div>
+    <div id="sr-live" class="sr-only" role="status" aria-live="polite"></div>
+    <div id="fx" aria-hidden="true"></div>
+  <div class="web-stamp">Conta Comigo Web · versão para escolas · v2.6.0</div>
   </div>
 
   <script src="../js/i18n.js"></script>
