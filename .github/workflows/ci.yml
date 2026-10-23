@@ -37,10 +37,21 @@ jobs:
       - name: Textos em pt/en/es (nenhuma chave faltando)
         run: node scripts/i18n_check.cjs
 
+      # navegador do Playwright em cache, chaveado pela versão (troque as duas juntas)
+      - name: Cache do Chromium do Playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-1.56.1-${{ runner.os }}
+
       - name: Instalar Playwright + axe-core
         run: |
           npm install --no-save --no-package-lock playwright@1.56.1 axe-core@4.10.2
-          npx playwright install --with-deps chromium
+          npx playwright install chromium
+          # o ubuntu-latest já traz as bibliotecas do Chromium; o apt (--with-deps
+          # baixava fontes CJK e xvfb por ~7 min) só roda se o navegador não abrir
+          node -e "require('playwright').chromium.launch().then((b) => b.close())" \
+            || npx playwright install-deps chromium
 
       - name: Acessibilidade (falha em violação nova)
         run: node scripts/a11y_check.cjs
