@@ -1,12 +1,35 @@
 'use strict';
 /* Testa o SHA-256 puro em JS (fallback do portão parental) contra vetores conhecidos. */
 const fs = require('fs');
+const path = require('path');
 const vm = require('vm');
-const src = fs.readFileSync('/home/z/my-project/download/conta-comigo/js/engine.js', 'utf8');
+const enginePath = path.join(__dirname, '..', 'download', 'conta-comigo', 'js', 'engine.js');
+const src = fs.readFileSync(enginePath, 'utf8');
+const matchMediaStub = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
+const windowStub = {
+  matchMedia: matchMediaStub,
+  Capacitor: null,
+  addEventListener() {},
+  removeEventListener() {},
+};
+const documentStub = {
+  querySelector() { return null; },
+  querySelectorAll() { return []; },
+  body: { dataset: {}, classList: { toggle() {} } },
+};
+const navigatorStub = { language: 'pt-BR', languages: ['pt-BR'] };
+const storageStub = { getItem() { return null; }, setItem() {}, removeItem() {} };
 const ctx = {
   console, Math, Date, Array, String, Number, JSON, Uint8Array, TextEncoder,
   crypto: { getRandomValues: (a) => { for (let i = 0; i < a.length; i++) a[i] = Math.floor(Math.random() * 256); return a; } },
+  window: windowStub,
+  document: documentStub,
+  navigator: navigatorStub,
+  localStorage: storageStub,
+  setTimeout,
+  clearTimeout,
 };
+ctx.globalThis = ctx;
 vm.createContext(ctx);
 vm.runInContext(src, ctx, { filename: 'engine.js' });
 const fn = vm.runInContext('ccSha256Hex', ctx);

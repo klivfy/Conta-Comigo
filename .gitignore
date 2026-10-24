@@ -7,6 +7,7 @@ upload/
 db/
 *.log
 .DS_Store
+.vs/
 download/conta-comigo-repo.bundle
 
 # Fase 1 — builds nativos (gerados)
