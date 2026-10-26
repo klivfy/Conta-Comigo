@@ -108,3 +108,25 @@ Legenda: **[eu]** código na branch · **[você]** ação em conta/GitHub/loja.
   - **Lojas:** Google Play (US$ 25), Microsoft Store e Apple (US$ 99/ano).
   - **Política de privacidade:** já sai no Pages.
   - **Kids Category da Apple:** o app não tem links externos nem compras, então não precisa de portão extra.
+
+## Fase 7 — Responsivo por natureza (testes manuais em celular)
+Disparada pelos testes manuais: distorções e botões fora do lugar. Auditoria com `/apple-design` e `/design-system`, medida em 8 aparelhos emulados × 25 telas.
+- [x] 7.1 **Correções críticas** (`css/style.css`):
+  - **Estouro horizontal:** a faixa dos 7 dias usava largura de desktop e saía da tela em 320px e 280px. Agora os dias dividem a largura.
+  - **Celular deitado:** a home em 2 colunas empurrava cartões e botões para fora de uma tela de 568px (agora só a partir de 700px). O jogo ganhou duas colunas, com respostas à direita.
+  - **Popover de perfis:** passou de 403px numa tela de 320px e ficava inalcançável. Agora é `fixed`, com altura pela tela real e rolagem interna.
+  - **Comparar:** o lado B estourava e ficava cortado. Os dois lados dividem a largura por igual.
+  - **Loja:** os botões ficavam desalinhados e quebravam o rótulo. Agora têm a mesma altura e ficam na base.
+  - **Alvos de toque:** o `@media (hover: none)` reduzia o `.mini-btn` para 40px e desfazia o mínimo de 44px da Fase 3. Também subiram para 44px o `.big-btn`, o `.ans`, os botões da home, o OK do modal e os objetos tocáveis.
+  - **Texto:** nenhum abaixo de 11px (havia 9, 9,5, 10 e 10,5px).
+  - **Altura:** `dvh` com reserva e jogo em duas colunas até 820px de altura, o que também vale para iPad e notebook.
+  - **Topbar:** o selo de versão sai abaixo de 560px.
+- [x] 7.2a **Teste de regressão** `scripts/resp_check.cjs` no CI. Com o CSS antigo ele acusa 300 problemas, e com o novo passa.
+- [ ] 7.2 **Dívida do design system** (a fazer; mexe em muito CSS, então precisa de rodada própria):
+  - **Faixas de largura:** são 12 faixas de largura; o ideal é consolidar em 4 ou 5 classes de tamanho.
+  - **Popup vs página cheia:** 235 seletores `body.page-mode` duplicam cada regra. O ideal é um só conjunto de regras fluidas, em que o popup seja só uma janela pequena.
+  - **Tokens `--sp-*`:** estão definidos e têm 0 usos.
+  - **Valores soltos:** 247 valores soltos de padding/margin/gap e 124 tamanhos de fonte em px nos overrides.
+  - **Tipografia:** passar a escala para `clamp()`.
+- [ ] 7.3 **Testar em aparelho real:** notch e Dynamic Island (`safe-area`), barra de URL dinâmica e fonte grande do sistema (Android/iOS). O emulador não reproduz esses três.
+
