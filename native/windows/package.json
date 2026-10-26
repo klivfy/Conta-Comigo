@@ -14,5 +14,66 @@
   "devDependencies": {
     "electron": "^33.2.0",
     "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.klivfy.contacomigo",
+    "productName": "Conta Comigo",
+    "copyright": "Copyright © 2026 Klivfy Tecnologia",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "app/**/*",
+      "build/icon.ico"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "appx",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "Conta-Comigo-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Conta Comigo"
+    },
+    "portable": {
+      "artifactName": "Conta-Comigo-${version}-portable.${ext}"
+    },
+    "appx": {
+      "identityName": "Klivfy.ContaComigo",
+      "publisher": "CN=00000000-0000-0000-0000-000000000000",
+      "publisherDisplayName": "Klivfy Tecnologia",
+      "applicationId": "ContaComigo",
+      "displayName": "Conta Comigo",
+      "languages": [
+        "pt-BR",
+        "en-US",
+        "es-ES"
+      ],
+      "artifactName": "Conta-Comigo-${version}-store.${ext}"
+    }
   }
 }
