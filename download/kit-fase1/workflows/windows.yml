@@ -1,6 +1,10 @@
 name: Windows (Electron — instalador e portable)
 
 on:
+  pull_request:
+    paths:
+      - 'native/windows/**'
+      - '.github/workflows/windows.yml'
   push:
     branches: [main]
     paths:
@@ -49,9 +53,17 @@ jobs:
         working-directory: native/windows
         run: npm ci
 
-      - name: Build instalador NSIS + portable (x64)
+      # Identidade do pacote da Microsoft Store: vem do Partner Center (Gerenciamento de
+      # produto > Identidade do produto). Em Settings > Variables (Actions) defina
+      # APPX_IDENTITY_NAME, APPX_PUBLISHER e APPX_PUBLISHER_DISPLAY_NAME; sem elas
+      # o .appx sai com valores de teste e serve só para validar o empacotamento.
+      - name: Build instalador NSIS + portable + MSIX/APPX (x64)
         working-directory: native/windows
-        run: npx electron-builder --win nsis portable --publish never
+        run: npx electron-builder --win nsis portable appx --publish never
+        env:
+          APPX_IDENTITY_NAME: ${{ vars.APPX_IDENTITY_NAME || 'Klivfy.ContaComigo' }}
+          APPX_PUBLISHER: ${{ vars.APPX_PUBLISHER || 'CN=00000000-0000-0000-0000-000000000000' }}
+          APPX_PUBLISHER_DISPLAY_NAME: ${{ vars.APPX_PUBLISHER_DISPLAY_NAME || 'Klivfy Tecnologia' }}
 
       - name: Extrair versão
         id: ver
@@ -63,6 +75,8 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: conta-comigo-windows-${{ steps.ver.outputs.tag }}
-          path: native/windows/dist/*.exe
+          path: |
+            native/windows/dist/*.exe
+            native/windows/dist/*.appx
           if-no-files-found: error
           retention-days: 30
