@@ -29,7 +29,7 @@ ZIP_FF     = os.path.join(OUT, f"conta-comigo-firefox-{VERSION}.zip")
 # Pastas/arquivos que vão para os zips de extensão (manifest na raiz).
 INCLUDE = [
     "manifest.json", "background.js", "game.html", "popup.html",
-    "newtab.html", "options.html", "icons", "css", "js",
+    "newtab.html", "options.html", "icons", "css", "js", "_locales",
 ]
 # demo.html, web/, loja/ ficam FORA do pacote de instalação das lojas.
 

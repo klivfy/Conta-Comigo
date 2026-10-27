@@ -41,6 +41,23 @@ O build já declara:
 Quando a extensão passa a usar a chave, precisa mantê-la nas versões seguintes —
 o `build_packages.py` já a inclui sempre.
 
+## 3.1 Idioma: português do Brasil como padrão
+
+O AMO só reconhecia inglês (EUA) porque o pacote não tinha `_locales` nem
+`default_locale`. Agora:
+
+- `manifest.json` declara `default_locale: "pt_BR"` e usa `__MSG_*__` em nome,
+  descrição, título do botão e descrição do atalho;
+- `_locales/pt_BR`, `_locales/en` e `_locales/es` têm esses textos (descrição
+  ≤ 132 caracteres). O AMO lê esses idiomas e usa pt-BR como padrão da listagem;
+  o Firefox mostra o nome na língua da interface do usuário;
+- o jogo escolhe o idioma no **primeiro uso** pelos idiomas preferidos do
+  navegador (`navigator.languages`), depois pelo idioma da interface; se nenhum
+  for pt, en ou es, abre em português. Depois disso vale o que a pessoa escolher
+  nas opções. Quem já tinha o jogo instalado mantém o idioma salvo.
+
+No Firefox 128 real: pt-BR abre em português, es-ES em espanhol e en-US em inglês.
+
 ## 4. O que foi validado (e o que não foi)
 
 Validado em 27/10/2026:

@@ -1,0 +1,14 @@
+{
+  "extName": {
+    "message": "Count With Me — Math for Kids"
+  },
+  "extDesc": {
+    "message": "Math game for kids aged 4+: 12 playful modes with spoken questions. Works offline, no ads and no data collection."
+  },
+  "actionTitle": {
+    "message": "Open Count With Me in full screen"
+  },
+  "commandDesc": {
+    "message": "Open Count With Me in full screen"
+  }
+}

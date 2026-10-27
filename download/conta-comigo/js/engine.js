@@ -109,9 +109,22 @@ function applyTheme(g) {
 if (DARK_QUERY && DARK_QUERY.addEventListener) {
   DARK_QUERY.addEventListener('change', () => { try { if (G().theme === 'auto') applyTheme(G()); } catch (e) { /* antes do boot */ } });
 }
+/* Idioma inicial: segue o do navegador/sistema (pt, en ou es); se nenhum for
+   suportado, usa português do Brasil. Só vale no primeiro uso — depois vale a
+   escolha salva nas opções. */
+function detectLang() {
+  const tags = [];
+  try { if (typeof navigator !== 'undefined') tags.push(...(navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language])); } catch (e) { /* sem navigator */ }
+  try { if (typeof chrome !== 'undefined' && chrome.i18n && chrome.i18n.getUILanguage) tags.push(chrome.i18n.getUILanguage()); } catch (e) { /* sem extensão */ }
+  for (const tag of tags) {
+    const l = String(tag || '').slice(0, 2).toLowerCase();
+    if (l === 'pt' || l === 'en' || l === 'es') return l;
+  }
+  return 'pt';
+}
 const DEFAULT_SETTINGS = {
   /* Fase 5: 'auto' segue o sistema (claro = Clássico, escuro = Espaço; ambos grátis) */
-  lang: 'pt', theme: 'auto', hc: false, dys: false, calmo: null,
+  lang: detectLang(), theme: 'auto', hc: false, dys: false, calmo: null,
   mute: false, volume: 0.9, vRate: 0.95, vPitch: 1.15, vVoice: '',
   diffMode: 'auto', goalRounds: 3, sessionLimit: 15, sync: false,
   unlockAll: false, newtabOn: true, timer: true,
