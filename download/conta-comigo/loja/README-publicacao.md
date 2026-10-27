@@ -33,8 +33,11 @@ Chrome Web Store e no Firefox Add-ons (AMO).
    - Enviar o zip `conta-comigo-firefox-2.6.0.zip` ("Carregar uma nova versão");
    - Notas de revisão destacando o id `conta-comigo@klivfy.com`;
    - A nova aba pode ser revertida pelo usuário nas configurações de início do Firefox;
-   - O background é uma event page (`background.scripts`), suportada no
-     Firefox 109+ — ícone, atalho Ctrl+Shift+U e nova aba funcionam nessa faixa completa.
+   - O background é uma event page (`background.scripts`) do MV3, estável a partir
+     do Firefox 121; o pacote declara **Firefox 128+ (ESR)** como mínimo
+     (desktop e Android) e a declaração `data_collection_permissions: none`;
+   - Passo a passo completo, textos e anúncios do Firefox:
+     `firefox-amo/LEIAME-envio-firefox.md`.
 4. **Revisão de conteúdo infantil**: nenhum dado é coletado, não há publicidade,
    compras ou links externos dentro do jogo.
 5. **Contas de desenvolvedor**: taxas únicas/diárias das lojas são de

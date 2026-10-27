@@ -75,10 +75,19 @@ def main():
     mf_path = os.path.join(FF, "manifest.json")
     mf = load_manifest(mf_path)
     mf["background"] = {"scripts": ["background.js"]}          # event page MV3
+    # Mínimo 128.0 (ESR): event pages do MV3 estáveis a partir do Firefox 121;
+    # o CSS do jogo usa dvh e backdrop-filter (103+). O ESR 128 é a base
+    # estável de longo prazo, com suporte de Firefox para Android igual.
     mf["browser_specific_settings"] = {
-        "gecko": {"id": "conta-comigo@klivfy.com", "strict_min_version": "109.0"},
+        "gecko": {
+            "id": "conta-comigo@klivfy.com",
+            "strict_min_version": "128.0",
+            # Obrigatório no AMO para envios novos desde 03/11/2025:
+            # declara que a extensão não coleta dados.
+            "data_collection_permissions": {"required": ["none"]},
+        },
         # v2.5: declara compatibilidade com o Firefox para Android (AMO)
-        "gecko_android": {"strict_min_version": "113.0"},
+        "gecko_android": {"strict_min_version": "128.0"},
     }
     mf.pop("service_worker", None)
     write_manifest(mf_path, mf)
