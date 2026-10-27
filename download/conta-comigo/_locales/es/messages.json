@@ -1,0 +1,14 @@
+{
+  "extName": {
+    "message": "Cuenta Conmigo — Matemática para Niños"
+  },
+  "extDesc": {
+    "message": "Juego de matemática para niños desde 4 años: 12 modos con preguntas narradas. Sin conexión, sin anuncios y sin recopilar datos."
+  },
+  "actionTitle": {
+    "message": "Abrir Cuenta Conmigo a pantalla completa"
+  },
+  "commandDesc": {
+    "message": "Abrir Cuenta Conmigo a pantalla completa"
+  }
+}

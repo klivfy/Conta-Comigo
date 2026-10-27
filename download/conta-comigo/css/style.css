@@ -155,6 +155,7 @@ body.calmo .mascot-main, body.calmo .deco { animation: none !important; }
   border: none; border-radius: var(--r-md); box-shadow: var(--lift-2); cursor: pointer; transition: transform var(--dur-1);
 }
 .icon-btn:active { transform: translateY(2px); box-shadow: var(--lift-0); }
+.icon-btn { flex-shrink: 0; } /* títulos longos (ex.: inglês) quebram linha em vez de espremer o botão */
 #star-chip {
   background: var(--card); border-radius: var(--r-pill); padding: 8px 10px; font-weight: 800; font-size: var(--fs-lg); white-space: nowrap;
   box-shadow: var(--lift-2);
@@ -419,7 +420,8 @@ button:focus-visible, .mode-card:focus-visible { outline: 4px solid var(--focus)
 
 /* ---------- loja ---------- */
 .shop-head { display: flex; align-items: center; justify-content: space-between; width: 100%; }
-.shop-head h2 { font-size: var(--fs-2xl); font-weight: 900; }
+.shop-head { gap: 8px; }
+.shop-head h2 { font-size: var(--fs-2xl); font-weight: 900; min-width: 0; text-align: center; overflow-wrap: anywhere; }
 #shop-stars { font-weight: 900; font-size: var(--fs-xl); background: var(--card); border-radius: var(--r-pill); padding: 8px 16px; box-shadow: var(--lift-2); }
 .shop-sec { width: 100%; margin-top: 12px; }
 .shop-sec > b { font-size: var(--fs-lg); color: var(--ink-soft); }

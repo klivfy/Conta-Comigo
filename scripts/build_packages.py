@@ -29,7 +29,7 @@ ZIP_FF     = os.path.join(OUT, f"conta-comigo-firefox-{VERSION}.zip")
 # Pastas/arquivos que vão para os zips de extensão (manifest na raiz).
 INCLUDE = [
     "manifest.json", "background.js", "game.html", "popup.html",
-    "newtab.html", "options.html", "icons", "css", "js",
+    "newtab.html", "options.html", "icons", "css", "js", "_locales",
 ]
 # demo.html, web/, loja/ ficam FORA do pacote de instalação das lojas.
 
@@ -75,10 +75,19 @@ def main():
     mf_path = os.path.join(FF, "manifest.json")
     mf = load_manifest(mf_path)
     mf["background"] = {"scripts": ["background.js"]}          # event page MV3
+    # Mínimo 128.0 (ESR): event pages do MV3 estáveis a partir do Firefox 121;
+    # o CSS do jogo usa dvh e backdrop-filter (103+). O ESR 128 é a base
+    # estável de longo prazo, com suporte de Firefox para Android igual.
     mf["browser_specific_settings"] = {
-        "gecko": {"id": "conta-comigo@klivfy.com", "strict_min_version": "109.0"},
+        "gecko": {
+            "id": "conta-comigo@klivfy.com",
+            "strict_min_version": "128.0",
+            # Obrigatório no AMO para envios novos desde 03/11/2025:
+            # declara que a extensão não coleta dados.
+            "data_collection_permissions": {"required": ["none"]},
+        },
         # v2.5: declara compatibilidade com o Firefox para Android (AMO)
-        "gecko_android": {"strict_min_version": "113.0"},
+        "gecko_android": {"strict_min_version": "128.0"},
     }
     mf.pop("service_worker", None)
     write_manifest(mf_path, mf)

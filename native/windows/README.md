@@ -37,3 +37,13 @@ cd native/windows && npm ci && npm run dist         # saída em native/windows/d
 - `electron-builder --publish never`: nada é enviado a lojas automaticamente.
 - Futuro (otimização): Tauri 2 reduz o binário de ~90 MB para < 10 MB —
   ver estudo de viabilidade, seção "Custo e esforço".
+
+## Pacote da Microsoft Store (MSIX/APPX)
+
+O build gera também `Conta-Comigo-<versão>-store.appx` (x64). Para enviar à loja:
+
+1. No Partner Center, reserve o nome "Conta Comigo" e copie, em *Gerenciamento de produto > Identidade do produto*, os valores `Package/Identity/Name`, `Package/Identity/Publisher` e `PublisherDisplayName`.
+2. No GitHub, em *Settings > Secrets and variables > Actions > Variables*, crie `APPX_IDENTITY_NAME`, `APPX_PUBLISHER` e `APPX_PUBLISHER_DISPLAY_NAME` com esses valores.
+3. Rode o workflow "Windows" e baixe o `.appx` do artefato. Envie-o em *Envios > Pacotes*.
+
+Sem as variáveis, o pacote sai com identidade de teste e só serve para validar o empacotamento. A loja assina o pacote, então não é preciso certificado próprio. Os `.exe` (NSIS/portable) são para distribuição direta e continuam sem assinatura.
