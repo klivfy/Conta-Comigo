@@ -1,4 +1,4 @@
-# Conta Comigo v2.6.0 — Listagem para o Firefox Add-ons (AMO)
+# Conta Comigo v2.6.1 — Listagem para o Firefox Add-ons (AMO)
 
 Textos prontos para copiar e colar em
 <https://addons.mozilla.org/developers/> → *Editar detalhes do produto*.
@@ -48,7 +48,7 @@ OBSERVAÇÕES
 • A extensão substitui a página de nova aba por um desafio rápido de matemática. Dá para desligar o desafio na própria página; para voltar à nova aba padrão do Firefox, desative ou remova a extensão.
 • Atalho de teclado para abrir o jogo: Ctrl+Shift+U (Command+Shift+U no Mac).
 
-**Notas da versão 2.6.0:**
+**Notas da versão 2.6.1:**
 Layout responsivo para qualquer tamanho de janela, narração com vozes mais naturais e melhorias de acessibilidade. Requer Firefox 128 ou superior.
 
 **Categoria sugerida:** Games & Entertainment (alternativa: Other)
@@ -95,7 +95,7 @@ NOTES
 • The extension replaces the new tab page with a quick math challenge. You can turn the challenge off on that page; to get Firefox's default new tab back, disable or remove the extension.
 • Keyboard shortcut to open the game: Ctrl+Shift+U (Command+Shift+U on Mac).
 
-**Release notes 2.6.0:**
+**Release notes 2.6.1:**
 Responsive layout for any window size, more natural narration voices and accessibility improvements. Requires Firefox 128 or later.
 
 ---
@@ -138,7 +138,7 @@ PRIVACIDAD
 NOTAS
 • La extensión reemplaza la página de nueva pestaña por un desafío rápido de matemática. Puedes apagar el desafío en esa misma página; para recuperar la nueva pestaña predeterminada de Firefox, desactiva o elimina la extensión.
 
-**Notas de la versión 2.6.0:**
+**Notas de la versión 2.6.1:**
 Diseño adaptable a cualquier tamaño de ventana, voces de narración más naturales y mejoras de accesibilidad. Requiere Firefox 128 o superior.
 
 ---
