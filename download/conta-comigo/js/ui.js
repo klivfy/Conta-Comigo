@@ -230,14 +230,7 @@ function renderWeekStrip() {
   el.innerHTML = html;
 }
 
-/* ---------- missões diárias (S16) ---------- */
-const MISSION_DEFS = [
-  { id: 'rounds2', key: 'mi_rounds2', goal: 2, ev: 'round' },
-  { id: 'first5', key: 'mi_first5', goal: 5, ev: 'first' },
-  { id: 'combo3', key: 'mi_combo3', goal: 3, ev: 'combo' },
-  { id: 'newmode', key: 'mi_newmode', goal: 1, ev: 'newmode' },
-  { id: 'review3', key: 'mi_review3', goal: 3, ev: 'review' },
-];
+/* ---------- missões diárias (S16) — regras em engine.js (advanceMissions) ---------- */
 function ensureMissions() {
   const p = P(); const today = fmtDate();
   if (!p.today || p.today.d !== today) p.today = { d: today, rounds: 0, done: false, modes: {} };
@@ -249,20 +242,13 @@ function ensureMissions() {
   }
 }
 function missionEvent(ev, n) {
-  const p = P(); const defs = { rounds2: 'round', first5: 'first', combo3: 'combo', newmode: 'newmode', review3: 'review' };
-  let changed = false;
-  p.missions.list.forEach((m) => {
-    const def = MISSION_DEFS.find((d) => d.id === m.id);
-    if (!def || m.done || defs[m.id] !== ev) return;
-    m.p = Math.min(def.goal, m.p + (n || 1));
-    if (m.p >= def.goal) {
-      m.done = true; changed = true;
-      p.stars += 3; p.missionsDone++;
-      toast('🎉 ' + t('mission_done'));
-      SFX.star(); refreshChrome();
-    }
-  });
-  if (changed) saveState();
+  const done = advanceMissions(P(), ev, n);
+  celebrateMissions(done);
+  if (done.length) saveState();
+}
+function celebrateMissions(done) {
+  done.forEach(() => { toast('🎉 ' + t('mission_done')); SFX.star(); });
+  if (done.length) refreshChrome();
 }
 function renderMissions() {
   const el = $('#mission-row'); if (!el) return;
@@ -626,12 +612,9 @@ const Timer = {
 };
 
 /* ---------- pontos por rapidez e precisão (v2.2) ----------
-   Acerto de primeira: 100×nível + até 60×nível conforme o tempo restante.
-   Acerto após errar: 40×nível (precisão conta, rapidez não). Chefe: dobro. */
-function grantPts(pts) {
+   A conta fica em answerReward (engine.js); aqui só o chip e o "+pontos". */
+function showPts(pts) {
   R.points += pts;
-  const p = P();
-  p.points = (p.points || 0) + pts;
   const chip = $('#pts-chip');
   if (chip) {
     chip.classList.remove('hidden');
@@ -639,7 +622,6 @@ function grantPts(pts) {
     chip.classList.remove('bump'); void chip.offsetWidth; chip.classList.add('bump');
   }
   ptsPop(pts);
-  saveState();
 }
 function ptsPop(pts) {
   const host = $('#screen-game'); if (!host) return;
@@ -676,102 +658,88 @@ function cordialPraise(firstTry, speedRatio) {
   if (!firstTry) return tpick('pr_persist', { name });
   return pick(I18N[LANG].praise);
 }
-function grantStars(n) {
-  const p = P();
-  p.stars += n; R.stars += n;
-  saveState(); refreshChrome();
-}
 function onAnswer(btn) {
   ensureAudio();
   if (R.locked || !R.current) return;
   const v = btn.dataset.v;
   const correct = R.current.kind === 'cmp' ? v === String(R.current.answer) : Number(v) === R.current.answer;
+  if (correct) onCorrect(btn, R.misses === 0);
+  else onWrong(btn);
+}
+function onCorrect(btn, firstTry) {
+  R.locked = true;
   const mode = currentMode();
-  const firstTry = R.misses === 0;
-
-  if (correct) {
-    R.locked = true;
-    const speedRatio = Timer.ratio();
-    const p = P();
-    let gained = firstTry ? 2 : 1;
-    if (R.kind === 'boss') gained *= 2;
-    if (firstTry) {
-      R.firsts++;
-      p.firsts++;
-      R.combo++;
-      if (R.kind === 'diag') R.diagOK++;
-      p.fatigue = 0;
-      if (R.combo > (p.bestCombo || 0)) p.bestCombo = R.combo;
-      if (R.combo === 3) missionEvent('combo');
-      if (R.combo > 0 && R.combo % 5 === 0) { grantStars(2); toast('🔥 +2 ⭐'); }
-      missionEvent('first');
-    }
-    grantStars(gained);
-    p.rights++;
-    bumpLvlStat(mode, R.level, true);
-    if (mode === 'dividir') p.firstDiv = true;
-    if (R.kind === 'review') { gradeReview(R.due[R.qIndex], true); missionEvent('review'); }
-
-    // v2.2: pontos por rapidez + precisão (fora de diagnóstico e duelo)
-    if (R.kind !== 'diag' && R.kind !== 'duel') {
-      const mult = clamp(R.level || 1, 1, MAX_LEVEL);
-      let pts = firstTry ? Math.round(100 * mult + 60 * mult * speedRatio) : 40 * mult;
-      if (R.kind === 'boss') pts *= 2;
-      grantPts(pts);
-    }
-    Timer.stop();
-
-    btn.classList.add('good');
-    $('#answers').classList.add('locked');
-    SFX.correct(); if (firstTry) SFX.star();
-    confetti(firstTry ? 30 : 18);
-    const pr = cordialPraise(firstTry, speedRatio);
-    showBubble(mascotStage().emoji, pr);
-    TTS.speak(pr);
-
-    // S07: adaptação por habilidade (fora de diagnóstico/duelo)
-    if (R.kind === 'normal' || R.kind === 'boss') {
-      const grew = recordResult(mode, firstTry);
-      if (grew > 0) setTimeout(() => levelUpOverlay(mode, p.levels[mode]), 1500);
-    }
-    if (R.kind === 'duel' && firstTry) { if (R.duel.turn === 1) R.duel.s1++; else R.duel.s2++; }
-
-    R.history.push({ txt: R.current.display, ok: firstTry });
-    R.qIndex++;
-    setTimeout(() => {
-      if (R.qIndex >= R.total) endRound();
-      else { if (R.kind === 'duel') R.duel.turn = R.duel.turn === 1 ? 2 : 1; nextQuestion(); }
-    }, 1600);
-  } else {
-    R.misses++; R.wrongs++;
-    P().wrongs++;
-    P().fatigue++;
-    bumpLvlStat(mode, R.level, false);
-    if ((R.kind === 'normal' || R.kind === 'duel') && R.current.f) {
-      addReviewCard(mode === 'mistar' ? R.current.underlying || mode : mode, R.level, R.current.f);
-    }
-    SFX.wrong();
-    btn.classList.add('bad'); btn.disabled = true;
-    if (R.kind !== 'boss') {
-      if (R.misses >= 2) {
-        const good = $('#answers .ans[data-v="' + CSS.escape(String(R.current.answer)) + '"]');
-        if (good) good.classList.add('hint');
-        showBubble('👉', t('hint'));
-        TTS.speak(t('hint'));
-      } else {
-        // v2.4 (A-178): acolhimento sem julgamento, citando os objetos da questão
-        // com artigo concordado (as maçãs / os morangos · pt/es; "the" no en)
-        const f = R.current && R.current.f;
-        const itPl = (f && ITEMS[f.it]) ? ITEMS[f.it].plural : '';
-        const fem = !!(f && ITEMS[f.it] && ITEMS[f.it].f);
-        const art = fem ? (LANG === 'es' ? 'las' : 'as') : (LANG === 'es' ? 'los' : 'os');
-        const r = itPl ? tpick('cm_err_item', { name: P().name, item: itPl, art }) : tpick('cm_err_plain', { name: P().name });
-        showBubble('🙈', r); TTS.speak(r);
-      }
-    }
-    if (P().fatigue >= 3 && !overlayOpen()) { P().fatigue = 0; setTimeout(breathingOverlay, 900); }
-    saveState();
+  const speedRatio = Timer.ratio();
+  const p = P();
+  if (firstTry) {
+    R.firsts++; R.combo++;
+    if (R.kind === 'diag') R.diagOK++;
   }
+  const rw = scoreCorrect(p, { firstTry, kind: R.kind, level: R.level, speedRatio, combo: firstTry ? R.combo : 0, mode });
+  R.stars += rw.stars + rw.combo;
+  if (firstTry) {
+    if (R.combo === 3) missionEvent('combo');
+    if (rw.combo) toast('🔥 +' + rw.combo + ' ⭐');
+    missionEvent('first');
+  }
+  bumpLvlStat(mode, R.level, true);
+  if (R.kind === 'review') { gradeReview(R.due[R.qIndex], true); missionEvent('review'); }
+  if (rw.points) showPts(rw.points);
+  Timer.stop();
+  saveState(); refreshChrome();
+
+  btn.classList.add('good');
+  $('#answers').classList.add('locked');
+  SFX.correct(); if (firstTry) SFX.star();
+  confetti(firstTry ? 30 : 18);
+  const pr = cordialPraise(firstTry, speedRatio);
+  showBubble(mascotStage().emoji, pr);
+  TTS.speak(pr);
+
+  // S07: adaptação por habilidade (fora de diagnóstico/duelo)
+  if (R.kind === 'normal' || R.kind === 'boss') {
+    const grew = recordResult(mode, firstTry);
+    if (grew > 0) setTimeout(() => levelUpOverlay(mode, p.levels[mode]), 1500);
+  }
+  if (R.kind === 'duel' && firstTry) { if (R.duel.turn === 1) R.duel.s1++; else R.duel.s2++; }
+
+  R.history.push({ txt: R.current.display, ok: firstTry });
+  R.qIndex++;
+  setTimeout(() => {
+    if (R.qIndex >= R.total) endRound();
+    else { if (R.kind === 'duel') R.duel.turn = R.duel.turn === 1 ? 2 : 1; nextQuestion(); }
+  }, 1600);
+}
+function onWrong(btn) {
+  const mode = currentMode();
+  R.misses++; R.wrongs++;
+  R.combo = 0; // combo é acerto seguido: o erro zera (antes contava os de primeira da rodada)
+  const needBreak = scoreWrong(P());
+  bumpLvlStat(mode, R.level, false);
+  if ((R.kind === 'normal' || R.kind === 'duel') && R.current.f) {
+    addReviewCard(mode === 'mistar' ? R.current.underlying || mode : mode, R.level, R.current.f);
+  }
+  SFX.wrong();
+  btn.classList.add('bad'); btn.disabled = true;
+  if (R.kind !== 'boss') {
+    if (R.misses >= 2) {
+      const good = $('#answers .ans[data-v="' + CSS.escape(String(R.current.answer)) + '"]');
+      if (good) good.classList.add('hint');
+      showBubble('👉', t('hint'));
+      TTS.speak(t('hint'));
+    } else {
+      // v2.4 (A-178): acolhimento sem julgamento, citando os objetos da questão
+      // com artigo concordado (as maçãs / os morangos · pt/es; "the" no en)
+      const f = R.current && R.current.f;
+      const itPl = (f && ITEMS[f.it]) ? ITEMS[f.it].plural : '';
+      const fem = !!(f && ITEMS[f.it] && ITEMS[f.it].f);
+      const art = fem ? (LANG === 'es' ? 'las' : 'as') : (LANG === 'es' ? 'los' : 'os');
+      const r = itPl ? tpick('cm_err_item', { name: P().name, item: itPl, art }) : tpick('cm_err_plain', { name: P().name });
+      showBubble('🙈', r); TTS.speak(r);
+    }
+  }
+  if (needBreak && !overlayOpen()) { P().fatigue = 0; setTimeout(breathingOverlay, 900); }
+  saveState();
 }
 function levelUpOverlay(mode, lv) {
   SFX.fanfare(); confetti(40);
@@ -780,51 +748,42 @@ function levelUpOverlay(mode, lv) {
 }
 function closeOverlay() { hideOverlay(); }
 
-/* ---------- fim de rodada ---------- */
+/* ---------- fim de rodada ----------
+   As regras ficam em finishRound (engine.js); aqui só comemoração e tela final */
 function endRound() {
   if (R.ended) return; // v2.5: à prova de dupla chamada (tempo global + última questão)
   R.ended = true;
-  const p = P();
-  const today = fmtDate();
-  // ofensiva S15
-  if (p.lastPlay !== today) {
-    p.streak = (p.lastPlay === yesterdayStr()) ? (p.streak || 0) + 1 : 1;
-    p.lastPlay = today;
-  }
-  // semanas (S26)
-  const wk = weekKey();
-  let wrow = p.weeks.find((w) => w.k === wk);
-  if (!wrow) { wrow = { k: wk, rounds: 0, rights: 0 }; p.weeks.push(wrow); p.weeks = p.weeks.slice(-8); }
-  wrow.rounds++; wrow.rights += R.firsts;
-  // rodadas e meta S11
-  p.rounds++;
-  if (!p.today) ensureMissions();
-  p.today.rounds++;
-  missionEvent('round');
-  if (G().goalRounds > 0 && p.today.rounds >= G().goalRounds && !p.today.done) {
-    p.today.done = true; grantStars(5); setTimeout(() => toast('🎯 ' + t('goal_done')), 800);
-  }
-  // chefe S18
-  let bossMsg = '';
-  if (R.kind === 'boss') {
-    const won = R.firsts >= Math.ceil(R.total * 0.7);
-    if (won) { p.bossWon = true; bossMsg = t('boss_win'); } else bossMsg = t('boss_lose');
-  } else if (R.kind === 'normal' && p.rounds % 5 === 0) {
-    p.bossReady = true; bossMsg = t('boss_ready');
-  }
-  // v2.4 (A-118/A-128): rodada vencida depois de errar alimenta as medalhas de
-  // persistência — ANTES do checkAch, para a medalha sair nesta própria rodada
-  if (R.kind === 'normal' && R.wrongs >= 1 && R.firsts >= 3) {
-    p.persistRounds = (p.persistRounds || 0) + 1;
-  }
-  /* v2.5: baú de recompensas — marcos de ofensiva (3/7/14/21/30 dias) abrem
-     um baú com estrelas e uma figurinha garantida */
-  let chestMs = 0;
-  const cms = CHEST_MILESTONES.find((m) => p.streak >= m && !p.chests[m]);
-  if (cms) { p.chests[cms] = 1; chestMs = cms; }
-  checkAch();
+  const res = finishRound(P(), {
+    kind: R.kind, mode: R.mode, firsts: R.firsts, wrongs: R.wrongs, total: R.total, points: R.points, diagOK: R.diagOK,
+  }, { goalRounds: G().goalRounds });
+  R.stars += res.goalStars;
+  R.newRecord = res.newRecord;
   saveState(true);
-
+  celebrateMissions(res.missions);
+  celebrateAch(res.achs);
+  if (res.goalStars) setTimeout(() => toast('🎯 ' + t('goal_done')), 800);
+  renderEndScreen(res);
+  /* v2.5: baú aparece depois da tela final — momento de recompensa */
+  if (res.chest) setTimeout(() => openChest(res.chest), 3200);
+  renderHome();
+}
+function endMessage(res) {
+  if (R.kind === 'diag') return t('diag_done', { n: res.diagLevel });
+  let msg = R.stars === 1 ? t('end_star1') : t('end_stars', { n: R.stars });
+  if (R.kind === 'duel') {
+    const d = R.duel;
+    msg = (d.s1 === d.s2) ? t('duel_tie') : t('duel_win', { av: d.s1 > d.s2 ? d.a1 : d.a2 }) + ' ' + d.a1 + ' ' + d.s1 + ' × ' + d.s2 + ' ' + d.a2;
+  }
+  if (res.boss) msg += ' ' + t(res.boss);
+  /* v2.5: resultado do Contra o Tempo (com recorde próprio) */
+  if (res.survive) {
+    msg += ' ' + (res.survive.n >= 10 ? t('survive_great', { n: res.survive.n }) : t('survive_end', { n: res.survive.n }));
+    if (res.survive.record) msg += ' 🏆 ' + t('survive_record');
+  }
+  return msg;
+}
+function renderEndScreen(res) {
+  const p = P();
   show('end');
   SFX.fanfare();
   confetti(60);
@@ -839,44 +798,7 @@ function endRound() {
     starsEl.appendChild(sp);
     if (i < 5) setTimeout(() => SFX.star(), 300 + i * 140);
   }
-  let msg = R.stars === 1 ? t('end_star1') : t('end_stars', { n: R.stars });
-  if (R.kind === 'duel') {
-    const d = R.duel;
-    msg = (d.s1 === d.s2) ? t('duel_tie') : t('duel_win', { av: d.s1 > d.s2 ? d.a1 : d.a2 }) + ' ' + d.a1 + ' ' + d.s1 + ' × ' + d.s2 + ' ' + d.a2;
-  }
-  if (bossMsg) msg += ' ' + bossMsg;
-  /* v2.5: resultado do Contra o Tempo (com recorde próprio) */
-  let endExtra = '';
-  if (R.kind === 'tempo') {
-    const prevS = p.bestSurvive || 0;
-    endExtra = R.firsts >= 10 ? t('survive_great', { n: R.firsts }) : t('survive_end', { n: R.firsts });
-    if (R.firsts > prevS) { p.bestSurvive = R.firsts; endExtra += ' 🏆 ' + t('survive_record'); saveState(true); }
-  }
-  if (endExtra) msg += ' ' + endExtra;
-  if (R.kind === 'diag') {
-    const sug = R.diagOK <= 2 ? 1 : R.diagOK <= 4 ? 2 : R.diagOK <= 6 ? 3 : R.diagOK === 7 ? 4 : 5;
-    Object.keys(MODES).forEach((m) => { if (m !== 'mistar') p.levels[m] = sug; });
-    p.assessed = true;
-    msg = t('diag_done', { n: sug });
-    saveState();
-  }
-  $('#end-msg').textContent = msg;
-
-  // v2.2: recorde de pontos por modo + destaque na tela final
-  if (R.kind === 'normal' || R.kind === 'boss' || R.kind === 'review') {
-    const key = R.kind === 'boss' ? 'chefe' : R.kind === 'review' ? 'revisao' : (R.mode || 'somar');
-    const prev = (p.bestPts || {})[key] || 0;
-    R.newRecord = R.points > 0 && R.points > prev;
-    if (R.newRecord) { p.bestPts = p.bestPts || {}; p.bestPts[key] = R.points; }
-    saveState(true); // grava o recorde imediatamente (saveState anterior acontece antes dele)
-  }
-  // v2.4 (A-144): parabéns personalizado falado — recorde tem fala própria
-  let spoken = '';
-  if (R.kind === 'normal' || R.kind === 'review') {
-    spoken = R.newRecord && R.points > 0
-      ? tpick('pr_record', { name: p.name, n: R.points })
-      : tpick('pr_end', { name: p.name });
-  }
+  $('#end-msg').textContent = endMessage(res);
   const endPts = $('#end-pts');
   if (endPts) {
     if (R.points > 0) {
@@ -885,52 +807,21 @@ function endRound() {
         (R.newRecord ? ' <span class="rec">🏆 ' + t('end_record') + '</span>' : '');
     } else endPts.classList.add('hidden');
   }
-
   const hist = $('#end-history');
   hist.innerHTML = '<b>' + t('history') + '</b><div class="hist-list">' +
-    R.history.map((h) => '<span class="hrow' + (h.ok ? ' ok' : ' no') + '">' + (h.ok ? '✅' : '🔁') + ' ' + h.txt + '</span>').join('') + '</div>';
-  if (spoken) setTimeout(() => TTS.speak(spoken), 1100); // após a fanfarra
-  /* v2.5: baú aparece depois da tela final — momento de recompensa */
-  if (chestMs) setTimeout(() => openChest(chestMs), 3200);
-  renderHome();
+    R.history.map((h) => '<span class="hrow' + (h.ok ? ' ok' : ' no') + '">' + (h.ok ? '✅' : '🔁') + ' ' + escHtml(h.txt) + '</span>').join('') + '</div>';
+  // v2.4 (A-144): parabéns personalizado falado — recorde tem fala própria
+  if (R.kind === 'normal' || R.kind === 'review') {
+    const spoken = R.newRecord ? tpick('pr_record', { name: p.name, n: R.points }) : tpick('pr_end', { name: p.name });
+    setTimeout(() => TTS.speak(spoken), 1100); // após a fanfarra
+  }
 }
 
-/* ---------- conquistas (S14) ---------- */
-const ACHS = [
-  { id: 'a1', cond: (p) => p.stars >= 1 },
-  { id: 'a2', cond: (p) => p.stars >= 50 },
-  { id: 'a3', cond: (p) => p.stars >= 200 },
-  { id: 'a4', cond: (p) => p.rounds >= 10 },
-  { id: 'a5', cond: (p) => (p.bestCombo || 0) >= 5 },
-  { id: 'a6', cond: (p) => !!p.firstDiv },
-  { id: 'a7', cond: (p) => !!p.bossWon },
-  { id: 'a8', cond: (p) => (p.streak || 0) >= 7 },
-  { id: 'a9', cond: (p) => Object.keys(p.played || {}).length >= 12 },
-  { id: 'a10', cond: (p) => (p.reviewWins || 0) >= 10 },
-  { id: 'a11', cond: (p) => (p.missionsDone || 0) >= 5 },
-  { id: 'a12', cond: (p) => !!p.firstBuy },
-  /* v2.4 (A-118/A-128): medalhas de persistência — errar faz parte, insistir vale medalha */
-  { id: 'a13', cond: (p) => (p.persistRounds || 0) >= 1 },
-  { id: 'a14', cond: (p) => (p.persistRounds || 0) >= 5 },
-  /* v2.5: conquistas das novidades — duas são SECRETAS (aparecem como ???) */
-  { id: 'a15', cond: (p) => !!p.firstPet },
-  { id: 'a16', cond: (p) => (p.stickers || []).length >= 10 },
-  { id: 'a17', sec: true, cond: (p) => (p.stickers || []).length >= STICKERS.length },
-  { id: 'a18', cond: (p) => (p.bestSurvive || 0) >= 10 },
-  { id: 'a19', cond: (p) => Object.keys(p.chests || {}).length >= 3 },
-  { id: 'a20', sec: true, cond: (p) => (p.owned.themes || []).length >= 4 },
-];
-function checkAch() {
-  const p = P();
-  ACHS.forEach((a) => {
-    if (!p.ach[a.id] && a.cond(p)) {
-      p.ach[a.id] = 1;
-      p.stars += 5;
-      toast('🏅 ' + t('ach_unlock', { n: t(a.id) }));
-      SFX.fanfare();
-    }
-  });
+/* ---------- conquistas (S14) — lista e regras em engine.js (ACHS) ---------- */
+function celebrateAch(ids) {
+  ids.forEach((id) => { toast('🏅 ' + t('ach_unlock', { n: t(id) })); SFX.fanfare(); });
 }
+function checkAch() { celebrateAch(unlockAchievements(P())); }
 function renderAch() {
   const p = P();
   $('#ach-grid').innerHTML = ACHS.map((a) => {
@@ -1055,19 +946,11 @@ function buySticker() {
 
 /* ---------- v2.5: baú de recompensas da ofensiva ---------- */
 function openChest(ms) {
-  const p = P();
-  const reward = ms * 10;
-  let extra = '';
-  const missing = STICKERS.map((s, i) => i).filter((i) => !p.stickers.includes(i));
-  if (missing.length) {
-    const idx = missing[rand(0, missing.length - 1)];
-    p.stickers.push(idx);
-    extra = '<p class="ov-sub">' + t('chest_sticker', { s: STICKERS[idx] }) + '</p>';
-  }
-  grantStars(reward);
-  checkAch(); saveState(); refreshChrome();
+  const res = openChestReward(P(), ms);
+  const extra = res.sticker >= 0 ? '<p class="ov-sub">' + t('chest_sticker', { s: STICKERS[res.sticker] }) + '</p>' : '';
+  celebrateAch(res.achs); saveState(); refreshChrome();
   showOverlay('<div class="ov-emoji chest-pop">🎁</div><h3>' + t('chest_title') + '</h3><p>' + t('chest_msg', { n: ms }) + '</p>' +
-    '<p class="chest-reward">⭐ +' + reward + '</p>' + extra +
+    '<p class="chest-reward">⭐ +' + res.stars + '</p>' + extra +
     '<button class="big-btn" id="btn-chest-claim">' + t('chest_claim') + '</button>');
   const b = $('#btn-chest-claim');
   if (b) b.addEventListener('click', () => { SFX.fanfare(); confetti(50); hideOverlay(); });
@@ -1080,7 +963,7 @@ function openChest(ms) {
    de segurança — um clique baixa um .json que pode ser reimportado nas opções. */
 function downloadBackup() {
   try {
-    const data = JSON.stringify(DB, null, 2);
+    const data = JSON.stringify(shareableDB(DB), null, 2);
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1122,9 +1005,13 @@ function breakOverlay() {
 function renderProfilePop() {
   const wrap = $('#pop-profile');
   wrap.setAttribute('aria-labelledby', 'pop-who');
-  wrap.innerHTML = '<b id="pop-who">' + t('who') + '</b>' + DB.profiles.map((pf) =>
-    '<button class="prof-row' + (pf.id === DB.activeId ? ' cur' : '') + '" data-pid="' + escHtml(pf.id) + '">' +
-    '<span class="pf-av">' + escHtml(pf.avatar) + '</span><span class="pf-name">' + escHtml(pf.name) + '</span><span class="pf-st">⭐ ' + pf.stars + ' · ⚡ ' + (pf.points || 0) + '</span></button>').join('') +
+  wrap.innerHTML = '<b id="pop-who">' + t('who') + '</b>' + DB.profiles.map((pf) => {
+    const cur = pf.id === DB.activeId;
+    return '<button class="prof-row' + (cur ? ' cur' : '') + '" data-pid="' + escHtml(pf.id) + '"' + (cur ? ' aria-current="true"' : '') + '>' +
+      '<span class="pf-av">' + escHtml(pf.avatar) + '</span><span class="pf-name">' + escHtml(pf.name) + '</span>' +
+      (cur ? '<span class="pf-cur" aria-hidden="true">✓</span>' : '') +
+      '<span class="pf-st">⭐ ' + pf.stars + ' · ⚡ ' + (pf.points || 0) + '</span></button>';
+  }).join('') +
     (DB.profiles.length < 4
       ? '<div class="prof-add"><input id="new-prof-name" maxlength="14" placeholder="' + t('name_ph') + '" aria-label="' + t('name_ph') + '">' +
         '<div class="av-row" role="group" aria-label="' + t('a_avatar') + '">' + AVATARS.map((a, i) => '<button class="av' + (i === 0 ? ' sel' : '') + '" aria-pressed="' + (i === 0) + '" data-av="' + a + '">' + a + '</button>').join('') + '</div>' +
@@ -1287,7 +1174,7 @@ async function boot() {
     let vv = '';
     try { if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getManifest) vv = chrome.runtime.getManifest().version; } catch (e) { /* sem extensão */ }
     if (!vv) { const mt = document.querySelector('meta[name="cc-version"]'); if (mt) vv = mt.content; }
-    vb.textContent = 'v' + (vv || (window.ccVersion ? window.ccVersion() : '2.6.0'));
+    vb.textContent = 'v' + (vv || (window.ccVersion ? window.ccVersion() : '2.6.2'));
   }
   // v2.4 (A-198): saudação cordial com o nome — o 1º toque libera o áudio no navegador
   const greet = () => {
@@ -1308,7 +1195,7 @@ async function boot() {
       chrome.storage.onChanged.addListener((ch, area) => {
         if (area === 'sync' && ch.cc_state_sync) {
           const remote = parseDB(JSON.stringify(ch.cc_state_sync.newValue));
-          if (remote && remote.updatedAt > DB.updatedAt + 500) { DB = remote; renderHome(); }
+          if (remote && remote.updatedAt > DB.updatedAt + 500) { DB = keepLocalSecrets(remote, DB); renderHome(); }
         }
       });
     }

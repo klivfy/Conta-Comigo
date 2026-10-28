@@ -22,10 +22,11 @@
       <div class="btn-group">
         <div id="star-chip" title="⭐">⭐ <span id="star-total">0</span></div>
         <div id="chip-streak">🔥 <b>0</b></div>
+        <div id="cc-ver" class="cc-ver" title="Conta Comigo">v2.6.2</div>
       </div>
       <div class="btn-group">
         <button id="btn-mute" class="icon-btn" data-i18n-label="s_mute" aria-label="Silenciar" aria-pressed="false">🔊</button>
-        <button id="btn-full" class="icon-btn" data-i18n-label="fullscreen" aria-label="Tela cheia">⛶</button>
+        <button id="btn-full" class="icon-btn" data-i18n-label="fullscreen" aria-label="Tela cheia">📺</button>
         <button id="btn-gear" class="icon-btn" data-i18n-label="gate_title" aria-label="Área dos responsáveis">⚙️</button>
         <button id="btn-close" class="icon-btn icon-close hidden" data-i18n-label="a_close" aria-label="Fechar">✕</button>
       </div>
@@ -88,7 +89,8 @@
 
       <!-- TELA DO JOGO -->
       <section id="screen-game" class="screen">
-        <div id="progress"><div id="dots" aria-hidden="true"></div><span id="combo-chip" class="hidden"></span><span id="level-chip"></span></div>
+        <div id="progress"><div id="dots" aria-hidden="true"></div><span id="combo-chip" class="hidden"></span><span id="pts-chip" class="hidden">⚡ <b>0</b></span><span id="level-chip"></span></div>
+        <div id="timer-wrap" class="hidden" role="progressbar" data-i18n-label="s_timer" aria-label="Cronômetro de pontos" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><i id="timer-bar"></i></div>
         <div id="visual"></div>
         <div id="equation"></div>
         <div id="answers" role="group" data-i18n-label="a_answers" aria-label="Respostas"></div>
@@ -104,6 +106,7 @@
         <div class="mascot"><span class="mascot-main">🥳</span></div>
         <h2 id="end-title">Muito bem!</h2>
         <div id="stars-earned"></div>
+        <div id="end-pts" class="hidden"></div>
         <p id="end-msg"></p>
         <div id="end-history"></div>
         <div class="end-actions">
@@ -151,7 +154,7 @@
         <div class="shop-head">
           <button id="ach-back" class="icon-btn" data-i18n-label="a_back" aria-label="Voltar ao início">🏠</button>
           <h2 data-i18n="ach">Conquistas</h2>
-          <div style="width:44px"></div>
+          <button id="btn-backup" class="icon-btn hidden" data-i18n-label="a_backup" aria-label="Baixar backup">💾</button>
         </div>
         <div id="ach-grid"></div>
       </section>
@@ -163,7 +166,7 @@
     <div id="toast" class="hidden" aria-hidden="true"></div>
     <div id="sr-live" class="sr-only" role="status" aria-live="polite"></div>
     <div id="fx" aria-hidden="true"></div>
-  <div class="web-stamp">Conta Comigo Web · versão para escolas · v2.6.0</div>
+  <div class="web-stamp">Conta Comigo Web · versão para escolas · v2.6.2</div>
   </div>
 
   <script src="../js/i18n.js"></script>

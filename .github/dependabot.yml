@@ -1,0 +1,41 @@
+# Atualizações de dependências (fase D da auditoria). Versões novas esperam
+# 14 dias antes de virar PR (cooldown): dá tempo de um pacote comprometido ser
+# retirado do registro. Correções de segurança não esperam.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /native/windows
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 14
+    groups:
+      electron:
+        patterns: ['electron', 'electron-builder']
+
+  - package-ecosystem: npm
+    directory: /native/ios
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 14
+    groups:
+      capacitor:
+        patterns: ['@capacitor/*', '@capacitor-community/*']
+
+  - package-ecosystem: gradle
+    directory: /native/android
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 14
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 14
+    groups:
+      actions:
+        patterns: ['*']

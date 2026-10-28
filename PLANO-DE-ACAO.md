@@ -22,7 +22,7 @@ Legenda: **[eu]** código na branch · **[você]** ação em conta/GitHub/loja.
 ## Fase 2 — Build e CI confiáveis
 - [x] 2.1 Caminhos relativos nos scripts (`scripts/cc_build.py`) · [x] 2.2 versão a partir do manifest · [x] 2.3 fonte dos ícones empacotada (`scripts/fonts/`)
 - [x] 2.4 Service worker (cache por versão + hash do conteúdo, só `res.ok`, fallback só para navegação; zips antigos da PWA removidos)
-- [x] 2.5 Gradle `rootProject.name` sem espaço · [x] 2.6 workflows em `.github/workflows/` (ci, pages, android, windows, ios) · [x] 2.7 `download/conta-comigo/` como fonte única (Firefox/PWA fora do Git) · [x] 2.8 axe-core no CI (`scripts/a11y_check.cjs` + baseline; workflow `ci.yml` no kit) · [x] 2.9 [eu] script de teste SHA-256 (`scripts/test_sha_cc.js`) com caminho relativo e execução local validada em Node
+- [x] 2.5 Gradle `rootProject.name` sem espaço · [x] 2.6 workflows em `.github/workflows/` (ci, pages, android, windows, ios) · [x] 2.7 `download/conta-comigo/` como fonte única (Firefox/PWA fora do Git) · [x] 2.8 axe-core no CI (`scripts/a11y_check.cjs` + baseline; workflow `ci.yml` no kit) · [x] 2.9 [eu] script de teste SHA-256 (`scripts/test_sha_cc.js`, substituído na v2.6.2 por `tests/engine.test.cjs`)
 
 ## Fase 3 — Acessibilidade WCAG 2.1 AA
 - [x] 3.1 aria-labels textuais via i18n (`data-i18n-label`, pt/en/es) · [x] 3.2 labels em todos os campos do painel e do onboarding (`for`/`aria-labelledby`) · [x] 3.3 modal com `role=dialog`, fundo `inert`, foco preso e devolvido; popover de perfis com `aria-expanded` e Esc
@@ -129,4 +129,36 @@ Disparada pelos testes manuais: distorções e botões fora do lugar. Auditoria 
   - **Valores soltos:** 247 valores soltos de padding/margin/gap e 124 tamanhos de fonte em px nos overrides.
   - **Tipografia:** passar a escala para `clamp()`.
 - [ ] 7.3 **Testar em aparelho real:** notch e Dynamic Island (`safe-area`), barra de URL dinâmica e fonte grande do sistema (Android/iOS). O emulador não reproduz esses três.
+
+## Fase 8 — Auditoria de outubro (v2.6.2)
+Auditoria de segurança, estrutura e design com `/security-review`, `/anthropic-skills:secure-ai-devsecops`, `/code-review`, `/apple-design`, `/impeccable audit` e `/setup-engine`. As letras seguem o plano de ação da auditoria.
+- [ ] 8.A [você] nova upload key do Android e os 4 secrets (item 0.1). Depois, [eu] troco o fingerprint em `assetlinks.json`, `strings.xml` e `twa-manifest.json`, e o CI passa a recusar o antigo.
+- [x] 8.B **Dados e senha:**
+  - **Backup importado:** os cartões de revisão aceitam só os campos de cada gerador, como inteiros. Os mapas do perfil, o tema e o idioma também são validados.
+  - **Senha dos responsáveis:** usa PBKDF2-SHA-256 (600 mil rodadas), com migração no próximo acesso e mínimo de 6 caracteres.
+  - **Segredos:** hash, sal e lembrete não vão no backup nem no sync.
+  - **PWA:** o zip 2.6.0 da PWA, que era sem CSP, saiu.
+- [x] 8.C **Acessibilidade:**
+  - **Texto:** fica em rem e segue o tamanho do sistema, inclusive o Dynamic Type no iOS. Nada sai da tela com o texto a 200%, e o CI verifica isso.
+  - **Windows:** zoom até 300%, e a janela abre na cor do tema.
+  - **Contraste e perfil:** novo token `--accent-text`; o perfil atual ganha `aria-current` e ✓.
+  - **Preferências do sistema:** o alto contraste segue o `prefers-contrast` e o `prefers-reduced-transparency` tira o desfoque da barra.
+  - **Cronômetro e web:** o cronômetro tem nome acessível, e `web/index.html` foi sincronizado.
+- [ ] 8.C2 [você] decidir se o cronômetro de pontos começa desligado para perfis novos.
+- [x] 8.D **Dependências:**
+  - **Windows:** Electron 44.9.2 e electron-builder 26.18.0. O npm audit passou de 14 avisos para 0.
+  - **Automação:** Dependabot ativo, com espera de 14 dias, e `gradle/actions` fixada por commit.
+  - **iOS:** o `@capacitor/cli` fica para o Dependabot, porque os avisos são de build e a correção é desta semana.
+- [ ] 8.D3 [você] proteger a `main`: PR com CI verde antes do merge.
+- [x] 8.E **Estrutura:**
+  - **Regras no engine:** estrelas, pontos, missões, conquistas e fim de rodada viraram funções sem DOM, com 19 testes `node:test` no CI.
+  - **Guarda de cópias:** `scripts/sync_check.cjs` confere a tela do jogo, os workflows do kit e a versão.
+  - **`CLAUDE.md`:** novo, com a stack, as regras e os comandos de verificação.
+  - **Correções de comportamento:** o combo zera no erro, e a medalha do Contra o Tempo sai na mesma rodada.
+- [ ] 8.E4 Juntar popup e `page-mode` num CSS só e aplicar a escala tipográfica aos ajustes por breakpoint (item 7.2). Precisa de rodada própria com revisão visual.
+- [x] 8.F **Polimento:**
+  - O toast não deixa mais o ⭐ sozinho na linha.
+  - Os enfeites saem durante a rodada.
+  - O movimento reduzido esmaece em vez de cortar.
+  - O ícone de tela cheia virou 📺.
 

@@ -66,6 +66,8 @@ async function tryGate() {
   if (ok) {
     const g = G();
     g.passTries = 0; g.passLockUntil = 0;
+    // v2.6.2: hash antigo (SHA-256 de uma rodada) vira PBKDF2 no primeiro acesso certo
+    if (PASS.needsUpgrade(g.passHash)) { g.passSalt = PASS.salt(); g.passHash = await PASS.hash(v, g.passSalt); }
     saveState(true);
     showContent();
   } else {
@@ -89,7 +91,7 @@ async function tryCreateGate() {
   const a = $('#gc-pwd').value || '';
   const b = $('#gc-pwd2').value || '';
   const hint = ($('#gc-hint').value || '').trim();
-  if (a.length < 4) { $('#gc-err').textContent = t('sec_short'); SFX.wrong(); return; }
+  if (a.length < PASS_MIN) { $('#gc-err').textContent = t('sec_short'); SFX.wrong(); return; }
   if (a !== b) { $('#gc-err').textContent = t('sec_mismatch'); SFX.wrong(); return; }
   if (!hint) { $('#gc-err').textContent = t('sec_need_hint'); SFX.wrong(); return; }
   await savePassword(a, hint);
@@ -133,7 +135,7 @@ async function tryChangePwd() {
   const b = $('#sec-new2').value || '';
   const hint = ($('#sec-hint').value || '').trim();
   if (!(await PASS.verify(cur, G().passSalt, G().passHash))) { $('#sec-err').textContent = t('sec_bad_cur'); SFX.wrong(); return; }
-  if (a.length < 4) { $('#sec-err').textContent = t('sec_short'); return; }
+  if (a.length < PASS_MIN) { $('#sec-err').textContent = t('sec_short'); return; }
   if (a !== b) { $('#sec-err').textContent = t('sec_mismatch'); return; }
   if (!hint) { $('#sec-err').textContent = t('sec_need_hint'); return; }
   await savePassword(a, hint);
@@ -187,7 +189,10 @@ function renderOptions() {
   }
   thSel.value = cur;
   $$('#set-theme option').forEach((o) => { o.text = THEME_ICONS[o.value] + ' ' + t('th_' + o.value); });
-  $('#set-hc').checked = !!g.hc;
+  $('#set-hc').value = g.contrast || 'auto';
+  $('#set-hc').options[0].text = '🖥️ auto';
+  $('#set-hc').options[1].text = '🟢 ' + t('on');
+  $('#set-hc').options[2].text = '⚪ ' + t('off');
   $('#set-dys').checked = !!g.dys;
   $('#set-calmo').value = g.calmo == null ? 'auto' : (g.calmo ? 'on' : 'off');
   $('#set-calmo').options[0].text = '🖥️ auto';
@@ -200,7 +205,7 @@ function renderOptions() {
   $('#set-sync').checked = !!g.sync;
   renderSec();
   $('#imp-area').placeholder = t('imp_ph');
-  $('#opt-version').textContent = t('version') + ': ' + (window.ccVersion ? window.ccVersion() : '2.4.1');
+  $('#opt-version').textContent = t('version') + ': ' + (window.ccVersion ? window.ccVersion() : '2.6.2');
 }
 
 /* ---------- painel (S26 + S09) ---------- */
@@ -358,7 +363,7 @@ function paintVoiceTierNote() {
 /* ---------- exportar / importar (S29) + backup com data (v2.5) ---------- */
 function doExport() {
   saveState(true);
-  const blob = new Blob([JSON.stringify(DB, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(shareableDB(DB), null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'conta-comigo-progresso.json';
@@ -369,7 +374,7 @@ function doExport() {
    é removida e reinstalada (recarregar ↻ preserva; remover apaga) */
 function doBackupDownload() {
   saveState(true);
-  const blob = new Blob([JSON.stringify(DB, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(shareableDB(DB), null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'conta-comigo-backup-' + fmtDate() + '.json';
@@ -389,7 +394,7 @@ function paintBackupHint() {
 function doImport(text) {
   const d = parseDB(text);
   if (!d) { toastOpt('⚠️ ' + t('imp_bad')); return; }
-  DB = d;
+  DB = keepLocalSecrets(d, DB); // a senha deste aparelho continua valendo
   if (!DB.profiles.length) DB.profiles = [newProfile('p1', 'Jogador', '🦊')];
   if (!DB.profiles.find((x) => x.id === DB.activeId)) DB.activeId = DB.profiles[0].id;
   DB.settings = Object.assign({}, DEFAULT_SETTINGS, DB.settings || {});
@@ -447,7 +452,7 @@ function bindOptions() {
   $('#set-pitch').addEventListener('input', (e) => { G().vPitch = Number(e.target.value) / 100; set(); });
   $('#set-voice').addEventListener('change', (e) => { G().vVoice = e.target.value; set(); });
   $('#set-theme').addEventListener('change', (e) => { G().theme = e.target.value; set(); renderOptions(); });
-  $('#set-hc').addEventListener('change', (e) => { G().hc = e.target.checked; set(); renderOptions(); });
+  $('#set-hc').addEventListener('change', (e) => { G().contrast = e.target.value; set(); renderOptions(); });
   $('#set-dys').addEventListener('change', (e) => { G().dys = e.target.checked; set(); renderOptions(); });
   $('#set-calmo').addEventListener('change', (e) => { G().calmo = e.target.value === 'auto' ? null : e.target.value === 'on'; set(); });
   $('#set-goal').addEventListener('change', (e) => { G().goalRounds = Number(e.target.value); set(); });
@@ -458,7 +463,7 @@ function bindOptions() {
   $('#btn-backup-dl').addEventListener('click', doBackupDownload); // v2.5: backup datado
   $('#btn-copy').addEventListener('click', async () => {
     saveState(true);
-    const txt = JSON.stringify(DB);
+    const txt = JSON.stringify(shareableDB(DB));
     try { await navigator.clipboard.writeText(txt); toastOpt('✅ ' + t('copied')); }
     catch (e) { $('#imp-area').value = txt; $('#imp-area').select(); document.execCommand('copy'); toastOpt('✅ ' + t('copied')); }
   });

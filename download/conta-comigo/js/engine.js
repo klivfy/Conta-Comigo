@@ -96,18 +96,29 @@ function newProfile(id, name, avatar) {
   };
 }
 /* ---------- tema (Fase 5.4): 'auto' acompanha prefers-color-scheme ao vivo ---------- */
+const THEMES = ['auto', 'classico', 'espaco', 'jardim', 'arcoiris', 'oceano', 'doces', 'neve'];
 const DARK_QUERY = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 function resolvedTheme(g) {
   const th = (g && g.theme) || 'auto';
   if (th !== 'auto') return th;
   return DARK_QUERY && DARK_QUERY.matches ? 'espaco' : 'classico';
 }
+/* alto contraste: 'auto' liga junto com o "Aumentar contraste" do sistema
+   (prefers-contrast: more); 'on'/'off' são a escolha do adulto no painel */
+const CONTRAST_QUERY = window.matchMedia ? window.matchMedia('(prefers-contrast: more)') : null;
+function contrastOn(g) {
+  const c = (g && g.contrast) || 'auto';
+  return c === 'on' || (c === 'auto' && !!(CONTRAST_QUERY && CONTRAST_QUERY.matches));
+}
 function applyTheme(g) {
   document.body.dataset.theme = resolvedTheme(g);
-  document.body.classList.toggle('hc', !!(g && g.hc));
+  document.body.classList.toggle('hc', contrastOn(g));
 }
 if (DARK_QUERY && DARK_QUERY.addEventListener) {
   DARK_QUERY.addEventListener('change', () => { try { if (G().theme === 'auto') applyTheme(G()); } catch (e) { /* antes do boot */ } });
+}
+if (CONTRAST_QUERY && CONTRAST_QUERY.addEventListener) {
+  CONTRAST_QUERY.addEventListener('change', () => { try { applyTheme(G()); } catch (e) { /* antes do boot */ } });
 }
 /* Idioma inicial: segue o do navegador/sistema (pt, en ou es); se nenhum for
    suportado, usa português do Brasil. Só vale no primeiro uso — depois vale a
@@ -124,7 +135,7 @@ function detectLang() {
 }
 const DEFAULT_SETTINGS = {
   /* Fase 5: 'auto' segue o sistema (claro = Clássico, escuro = Espaço; ambos grátis) */
-  lang: detectLang(), theme: 'auto', hc: false, dys: false, calmo: null,
+  lang: detectLang(), theme: 'auto', contrast: 'auto', dys: false, calmo: null,
   mute: false, volume: 0.9, vRate: 0.95, vPitch: 1.15, vVoice: '',
   diffMode: 'auto', goalRounds: 3, sessionLimit: 15, sync: false,
   unlockAll: false, newtabOn: true, timer: true,
@@ -155,6 +166,9 @@ function parseDB(raw) {
     const d = JSON.parse(raw);
     if (!d || typeof d !== 'object') return null;
     if (d.v === 2 && Array.isArray(d.profiles) && d.profiles.length) {
+      // v2.6.2: o antigo hc (sim/não) vira contrast; "não" passa a seguir o sistema
+      const old = d.settings && typeof d.settings === 'object' ? d.settings : {};
+      if (!('contrast' in old) && 'hc' in old) old.contrast = old.hc === true ? 'on' : 'auto';
       d.settings = Object.assign({}, DEFAULT_SETTINGS, d.settings || {});
       normalizeDB(d);
       return d;
@@ -182,6 +196,60 @@ function coerceLike(tpl, obj) {
   });
   return obj;
 }
+/* v2.6.2: mapas por modo (níveis, recordes, conquistas…) — só chaves simples
+   (nada de "__proto__") e valores no formato que o jogo grava */
+function cleanMap(o, fix) {
+  const out = {};
+  if (!o || typeof o !== 'object' || Array.isArray(o)) return out;
+  Object.keys(o).forEach((k) => {
+    if (!/^[A-Za-z0-9]{1,16}$/.test(k)) return;
+    const v = fix(o[k]);
+    if (v !== undefined) out[k] = v;
+  });
+  return out;
+}
+const finiteOr0 = (v) => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
+/* v2.6.2: cartões de revisão (S08) — cada modo aceita só os campos que o seu
+   gerador grava, como inteiros pequenos; op/kind só da lista. Qualquer outra
+   coisa (texto, HTML, número enorme) descarta o cartão inteiro. */
+const REVIEW_FIELDS = {
+  contar: ['it', 'n'], somar: ['it', 'a', 'b'], subtrair: ['it', 'a', 'b'], faltar: ['a', 's'],
+  comparar: ['a', 'b'], sequencia: ['s', 'd'], dobrar: ['n', 'half'], multiplicar: ['g', 'k'],
+  dividir: ['g', 'k'], historia: ['op', 'a', 'b', 'g', 'k', 'it', 'ni'],
+};
+const REVIEW_MONEY = { coins: ['n'], coins5: ['c5', 'c1'], change: ['p', 'v'] };
+const REVIEW_OPS = ['add', 'sub', 'mul', 'div'];
+const REVIEW_NUM_MAX = 500;
+function cleanReviewF(m, f) {
+  if (!f || typeof f !== 'object' || Array.isArray(f)) return null;
+  let keys;
+  if (m === 'dinheiro') {
+    if (!Object.prototype.hasOwnProperty.call(REVIEW_MONEY, f.kind)) return null;
+    keys = REVIEW_MONEY[f.kind];
+  } else if (Object.prototype.hasOwnProperty.call(REVIEW_FIELDS, m)) keys = REVIEW_FIELDS[m];
+  else return null;
+  const out = m === 'dinheiro' ? { kind: f.kind } : {};
+  for (const k of keys) {
+    const v = f[k];
+    if (k === 'op') { if (REVIEW_OPS.indexOf(v) < 0) return null; out.op = v; continue; }
+    if (typeof v !== 'number' || !Number.isInteger(v) || Math.abs(v) > REVIEW_NUM_MAX) return null;
+    if (v < 0 && k !== 'd') return null; // só o passo da sequência pode ser negativo
+    out[k] = v;
+  }
+  if (out.it != null && out.it >= ITEMS.length) return null;
+  if (out.ni != null && out.ni > 3) return null;
+  return out;
+}
+function cleanReviewCard(c) {
+  if (!c || typeof c !== 'object') return null;
+  const f = cleanReviewF(c.m, c.f);
+  if (!f) return null;
+  return {
+    m: c.m, lv: clamp(Math.round(Number(c.lv)) || 1, 1, MAX_LEVEL), f,
+    box: clamp(Math.round(Number(c.box)) || 1, 1, 5),
+    due: (typeof c.due === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(c.due)) ? c.due : fmtDate(),
+  };
+}
 /* v2.2: campos novos de pontos · v2.3: campos da senha dos responsáveis */
 function normalizeDB(d) {
   const seen = {};
@@ -200,16 +268,26 @@ function normalizeDB(d) {
     p.weeks = p.weeks.filter((w) => w && typeof w.k === 'string' && /^[0-9A-Za-z-]{1,12}$/.test(w.k))
       .map((w) => ({ k: w.k, rounds: Number(w.rounds) || 0, rights: Number(w.rights) || 0 }));
     p.points = Number(p.points) || 0;
-    p.bestPts = (p.bestPts && typeof p.bestPts === 'object') ? p.bestPts : {};
+    p.bestPts = cleanMap(p.bestPts, finiteOr0);
+    p.levels = cleanMap(p.levels, (v) => clamp(Math.round(Number(v)) || 1, 1, MAX_LEVEL));
+    p.recent = cleanMap(p.recent, (v) => (Array.isArray(v) ? v.slice(-5).map(Boolean) : undefined));
+    p.lvl = cleanMap(p.lvl, (byLv) => cleanMap(byLv, (b) => (b && typeof b === 'object' ? { r: finiteOr0(b.r), w: finiteOr0(b.w) } : undefined)));
+    p.played = cleanMap(p.played, () => 1);
+    p.today.modes = cleanMap(p.today.modes, () => 1);
+    p.review = p.review.map(cleanReviewCard).filter(Boolean).slice(-24);
+    ['vRate', 'vPitch'].forEach((k) => { if (p[k] != null && !Number.isFinite(p[k])) delete p[k]; });
+    if (p.vVoice != null && typeof p.vVoice !== 'string') delete p.vVoice;
     /* v2.5: persistência blindada de conquistas/coleções — nada some em migração */
-    p.ach = (p.ach && typeof p.ach === 'object') ? p.ach : {};
-    p.stickers = Array.isArray(p.stickers) ? p.stickers : [];
+    p.ach = cleanMap(p.ach, () => 1);
+    p.stickers = (Array.isArray(p.stickers) ? p.stickers : [])
+      .filter((i, j, a) => Number.isInteger(i) && i >= 0 && i < STICKERS.length && a.indexOf(i) === j);
     p.owned = (p.owned && typeof p.owned === 'object') ? p.owned : { themes: ['classico'], hats: [], pets: ['fox'] };
-    if (!Array.isArray(p.owned.themes)) p.owned.themes = ['classico'];
-    if (!Array.isArray(p.owned.hats)) p.owned.hats = [];
-    if (!Array.isArray(p.owned.pets) || !p.owned.pets.length) p.owned.pets = ['fox'];
+    const shortStrs = (a) => (Array.isArray(a) ? a.filter((x) => typeof x === 'string' && x.length <= 16) : []);
+    p.owned.themes = shortStrs(p.owned.themes); if (!p.owned.themes.length) p.owned.themes = ['classico'];
+    p.owned.hats = shortStrs(p.owned.hats);
+    p.owned.pets = shortStrs(p.owned.pets); if (!p.owned.pets.length) p.owned.pets = ['fox'];
     p.pet = typeof p.pet === 'string' ? p.pet : '';
-    p.chests = (p.chests && typeof p.chests === 'object') ? p.chests : {};
+    p.chests = cleanMap(p.chests, () => 1);
     p.bestSurvive = Number(p.bestSurvive) || 0;
     p.firstPet = !!p.firstPet;
   });
@@ -219,6 +297,11 @@ function normalizeDB(d) {
   coerceLike(DEFAULT_SETTINGS, s);
   s.diffMode = (diffMode === 1 || diffMode === 2 || diffMode === 3) ? diffMode : 'auto';
   s.calmo = (calmo === true || calmo === false) ? calmo : null;
+  if (!Object.prototype.hasOwnProperty.call(TTS_LANG, s.lang)) s.lang = detectLang();
+  if (THEMES.indexOf(s.theme) < 0) s.theme = 'auto';
+  if (['auto', 'on', 'off'].indexOf(s.contrast) < 0) s.contrast = 'auto';
+  delete s.hc;
+  s.volume = clamp(s.volume, 0, 1);
   s.lastBackupAt = Number(s.lastBackupAt) || 0;
   ['passHash', 'passSalt', 'passHint'].forEach((k) => { if (typeof s[k] !== 'string') s[k] = ''; });
   ['passSetAt', 'passTries', 'passLockUntil'].forEach((k) => { s[k] = Number(s[k]) || 0; });
@@ -276,7 +359,7 @@ async function initDB() {
     });
     if (syncData && syncData.updatedAt && (!d || (syncData.updatedAt > (d.updatedAt || 0)))) {
       const parsed = parseDB(JSON.stringify(syncData));
-      if (parsed) d = parsed;
+      if (parsed) d = keepLocalSecrets(parsed, d);
     }
   }
   if (!d) d = { v: 2, updatedAt: Date.now(), activeId: '', profiles: [], settings: Object.assign({}, DEFAULT_SETTINGS) };
@@ -321,7 +404,7 @@ function saveState(immediate) {
         chrome.storage.local.set({ cc_state: JSON.parse(json) }, () => { void chrome.runtime.lastError; });
       }
       if (G().sync && typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-        chrome.storage.sync.set({ cc_state_sync: JSON.parse(json) }, () => { void chrome.runtime.lastError; });
+        chrome.storage.sync.set({ cc_state_sync: shareableDB(DB) }, () => { void chrome.runtime.lastError; });
       }
     } catch (e) { /* ignora */ }
   };
@@ -543,11 +626,14 @@ const TTS = {
   stop() { if (this.ok) { this.speakingNow = false; this.cancelQueue(); } },
 };
 
-/* ---------- portão parental: hash de senha (v2.3) ----------
-   A senha NUNCA é guardada em texto puro: guardamos sha256(sal + ':' + senha).
-   O lembrete de segurança fica em texto (serve para ser lido pelo adulto em
-   "Esqueci a senha"). Nada sai do dispositivo — sem permissões de rede.
-   crypto.subtle quando disponível; fallback puro em JS (mesmo algoritmo). */
+/* ---------- portão parental: hash de senha (v2.3 · v2.6.2 PBKDF2) ----------
+   A senha NUNCA é guardada em texto puro. Desde a v2.6.2 guardamos
+   "pbkdf2$<rodadas>$<hex>" = PBKDF2-HMAC-SHA-256(senha, sal). O formato antigo,
+   sha256(sal + ':' + senha) numa rodada só, ainda é aceito e é trocado pelo novo
+   no primeiro acesso certo. O lembrete fica em texto (o adulto o lê em "Esqueci
+   a senha"). Senha, sal e lembrete ficam só no aparelho: não vão no backup, na
+   cópia nem no sync. crypto.subtle quando disponível; fallback puro em JS
+   (mesmo algoritmo, menos rodadas, para contextos sem WebCrypto). */
 function ccUtf8Bytes(str) {
   try { return Array.from(new TextEncoder().encode(str)); }
   catch (e) {
@@ -557,18 +643,35 @@ function ccUtf8Bytes(str) {
     return out;
   }
 }
-function ccSha256Hex(input) {
-  const K = [0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
-    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
-    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
-    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
-    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
-    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
-    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2];
-  const H0 = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
-  const rr = (v, a) => (((v >>> a) | (v << (32 - a))) >>> 0);
-  const bytes = ccUtf8Bytes(input);
+const SHA256_K = new Int32Array([0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+  0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+  0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+  0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+  0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+  0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+  0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+  0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2]);
+const SHA256_H0 = new Int32Array([0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19]);
+/* um bloco de 64 bytes: W[0..15] já preenchidos; atualiza H no lugar */
+function sha256Block(H, W) {
+  const rr = (v, a) => (v >>> a) | (v << (32 - a));
+  for (let i = 16; i < 64; i++) {
+    const s0 = rr(W[i - 15], 7) ^ rr(W[i - 15], 18) ^ (W[i - 15] >>> 3);
+    const s1 = rr(W[i - 2], 17) ^ rr(W[i - 2], 19) ^ (W[i - 2] >>> 10);
+    W[i] = (W[i - 16] + s0 + W[i - 7] + s1) | 0;
+  }
+  let a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+  for (let i = 0; i < 64; i++) {
+    const t1 = (h + (rr(e, 6) ^ rr(e, 11) ^ rr(e, 25)) + ((e & f) ^ (~e & g)) + SHA256_K[i] + W[i]) | 0;
+    const t2 = ((rr(a, 2) ^ rr(a, 13) ^ rr(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) | 0;
+    h = g; g = f; f = e; e = (d + t1) | 0;
+    d = c; c = b; b = a; a = (t1 + t2) | 0;
+  }
+  H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
+  H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+}
+/* SHA-256 de uma lista de bytes → 8 palavras de 32 bits */
+function sha256Words(bytes) {
   const msg = bytes.slice();
   msg.push(0x80);
   while (msg.length % 64 !== 56) msg.push(0);
@@ -576,34 +679,54 @@ function ccSha256Hex(input) {
   const bitsLo = (bytes.length * 8) >>> 0;
   msg.push((bitsHi >>> 24) & 255, (bitsHi >>> 16) & 255, (bitsHi >>> 8) & 255, bitsHi & 255,
     (bitsLo >>> 24) & 255, (bitsLo >>> 16) & 255, (bitsLo >>> 8) & 255, bitsLo & 255);
-  const H = H0.slice();
-  const w = new Array(64);
+  const H = Int32Array.from(SHA256_H0);
+  const W = new Int32Array(64);
   for (let off = 0; off < msg.length; off += 64) {
     for (let i = 0; i < 16; i++) {
       const j = off + i * 4;
-      w[i] = ((msg[j] << 24) | (msg[j + 1] << 16) | (msg[j + 2] << 8) | msg[j + 3]) | 0;
+      W[i] = (msg[j] << 24) | (msg[j + 1] << 16) | (msg[j + 2] << 8) | msg[j + 3];
     }
-    for (let i = 16; i < 64; i++) {
-      const s0 = rr(w[i - 15], 7) ^ rr(w[i - 15], 18) ^ (w[i - 15] >>> 3);
-      const s1 = rr(w[i - 2], 17) ^ rr(w[i - 2], 19) ^ (w[i - 2] >>> 10);
-      w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0;
-    }
-    let a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
-    for (let i = 0; i < 64; i++) {
-      const S1 = rr(e, 6) ^ rr(e, 11) ^ rr(e, 25);
-      const ch = (e & f) ^ (~e & g);
-      const t1 = (h + S1 + ch + K[i] + w[i]) | 0;
-      const S0 = rr(a, 2) ^ rr(a, 13) ^ rr(a, 22);
-      const maj = (a & b) ^ (a & c) ^ (b & c);
-      const t2 = (S0 + maj) | 0;
-      h = g; g = f; f = e; e = (d + t1) | 0;
-      d = c; c = b; b = a; a = (t1 + t2) | 0;
-    }
-    H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
-    H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+    sha256Block(H, W);
   }
-  return H.map((x) => (x >>> 0).toString(16).padStart(8, '0')).join('');
+  return H;
 }
+const wordsHex = (H) => Array.from(H, (x) => (x >>> 0).toString(16).padStart(8, '0')).join('');
+const wordsBytes = (H) => { const out = []; H.forEach((x) => out.push((x >>> 24) & 255, (x >>> 16) & 255, (x >>> 8) & 255, x & 255)); return out; };
+function ccSha256Hex(input) { return wordsHex(sha256Words(ccUtf8Bytes(input))); }
+/* PBKDF2-HMAC-SHA-256 com 32 bytes de saída (um bloco). Cada rodada parte dos
+   estados já processados de ipad/opad: duas compressões por rodada. */
+function ccPbkdf2Hex(pw, salt, iter) {
+  let key = ccUtf8Bytes(pw);
+  if (key.length > 64) key = wordsBytes(sha256Words(key));
+  const padded = (x) => { const b = []; for (let i = 0; i < 64; i++) b.push((key[i] || 0) ^ x); return b; };
+  const ipad = padded(0x36), opad = padded(0x5c);
+  const W = new Int32Array(64);
+  const stateAfter = (block) => {
+    const H = Int32Array.from(SHA256_H0);
+    for (let i = 0; i < 16; i++) W[i] = (block[i * 4] << 24) | (block[i * 4 + 1] << 16) | (block[i * 4 + 2] << 8) | block[i * 4 + 3];
+    sha256Block(H, W);
+    return H;
+  };
+  const iState = stateAfter(ipad), oState = stateAfter(opad);
+  const inner1 = sha256Words(ipad.concat(ccUtf8Bytes(salt), [0, 0, 0, 1]));
+  const U = sha256Words(opad.concat(wordsBytes(inner1)));
+  const T = Int32Array.from(U);
+  const H = new Int32Array(8);
+  // mensagem de 32 bytes depois de um bloco já processado: 0x80, zeros e 768 bits
+  const tail = () => { W[8] = 0x80000000 | 0; W.fill(0, 9, 15); W[15] = 768; };
+  for (let j = 1; j < iter; j++) {
+    H.set(iState); W.set(U, 0); tail(); sha256Block(H, W);
+    W.set(H, 0); H.set(oState); tail(); sha256Block(H, W);
+    U.set(H);
+    for (let k = 0; k < 8; k++) T[k] ^= H[k];
+  }
+  return wordsHex(T);
+}
+const PASS_MIN = 6;            // novas senhas (as antigas, de 4 ou 5, continuam valendo)
+const PASS_ITER = 600000;      // WebCrypto — recomendação da OWASP para PBKDF2-HMAC-SHA-256
+const PASS_ITER_JS = 100000;   // fallback em JS puro (contexto sem crypto.subtle)
+const PASS_ITER_MAX = 2000000;
+const PASS_FMT = /^pbkdf2\$(\d{1,7})\$([0-9a-f]{64})$/;
 const PASS = {
   salt() {
     try {
@@ -615,11 +738,33 @@ const PASS = {
     } catch (e) { /* cai para o fallback */ }
     return String(Date.now()) + String(Math.random()).slice(2, 12) + String(Math.random()).slice(2, 12);
   },
+  subtle() {
+    try { return (typeof crypto !== 'undefined' && crypto.subtle && crypto.subtle.deriveBits) ? crypto.subtle : null; }
+    catch (e) { return null; }
+  },
+  async pbkdf2(pw, salt, iter) {
+    const sub = this.subtle();
+    if (sub) {
+      try {
+        const enc = new TextEncoder();
+        const key = await sub.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveBits']);
+        const bits = await sub.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode(salt), iterations: iter }, key, 256);
+        return Array.from(new Uint8Array(bits)).map((b) => b.toString(16).padStart(2, '0')).join('');
+      } catch (e) { /* cai para o fallback */ }
+    }
+    return ccPbkdf2Hex(pw, salt, iter);
+  },
   async hash(pw, salt) {
+    const iter = this.subtle() ? PASS_ITER : PASS_ITER_JS;
+    return 'pbkdf2$' + iter + '$' + (await this.pbkdf2(pw, salt, iter));
+  },
+  /* formato v2.3 (uma rodada de SHA-256): só para conferir senhas antigas */
+  async legacyHash(pw, salt) {
     const text = salt + ':' + pw;
+    const sub = this.subtle();
     try {
-      if (typeof crypto !== 'undefined' && crypto.subtle && crypto.subtle.digest) {
-        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+      if (sub && sub.digest) {
+        const buf = await sub.digest('SHA-256', new TextEncoder().encode(text));
         return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
       }
     } catch (e) { /* cai para o fallback */ }
@@ -627,10 +772,35 @@ const PASS = {
   },
   async verify(pw, salt, expect) {
     if (!salt || !expect) return false;
-    return (await this.hash(pw, salt)) === expect;
+    const m = PASS_FMT.exec(expect);
+    if (m) {
+      const iter = Number(m[1]);
+      if (iter < 1 || iter > PASS_ITER_MAX) return false;
+      return (await this.pbkdf2(pw, salt, iter)) === m[2];
+    }
+    return /^[0-9a-f]{64}$/.test(expect) && (await this.legacyHash(pw, salt)) === expect;
+  },
+  /* hash antigo, ou feito em JS puro onde agora há WebCrypto: refazer no acesso */
+  needsUpgrade(expect) {
+    const m = PASS_FMT.exec(expect || '');
+    return !m || (Number(m[1]) < PASS_ITER && !!this.subtle());
   },
 };
 
+/* A senha pertence ao aparelho: backup, cópia e sync levam o progresso sem
+   hash, sal, lembrete nem bloqueio, e importar ou adotar uma cópia remota
+   mantém a senha que já está aqui. */
+const SECRET_KEYS = ['passHash', 'passSalt', 'passHint', 'passSetAt', 'passTries', 'passLockUntil'];
+function shareableDB(db) {
+  const out = JSON.parse(JSON.stringify(db));
+  if (out.settings) SECRET_KEYS.forEach((k) => { delete out.settings[k]; });
+  return out;
+}
+function keepLocalSecrets(incoming, local) {
+  const from = (local && local.settings) || DEFAULT_SETTINGS;
+  SECRET_KEYS.forEach((k) => { incoming.settings[k] = from[k] != null ? from[k] : DEFAULT_SETTINGS[k]; });
+  return incoming;
+}
 /* ---------- visuais de objetos ---------- */
 function emojisHTML(item, count, opts) {
   let s = '';
@@ -949,7 +1119,183 @@ function gradeReview(card, right) {
 }
 
 /* ---------- perguntas a partir de cartões de revisão ---------- */
+/* o cartão passa de novo pela validação: os geradores só recebem inteiros
+   conferidos, mesmo que um cartão ruim escape de outro caminho */
 function makeFromCard(card) {
-  const gen = GENS[card.m] || genContar;
-  return gen(clamp(card.lv, 1, MAX_LEVEL), card.f);
+  const c = cleanReviewCard(card);
+  if (!c) return genContar(1);
+  return GENS[c.m](c.lv, c.f);
+}
+
+/* ==================== regras de recompensa (sem DOM) ====================
+   Estrelas, pontos, missões, metas, chefe, conquistas e baús. Estas funções
+   mexem só no perfil recebido e devolvem o que a interface deve comemorar
+   (toast, som, confete ficam em ui.js). Testadas em tests/engine.test.cjs. */
+const STARS_MISSION = 3, STARS_GOAL = 5, STARS_ACH = 5;
+const COMBO_STEP = 5, STARS_COMBO = 2;   // a cada 5 acertos seguidos, +2 ⭐
+const BOSS_EVERY = 5, BOSS_WIN = 0.7;    // chefe a cada 5 rodadas; vence com 70% de primeira
+
+/* ---------- missões diárias (S16) ---------- */
+const MISSION_DEFS = [
+  { id: 'rounds2', key: 'mi_rounds2', goal: 2, ev: 'round' },
+  { id: 'first5', key: 'mi_first5', goal: 5, ev: 'first' },
+  { id: 'combo3', key: 'mi_combo3', goal: 3, ev: 'combo' },
+  { id: 'newmode', key: 'mi_newmode', goal: 1, ev: 'newmode' },
+  { id: 'review3', key: 'mi_review3', goal: 3, ev: 'review' },
+];
+/* avança as missões do dia ligadas ao evento; devolve as que fecharam agora */
+function advanceMissions(p, ev, n) {
+  const done = [];
+  p.missions.list.forEach((m) => {
+    const def = MISSION_DEFS.find((d) => d.id === m.id);
+    if (!def || m.done || def.ev !== ev) return;
+    m.p = Math.min(def.goal, m.p + (n || 1));
+    if (m.p >= def.goal) { m.done = true; p.stars += STARS_MISSION; p.missionsDone++; done.push(def); }
+  });
+  return done;
+}
+
+/* ---------- conquistas (S14) ---------- */
+const ACHS = [
+  { id: 'a1', cond: (p) => p.stars >= 1 },
+  { id: 'a2', cond: (p) => p.stars >= 50 },
+  { id: 'a3', cond: (p) => p.stars >= 200 },
+  { id: 'a4', cond: (p) => p.rounds >= 10 },
+  { id: 'a5', cond: (p) => (p.bestCombo || 0) >= 5 },
+  { id: 'a6', cond: (p) => !!p.firstDiv },
+  { id: 'a7', cond: (p) => !!p.bossWon },
+  { id: 'a8', cond: (p) => (p.streak || 0) >= 7 },
+  { id: 'a9', cond: (p) => Object.keys(p.played || {}).length >= 12 },
+  { id: 'a10', cond: (p) => (p.reviewWins || 0) >= 10 },
+  { id: 'a11', cond: (p) => (p.missionsDone || 0) >= 5 },
+  { id: 'a12', cond: (p) => !!p.firstBuy },
+  /* v2.4 (A-118/A-128): medalhas de persistência — errar faz parte, insistir vale medalha */
+  { id: 'a13', cond: (p) => (p.persistRounds || 0) >= 1 },
+  { id: 'a14', cond: (p) => (p.persistRounds || 0) >= 5 },
+  /* v2.5: conquistas das novidades — duas são SECRETAS (aparecem como ???) */
+  { id: 'a15', cond: (p) => !!p.firstPet },
+  { id: 'a16', cond: (p) => (p.stickers || []).length >= 10 },
+  { id: 'a17', sec: true, cond: (p) => (p.stickers || []).length >= STICKERS.length },
+  { id: 'a18', cond: (p) => (p.bestSurvive || 0) >= 10 },
+  { id: 'a19', cond: (p) => Object.keys(p.chests || {}).length >= 3 },
+  { id: 'a20', sec: true, cond: (p) => (p.owned.themes || []).length >= 4 },
+];
+/* em ordem: as estrelas de uma conquista já contam para a seguinte */
+function unlockAchievements(p) {
+  const got = [];
+  ACHS.forEach((a) => {
+    if (!p.ach[a.id] && a.cond(p)) { p.ach[a.id] = 1; p.stars += STARS_ACH; got.push(a.id); }
+  });
+  return got;
+}
+
+/* ---------- resposta ---------- */
+/* Acerto: 2 ⭐ de primeira, 1 depois de errar; chefe dobra. Pontos (v2.2):
+   100×nível + até 60×nível pelo tempo que sobrou, ou 40×nível depois de errar;
+   chefe dobra; avaliação e duelo não pontuam. a.combo já conta este acerto. */
+function answerReward(a) {
+  const mult = clamp(a.level || 1, 1, MAX_LEVEL);
+  let stars = a.firstTry ? 2 : 1;
+  if (a.kind === 'boss') stars *= 2;
+  let points = 0;
+  if (a.kind !== 'diag' && a.kind !== 'duel') {
+    points = a.firstTry ? Math.round(100 * mult + 60 * mult * clamp(a.speedRatio || 0, 0, 1)) : 40 * mult;
+    if (a.kind === 'boss') points *= 2;
+  }
+  const combo = a.firstTry && a.combo > 0 && a.combo % COMBO_STEP === 0 ? STARS_COMBO : 0;
+  return { stars, combo, points };
+}
+/* aplica o acerto ao perfil; devolve o prêmio de answerReward */
+function scoreCorrect(p, a) {
+  const rw = answerReward(a);
+  if (a.firstTry) {
+    p.firsts++; p.fatigue = 0;
+    if (a.combo > (p.bestCombo || 0)) p.bestCombo = a.combo;
+  }
+  p.stars += rw.stars + rw.combo;
+  p.points = (p.points || 0) + rw.points;
+  p.rights++;
+  if (a.mode === 'dividir') p.firstDiv = true;
+  return rw;
+}
+/* erro: conta e devolve true quando é hora da pausa para respirar (S10); a
+   interface zera p.fatigue quando de fato abre a pausa */
+function scoreWrong(p) {
+  p.wrongs++; p.fatigue++;
+  return p.fatigue >= 3;
+}
+
+/* ---------- fim de rodada ----------
+   r: { kind, mode, firsts, wrongs, total, points, diagOK }; opts.goalRounds e
+   opts.now (Date, para os testes). Ofensiva, semana, missão de rodada, meta
+   do dia, chefe, persistência, baú, recordes, nível da avaliação e, por
+   último, conquistas — para valerem nesta mesma rodada. */
+function finishRound(p, r, opts) {
+  const o = opts || {};
+  const now = o.now || new Date();
+  const today = fmtDate(now);
+  const yest = new Date(now); yest.setDate(yest.getDate() - 1);
+  const res = { goalStars: 0, boss: '', chest: 0, newRecord: false, survive: null, diagLevel: 0, missions: [], achs: [] };
+  // ofensiva (S15)
+  if (p.lastPlay !== today) {
+    p.streak = (p.lastPlay === fmtDate(yest)) ? (p.streak || 0) + 1 : 1;
+    p.lastPlay = today;
+  }
+  // semanas (S26)
+  const wk = weekKey(now);
+  let wrow = p.weeks.find((w) => w.k === wk);
+  if (!wrow) { wrow = { k: wk, rounds: 0, rights: 0 }; p.weeks.push(wrow); p.weeks = p.weeks.slice(-8); }
+  wrow.rounds++; wrow.rights += r.firsts;
+  // rodadas, missão de rodada e meta do dia (S11)
+  p.rounds++;
+  p.today.rounds++;
+  res.missions = advanceMissions(p, 'round');
+  if (o.goalRounds > 0 && p.today.rounds >= o.goalRounds && !p.today.done) {
+    p.today.done = true; p.stars += STARS_GOAL; res.goalStars = STARS_GOAL;
+  }
+  // chefe (S18)
+  if (r.kind === 'boss') {
+    const won = r.firsts >= Math.ceil(r.total * BOSS_WIN);
+    if (won) p.bossWon = true;
+    res.boss = won ? 'boss_win' : 'boss_lose';
+  } else if (r.kind === 'normal' && p.rounds % BOSS_EVERY === 0) {
+    p.bossReady = true; res.boss = 'boss_ready';
+  }
+  // persistência (A-118/A-128): venceu a rodada depois de errar
+  if (r.kind === 'normal' && r.wrongs >= 1 && r.firsts >= 3) p.persistRounds = (p.persistRounds || 0) + 1;
+  // baú (v2.5): marcos de ofensiva 3/7/14/21/30 dias
+  const ms = CHEST_MILESTONES.find((m) => p.streak >= m && !p.chests[m]);
+  if (ms) { p.chests[ms] = 1; res.chest = ms; }
+  // Contra o Tempo (v2.5): recorde de acertos
+  if (r.kind === 'tempo') {
+    const record = r.firsts > (p.bestSurvive || 0);
+    if (record) p.bestSurvive = r.firsts;
+    res.survive = { n: r.firsts, record };
+  }
+  // avaliação (S12): nível sugerido para todos os modos
+  if (r.kind === 'diag') {
+    const ok = r.diagOK;
+    res.diagLevel = ok <= 2 ? 1 : ok <= 4 ? 2 : ok <= 6 ? 3 : ok === 7 ? 4 : 5;
+    Object.keys(MODES).forEach((m) => { if (m !== 'mistar') p.levels[m] = res.diagLevel; });
+    p.assessed = true;
+  }
+  // recorde de pontos por modo (v2.2)
+  if (r.kind === 'normal' || r.kind === 'boss' || r.kind === 'review') {
+    const key = r.kind === 'boss' ? 'chefe' : r.kind === 'review' ? 'revisao' : (r.mode || 'somar');
+    res.newRecord = r.points > 0 && r.points > (p.bestPts[key] || 0);
+    if (res.newRecord) p.bestPts[key] = r.points;
+  }
+  res.achs = unlockAchievements(p);
+  return res;
+}
+
+/* ---------- baú de recompensas (v2.5) ----------
+   10 ⭐ por dia do marco e uma figurinha que ainda falta (sorteada) */
+function openChestReward(p, ms) {
+  const stars = ms * 10;
+  const missing = STICKERS.map((s, i) => i).filter((i) => !p.stickers.includes(i));
+  const sticker = missing.length ? missing[rand(0, missing.length - 1)] : -1;
+  if (sticker >= 0) p.stickers.push(sticker);
+  p.stars += stars;
+  return { stars, sticker, achs: unlockAchievements(p) };
 }

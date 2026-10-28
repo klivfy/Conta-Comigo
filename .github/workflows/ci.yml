@@ -37,6 +37,12 @@ jobs:
       - name: Textos em pt/en/es (nenhuma chave faltando)
         run: node scripts/i18n_check.cjs
 
+      - name: Testes unitários do motor (senha, backup, geradores, regras)
+        run: node --test tests/*.test.cjs
+
+      - name: Cópias sincronizadas (tela do jogo, workflows do kit, versão)
+        run: node scripts/sync_check.cjs
+
       # navegador do Playwright em cache, chaveado pela versão (troque as duas juntas)
       - name: Cache do Chromium do Playwright
         uses: actions/cache@v6
@@ -58,6 +64,9 @@ jobs:
 
       - name: Responsividade (celulares e tablets, retrato e paisagem)
         run: node scripts/resp_check.cjs
+
+      - name: Texto do sistema a 200% (nada sai da tela)
+        run: CC_TEXTO=200 node scripts/resp_check.cjs
 
       - uses: actions/upload-artifact@v7
         with:

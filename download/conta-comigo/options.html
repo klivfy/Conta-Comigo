@@ -44,10 +44,10 @@
     @media (max-width: 430px) {
       .opt-wrap { padding: 14px 12px 40px; }
       .opt-card { padding: 14px 13px; }
-      .opt-head h1 { font-size: 20px; }
+      .opt-head h1 { font-size: 1.25rem; }
       .opt-row input[type="range"] { width: min(180px, 44vw); }
       .opt-row label { flex: 1 1 150px; }
-      .map-mode { flex: 1 1 120px; font-size: 13px; }
+      .map-mode { flex: 1 1 120px; font-size: .8125rem; }
       .map-bar { min-width: 60px; }
       .week-bars { gap: 8px; }
       .week-bar i { width: 20px; }
@@ -206,7 +206,8 @@
               <option value="jardim"></option><option value="arcoiris"></option>
             </select>
           </div>
-          <div class="opt-row"><label for="set-hc" data-i18n="s_hc">Alto contraste</label><input type="checkbox" id="set-hc"></div>
+          <div class="opt-row"><label for="set-hc" data-i18n="s_hc">Alto contraste</label>
+            <select id="set-hc"><option value="auto"></option><option value="on"></option><option value="off"></option></select></div>
           <div class="opt-row"><label for="set-dys" data-i18n="s_dys">Fonte para dislexia</label><input type="checkbox" id="set-dys"></div>
           <div class="opt-row"><label for="set-rm" data-i18n="s_rm">Reduzir movimentos</label><input type="checkbox" id="set-rm"></div>
           <div class="opt-row"><label for="set-calmo" data-i18n="s_calmo">Modo calmo</label>
@@ -257,6 +258,7 @@
           </div>
           <textarea id="imp-area" placeholder="…" data-i18n-label="a_imp_text" aria-label="Texto do backup"></textarea>
           <p class="opt-note" id="bk-hint"></p>
+          <p class="opt-note" data-i18n="bk_pwd_note">🔒 O backup não leva a senha dos responsáveis: ao importar, continua valendo a senha deste aparelho.</p>
           <div class="btn-line" style="margin-top:10px">
             <button class="mini-btn danger-btn" id="btn-reset-p" data-i18n="reset_p">Apagar progresso deste jogador</button>
             <button class="mini-btn danger-btn" id="btn-reset-all" data-i18n="reset_all">Apagar tudo</button>

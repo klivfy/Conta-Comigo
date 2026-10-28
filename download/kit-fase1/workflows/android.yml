@@ -23,7 +23,8 @@ jobs:
           java-version: '21'
 
       - name: Instalar Gradle 8.10.2
-        uses: gradle/actions/setup-gradle@v6
+        # ação de terceiros fixada por commit; o Dependabot propõe as próximas versões
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
           gradle-version: '8.10.2'
 
