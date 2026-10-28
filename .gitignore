@@ -14,10 +14,7 @@ download/conta-comigo-repo.bundle
 native/windows/node_modules/
 native/windows/dist/
 native/windows/app/
-native/android/.gradle/
-native/android/app/build/
-native/android/build/
-native/android/local.properties
+# Android: native/android/.gitignore (node_modules, www) e native/android/android/.gitignore (Gradle)
 
 # Keystore Android — nunca versionar (ver native/android/keystore/README.md)
 native/android/keystore/*
@@ -30,3 +27,6 @@ download/conta-comigo-firefox/
 download/conta-comigo-pwa/
 __pycache__/
 node_modules/
+
+# intermediários do vídeo promocional (scripts/video/fazer_video.sh)
+.video-trabalho/

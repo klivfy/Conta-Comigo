@@ -3,7 +3,7 @@
 Página publicada no GitHub Pages (URL exigida nos cadastros da Play/Store)."""
 import os, re
 
-ROOT = "/home/z/my-project"
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 SRC = os.path.join(ROOT, "download/conta-comigo/loja/politica-de-privacidade.md")
 OUT = os.path.join(ROOT, "docs/politica-de-privacidade.html")
 
@@ -23,6 +23,8 @@ def close():
 def inline(t):
     t = t.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
     t = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", t)
+    t = re.sub(r"&lt;(https?://[^ ]+?)&gt;", r'<a href="\1">\1</a>', t)
+    t = re.sub(r"\[([^\]]+)\]\((#[a-z]+)\)", r'<a href="\2">\1</a>', t)
     t = re.sub(r"`([^`]+)`", r"<code>\1</code>", t)
     return t
 
@@ -35,7 +37,10 @@ for ln in lines:
     if h:
         close()
         lvl = min(len(h.group(1)) + 1, 5)  # h1 do md vira h2 da página
-        html.append(f"<h{lvl}>{inline(h.group(2))}</h{lvl}>")
+        ids = {"Política de Privacidade": "pt", "Privacy Policy": "en", "Política de Privacidad": "es"}
+        key = h.group(2).split(" — ")[0]
+        idattr = f' id="{ids[key]}"' if len(h.group(1)) == 1 and key in ids else ""
+        html.append(f"<h{lvl}{idattr}>{inline(h.group(2))}</h{lvl}>")
         continue
     li = re.match(r"^[-*]\s+(.*)$", s)
     if li:
@@ -60,7 +65,7 @@ page = """<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Política de Privacidade — Conta Comigo</title>
+<title>Política de Privacidade · Privacy Policy · Política de Privacidad — Conta Comigo</title>
 <style>
   body { margin:0; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
          background:#eaf6ff; color:#1f2937; line-height:1.65; }

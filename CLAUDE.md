@@ -12,7 +12,7 @@ Jogo de matemática para crianças de 4 a 8 anos, 100% offline, em pt-BR, en e e
 Tudo sai de `download/conta-comigo/`. Os builds (`download/conta-comigo-pwa/` e `download/conta-comigo-firefox/`) são gerados e ficam fora do Git.
 - `python scripts/build_packages.py`: zips da Chrome e do Firefox (`download/*.zip`). O manifest do Firefox é montado no script.
 - `python scripts/build_pwa.py`: a PWA, que também é a base do Windows (Electron, em `native/windows/`) e do iOS (Capacitor, via `scripts/build_ios_www.py`).
-- Android (TWA) fica em `native/android/`. Keystore **nunca** entra no Git.
+- `python scripts/build_android_www.py`: o jogo para o app Android (Capacitor, em `native/android/`), com ícones e abertura; depois `npx cap sync android`. O jogo vai dentro do APK/AAB, sem depender do site. Keystore **nunca** entra no Git.
 
 ## Variantes de página
 `game.html` (página cheia, `body.page-mode`), `popup.html` (popup 400×600 da extensão) e `web/index.html` (versão para escolas, com caminhos `../`) têm **a mesma marcação** dentro do `<body>`. `scripts/sync_check.cjs` confere isso. Também existem `options.html` (painel dos responsáveis, atrás da senha), `newtab.html` e `demo.html`.
@@ -24,6 +24,7 @@ Tudo sai de `download/conta-comigo/`. Os builds (`download/conta-comigo-pwa/` e 
 - **Textos**: toda chave em pt, en e es (`scripts/i18n_check.cjs`).
 - **Tamanhos**: texto em `rem`; ícones e ilustrações em emoji em `px`. Alvos de toque com no mínimo 44×44px. Cores vêm dos tokens semânticos (`--ink`, `--accent-text`…).
 - **Workflows**: `.github/workflows/*.yml` e `download/kit-fase1/workflows/*.yml` são cópias idênticas.
+- **Identificador**: `com.klivfy.conta.comigo.matematica` em todas as plataformas (Android, iPhone, iPad, Mac, Windows, Linux). Exceções e motivos em `IDENTIFICADORES.md`; o Firefox continua `conta-comigo@klivfy.com`. O `sync_check.cjs` confere.
 - **Versão**: ao mudar a do `manifest.json`, atualize todos os lugares que `scripts/sync_check.cjs` lista.
 
 ## Verificação (rode antes de abrir PR)
@@ -33,8 +34,10 @@ node --test tests/*.test.cjs        # motor: senha, backup, geradores, regras
 node scripts/i18n_check.cjs
 node scripts/sync_check.cjs
 python scripts/build_packages.py && python scripts/build_pwa.py
+python scripts/scan_csp.py          # CSP: sem script/evento inline, javascript: ou eval
 node scripts/a11y_check.cjs         # axe; precisa de playwright e axe-core
 node scripts/resp_check.cjs         # 8 aparelhos × 15 telas
 CC_TEXTO=200 node scripts/resp_check.cjs
+python scripts/build_android_www.py && node scripts/app_check.cjs   # apps: Voltar, backup nativo, barras
 ```
 O CI (`.github/workflows/ci.yml`) roda tudo isso. O Playwright do CI usa a localidade en-US, então teste também em inglês: os textos ficam mais longos.

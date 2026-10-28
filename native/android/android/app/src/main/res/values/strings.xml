@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <!-- Nome exibido: tabela da regra 6 de IDENTIFICADORES.md (pt-BR é o padrão) -->
+    <string name="app_name">Conta Comigo</string>
+    <string name="title_activity_main">Conta Comigo</string>
+    <string name="package_name">com.klivfy.conta.comigo.matematica</string>
+    <string name="custom_url_scheme">com.klivfy.conta.comigo.matematica</string>
+</resources>

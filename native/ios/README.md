@@ -1,14 +1,14 @@
 # iOS — casco Capacitor do Conta Comigo
 
 > Estudo: `download/Conta-Comigo-Estudo-Viabilidade-Nativa-Android-iOS-Windows.pdf`.
-> A rota escolhida é o Capacitor só no iOS. O Android continua na TWA e o Windows no Electron.
+> A rota escolhida é o Capacitor no iOS e, desde 28/10/2026, também no Android (`native/android/`). O Windows continua no Electron.
 
 ## O que tem aqui
 
 ```
 native/ios/
 ├── package.json             Capacitor 8 + @capacitor/preferences + @capacitor-community/text-to-speech
-├── capacitor.config.json    appId com.klivfy.contacomigo · webDir www
+├── capacitor.config.json    appId com.klivfy.conta.comigo.matematica · webDir www
 ├── resources/icon-1024.png  ícone da App Store (gerado, RGB sem alfa)
 ├── www/                     o jogo (gerado; fora do Git)
 └── ios/                     projeto Xcode (Swift Package Manager, sem CocoaPods)
@@ -16,7 +16,7 @@ native/ios/
 
 O jogo é o mesmo motor de `download/conta-comigo/`. Dentro do app, `engine.js` detecta o Capacitor e muda duas coisas sozinho:
 
-| | Na web / extensão / TWA / Electron | No app iOS |
+| | Na web / extensão / Electron | No app iOS |
 |---|---|---|
 | **Progresso** | `localStorage` (e `chrome.storage` na extensão) | **Preferences** nativo, que o sistema não recolhe. O `localStorage` fica como segunda cópia e vale a cópia gravada por último. |
 | **Voz** | Web Speech API. No Safari do iOS, faz `cancel()` antes de cada fala. | **AVSpeechSynthesizer** pelo plugin TextToSpeech, com a mesma escolha de voz (🌟 Luciana Melhorada e outras), a mesma velocidade e a mesma prosódia por pontuação. |
@@ -37,7 +37,7 @@ Sem Mac, o workflow **iOS (Capacitor)** (`download/kit-fase1/workflows/ios.yml`)
 
 ## Publicar (Fase C: depende da conta Apple, US$ 99/ano)
 
-1. Entrar no Apple Developer Program e criar o App ID `com.klivfy.contacomigo`.
+1. Entrar no Apple Developer Program e criar o App ID `com.klivfy.conta.comigo.matematica` (o mesmo vale para iPhone, iPad e Mac; ver `IDENTIFICADORES.md`).
 2. No App Store Connect:
    - categoria **Educação** e **Kids Category, 5 anos ou menos**;
    - etiqueta de privacidade **"Dados não coletados"**;

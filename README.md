@@ -4,8 +4,8 @@
 
 ### Matemática lúdica para crianças a partir de 4 anos
 
-![Versão](https://img.shields.io/badge/vers%C3%A3o-2.6.0-2EA043)
-![Plataformas](https://img.shields.io/badge/plataformas-Chrome%20%C2%B7%20Firefox%20%C2%B7%20PWA-0969DA)
+![Versão](https://img.shields.io/badge/vers%C3%A3o-2.6.3-2EA043)
+![Plataformas](https://img.shields.io/badge/plataformas-Chrome%20%C2%B7%20Edge%20%C2%B7%20Firefox%20%C2%B7%20Android%20%C2%B7%20Windows%20%C2%B7%20iOS%20%C2%B7%20PWA-0969DA)
 ![Idiomas](https://img.shields.io/badge/idiomas-PT%20%C2%B7%20EN%20%C2%B7%20ES-E16F24)
 ![Offline](https://img.shields.io/badge/100%25-offline-8250DF)
 ![Conformidade](https://img.shields.io/badge/COPPA%20%C2%B7%20LGPD--K%20%C2%B7%20GDPR--K-conforme-1F883D)
@@ -48,38 +48,40 @@ O **Conta Comigo** é um jogo educativo que ensina os primeiros conceitos de mat
 
 A narração usa a síntese de voz do próprio sistema com **seleção inteligente de qualidade**: as vozes são agrupadas de 🌟 naturais → ⚡ neurais/rede → padrão → básicas, priorizando as mais humanas disponíveis (ex.: *"Online (Natural)"* do Edge, *Premium/Enhanced* da Apple, Google de rede) e afastando motores robóticos. As opções mostram a **nota "Voz ativa"**, permitem velocidade e tonalidade por perfil e há **guia gratuito** para instalar vozes melhores em cada plataforma (Edge, Windows, Android, iPhone/Mac e Linux/Piper) — tudo em PT, EN e ES.
 
-## 📥 Downloads diretos — v2.6.2
+## 📥 Downloads diretos — v2.6.3
 
 | Plataforma | Pacote |
 |---|---|
-| 🟢 Chrome / Edge / Brave | [conta-comigo-chrome-2.6.2.zip](download/conta-comigo-chrome-2.6.2.zip) |
-| 🦊 Firefox (128+) | [conta-comigo-firefox-2.6.2.zip](download/conta-comigo-firefox-2.6.2.zip) |
-| 🤖 Android (PWA) | [conta-comigo-pwa-android-2.6.2.zip](download/conta-comigo-pwa-android-2.6.2.zip) |
+| 🟢 Chrome / Edge / Brave | [conta-comigo-chrome-2.6.3.zip](download/conta-comigo-chrome-2.6.3.zip) |
+| 🦊 Firefox (128+) | [conta-comigo-firefox-2.6.3.zip](download/conta-comigo-firefox-2.6.3.zip) |
+| 🤖 Android (PWA) | [conta-comigo-pwa-android-2.6.3.zip](download/conta-comigo-pwa-android-2.6.3.zip) |
+| 🤖 Android (app da Play Store) | AAB gerado pelo CI: *Actions → Android (Capacitor)*; assinatura em [native/android/keystore/README.md](native/android/keystore/README.md) |
+| 🎬 Vídeo promocional (2:19, pt-BR) | [conta-comigo-video-promocional-pt-BR.mp4](download/conta-comigo/loja/video/conta-comigo-video-promocional-pt-BR.mp4) + [legenda](download/conta-comigo/loja/video/conta-comigo-video-promocional-pt-BR.srt) |
 
 > Os pacotes ficam na pasta [`download/`](download/) e são gerados a partir de `download/conta-comigo/`. Versões anteriores: [releases](https://github.com/klivfy/Conta-Comigo/releases).
 
 ## 📦 Instalação
 
 **Chrome / Edge / Brave**
-1. Baixe `conta-comigo-chrome-2.6.2.zip` (tabela acima) e descompacte
+1. Baixe `conta-comigo-chrome-2.6.3.zip` (tabela acima) e descompacte
 2. Abra `chrome://extensions`, ative o **modo do desenvolvedor**
 3. Clique em **Carregar sem compactação** e escolha a pasta descompactada
 
 **Firefox**
-1. Baixe `conta-comigo-firefox-2.6.2.zip` e descompacte
+1. Baixe `conta-comigo-firefox-2.6.3.zip` e descompacte
 2. Abra `about:debugging#/runtime/this-firefox` → **Carregar extensão temporária**
 3. Selecione qualquer arquivo da pasta descompactada
 
 **Android (PWA)**
-1. Baixe `conta-comigo-pwa-android-2.6.2.zip` e hospede a pasta em qualquer servidor (local ou web)
+1. Baixe `conta-comigo-pwa-android-2.6.3.zip` e hospede a pasta em qualquer servidor (local ou web)
 2. Abra o endereço no Chrome do celular → menu ⋮ → **Adicionar à tela inicial**
 
-> **Atualização sem perder progresso:** recarregar a extensão (↻ em `chrome://extensions`) preserva estrelas, conquistas e perfis; remover e reinstalar apaga — antes, exporte o backup pelo botão 💾 e reimporte depois. Para confirmar a versão: o **selo `v2.6.2`** aparece no topo do jogo, ao lado de 🔥.
+> **Atualização sem perder progresso:** recarregar a extensão (↻ em `chrome://extensions`) preserva estrelas, conquistas e perfis; remover e reinstalar apaga — antes, exporte o backup pelo botão 💾 e reimporte depois. Para confirmar a versão: o **selo `v2.6.3`** aparece no topo do jogo, ao lado de 🔥.
 
 ## 🔐 Privacidade e público-infância
 
 - **Zero coleta**: nenhuma conta, nenhum dado pessoal, nenhuma telemetria — tudo fica no aparelho
-- **Portão dos responsáveis**: configurações e dados sensíveis atrás de verificação adulta (hash SHA-256 com bloqueio progressivo)
+- **Portão dos responsáveis**: configurações e dados sensíveis atrás de senha guardada só no aparelho (PBKDF2-SHA-256 com sal, bloqueio progressivo); senha, sal e lembrete nunca vão para o backup nem para a sincronização
 - **Conformidade**: COPPA, LGPD (com atenção especial a crianças — LGPD-K) e GDPR-K
 - **Áudio local**: a narração usa a síntese de voz do próprio sistema; nada é enviado a servidores
 
@@ -90,23 +92,27 @@ download/conta-comigo/         Fonte única do jogo (extensão Chrome MV3)
 download/*.zip                 Pacotes prontos das três plataformas
                                (Firefox e PWA são gerados: python scripts/build_packages.py
                                 e python scripts/build_pwa.py — não são versionados)
-download/conta-comigo/loja/    Materiais de publicação nas lojas
-native/android/                App nativo Android (TWA — Gradle + BrowserHelper)
+download/conta-comigo/loja/    Materiais de publicação nas lojas (roteiros, capturas, gráficos, vídeo, política)
+native/android/                App nativo Android (Capacitor — o jogo vai dentro do APK/AAB)
 native/windows/                App nativo Windows 10/11 (Electron + electron-builder)
+native/ios/                    App iPhone e iPad (Capacitor)
 .github/workflows/             CI: Pages, APK/AAB e instalador Windows
-qa/                            Evidências de teste em múltiplos viewports
-scripts/                       Ferramentas de build, empacotamento e QA
+tests/                         Testes do motor (node --test tests/*.test.cjs)
+scripts/                       Build, empacotamento e verificações (i18n, sincronia, CSP, acessibilidade, responsividade, apps)
+scripts/video/                 Gerador do vídeo promocional (Piper + Playwright + ffmpeg)
+docs/                          Política de privacidade (HTML), ADRs e relatórios de revisão
 ```
 
 Tecnologia: **JavaScript vanilla**, Web Extensions **Manifest V3**, **PWA** com service worker e **Web Speech API** — sem frameworks, sem dependências externas, sem telemetria.
 
-## 🚀 Versões nativas (Android e Windows 10/11)
+## 🚀 Versões nativas (Android, Windows 10/11 e iOS)
 
 A partir da v2.6.0 o repositório gera **pacotes nativos por CI** (GitHub Actions), sem reescrever o jogo:
 
-- **Android (TWA)** — `native/android/`: APK para sideload + AAB para a Play Console, assinados com a upload key do repositório e validados contra o `assetlinks.json` publicado no site;
+- **Android (Capacitor)** — `native/android/`: APK para sideload + AAB para a Play Console, com o jogo dentro do pacote (funciona sem internet desde a primeira abertura e não depende do site); assinados com a upload key quando os secrets existem;
 - **Windows (Electron)** — `native/windows/`: instalador NSIS + versão portable (x64);
-- **Site (GitHub Pages)** — a mesma PWA publicada em `https://klivfy.github.io/Conta-Comigo/`, base do TWA.
+- **iPhone e iPad (Capacitor)** — `native/ios/`: build de teste no CI, sem assinatura até existir a conta Apple;
+- **Site (GitHub Pages)** — a mesma PWA publicada em `https://klivfy.github.io/Conta-Comigo/`, com a política de privacidade.
 
 Os pacotes aparecem como **artefatos na aba Actions** a cada push nos diretórios correspondentes (ou executando o workflow manualmente). Detalhes: [native/README.md](native/README.md) · Estudo de viabilidade: [Release v2.6.0](https://github.com/klivfy/Conta-Comigo/releases/tag/v2.6.0).
 
@@ -114,6 +120,9 @@ Os pacotes aparecem como **artefatos na aba Actions** a cada push nos diretório
 
 | Versão | Destaques |
 |---|---|
+| **2.6.3** | Pacote das 5 lojas em pt, en e es (117 capturas, gráficos, política trilíngue e vídeo promocional); identificador único `com.klivfy.conta.comigo.matematica`; **app Android com o jogo dentro do pacote** (Capacitor 8, API 36), backup pela folha de compartilhar, botão Voltar e nome traduzido; contagem por toque no idioma do jogo; limpeza do repositório |
+| **2.6.2** | Auditoria: backup importado validado, senha com PBKDF2 e segredos fora do backup e do sync; texto acompanha o tamanho do sistema (rem, Dynamic Type) e contraste revisto; Electron 44 e Dependabot; regras do jogo no motor, com testes |
+| **2.6.1** | Português do Brasil como padrão e idioma pelo navegador; pacote do Firefox Add-ons (128 ESR) e MSIX da Microsoft Store; correções de layout (Galaxy Fold, inglês) |
 | **2.6.0** | Responsividade total (320px–1920px+), modo paisagem, toque aprimorado, vozes humanizadas (Fase 2), PWA Android |
 | **2.5.0** | Contra o Tempo, baús de ofensiva, 5 mascotes adultas, 3 temas novos, álbum com 36 figurinhas, 20 conquistas, backup de um clique |
 | **2.4.1** | Selo de versão visível no jogo |

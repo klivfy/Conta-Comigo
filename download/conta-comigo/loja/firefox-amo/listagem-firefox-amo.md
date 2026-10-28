@@ -1,4 +1,4 @@
-# Conta Comigo v2.6.2 — Listagem para o Firefox Add-ons (AMO)
+# Conta Comigo v2.6.3 — Listagem para o Firefox Add-ons (AMO)
 
 Textos prontos para copiar e colar em
 <https://addons.mozilla.org/developers/> → *Editar detalhes do produto*.
@@ -48,8 +48,8 @@ OBSERVAÇÕES
 • A extensão substitui a página de nova aba por um desafio rápido de matemática. Dá para desligar o desafio na própria página; para voltar à nova aba padrão do Firefox, desative ou remova a extensão.
 • Atalho de teclado para abrir o jogo: Ctrl+Shift+U (Command+Shift+U no Mac).
 
-**Notas da versão 2.6.2:**
-O texto acompanha o tamanho de fonte escolhido no Firefox e no sistema, o alto contraste liga sozinho quando o sistema pede mais contraste e os destaques em laranja ficaram mais legíveis. A senha dos responsáveis ganhou proteção mais forte e não vai mais no arquivo de backup. Requer Firefox 128 ou superior.
+**Notas da versão 2.6.3:**
+Ao tocar nos objetos para contar, a narração fala os números no idioma do jogo (antes falava sempre em português). Política de privacidade atualizada. Requer Firefox 128 ou superior.
 
 **Categoria sugerida:** Games & Entertainment (alternativa: Other)
 **Etiquetas (tags):** matemática, crianças, educação, jogo, contar, aprendizado, offline, infantil
@@ -95,8 +95,8 @@ NOTES
 • The extension replaces the new tab page with a quick math challenge. You can turn the challenge off on that page; to get Firefox's default new tab back, disable or remove the extension.
 • Keyboard shortcut to open the game: Ctrl+Shift+U (Command+Shift+U on Mac).
 
-**Release notes 2.6.2:**
-Text now follows the font size chosen in Firefox and in the system, high contrast turns on by itself when the system asks for more contrast, and orange highlights are easier to read. The parents' password is better protected and no longer goes into the backup file. Requires Firefox 128 or later.
+**Release notes 2.6.3:**
+When tapping objects to count, the narration now says the numbers in the game's language (it used to always speak Portuguese). Updated privacy policy. Requires Firefox 128 or later.
 
 ---
 
@@ -138,8 +138,8 @@ PRIVACIDAD
 NOTAS
 • La extensión reemplaza la página de nueva pestaña por un desafío rápido de matemática. Puedes apagar el desafío en esa misma página; para recuperar la nueva pestaña predeterminada de Firefox, desactiva o elimina la extensión.
 
-**Notas de la versión 2.6.2:**
-El texto sigue el tamaño de letra elegido en Firefox y en el sistema, el alto contraste se activa solo cuando el sistema pide más contraste y los destacados en naranja se leen mejor. La contraseña de los adultos tiene una protección más fuerte y ya no va en el archivo de copia. Requiere Firefox 128 o superior.
+**Notas de la versión 2.6.3:**
+Al tocar los objetos para contar, la narración dice los números en el idioma del juego (antes siempre hablaba en portugués). Política de privacidad actualizada. Requiere Firefox 128 o superior.
 
 ---
 
@@ -158,3 +158,11 @@ capturas puras estão em `capturas/` caso prefira o jogo sem moldura.
 | 6 | `anuncio-06-conquistas.png` | 20 conquistas para desbloquear |
 
 Ícone da extensão: `icons/icon128.png` (já dentro do pacote; o AMO usa o do manifesto).
+
+---
+
+## Imagens e política de privacidade (novo pacote de lojas)
+
+- Capturas 1280×800 nos 3 idiomas: `../imagens/<idioma>/desktop-1280x800/` (pt, en, es). As capturas e os anúncios desta pasta (`capturas/`, `anuncio/`) continuam válidos para a listagem em português.
+- URL da política de privacidade (trilíngue): https://klivfy.github.io/Conta-Comigo/politica-de-privacidade.html
+- URL de suporte: https://github.com/klivfy/Conta-Comigo/issues

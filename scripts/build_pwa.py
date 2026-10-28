@@ -148,10 +148,10 @@ Três caminhos para usar no Android (do mais simples ao mais completo):
 - O manifest já declara `gecko_android` (Firefox 113+) e o jogo abre em aba normal no celular.
 - Instale pelo Firefox do Android pesquisando "Conta Comigo" no AMO.
 
-## 3) Google Play (TWA via PWA hospedada)
-- Com a PWA publicada em https, gere o pacote Android com **Bubblewrap** (CLI oficial do Google)
-  ou **PWABuilder.com** (interface gráfica): ambos leem o `manifest.webmanifest` e geram o AAB
-  assinado para a Play Console (conta de desenvolvedor US$ 25 única).
+## 3) App da Google Play
+- O app da Play Store (`native/android/` no repositório, Capacitor) leva este mesmo jogo
+  **dentro do pacote**: não depende desta pasta estar hospedada e funciona sem internet
+  desde a primeira abertura.
 - O app usa o mesmo código — atualizações do jogo valem para os 3 caminhos.
 
 ## Privacidade

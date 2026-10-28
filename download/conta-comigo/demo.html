@@ -58,8 +58,8 @@
           <h2>⚠️ A extensão parece igual? Confira a versão em 1 segundo</h2>
           <p>As versões carregadas manualmente <b>não se atualizam sozinhas</b> — se o jogo não mudou nada, o navegador provavelmente ainda está com a build antiga. Agora ficou fácil confirmar:</p>
           <ol>
-            <li>Abra o jogo e olhe o <b>topo da tela</b>: existe um selo com a versão (ex.: <b>v2.6.2</b>) ao lado de 🔥. Esse selo foi criado justamente na v2.4.1.</li>
-            <li>Se <b>não aparece nenhum selo</b>, você está numa versão anterior à 2.4.1 → remova a extensão antiga (<code>chrome://extensions</code> → <i>Remover</i>) e carregue o zip <b>2.6.2</b> novamente (passos abaixo). <b>Atenção:</b> remover apaga o progresso da extensão descompactada — antes de remover, baixe o backup nas Conquistas (botão 💾) ou no painel dos responsáveis.</li>
+            <li>Abra o jogo e olhe o <b>topo da tela</b>: existe um selo com a versão (ex.: <b>v2.6.3</b>) ao lado de 🔥. Esse selo foi criado justamente na v2.4.1.</li>
+            <li>Se <b>não aparece nenhum selo</b>, você está numa versão anterior à 2.4.1 → remova a extensão antiga (<code>chrome://extensions</code> → <i>Remover</i>) e carregue o zip <b>2.6.3</b> novamente (passos abaixo). <b>Atenção:</b> remover apaga o progresso da extensão descompactada — antes de remover, baixe o backup nas Conquistas (botão 💾) ou no painel dos responsáveis.</li>
             <li>Se o selo já aparece com outra versão, use o botão ↻ (Recarregar) em <code>chrome://extensions</code> — assim o progresso é preservado.</li>
           </ol>
         </div>
@@ -91,7 +91,7 @@
             <div class="feat"><b>🏅</b> <b>6 conquistas novas (20 no total)</b> — duas são SECRETAS (aparecem como ???)</div>
             <div class="feat"><b>💾</b> <b>Persistência das conquistas</b>: backup datado de um clique na vitrine (💾) e no painel, com lembrete da idade do backup</div>
             <div class="feat"><b>🔊</b> Som de caixa registradora nas compras e moldura do perfil que evolui com conquistas (dourada → arco-íris)</div>
-            <div class="feat"><b>📱</b> <b>Android pronto</b>: pacote PWA instalável e offline (manifest + service worker + ícones), Firefox Android compatível (gecko_android) e rota para a Play Store via TWA</div>
+            <div class="feat"><b>📱</b> <b>Android pronto</b>: pacote PWA instalável e offline (manifest + service worker + ícones), Firefox Android compatível (gecko_android) e app da Play Store com o jogo dentro do pacote</div>
           </div>
         </div>
 
@@ -169,9 +169,9 @@
         <div class="panel">
           <h2>📱 Android — três caminhos (v2.5)</h2>
           <ol>
-            <li><b>PWA instalável (recomendado)</b>: hospede a pasta <code>conta-comigo-pwa/</code> (ou descompacte <code>conta-comigo-pwa-android-2.6.2.zip</code>) em qualquer endereço <b>https</b> — no Chrome do Android, toque em ⋮ → <b>Adicionar à tela inicial</b>. O jogo abre em tela cheia, com ícone próprio e <b>funciona offline</b> (service worker incluso).</li>
-            <li><b>Firefox para Android</b>: a build Firefox 2.6.2 já declara <code>gecko_android</code> (Firefox 128+) — pronta para publicar no addons.mozilla.org e instalar pelo Firefox do celular.</li>
-            <li><b>Google Play (TWA)</b>: com a PWA publicada em https, gere o app assinado com <b>Bubblewrap</b> (CLI oficial) ou <b>PWABuilder.com</b> e publique na Play Console.</li>
+            <li><b>PWA instalável (recomendado)</b>: hospede a pasta <code>conta-comigo-pwa/</code> (ou descompacte <code>conta-comigo-pwa-android-2.6.3.zip</code>) em qualquer endereço <b>https</b> — no Chrome do Android, toque em ⋮ → <b>Adicionar à tela inicial</b>. O jogo abre em tela cheia, com ícone próprio e <b>funciona offline</b> (service worker incluso).</li>
+            <li><b>Firefox para Android</b>: a build Firefox 2.6.3 já declara <code>gecko_android</code> (Firefox 128+) — pronta para publicar no addons.mozilla.org e instalar pelo Firefox do celular.</li>
+            <li><b>Google Play</b>: o app Android (<code>native/android/</code>, Capacitor) leva o jogo dentro do pacote e funciona sem internet desde a primeira abertura; o CI gera o AAB para a Play Console.</li>
           </ol>
           <p>Em todos os caminhos: sem servidores, sem contas, sem anúncios — tudo roda no dispositivo. Detalhes no arquivo <code>leia-me-android.md</code> dentro do pacote PWA e no estudo <i>Funções, Recompensas e Android</i>.</p>
         </div>
@@ -180,7 +180,7 @@
           <h2>🧩 Instalação no Chromium (Chrome, Edge, Brave, Opera)</h2>
           <ol>
             <li><b>Importante:</b> se já havia uma versão instalada, <b>remova-a</b> primeiro em <code>chrome://extensions</code> → <i>Remover</i> (os erros de CSP reportados vêm da build antiga ainda carregada).</li>
-            <li>Descompacte o arquivo <code>conta-comigo-chrome-2.6.2.zip</code>.</li>
+            <li>Descompacte o arquivo <code>conta-comigo-chrome-2.6.3.zip</code>.</li>
             <li>Abra <code>chrome://extensions</code> (ou <code>edge://extensions</code>).</li>
             <li>Ative o <b>Modo do desenvolvedor</b> (canto superior direito).</li>
             <li>Clique em <b>Carregar sem compactação</b> e escolha a pasta descompactada.</li>
@@ -192,7 +192,7 @@
         <div class="panel">
           <h2>🦊 Instalação no Firefox</h2>
           <ol>
-            <li>Descompacte o arquivo <code>conta-comigo-firefox-2.6.2.zip</code> (build própria do Firefox, com <i>event page</i>).</li>
+            <li>Descompacte o arquivo <code>conta-comigo-firefox-2.6.3.zip</code> (build própria do Firefox, com <i>event page</i>).</li>
             <li>Abra <code>about:debugging#/runtime/this-firefox</code>.</li>
             <li>Clique em <b>Carregar add-on temporário</b>.</li>
             <li>Selecione o <code>manifest.json</code> da pasta descompactada.</li>

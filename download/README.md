@@ -1,16 +1,24 @@
 # Conta Comigo — Arquivos gerados
 
 Extensão de navegador (Chrome + Firefox) de matemática lúdica para crianças a partir de 4 anos.
-Versão atual: **v2.6.2**
+Versão atual: **v2.6.3**
 
 ## ⚠️ A extensão parece igual? Como atualizar e confirmar
 
-Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo parece o de antes, o navegador provavelmente ainda está com a build antiga. Para confirmar em 1 segundo: abra o jogo e olhe o **topo da tela** — desde a v2.4.1 há um **selo de versão** (ex.: `v2.6.2`) ao lado de 🔥. Sem selo = build anterior à 2.4.1.
+Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo parece o de antes, o navegador provavelmente ainda está com a build antiga. Para confirmar em 1 segundo: abra o jogo e olhe o **topo da tela** — desde a v2.4.1 há um **selo de versão** (ex.: `v2.6.3`) ao lado de 🔥. Sem selo = build anterior à 2.4.1.
 
 **Importante sobre o progresso:** recarregar a extensão (botão ↻ em `chrome://extensions`) **preserva** estrelas, conquistas e perfis; **remover e reinstalar apaga**. Antes de remover, baixe o **backup datado** no botão 💾 da tela de Conquistas ou no painel dos responsáveis — depois reimporte no mesmo painel.
 
 **Atualizar (Chrome/Edge/Brave):** com a extensão ainda instalada, clique em ↻ Recarregar no cartão da extensão e escolha a pasta nova descompactada (preserva tudo). Ou: backup → remover → carregar o zip novo → importar o backup.
 **Atualizar (Firefox):** `about:debugging#/runtime/this-firefox` → *Recarregar*.
+
+## Novidades da v2.6.3
+
+- **Contagem no idioma do jogo**: ao tocar nos objetos para contar, a narração fala "one, two, three" em inglês e "uno, dos, tres" em espanhol (antes falava sempre em português).
+- **Identificador único** `com.klivfy.conta.comigo.matematica` em Android, iPhone/iPad/Mac e Windows (regra em `IDENTIFICADORES.md`, conferida pelo `sync_check`). O Firefox mantém `conta-comigo@klivfy.com`.
+- **Android**: `minSdk` 24 e `targetSdk` 36 (exigências do Google Play), R8 ligado com arquivo de desofuscação no `.aab` (0,8 MB) e AGP 8.13.2.
+- **Windows**: arquivos renomeados para `conta-comigo-windows-<versão>-x64-<instalador|portatil|loja>`; o instalador usa o identificador novo.
+- **Lojas**: pacote de publicação das 5 lojas em pt, en e es (`conta-comigo/loja/`), política de privacidade trilíngue e vídeo promocional.
 
 ## Novidades da v2.6.2
 
@@ -35,9 +43,9 @@ Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo par
 
 | Arquivo | Uso |
 |---|---|
-| `conta-comigo-chrome-2.6.2.zip` | Pacote para Chrome/Edge/Brave (Manifest V3, service worker) |
-| `conta-comigo-firefox-2.6.2.zip` | Pacote para Firefox computador **e Android** (event page + `gecko_android` 128+) |
-| `conta-comigo-pwa-android-2.6.2.zip` | **Android/PWA**: jogo instalável e offline (manifest + service worker + ícones maskable) — hospedar em https e "Adicionar à tela inicial" |
+| `conta-comigo-chrome-2.6.3.zip` | Pacote para Chrome/Edge/Brave (Manifest V3, service worker) |
+| `conta-comigo-firefox-2.6.3.zip` | Pacote para Firefox computador **e Android** (event page + `gecko_android` 128+) |
+| `conta-comigo-pwa-android-2.6.3.zip` | **Android/PWA**: jogo instalável e offline (manifest + service worker + ícones maskable) — hospedar em https e "Adicionar à tela inicial" |
 
 - Instalação e novidades: abra `conta-comigo/demo.html` no navegador.
 - Pasta `conta-comigo/` = fonte única (build Chromium). As pastas `conta-comigo-firefox/` e `conta-comigo-pwa/` são geradas por `python scripts/build_packages.py` e `python scripts/build_pwa.py` e não ficam no Git.

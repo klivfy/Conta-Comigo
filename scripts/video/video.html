@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Conta;src:url("../../download/conta-comigo/css/fonts/nunito-latin.woff2");font-weight:200 1000}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden}
+body{font-family:Conta,system-ui,sans-serif;color:#2a2a55;background:#f4f7ff}
+#bg{position:absolute;inset:0;background:linear-gradient(135deg,#eaf6ff 0%,#fff3e6 55%,#ffe4ee 100%)}
+.blob{position:absolute;border-radius:50%;filter:blur(60px);opacity:.55}
+.scene{position:absolute;inset:0;opacity:0}
+.abs{position:absolute}
+.kicker{display:inline-block;font-weight:900;font-size:30px;color:#a34a00;background:#ffe9d2;border-radius:999px;padding:10px 26px}
+.h1{font-weight:900;font-size:84px;line-height:1.02;letter-spacing:-.015em;color:#2a2a55}
+.sub{font-weight:700;font-size:38px;line-height:1.3;color:#4a4a72}
+.chip{display:inline-block;font-weight:800;font-size:30px;background:#fff;border:3px solid #e3e6f5;border-radius:999px;padding:12px 26px;margin:0 12px 14px 0;box-shadow:0 6px 18px rgba(42,42,85,.08)}
+.laptop{position:absolute}
+.laptop .scr{position:absolute;border-radius:18px;overflow:hidden;background:#000;border:14px solid #1d2036;box-shadow:0 30px 80px rgba(42,42,85,.28)}
+.laptop .scr img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.laptop .base{position:absolute;height:22px;border-radius:0 0 26px 26px;background:linear-gradient(#c9cde0,#9aa0bb)}
+.phone{position:absolute;border-radius:54px;background:#1d2036;padding:16px;box-shadow:0 30px 70px rgba(42,42,85,.3)}
+.phone .in{position:relative;width:100%;height:100%;border-radius:40px;overflow:hidden;background:#000}
+.phone img,.tablet img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.tablet{position:absolute;border-radius:40px;background:#1d2036;padding:20px;box-shadow:0 30px 70px rgba(42,42,85,.3)}
+.tablet .in{position:relative;width:100%;height:100%;border-radius:22px;overflow:hidden}
+.icon{border-radius:22%;box-shadow:0 18px 50px rgba(255,154,61,.45)}
+.badge{position:absolute;display:flex;align-items:center;gap:22px;font-weight:900;font-size:46px;background:#fff;border-radius:34px;padding:28px 44px;box-shadow:0 16px 40px rgba(42,42,85,.12);border:3px solid #eef0fa}
+.badge b{font-size:64px}
+#cap{position:absolute;left:50%;bottom:44px;transform:translateX(-50%);max-width:1500px;text-align:center;font-weight:800;font-size:40px;line-height:1.3;color:#fff;background:rgba(26,28,52,.86);border-radius:22px;padding:16px 34px;opacity:0}
+#brand{position:absolute;right:46px;top:38px;display:flex;align-items:center;gap:14px;font-weight:900;font-size:30px;opacity:0}
+#brand img{width:58px;height:58px;border-radius:22%}
+.star{position:absolute;font-size:64px}
+.ring{position:absolute;border:8px solid #ff9a3d;border-radius:50%}
+</style></head>
+<body>
+<div id="bg"></div>
+<div class="blob" id="b1" style="width:720px;height:720px;background:#ffd3a8;left:-200px;top:-220px"></div>
+<div class="blob" id="b2" style="width:640px;height:640px;background:#c9e6ff;right:-160px;bottom:-200px"></div>
+<div id="stage"></div>
+<div id="brand"><img id="brandimg"><span>Conta Comigo</span></div>
+<div id="cap"></div>
+<script>
+const ROOT = new URL('../../download/conta-comigo/loja/', location.href).href;
+const SH = new URLSearchParams(location.search).get('shots');
+const ICON = new URL('../../download/conta-comigo-pwa/icons/icon-512.png', location.href).href;
+const D = (n) => ROOT + 'imagens/pt/desktop-1920x1080/' + n + '.png';
+const C = (n) => ROOT + 'imagens/pt/celular-1080x1920/' + n + '.png';
+const L = (lang) => ROOT + 'imagens/' + lang + '/desktop-1920x1080/01-inicio.png';
+const TAB = ROOT + 'imagens/pt/tablet10-1600x2560/01-inicio.png';
+document.getElementById('brandimg').src = ICON;
+
+/* ---------- utilidades ---------- */
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const ease = (x) => { x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+const out = (x) => 1 - Math.pow(1 - clamp(x), 3);
+const back = (x) => { x = clamp(x); const c = 1.6; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+function el(html) { const d = document.createElement('div'); d.innerHTML = html.trim(); return d.firstChild; }
+/* entrada padrão: sobe 40px e aparece a partir do instante d */
+function enter(node, tl, d, len = .6, dy = 40) { const p = out((tl - d) / len); node.style.opacity = p; node.style.transform = (node.dataset.base || '') + ` translateY(${(1 - p) * dy}px)`; return p; }
+function laptop(x, y, w, srcs) {
+  const h = w * 9 / 16, n = el(`<div class="laptop" style="left:${x}px;top:${y}px;width:${w + 28}px;height:${h + 50}px">
+    <div class="scr" style="left:0;top:0;width:${w + 28}px;height:${h + 28}px">${srcs.map((s) => `<img src="${s}" style="opacity:0">`).join('')}</div>
+    <div class="base" style="left:-50px;top:${h + 28}px;width:${w + 128}px"></div></div>`);
+  return n;
+}
+function phone(x, y, w, srcs) {
+  const h = w * 16 / 9; return el(`<div class="phone" style="left:${x}px;top:${y}px;width:${w + 32}px;height:${h + 32}px"><div class="in">${srcs.map((s) => `<img src="${s}" style="opacity:0">`).join('')}</div></div>`);
+}
+/* mostra a imagem i (com fusão curta) dentro de um aparelho */
+function pick(dev, times, tl) {
+  const imgs = dev.querySelectorAll('img'); let cur = 0;
+  times.forEach((tt, i) => { if (tl >= tt) cur = i; });
+  imgs.forEach((im, i) => { const since = tl - times[i]; im.style.opacity = i === cur ? clamp(since / .25) : (i === cur - 1 ? 1 : 0); im.style.zIndex = i === cur ? 2 : 1; });
+}
+function textBlock(x, y, w, kicker, h1, sub) {
+  return el(`<div class="abs" style="left:${x}px;top:${y}px;width:${w}px">
+    ${kicker ? `<div class="kicker t0">${kicker}</div>` : ''}<div class="h1 t1" style="margin-top:28px">${h1}</div>${sub ? `<div class="sub t2" style="margin-top:26px">${sub}</div>` : ''}</div>`);
+}
+function animText(b, tl, d0 = .3) { [['.t0', 0], ['.t1', .15], ['.t2', .35]].forEach(([s, k]) => { const n = b.querySelector(s); if (n) enter(n, tl, d0 + k); }); }
+
+/* ---------- cenas ---------- */
+const S = {};
+S.abertura = { build(r) {
+  r.icon = el(`<img class="icon abs" src="${ICON}" style="width:300px;height:300px;left:810px;top:180px">`);
+  r.t = el(`<div class="abs h1" style="left:0;width:1920px;top:530px;text-align:center;font-size:120px">Conta Comigo</div>`);
+  r.s = el(`<div class="abs sub" style="left:0;width:1920px;top:690px;text-align:center;font-size:46px">Matemática de brincadeira para crianças de 4 a 8 anos</div>`);
+  return [r.icon, r.t, r.s];
+}, frame(r, tl) {
+  const p = back((tl - .2) / 1.1); r.icon.style.opacity = clamp((tl - .2) / .4); r.icon.style.transform = `scale(${.3 + .7 * p}) rotate(${(1 - p) * -18}deg)`;
+  enter(r.t, tl, 1.0, .7, 60); enter(r.s, tl, 1.5, .7, 40);
+} };
+S.semler = { build(r) {
+  r.b = textBlock(130, 250, 900, 'Sem precisar saber ler', 'A raposa lê cada pergunta em voz alta', 'A criança só precisa tocar na resposta.');
+  r.ph = phone(1130, 100, 440, [SH + 'cel-contar-0.png', SH + 'cel-contar-acerto.png']);
+  r.waves = [0, 1, 2].map((i) => el(`<div class="ring" style="left:${1050}px;top:${330}px;width:120px;height:120px;opacity:0"></div>`));
+  r.spk = el(`<div class="abs" style="left:990px;top:330px;font-size:96px">🔊</div>`);
+  return [r.b, r.ph, r.spk, ...r.waves];
+}, frame(r, tl, d) {
+  animText(r.b, tl); const p = out((tl - .2) / .8); r.ph.style.opacity = p; r.ph.style.transform = `translateX(${(1 - p) * 220}px)`;
+  pick(r.ph, [0, d * .72], tl); enter(r.spk, tl, 1.2, .4, 20);
+  r.waves.forEach((w, i) => { const k = ((tl - 1.4 - i * .45) % 1.35 + 1.35) % 1.35 / 1.35; const on = tl > 1.4 ? 1 : 0; w.style.opacity = on * (1 - k) * .8; w.style.transform = `translate(${-40 + k * -60}px, ${-40 + k * -60}px) scale(${1 + k * 1.4})`; });
+} };
+S.contar = { build(r) {
+  r.b = textBlock(110, 140, 700, 'Toque para contar', 'Um, dois, três… acertou!', 'Cada acerto vira festa e estrelas no cofrinho.');
+  const ims = [0, 1, 2, 3, 4].map((i) => SH + 'desk-contar-' + i + '.png').concat([SH + 'desk-contar-acerto.png']);
+  r.lp = laptop(820, 170, 980, ims);
+  r.stars = [0, 1, 2, 3, 4].map(() => el(`<div class="star" style="opacity:0">⭐</div>`));
+  return [r.b, r.lp, ...r.stars];
+}, frame(r, tl, d) {
+  animText(r.b, tl); const p = out((tl - .1) / .8); r.lp.style.opacity = p; r.lp.style.transform = `scale(${.92 + .08 * p})`;
+  const T = [0, 1.6, 2.5, 3.4, 4.3, 5.6]; pick(r.lp, T, tl);
+  r.stars.forEach((s, i) => { const k = clamp((tl - 5.7 - i * .08) / 1.1); const a = -Math.PI / 2 + (i - 2) * .45; s.style.left = 1300 + Math.cos(a) * 330 * out(k) + 'px'; s.style.top = 420 + Math.sin(a) * 300 * out(k) + 'px'; s.style.opacity = k > 0 && k < 1 ? 1 - k * k : 0; s.style.transform = `scale(${.6 + k})`; });
+} };
+S.modos = { build(r) {
+  r.b = textBlock(110, 110, 1700, '12 modos + Contra o Tempo', 'Um jogo que cresce com a criança', '');
+  const M = ['🍎 Contar', '➕ Somar', '➖ Subtrair', '⚖️ Comparar', '❓ Faltante', '🔢 Sequências', '2️⃣ Dobro e metade', '✖️ Multiplicar', '➗ Dividir', '📖 Histórias', '🪙 Dinheiro', '🎲 Mistão', '⏱️ Contra o Tempo'];
+  r.chips = el(`<div class="abs" style="left:110px;top:370px;width:820px">${M.map((m) => `<span class="chip">${m}</span>`).join('')}</div>`);
+  r.lp = laptop(1000, 330, 800, [D('01-inicio')]);
+  return [r.b, r.chips, r.lp];
+}, frame(r, tl, d) {
+  animText(r.b, tl); const p = out((tl - .3) / .8); r.lp.style.opacity = p;
+  const z = 1 + .06 * ease(tl / d); r.lp.style.transform = `translateX(${(1 - p) * 160}px) scale(${z})`; pick(r.lp, [0], tl);
+  const ch = r.chips.children; const step = (d - 5) / ch.length;
+  [...ch].forEach((c, i) => { const k = back((tl - 1.4 - i * step) / .45); c.style.opacity = clamp((tl - 1.4 - i * step) / .2); c.style.transform = `scale(${.4 + .6 * k})`; });
+} };
+S.diaadia = { build(r) {
+  r.b = textBlock(110, 90, 1700, 'Matemática do dia a dia', 'Comparar, histórias e moedas', '');
+  r.ps = [C('03-comparar'), C('04-historia'), C('05-dinheiro')].map((s, i) => phone(360 + i * 470, 280, 270, [s]));
+  r.lb = ['Comparar', 'Histórias', 'Dinheiro e troco'].map((t, i) => el(`<div class="abs chip" style="left:${380 + i * 470}px;top:${280 + 270 * 16 / 9 + 48}px">${t}</div>`));
+  return [r.b, ...r.ps, ...r.lb];
+}, frame(r, tl) {
+  animText(r.b, tl); r.lb.forEach((l, i) => enter(l, tl, 1.2 + i * .9, .5, 20));
+  r.ps.forEach((p, i) => { const k = back((tl - .6 - i * .9) / .7); p.style.opacity = clamp((tl - .6 - i * .9) / .3); p.style.transform = `translateY(${(1 - k) * 260}px) rotate(${(i - 1) * 3 * k}deg)`; pick(p, [0], tl); });
+} };
+S.adapta = { build(r) {
+  r.b = textBlock(110, 180, 760, 'Feito sob medida', 'A dificuldade se ajusta sozinha', 'O que a criança errou volta depois, em revisões espaçadas, até ficar fácil.');
+  r.lp = laptop(930, 210, 880, [SH + 'desk-somar-0.png', SH + 'desk-somar-acerto.png']);
+  r.g1 = el(`<div class="badge" style="left:980px;top:780px;font-size:34px;padding:20px 32px"><b style="font-size:46px">📈</b>Nível 1 a 5, por habilidade</div>`);
+  r.g2 = el(`<div class="badge" style="left:1400px;top:140px;font-size:34px;padding:20px 32px"><b style="font-size:46px">🔁</b>Revisão dos erros</div>`);
+  return [r.b, r.lp, r.g1, r.g2];
+}, frame(r, tl, d) {
+  animText(r.b, tl); const p = out((tl - .1) / .8); r.lp.style.opacity = p; r.lp.style.transform = `translateY(${(1 - p) * 80}px)`;
+  pick(r.lp, [0, d * .45], tl); enter(r.g1, tl, 2.0, .5, 30); enter(r.g2, tl, 3.2, .5, 30);
+} };
+S.motiva = { build(r) {
+  r.b = textBlock(110, 90, 1700, 'Motivação em cada rodada', 'Estrelas, missões, conquistas e figurinhas', '');
+  r.cards = [D('06-fim-de-rodada'), D('08-conquistas'), D('07-loja')].map((s) => laptop(0, 0, 820, [s]));
+  r.lb = ['Fim de rodada', '20 conquistas', 'Loja (só com estrelas)'].map((t) => el(`<div class="abs chip" style="opacity:0">${t}</div>`));
+  return [r.b, ...r.cards, ...r.lb];
+}, frame(r, tl, d) {
+  animText(r.b, tl);
+  // carrossel: cada cartão fica em destaque por um terço da cena
+  const seg = (d - 1) / 3; const fr = clamp((tl - .5) / seg, 0, 2.999); const fi = Math.floor(fr); const f = Math.min(2, fi + ease(clamp((fr - fi - .78) / .22)));
+  r.cards.forEach((c, i) => { const rel = i - f; const x = 960 - 424 + rel * 760; const s = 1 - Math.min(Math.abs(rel), 1) * .28; c.style.left = x + 'px'; c.style.top = '340px'; c.style.transform = `scale(${s})`; c.style.opacity = clamp(1.2 - Math.abs(rel) * .7) * clamp((tl - .3) / .5); c.style.zIndex = 10 - Math.round(Math.abs(rel) * 3); pick(c, [0], tl);
+    const l = r.lb[i]; l.style.left = (x + 250) + 'px'; l.style.top = '292px'; l.style.opacity = clamp(1 - Math.abs(rel) * 2); });
+} };
+S.temas = { build(r) {
+  r.b = textBlock(110, 90, 1700, 'Do jeito de cada criança', 'Temas, contraste e fonte para dislexia', '');
+  const th = ['classico', 'espaco', 'jardim', 'oceano', 'arcoiris', 'doces', 'neve'].map((t) => SH + 'cel-tema-' + t + '.png').concat([SH + 'cel-alto-contraste.png', SH + 'cel-dislexia.png']);
+  r.ps = th.map((s) => phone(0, 0, 250, [s]));
+  return [r.b, ...r.ps];
+}, frame(r, tl, d) {
+  animText(r.b, tl); const n = r.ps.length;
+  r.ps.forEach((p, i) => { const k = back((tl - .6 - i * .35) / .6); const x = 110 + i * 190; p.style.left = x + 'px'; p.style.top = (330 + (i % 2) * 40) + 'px'; p.style.opacity = clamp((tl - .6 - i * .35) / .25); p.style.transform = `translateY(${(1 - k) * 200}px) rotate(${(i - (n - 1) / 2) * 2.2}deg)`; p.style.zIndex = i; pick(p, [0], tl); });
+} };
+S.pais = { build(r) {
+  r.b = textBlock(110, 170, 760, 'Para os responsáveis', 'Área protegida por senha', 'Progresso de cada criança, mapa de domínio, até 4 perfis, metas e limite de tempo.');
+  r.lp = laptop(930, 200, 880, [SH + 'desk-portao.png', D('09-painel-responsaveis')]);
+  r.lock = el(`<div class="abs" style="left:1720px;top:150px;font-size:110px;opacity:0">🔒</div>`);
+  return [r.b, r.lp, r.lock];
+}, frame(r, tl, d) {
+  animText(r.b, tl); const p = out((tl - .1) / .8); r.lp.style.opacity = p; r.lp.style.transform = `scale(${.94 + .06 * p})`;
+  pick(r.lp, [0, d * .38], tl); const k = back((tl - 1) / .6); r.lock.style.opacity = clamp((tl - 1) / .3); r.lock.style.transform = `scale(${k}) rotate(${(1 - k) * 30}deg)`;
+} };
+S.privacidade = { build(r) {
+  r.t = el(`<div class="abs h1" style="left:0;width:1920px;top:120px;text-align:center">Privacidade de verdade</div>`);
+  const B = [['📴', '100% offline'], ['🚫', 'Sem anúncios'], ['🛒', 'Sem compras'], ['🛡️', 'Sem coleta de dados']];
+  r.bs = B.map(([e, t], i) => el(`<div class="badge" style="left:${i % 2 ? 1000 : 300}px;top:${330 + Math.floor(i / 2) * 230}px;width:620px"><b>${e}</b>${t}</div>`));
+  r.s = el(`<div class="abs sub" style="left:0;width:1920px;top:820px;text-align:center">O progresso fica só no seu aparelho.</div>`);
+  return [r.t, ...r.bs, r.s];
+}, frame(r, tl, d) {
+  enter(r.t, tl, .2, .6, 40);
+  r.bs.forEach((b, i) => { const at = 1.2 + i * (d - 4.5) / 4; const k = back((tl - at) / .5); b.style.opacity = clamp((tl - at) / .2); b.style.transform = `scale(${.5 + .5 * k})`; });
+  enter(r.s, tl, d - 3.2, .6, 30);
+} };
+S.idiomas = { build(r) {
+  r.t = el(`<div class="abs h1" style="left:0;width:1920px;top:100px;text-align:center">Português · English · Español</div>`);
+  r.lps = ['pt', 'en', 'es'].map((l) => laptop(0, 0, 520, [L(l)]));
+  return [r.t, ...r.lps];
+}, frame(r, tl) {
+  enter(r.t, tl, .1, .5, 30);
+  r.lps.forEach((p, i) => { const k = back((tl - .4 - i * .35) / .6); p.style.left = (110 + i * 590) + 'px'; p.style.top = '380px'; p.style.opacity = clamp((tl - .4 - i * .35) / .25); p.style.transform = `translateY(${(1 - k) * 150}px)`; pick(p, [0], tl); });
+} };
+S.plataformas = { build(r) {
+  r.t = el(`<div class="abs h1" style="left:0;width:1920px;top:70px;text-align:center">Computador, tablet e celular</div>`);
+  r.lp = laptop(180, 330, 900, [D('01-inicio')]);
+  r.tb = el(`<div class="tablet" style="left:1150px;top:300px;width:400px;height:620px"><div class="in"><img src="${TAB}"></div></div>`);
+  r.ph = phone(1600, 470, 230, [C('01-inicio')]);
+  r.chips = el(`<div class="abs" style="left:0;width:1920px;top:210px;text-align:center">${['Chrome', 'Edge', 'Firefox', 'Windows', 'Android'].map((m) => `<span class="chip">${m}</span>`).join('')}</div>`);
+  return [r.t, r.lp, r.tb, r.ph, r.chips];
+}, frame(r, tl) {
+  enter(r.t, tl, .1, .5, 30); enter(r.lp, tl, .5, .7, 80); enter(r.tb, tl, .9, .7, 80); enter(r.ph, tl, 1.3, .7, 80); pick(r.lp, [0], tl); pick(r.ph, [0], tl);
+  [...r.chips.children].forEach((c, i) => { const k = back((tl - 1.6 - i * .45) / .4); c.style.opacity = clamp((tl - 1.6 - i * .45) / .2); c.style.display = 'inline-block'; c.style.transform = `scale(${.4 + .6 * k})`; });
+} };
+S.fim = { build(r) {
+  r.icon = el(`<img class="icon abs" src="${ICON}" style="width:260px;height:260px;left:830px;top:150px">`);
+  r.t = el(`<div class="abs h1" style="left:0;width:1920px;top:450px;text-align:center;font-size:120px">Conta Comigo</div>`);
+  r.s = el(`<div class="abs sub" style="left:0;width:1920px;top:610px;text-align:center;font-size:48px">Porque aprender matemática também é brincar.</div>`);
+  r.c = el(`<div class="abs" style="left:0;width:1920px;top:720px;text-align:center"><span class="chip">Grátis</span><span class="chip">4 a 8 anos</span><span class="chip">100% offline</span><span class="chip">Português · English · Español</span></div>`);
+  r.k = el(`<div class="abs sub" style="left:0;width:1920px;top:860px;text-align:center;font-size:30px;color:#6a6a8e">Klivfy Tecnologia</div>`);
+  return [r.icon, r.t, r.s, r.c, r.k];
+}, frame(r, tl) {
+  const p = back((tl - .2) / .9); r.icon.style.opacity = clamp((tl - .2) / .3); r.icon.style.transform = `scale(${.4 + .6 * p})`;
+  enter(r.t, tl, .7, .6, 50); enter(r.s, tl, 1.2, .6, 40); enter(r.c, tl, 2.6, .6, 30); enter(r.k, tl, 3.6, .6, 20);
+} };
+
+/* ---------- motor ---------- */
+let TL = null; const R = {};
+function init(tl) {
+  TL = tl; const st = document.getElementById('stage');
+  TL.scenes.forEach((s) => { const root = el('<div class="scene"></div>'); const ref = {}; S[s.id].build(ref).forEach((n) => root.appendChild(n)); st.appendChild(root); R[s.id] = { root, ref }; });
+  return Promise.all([...document.images].map((im) => im.complete ? 1 : new Promise((ok) => { im.onload = im.onerror = ok; }))).then(() => document.fonts.ready).then(() => [...document.images].filter((i) => !i.naturalWidth).map((i) => i.src));
+}
+function render(t) {
+  for (const s of TL.scenes) {
+    const r = R[s.id]; const tl = t - s.start;
+    if (tl < 0 || tl > s.dur) { r.root.style.display = 'none'; continue; }
+    r.root.style.display = 'block';
+    const fade = Math.min(clamp(tl / .45), clamp((s.dur - tl) / .45));
+    r.root.style.opacity = (s.id === 'abertura' && tl < .45) ? 1 : (s.id === 'fim' && s.dur - tl < .45 ? 1 : fade);
+    S[s.id].frame(r.ref, tl, s.dur);
+  }
+  // legenda
+  const cap = document.getElementById('cap'); let c = null;
+  for (const s of TL.scenes) for (const k of s.caps) if (t >= k.a - .1 && t <= k.b + .15) c = k;
+  if (c) { if (cap.textContent !== c.txt) cap.textContent = c.txt; cap.style.opacity = Math.min(clamp((t - c.a + .1) / .2), clamp((c.b + .15 - t) / .2)); } else cap.style.opacity = 0;
+  // marca no canto (fora da abertura e do fim)
+  const ab = TL.scenes[0], fm = TL.scenes[TL.scenes.length - 1];
+  document.getElementById('brand').style.opacity = Math.min(clamp((t - ab.dur) / .5), clamp((fm.start - t) / .5));
+  // fundo vivo
+  document.getElementById('b1').style.transform = `translate(${Math.sin(t / 7) * 80}px, ${Math.cos(t / 9) * 60}px)`;
+  document.getElementById('b2').style.transform = `translate(${Math.cos(t / 8) * 90}px, ${Math.sin(t / 6) * 70}px)`;
+}
+</script></body></html>

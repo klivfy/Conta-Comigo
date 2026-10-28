@@ -113,6 +113,17 @@ function contrastOn(g) {
 function applyTheme(g) {
   document.body.dataset.theme = resolvedTheme(g);
   document.body.classList.toggle('hc', contrastOn(g));
+  syncSystemBars();
+}
+/* apps iOS e Android: ícones das barras do sistema claros nos temas escuros
+   (Espaço, alto contraste) e escuros nos claros */
+function syncSystemBars() {
+  const bars = capPlugin('SystemBars');
+  if (!bars) return;
+  try {
+    const dark = /dark/.test(getComputedStyle(document.body).colorScheme || '');
+    bars.setStyle({ style: dark ? 'DARK' : 'LIGHT' }).catch(() => { /* ignora */ });
+  } catch (e) { /* ignora */ }
 }
 if (DARK_QUERY && DARK_QUERY.addEventListener) {
   DARK_QUERY.addEventListener('change', () => { try { if (G().theme === 'auto') applyTheme(G()); } catch (e) { /* antes do boot */ } });
@@ -308,9 +319,10 @@ function normalizeDB(d) {
   return d;
 }
 /* ---------- casco nativo (Fase 6.1 — "Fase A" do estudo de apps nativos) ----------
-   Dentro do app iOS (Capacitor) o jogo usa plugins nativos: Preferences para o
-   progresso (o localStorage do WKWebView pode ser recolhido pelo sistema) e
-   TextToSpeech para a voz. Sem bundler: plugin nativo instalado aparece em
+   Dentro dos apps iOS e Android (Capacitor) o jogo usa plugins nativos: Preferences
+   para o progresso (o localStorage do WebView pode ser recolhido pelo sistema),
+   TextToSpeech para a voz, Filesystem + Share para o backup e App para o botão
+   Voltar do Android. Sem bundler: plugin nativo instalado aparece em
    Capacitor.Plugins. Fora do app tudo segue pelas APIs web de sempre. */
 function capPlugin(name) {
   try {
@@ -391,6 +403,45 @@ function clearSavedState() {
   } catch (e) { /* ignora */ }
   if (!NATIVE_PREFS) return Promise.resolve();
   return NATIVE_PREFS.remove({ key: 'cc_state' }).catch(() => { /* ignora */ });
+}
+/* ---------- arquivo para o responsável guardar (backup) ----------
+   Navegador, extensão e Electron: download comum. Nos apps o WebView não baixa
+   blob:, então o arquivo vai para o cache do app (Filesystem) e dali para a folha
+   de compartilhar do sistema (Share): Arquivos, Drive, e-mail... Resolve true
+   quando o arquivo saiu e false quando a pessoa cancelou ou algo falhou. */
+const NATIVE_FS = capPlugin('Filesystem');
+const NATIVE_SHARE = capPlugin('Share');
+const FILE_VIA_SHARE = !!(NATIVE_FS && NATIVE_SHARE); // o aviso diz "guardado", não "baixado"
+function saveTextFile(name, text, title) {
+  if (FILE_VIA_SHARE) {
+    return NATIVE_FS.writeFile({ path: name, data: text, directory: 'CACHE', encoding: 'utf8' })
+      .then((r) => NATIVE_SHARE.share({ title: title || name, files: [r.uri], dialogTitle: title || name }))
+      .then(() => true, () => false);
+  }
+  try {
+    const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    return Promise.resolve(true);
+  } catch (e) { return Promise.resolve(false); }
+}
+/* ---------- botão Voltar do Android (app) ----------
+   handler() devolve true quando tratou o Voltar. Senão, volta uma página (painel
+   → jogo) ou, sem página para voltar, minimiza o app como os apps do sistema.
+   O Capacitor apaga os ouvintes a cada página carregada: cada página registra o seu. */
+function onNativeBack(handler) {
+  const app = capPlugin('App');
+  if (!app) return;
+  try {
+    app.addListener('backButton', (ev) => {
+      if (handler && handler()) return;
+      if (ev && ev.canGoBack) history.back();
+      else app.minimizeApp().catch(() => app.exitApp());
+    });
+  } catch (e) { /* ignora */ }
 }
 let saveTimer = null;
 function saveState(immediate) {
@@ -581,7 +632,7 @@ const TTS = {
       const v = this.pickVoice(want.slice(0, 2).toLowerCase());
       const self = this;
       if (this.native) {
-        // AVSpeechSynthesizer (iOS) via plugin: a promessa resolve no fim da fala
+        // AVSpeechSynthesizer (iOS) ou TextToSpeech (Android) via plugin: a promessa resolve no fim da fala
         const gen = this.gen;
         const idx = v ? this.voices.indexOf(v) : -1;
         const opt = { text: seg.text, lang: want, rate: clamp(rate, 0.5, 1.6), pitch: clamp(pitch, 0.5, 2), volume: 1, category: 'ambient' };

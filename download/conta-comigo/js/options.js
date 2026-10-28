@@ -205,7 +205,7 @@ function renderOptions() {
   $('#set-sync').checked = !!g.sync;
   renderSec();
   $('#imp-area').placeholder = t('imp_ph');
-  $('#opt-version').textContent = t('version') + ': ' + (window.ccVersion ? window.ccVersion() : '2.6.2');
+  $('#opt-version').textContent = t('version') + ': ' + (window.ccVersion ? window.ccVersion() : '2.6.3');
 }
 
 /* ---------- painel (S26 + S09) ---------- */
@@ -361,25 +361,22 @@ function paintVoiceTierNote() {
 }
 
 /* ---------- exportar / importar (S29) + backup com data (v2.5) ---------- */
+/* nos apps (iOS e Android) o arquivo sai pela folha de compartilhar do sistema */
 function doExport() {
   saveState(true);
-  const blob = new Blob([JSON.stringify(shareableDB(DB), null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'conta-comigo-progresso.json';
-  document.body.appendChild(a); a.click(); a.remove();
-  try { G().lastBackupAt = Date.now(); saveState(true); paintBackupHint(); } catch (e) { /* ignora */ }
+  saveTextFile('conta-comigo-progresso.json', JSON.stringify(shareableDB(DB), null, 2), t('backup_share')).then((ok) => {
+    if (!ok) return;
+    try { G().lastBackupAt = Date.now(); saveState(true); paintBackupHint(); } catch (e) { /* ignora */ }
+  });
 }
 /* v2.5: backup datado — rede de segurança das conquistas quando a extensão
    é removida e reinstalada (recarregar ↻ preserva; remover apaga) */
 function doBackupDownload() {
   saveState(true);
-  const blob = new Blob([JSON.stringify(shareableDB(DB), null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'conta-comigo-backup-' + fmtDate() + '.json';
-  document.body.appendChild(a); a.click(); a.remove();
-  try { G().lastBackupAt = Date.now(); saveState(true); paintBackupHint(); toastOpt('💾 ' + t('backup_done')); } catch (e) { /* ignora */ }
+  saveTextFile('conta-comigo-backup-' + fmtDate() + '.json', JSON.stringify(shareableDB(DB), null, 2), t('backup_share')).then((ok) => {
+    if (!ok) return;
+    try { G().lastBackupAt = Date.now(); saveState(true); paintBackupHint(); toastOpt('💾 ' + t(FILE_VIA_SHARE ? 'backup_saved' : 'backup_done')); } catch (e) { /* ignora */ }
+  });
 }
 function paintBackupHint() {
   const el = $('#bk-hint');

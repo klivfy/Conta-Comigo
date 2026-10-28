@@ -231,3 +231,71 @@ test('baú: 10 ⭐ por dia do marco e uma figurinha que faltava', () => {
   assert.equal(o.r.stars, 70); assert.equal(o.p.stars, 70 + 5 * o.r.achs.length);
   assert.ok(o.r.sticker > 2 && o.p.stickers.includes(o.r.sticker));
 });
+
+/* ---------- apps Capacitor (Android e iOS): backup e botão Voltar ---------- */
+function fakeCapacitor(opts) {
+  const o = opts || {};
+  const calls = [];
+  const listeners = {};
+  const cap = {
+    isNativePlatform: () => true,
+    isPluginAvailable: (n) => !(o.missing || []).includes(n),
+    Plugins: {
+      Filesystem: { writeFile: (a) => { calls.push(['writeFile', a]); return Promise.resolve({ uri: 'file:///cache/' + a.path }); } },
+      Share: { share: (a) => { calls.push(['share', a]); return o.cancel ? Promise.reject(new Error('Share canceled')) : Promise.resolve({}); } },
+      App: {
+        addListener: (ev, cb) => { listeners[ev] = cb; return Promise.resolve({ remove() {} }); },
+        minimizeApp: () => { calls.push(['minimize']); return Promise.resolve(); },
+        exitApp: () => { calls.push(['exit']); return Promise.resolve(); },
+      },
+    },
+  };
+  return { cap, calls, listeners };
+}
+
+test('backup no app: grava no cache e entrega à folha de compartilhar', async () => {
+  const f = fakeCapacitor();
+  const E = loadEngine({ capacitor: f.cap });
+  const ok = await E.ev('saveTextFile("conta-comigo-backup-2026-10-28.json", "{\\"v\\":2}", "Guardar")');
+  assert.equal(ok, true);
+  assert.deepEqual(JSON.parse(JSON.stringify(f.calls[0])), ['writeFile', { path: 'conta-comigo-backup-2026-10-28.json', data: '{"v":2}', directory: 'CACHE', encoding: 'utf8' }]);
+  assert.equal(f.calls[1][0], 'share');
+  assert.deepEqual(JSON.parse(JSON.stringify(f.calls[1][1].files)), ['file:///cache/conta-comigo-backup-2026-10-28.json']);
+  assert.equal(f.calls[1][1].dialogTitle, 'Guardar');
+});
+
+test('backup no app: cancelar a folha de compartilhar resolve false', async () => {
+  const f = fakeCapacitor({ cancel: true });
+  const E = loadEngine({ capacitor: f.cap });
+  assert.equal(await E.ev('saveTextFile("b.json", "{}")'), false);
+});
+
+test('backup no app sem os plugins de arquivo: não usa Share pela metade', () => {
+  const f = fakeCapacitor({ missing: ['Share'] });
+  const E = loadEngine({ capacitor: f.cap });
+  assert.equal(E.ev('!!NATIVE_FS && !NATIVE_SHARE'), true);
+  // cai no download comum, que neste contexto sem DOM falha e resolve false
+  return E.ev('saveTextFile("b.json", "{}")').then((ok) => { assert.equal(ok, false); assert.equal(f.calls.length, 0); });
+});
+
+test('Voltar do Android: a página trata, volta uma página ou minimiza o app', () => {
+  const f = fakeCapacitor();
+  const E = loadEngine({ capacitor: f.cap });
+  let handled = true;
+  E.ctx.__handler = () => handled;
+  E.ev('onNativeBack(() => __handler())');
+  const back = f.listeners.backButton;
+  assert.equal(typeof back, 'function');
+  back({ canGoBack: false });
+  assert.equal(f.calls.length, 0, 'a página tratou: nada mais acontece');
+  handled = false;
+  back({ canGoBack: true });
+  assert.equal(E.ctx.__backs, 1, 'painel → jogo: history.back()');
+  back({ canGoBack: false });
+  assert.deepEqual(f.calls, [['minimize']], 'no início: minimiza');
+});
+
+test('fora do app o Voltar nativo não é registrado', () => {
+  const E = loadEngine();
+  assert.equal(E.ev('onNativeBack(() => true); IN_NATIVE_APP'), false);
+});

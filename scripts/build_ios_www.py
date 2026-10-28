@@ -2,43 +2,23 @@
 """Fase 6.5 — prepara o jogo para o casco iOS (Capacitor).
 
 Parte da PWA gerada por build_pwa.py (mesmo motor, mesmo index.html) e grava em
-native/ios/www/ uma cópia sem o que não serve dentro do app:
+native/ios/www/ uma cópia sem o que não serve dentro do app (capacitor_www em
+cc_build.py, o mesmo do Android):
   - sem service worker (o WKWebView do Capacitor já serve tudo do pacote, offline);
   - sem manifest e sem o leia-me do Android.
 Também grava native/ios/resources/icon-1024.png (ícone da App Store, sem alfa).
 
 Uso: python3 scripts/build_ios_www.py   (roda o build_pwa.py antes, se preciso)
 """
-import os, re, shutil, subprocess, sys
+import os, re, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from cc_build import DL, ROOT, draw_icon, version  # noqa: E402
+from cc_build import ROOT, capacitor_www, draw_icon, version  # noqa: E402
 
-PWA = os.path.join(DL, "conta-comigo-pwa")
 IOS = os.path.join(ROOT, "native", "ios")
 WWW = os.path.join(IOS, "www")
 
-if not os.path.exists(os.path.join(PWA, "index.html")):
-    subprocess.check_call([sys.executable, os.path.join(ROOT, "scripts", "build_pwa.py")])
-
-if os.path.exists(WWW):
-    shutil.rmtree(WWW)
-shutil.copytree(PWA, WWW, ignore=shutil.ignore_patterns(
-    "sw.js", "manifest.webmanifest", "leia-me-android.md", ".well-known", "privacidade*"))
-
-# boot.js: tira o registro do service worker (bloco acrescentado pelo build_pwa.py)
-boot = os.path.join(WWW, "js", "boot.js")
-src = open(boot, encoding="utf-8").read()
-src, n = re.subn(r"\nif \('serviceWorker' in navigator\) \{.*?\n\}\n", "\n", src, flags=re.S)
-assert n == 1, "registro do service worker não encontrado em boot.js"
-open(boot, "w", encoding="utf-8").write(src + "/* iOS (Capacitor): sem service worker — os arquivos vêm do próprio app */\n")
-
-# páginas: sem <link rel="manifest">
-for page in ("index.html", "options.html"):
-    p = os.path.join(WWW, page)
-    html = open(p, encoding="utf-8").read()
-    html = re.sub(r'\s*<link rel="manifest" href="manifest.webmanifest">', "", html)
-    open(p, "w", encoding="utf-8").write(html)
+capacitor_www(WWW, "iOS")
 
 os.makedirs(os.path.join(IOS, "resources"), exist_ok=True)
 icon = draw_icon(1024)  # RGB: a App Store recusa ícone com alfa
