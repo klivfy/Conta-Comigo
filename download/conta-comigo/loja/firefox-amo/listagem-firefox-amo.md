@@ -158,3 +158,11 @@ capturas puras estão em `capturas/` caso prefira o jogo sem moldura.
 | 6 | `anuncio-06-conquistas.png` | 20 conquistas para desbloquear |
 
 Ícone da extensão: `icons/icon128.png` (já dentro do pacote; o AMO usa o do manifesto).
+
+---
+
+## Imagens e política de privacidade (novo pacote de lojas)
+
+- Capturas 1280×800 nos 3 idiomas: `../imagens/<idioma>/desktop-1280x800/` (pt, en, es). As capturas e os anúncios desta pasta (`capturas/`, `anuncio/`) continuam válidos para a listagem em português.
+- URL da política de privacidade (trilíngue): https://klivfy.github.io/Conta-Comigo/politica-de-privacidade.html
+- URL de suporte: https://github.com/klivfy/Conta-Comigo/issues
