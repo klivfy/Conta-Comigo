@@ -1126,3 +1126,176 @@ function makeFromCard(card) {
   if (!c) return genContar(1);
   return GENS[c.m](c.lv, c.f);
 }
+
+/* ==================== regras de recompensa (sem DOM) ====================
+   Estrelas, pontos, missões, metas, chefe, conquistas e baús. Estas funções
+   mexem só no perfil recebido e devolvem o que a interface deve comemorar
+   (toast, som, confete ficam em ui.js). Testadas em tests/engine.test.cjs. */
+const STARS_MISSION = 3, STARS_GOAL = 5, STARS_ACH = 5;
+const COMBO_STEP = 5, STARS_COMBO = 2;   // a cada 5 acertos seguidos, +2 ⭐
+const BOSS_EVERY = 5, BOSS_WIN = 0.7;    // chefe a cada 5 rodadas; vence com 70% de primeira
+
+/* ---------- missões diárias (S16) ---------- */
+const MISSION_DEFS = [
+  { id: 'rounds2', key: 'mi_rounds2', goal: 2, ev: 'round' },
+  { id: 'first5', key: 'mi_first5', goal: 5, ev: 'first' },
+  { id: 'combo3', key: 'mi_combo3', goal: 3, ev: 'combo' },
+  { id: 'newmode', key: 'mi_newmode', goal: 1, ev: 'newmode' },
+  { id: 'review3', key: 'mi_review3', goal: 3, ev: 'review' },
+];
+/* avança as missões do dia ligadas ao evento; devolve as que fecharam agora */
+function advanceMissions(p, ev, n) {
+  const done = [];
+  p.missions.list.forEach((m) => {
+    const def = MISSION_DEFS.find((d) => d.id === m.id);
+    if (!def || m.done || def.ev !== ev) return;
+    m.p = Math.min(def.goal, m.p + (n || 1));
+    if (m.p >= def.goal) { m.done = true; p.stars += STARS_MISSION; p.missionsDone++; done.push(def); }
+  });
+  return done;
+}
+
+/* ---------- conquistas (S14) ---------- */
+const ACHS = [
+  { id: 'a1', cond: (p) => p.stars >= 1 },
+  { id: 'a2', cond: (p) => p.stars >= 50 },
+  { id: 'a3', cond: (p) => p.stars >= 200 },
+  { id: 'a4', cond: (p) => p.rounds >= 10 },
+  { id: 'a5', cond: (p) => (p.bestCombo || 0) >= 5 },
+  { id: 'a6', cond: (p) => !!p.firstDiv },
+  { id: 'a7', cond: (p) => !!p.bossWon },
+  { id: 'a8', cond: (p) => (p.streak || 0) >= 7 },
+  { id: 'a9', cond: (p) => Object.keys(p.played || {}).length >= 12 },
+  { id: 'a10', cond: (p) => (p.reviewWins || 0) >= 10 },
+  { id: 'a11', cond: (p) => (p.missionsDone || 0) >= 5 },
+  { id: 'a12', cond: (p) => !!p.firstBuy },
+  /* v2.4 (A-118/A-128): medalhas de persistência — errar faz parte, insistir vale medalha */
+  { id: 'a13', cond: (p) => (p.persistRounds || 0) >= 1 },
+  { id: 'a14', cond: (p) => (p.persistRounds || 0) >= 5 },
+  /* v2.5: conquistas das novidades — duas são SECRETAS (aparecem como ???) */
+  { id: 'a15', cond: (p) => !!p.firstPet },
+  { id: 'a16', cond: (p) => (p.stickers || []).length >= 10 },
+  { id: 'a17', sec: true, cond: (p) => (p.stickers || []).length >= STICKERS.length },
+  { id: 'a18', cond: (p) => (p.bestSurvive || 0) >= 10 },
+  { id: 'a19', cond: (p) => Object.keys(p.chests || {}).length >= 3 },
+  { id: 'a20', sec: true, cond: (p) => (p.owned.themes || []).length >= 4 },
+];
+/* em ordem: as estrelas de uma conquista já contam para a seguinte */
+function unlockAchievements(p) {
+  const got = [];
+  ACHS.forEach((a) => {
+    if (!p.ach[a.id] && a.cond(p)) { p.ach[a.id] = 1; p.stars += STARS_ACH; got.push(a.id); }
+  });
+  return got;
+}
+
+/* ---------- resposta ---------- */
+/* Acerto: 2 ⭐ de primeira, 1 depois de errar; chefe dobra. Pontos (v2.2):
+   100×nível + até 60×nível pelo tempo que sobrou, ou 40×nível depois de errar;
+   chefe dobra; avaliação e duelo não pontuam. a.combo já conta este acerto. */
+function answerReward(a) {
+  const mult = clamp(a.level || 1, 1, MAX_LEVEL);
+  let stars = a.firstTry ? 2 : 1;
+  if (a.kind === 'boss') stars *= 2;
+  let points = 0;
+  if (a.kind !== 'diag' && a.kind !== 'duel') {
+    points = a.firstTry ? Math.round(100 * mult + 60 * mult * clamp(a.speedRatio || 0, 0, 1)) : 40 * mult;
+    if (a.kind === 'boss') points *= 2;
+  }
+  const combo = a.firstTry && a.combo > 0 && a.combo % COMBO_STEP === 0 ? STARS_COMBO : 0;
+  return { stars, combo, points };
+}
+/* aplica o acerto ao perfil; devolve o prêmio de answerReward */
+function scoreCorrect(p, a) {
+  const rw = answerReward(a);
+  if (a.firstTry) {
+    p.firsts++; p.fatigue = 0;
+    if (a.combo > (p.bestCombo || 0)) p.bestCombo = a.combo;
+  }
+  p.stars += rw.stars + rw.combo;
+  p.points = (p.points || 0) + rw.points;
+  p.rights++;
+  if (a.mode === 'dividir') p.firstDiv = true;
+  return rw;
+}
+/* erro: conta e devolve true quando é hora da pausa para respirar (S10); a
+   interface zera p.fatigue quando de fato abre a pausa */
+function scoreWrong(p) {
+  p.wrongs++; p.fatigue++;
+  return p.fatigue >= 3;
+}
+
+/* ---------- fim de rodada ----------
+   r: { kind, mode, firsts, wrongs, total, points, diagOK }; opts.goalRounds e
+   opts.now (Date, para os testes). Ofensiva, semana, missão de rodada, meta
+   do dia, chefe, persistência, baú, recordes, nível da avaliação e, por
+   último, conquistas — para valerem nesta mesma rodada. */
+function finishRound(p, r, opts) {
+  const o = opts || {};
+  const now = o.now || new Date();
+  const today = fmtDate(now);
+  const yest = new Date(now); yest.setDate(yest.getDate() - 1);
+  const res = { goalStars: 0, boss: '', chest: 0, newRecord: false, survive: null, diagLevel: 0, missions: [], achs: [] };
+  // ofensiva (S15)
+  if (p.lastPlay !== today) {
+    p.streak = (p.lastPlay === fmtDate(yest)) ? (p.streak || 0) + 1 : 1;
+    p.lastPlay = today;
+  }
+  // semanas (S26)
+  const wk = weekKey(now);
+  let wrow = p.weeks.find((w) => w.k === wk);
+  if (!wrow) { wrow = { k: wk, rounds: 0, rights: 0 }; p.weeks.push(wrow); p.weeks = p.weeks.slice(-8); }
+  wrow.rounds++; wrow.rights += r.firsts;
+  // rodadas, missão de rodada e meta do dia (S11)
+  p.rounds++;
+  p.today.rounds++;
+  res.missions = advanceMissions(p, 'round');
+  if (o.goalRounds > 0 && p.today.rounds >= o.goalRounds && !p.today.done) {
+    p.today.done = true; p.stars += STARS_GOAL; res.goalStars = STARS_GOAL;
+  }
+  // chefe (S18)
+  if (r.kind === 'boss') {
+    const won = r.firsts >= Math.ceil(r.total * BOSS_WIN);
+    if (won) p.bossWon = true;
+    res.boss = won ? 'boss_win' : 'boss_lose';
+  } else if (r.kind === 'normal' && p.rounds % BOSS_EVERY === 0) {
+    p.bossReady = true; res.boss = 'boss_ready';
+  }
+  // persistência (A-118/A-128): venceu a rodada depois de errar
+  if (r.kind === 'normal' && r.wrongs >= 1 && r.firsts >= 3) p.persistRounds = (p.persistRounds || 0) + 1;
+  // baú (v2.5): marcos de ofensiva 3/7/14/21/30 dias
+  const ms = CHEST_MILESTONES.find((m) => p.streak >= m && !p.chests[m]);
+  if (ms) { p.chests[ms] = 1; res.chest = ms; }
+  // Contra o Tempo (v2.5): recorde de acertos
+  if (r.kind === 'tempo') {
+    const record = r.firsts > (p.bestSurvive || 0);
+    if (record) p.bestSurvive = r.firsts;
+    res.survive = { n: r.firsts, record };
+  }
+  // avaliação (S12): nível sugerido para todos os modos
+  if (r.kind === 'diag') {
+    const ok = r.diagOK;
+    res.diagLevel = ok <= 2 ? 1 : ok <= 4 ? 2 : ok <= 6 ? 3 : ok === 7 ? 4 : 5;
+    Object.keys(MODES).forEach((m) => { if (m !== 'mistar') p.levels[m] = res.diagLevel; });
+    p.assessed = true;
+  }
+  // recorde de pontos por modo (v2.2)
+  if (r.kind === 'normal' || r.kind === 'boss' || r.kind === 'review') {
+    const key = r.kind === 'boss' ? 'chefe' : r.kind === 'review' ? 'revisao' : (r.mode || 'somar');
+    res.newRecord = r.points > 0 && r.points > (p.bestPts[key] || 0);
+    if (res.newRecord) p.bestPts[key] = r.points;
+  }
+  res.achs = unlockAchievements(p);
+  return res;
+}
+
+/* ---------- baú de recompensas (v2.5) ----------
+   10 ⭐ por dia do marco e uma figurinha que ainda falta (sorteada) */
+function openChestReward(p, ms) {
+  const stars = ms * 10;
+  const missing = STICKERS.map((s, i) => i).filter((i) => !p.stickers.includes(i));
+  const sticker = missing.length ? missing[rand(0, missing.length - 1)] : -1;
+  if (sticker >= 0) p.stickers.push(sticker);
+  p.stars += stars;
+  return { stars, sticker, achs: unlockAchievements(p) };
+}

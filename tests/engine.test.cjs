@@ -154,3 +154,80 @@ test('alto contraste: o antigo hc vira contrast (sim → on, não → segue o si
   assert.equal(s({ contrast: '<x>' }).contrast, 'auto');
   assert.equal('hc' in s({ hc: true }), false);
 });
+
+/* ---------- regras de recompensa ---------- */
+const profile = (extra) => j('Object.assign(newProfile("p1", "Ana", "🦊"), ' + JSON.stringify(extra || {}) + ')');
+function run(code, p) {
+  E.put('p', p);
+  const out = JSON.parse(E.ev('JSON.stringify((function (p) { const r = ' + code + '; return { r, p }; })(__in.p))'));
+  return out;
+}
+
+test('answerReward: estrelas, pontos por rapidez, chefe e combo', () => {
+  const rw = (a) => j('answerReward(' + JSON.stringify(a) + ')');
+  assert.deepEqual(rw({ firstTry: true, kind: 'normal', level: 2, speedRatio: 1, combo: 1 }), { stars: 2, combo: 0, points: 320 });
+  assert.deepEqual(rw({ firstTry: true, kind: 'normal', level: 2, speedRatio: 0, combo: 5 }), { stars: 2, combo: 2, points: 200 });
+  assert.deepEqual(rw({ firstTry: false, kind: 'normal', level: 3, speedRatio: 1, combo: 0 }), { stars: 1, combo: 0, points: 120 });
+  assert.deepEqual(rw({ firstTry: true, kind: 'boss', level: 1, speedRatio: 0.5, combo: 2 }), { stars: 4, combo: 0, points: 260 });
+  assert.equal(rw({ firstTry: true, kind: 'duel', level: 5, speedRatio: 1, combo: 1 }).points, 0);
+  assert.equal(rw({ firstTry: true, kind: 'diag', level: 5, speedRatio: 1, combo: 1 }).points, 0);
+  assert.equal(rw({ firstTry: true, kind: 'normal', level: 9, speedRatio: 7, combo: 1 }).points, 800); // nível e rapidez limitados
+});
+
+test('scoreCorrect / scoreWrong: estatísticas do perfil e pausa a cada 3 erros', () => {
+  let o = run('scoreCorrect(p, { firstTry: true, kind: "normal", level: 1, speedRatio: 0, combo: 5, mode: "dividir" })', profile({ fatigue: 2, bestCombo: 3 }));
+  assert.equal(o.p.stars, 4); assert.equal(o.p.points, 100); assert.equal(o.p.firsts, 1); assert.equal(o.p.rights, 1);
+  assert.equal(o.p.fatigue, 0); assert.equal(o.p.bestCombo, 5); assert.equal(o.p.firstDiv, true);
+  o = run('[scoreWrong(p), scoreWrong(p), scoreWrong(p)]', profile());
+  assert.deepEqual(o.r, [false, false, true]); assert.equal(o.p.wrongs, 3);
+});
+
+test('missões: avançam pelo evento certo e pagam 3 ⭐ uma vez só', () => {
+  const p = profile({ missions: { d: 'x', list: [{ id: 'rounds2', p: 1, done: false }, { id: 'first5', p: 0, done: false }] } });
+  let o = run('advanceMissions(p, "round").map((d) => d.id)', p);
+  assert.deepEqual(o.r, ['rounds2']); assert.equal(o.p.stars, 3); assert.equal(o.p.missionsDone, 1);
+  o = run('advanceMissions(p, "round").length', o.p);
+  assert.equal(o.r, 0); assert.equal(o.p.stars, 3);
+});
+
+test('conquistas: em ordem, e as estrelas de uma já contam para a próxima', () => {
+  const o = run('unlockAchievements(p)', profile({ stars: 45, rounds: 10 }));
+  assert.deepEqual(o.r, ['a1', 'a2', 'a4']); // 45 + 5 (a1) = 50 libera a2 na mesma passada
+  assert.equal(o.p.stars, 60);
+});
+
+test('finishRound: ofensiva, meta do dia, chefe, persistência, baú e recordes', () => {
+  const now = 'new Date(2026, 9, 28, 12)';
+  const base = { lastPlay: '2026-10-27', streak: 2, rounds: 4, today: { d: '2026-10-28', rounds: 2, done: false, modes: {} } };
+  let o = run('finishRound(p, { kind: "normal", mode: "somar", firsts: 4, wrongs: 1, total: 5, points: 900 }, { goalRounds: 3, now: ' + now + ' })', profile(base));
+  assert.equal(o.p.streak, 3); assert.equal(o.p.lastPlay, '2026-10-28');
+  assert.equal(o.r.goalStars, 5); assert.equal(o.p.today.done, true);
+  assert.equal(o.r.boss, 'boss_ready'); assert.equal(o.p.bossReady, true);  // 5ª rodada
+  assert.equal(o.p.persistRounds, 1);
+  assert.equal(o.r.chest, 3); assert.equal(o.p.chests[3], 1);                  // 3 dias seguidos
+  assert.equal(o.r.newRecord, true); assert.equal(o.p.bestPts.somar, 900);
+  assert.ok(o.r.achs.includes('a13'));                                         // persistência vale na mesma rodada
+  assert.equal(o.p.weeks.length, 1); assert.equal(o.p.weeks[0].rights, 4);
+  // ofensiva quebrada volta a 1; chefe vencido com 70% de primeira
+  o = run('finishRound(p, { kind: "boss", firsts: 7, wrongs: 3, total: 10, points: 50 }, { goalRounds: 0, now: ' + now + ' })', profile({ lastPlay: '2026-10-20', streak: 9 }));
+  assert.equal(o.p.streak, 1); assert.equal(o.r.boss, 'boss_win'); assert.equal(o.p.bossWon, true); assert.ok(o.r.achs.includes('a7'));
+});
+
+test('finishRound: recorde do Contra o Tempo já libera a medalha de 10 acertos', () => {
+  const o = run('finishRound(p, { kind: "tempo", firsts: 12, wrongs: 0, total: 9999, points: 0 }, { goalRounds: 0 })', profile({ bestSurvive: 8 }));
+  assert.deepEqual(o.r.survive, { n: 12, record: true });
+  assert.equal(o.p.bestSurvive, 12);
+  assert.ok(o.r.achs.includes('a18'));
+});
+
+test('finishRound: avaliação define o nível de todos os modos', () => {
+  const o = run('finishRound(p, { kind: "diag", firsts: 5, wrongs: 3, total: 8, points: 0, diagOK: 5 }, {})', profile());
+  assert.equal(o.r.diagLevel, 3); assert.equal(o.p.assessed, true);
+  assert.equal(o.p.levels.somar, 3); assert.equal(o.p.levels.mistar, undefined);
+});
+
+test('baú: 10 ⭐ por dia do marco e uma figurinha que faltava', () => {
+  const o = run('openChestReward(p, 7)', profile({ stickers: [0, 1, 2] }));
+  assert.equal(o.r.stars, 70); assert.equal(o.p.stars, 70 + 5 * o.r.achs.length);
+  assert.ok(o.r.sticker > 2 && o.p.stickers.includes(o.r.sticker));
+});
