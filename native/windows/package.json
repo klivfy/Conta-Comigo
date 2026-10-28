@@ -16,7 +16,7 @@
     "electron-builder": "^26.18.0"
   },
   "build": {
-    "appId": "com.klivfy.contacomigo",
+    "appId": "com.klivfy.conta.comigo.matematica",
     "productName": "Conta Comigo",
     "copyright": "Copyright © 2026 Klivfy Tecnologia",
     "directories": {
@@ -49,7 +49,7 @@
           ]
         }
       ],
-      "artifactName": "Conta-Comigo-${version}-${arch}.${ext}"
+      "artifactName": "conta-comigo-windows-${version}-${arch}-instalador.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -60,7 +60,7 @@
       "shortcutName": "Conta Comigo"
     },
     "portable": {
-      "artifactName": "Conta-Comigo-${version}-portable.${ext}"
+      "artifactName": "conta-comigo-windows-${version}-${arch}-portatil.${ext}"
     },
     "appx": {
       "identityName": "Klivfy.ContaComigo",
@@ -73,7 +73,7 @@
         "en-US",
         "es-ES"
       ],
-      "artifactName": "Conta-Comigo-${version}-store.${ext}"
+      "artifactName": "conta-comigo-windows-${version}-${arch}-loja.${ext}"
     }
   }
 }

@@ -1,6 +1,6 @@
 # Microsoft Store (Windows 10/11) — Conta Comigo 2.6.2
 
-Painel: <https://partner.microsoft.com/dashboard/apps-and-games/overview> · Pacote: o `.msix`/`.appx` gerado por **Actions → Windows (Electron)** (`Conta-Comigo-2.6.2-store.appx`), não o instalador NSIS.
+Painel: <https://partner.microsoft.com/dashboard/apps-and-games/overview> · Pacote: o `.msix`/`.appx` gerado por **Actions → Windows (Electron)** (`conta-comigo-windows-2.6.2-x64-loja.appx`), não o instalador NSIS.
 
 ## Antes de enviar o pacote
 

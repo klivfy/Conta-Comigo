@@ -17,8 +17,8 @@ motor do jogo (PWA copiada para `app/` pelo CI).
 Push em `native/windows/**` (ou aba Actions → "Windows (Electron)" → Run
 workflow) → artefato `conta-comigo-windows-<versão>` com:
 
-- `Conta-Comigo-2.6.0-x64.exe` — instalador NSIS (por usuário, atalhos, escolhe pasta)
-- `Conta-Comigo-2.6.0-portable.exe` — executável único, sem instalação
+- `conta-comigo-windows-<versão>-x64-instalador.exe` — instalador NSIS (por usuário, atalhos, escolhe pasta)
+- `conta-comigo-windows-<versão>-x64-portatil.exe` — executável único, sem instalação
 
 ## Build local (opcional)
 
@@ -40,7 +40,7 @@ cd native/windows && npm ci && npm run dist         # saída em native/windows/d
 
 ## Pacote da Microsoft Store (MSIX/APPX)
 
-O build gera também `Conta-Comigo-<versão>-store.appx` (x64). Para enviar à loja:
+O build gera também `conta-comigo-windows-<versão>-x64-loja.appx` (x64). Para enviar à loja:
 
 1. No Partner Center, reserve o nome "Conta Comigo" e copie, em *Gerenciamento de produto > Identidade do produto*, os valores `Package/Identity/Name`, `Package/Identity/Publisher` e `PublisherDisplayName`.
 2. No GitHub, em *Settings > Secrets and variables > Actions > Variables*, crie `APPX_IDENTITY_NAME`, `APPX_PUBLISHER` e `APPX_PUBLISHER_DISPLAY_NAME` com esses valores.

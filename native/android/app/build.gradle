@@ -12,11 +12,11 @@ def keyPass = signProp("ANDROID_KEY_PASS", "contaComigo.keyPass")
 def hasSigning = ksPath && ksPass && ksAlias && keyPass && file(ksPath).exists()
 
 android {
-    namespace 'com.klivfy.contacomigo'
+    namespace 'com.klivfy.conta.comigo.matematica'
     compileSdk 35
 
     defaultConfig {
-        applicationId "com.conta.comigo.matematica.klivfy.com"
+        applicationId "com.klivfy.conta.comigo.matematica"
         minSdk 24
         targetSdk 35
         versionCode 262        // v2.6.2

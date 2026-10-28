@@ -24,6 +24,7 @@ Tudo sai de `download/conta-comigo/`. Os builds (`download/conta-comigo-pwa/` e 
 - **Textos**: toda chave em pt, en e es (`scripts/i18n_check.cjs`).
 - **Tamanhos**: texto em `rem`; ícones e ilustrações em emoji em `px`. Alvos de toque com no mínimo 44×44px. Cores vêm dos tokens semânticos (`--ink`, `--accent-text`…).
 - **Workflows**: `.github/workflows/*.yml` e `download/kit-fase1/workflows/*.yml` são cópias idênticas.
+- **Identificador**: `com.klivfy.conta.comigo.matematica` em todas as plataformas (Android, iPhone, iPad, Mac, Windows, Linux). Exceções e motivos em `IDENTIFICADORES.md`; o Firefox continua `conta-comigo@klivfy.com`. O `sync_check.cjs` confere.
 - **Versão**: ao mudar a do `manifest.json`, atualize todos os lugares que `scripts/sync_check.cjs` lista.
 
 ## Verificação (rode antes de abrir PR)

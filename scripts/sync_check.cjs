@@ -3,7 +3,8 @@
    1. a tela do jogo difere entre game.html, popup.html e web/index.html
       (DESIGN.md: "mantenha a mesma marcação"), além das diferenças previstas;
    2. um workflow do kit (download/kit-fase1/workflows) difere do .github/workflows;
-   3. alguma versão gravada no código difere da do manifest.json.
+   3. alguma versão gravada no código difere da do manifest.json;
+   4. algum identificador de pacote foge da regra de IDENTIFICADORES.md.
    Uso: node scripts/sync_check.cjs   (sai com código 1 se algo divergir) */
 'use strict';
 const fs = require('fs');
@@ -74,5 +75,25 @@ for (const [file, re, expect] of want) {
   if (!found.length || found.some((x) => x !== expect)) bad.push('versão: ' + file + ' tem ' + (found.join(', ') || 'nada') + ', o manifest tem ' + expect);
 }
 
+/* ---------- 4. identificador único (IDENTIFICADORES.md) ---------- */
+const APP_ID = 'com.klivfy.conta.comigo.matematica';
+const GECKO_ID = 'conta-comigo@klivfy.com'; // fixo: trocar cria outro add-on no AMO
+const ids = [
+  ['native/android/app/build.gradle', /applicationId "([^"]+)"/g],
+  ['native/android/app/build.gradle', /namespace '([^']+)'/g],
+  ['native/android/twa-manifest.json', /"packageId": "([^"]+)"/g],
+  ['native/android/assetlinks.json', /"package_name": "([^"]+)"/g],
+  ['native/android/app/src/main/res/values/strings.xml', /\\"package_name\\": \\"([^"\\]+)\\"/g],
+  ['native/windows/package.json', /"appId": "([^"]+)"/g],
+  ['native/ios/capacitor.config.json', /"appId": "([^"]+)"/g],
+  ['native/ios/ios/App/App.xcodeproj/project.pbxproj', /PRODUCT_BUNDLE_IDENTIFIER = ([^;]+);/g],
+];
+for (const [file, re] of ids) {
+  const found = [...read(ROOT, file).matchAll(re)].map((m) => m[1]);
+  if (!found.length || found.some((x) => x !== APP_ID)) bad.push('identificador: ' + file + ' tem ' + (found.join(', ') || 'nada') + ', a regra pede ' + APP_ID);
+}
+const gecko = (read(ROOT, 'scripts', 'build_packages.py').match(/"id": "([^"]+@[^"]+)"/) || [])[1];
+if (gecko !== GECKO_ID) bad.push('identificador: o id do Firefox em scripts/build_packages.py é ' + gecko + ', deve continuar ' + GECKO_ID);
+
 if (bad.length) { console.log('FALHOU\n  ' + bad.join('\n  ')); process.exit(1); }
-console.log('OK — tela do jogo igual nas 3 páginas, ' + fs.readdirSync(WF).length + ' workflows iguais ao kit, versão ' + V + ' em ' + want.length + ' lugares');
+console.log('OK — tela do jogo igual nas 3 páginas, ' + fs.readdirSync(WF).length + ' workflows iguais ao kit, versão ' + V + ' em ' + want.length + ' lugares, identificador ' + APP_ID + ' em ' + ids.length + ' lugares');
