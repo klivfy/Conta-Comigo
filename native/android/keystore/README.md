@@ -56,3 +56,11 @@ bash scripts/assinar_aab.sh app-release.aab ~/conta-comigo-keys/upload.jks
 ```
 
 O resultado (`app-release-assinado.aab`) é o arquivo que o Play Console aceita. Na primeira vez, o Play registra essa chave como upload key; mantenha o `.jks` e a senha num cofre.
+
+No **Windows (PowerShell)** não há `bash`: use `scripts/assinar_aab.ps1`, que cria a chave (se não existir) e assina de uma vez:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File assinar_aab.ps1 -Aab app-release.aab
+```
+
+Precisa de um JDK 17+ (`winget install EclipseAdoptium.Temurin.21.JDK`). A chave fica em `%USERPROFILE%\conta-comigo-keys\upload.jks`.
