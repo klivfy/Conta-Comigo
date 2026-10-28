@@ -64,7 +64,7 @@ const seed = (lang) => ({ v: 2, activeId: 'p1', profiles: [
   { id: 'p1', name: { pt: 'Bia', en: 'Mia', es: 'Lía' }[lang], avatar: '🦊', stars: 132, points: 640, streak: 5, lastPlay: new Date().toISOString().slice(0, 10),
     rounds: 24, rights: 180, wrongs: 22, playSec: 4300, bestCombo: 9, assessed: true,
     levels: { contar: 3, somar: 3, comparar: 2, subtrair: 2, faltar: 2, sequencia: 2, dobrar: 1, multiplicar: 1, dividir: 1, historia: 1, dinheiro: 1 },
-    lvl: LVL, ach: { a1: 1, a2: 1, a3: 1, a4: 1, a5: 1 }, owned: { themes: ['classico', 'espaco', 'jardim'], hats: [], pets: ['fox', 'panda'] } },
+    lvl: LVL, ach: { a1: 1, a2: 1, a3: 1, a4: 1, a5: 1 }, chests: { 3: 1 }, owned: { themes: ['classico', 'espaco', 'jardim'], hats: [], pets: ['fox', 'panda'] } },
   { id: 'p2', name: 'Theo', avatar: '🐼', stars: 8 }], settings: { lang, calmo: true, theme: 'classico', voiceOn: false, sfxOn: false, newtabOn: false } });
 
 (async () => {
@@ -86,6 +86,7 @@ const seed = (lang) => ({ v: 2, activeId: 'p1', profiles: [
       await p.evaluate(fn); await p.waitForTimeout(450);
       await p.screenshot({ path: path.join(dir, String(i + 1).padStart(2, '0') + '-' + name + '.png') }); n++;
     }
+    /* o baú da ofensiva de 3 dias já foi aberto no seed (chests): sem ele, o aviso do baú aparecia por cima da Loja */
     // painel dos responsáveis (options.html), já destravado
     if (f.scenes >= 8) {
       await p.goto(base + 'options.html'); await p.waitForTimeout(500);

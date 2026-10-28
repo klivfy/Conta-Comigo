@@ -642,8 +642,8 @@ function bindCounting(q) {
       el.classList.add('counted');
       el.style.setProperty('--cnt', '"' + (i + 1) + '"');
       SFX.tap();
-      const words = ['um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove', 'vinte'];
-      TTS.speak(words[i] || String(i + 1), { force: true }); // repetir o mesmo número é intencional
+      // no idioma do jogo (antes falava "um, dois, três" também em inglês e espanhol)
+      TTS.speak(numWord(LANG, i + 1), { force: true }); // repetir o mesmo número é intencional
     });
   });
 }
