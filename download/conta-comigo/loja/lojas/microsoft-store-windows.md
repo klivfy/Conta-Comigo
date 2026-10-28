@@ -1,6 +1,6 @@
-# Microsoft Store (Windows 10/11) — Conta Comigo 2.6.2
+# Microsoft Store (Windows 10/11) — Conta Comigo 2.6.3
 
-Painel: <https://partner.microsoft.com/dashboard/apps-and-games/overview> · Pacote: o `.msix`/`.appx` gerado por **Actions → Windows (Electron)** (`conta-comigo-windows-2.6.2-x64-loja.appx`), não o instalador NSIS.
+Painel: <https://partner.microsoft.com/dashboard/apps-and-games/overview> · Pacote: o `.msix`/`.appx` gerado por **Actions → Windows (Electron)** (`conta-comigo-windows-2.6.3-x64-loja.appx`), não o instalador NSIS.
 
 ## Antes de enviar o pacote
 
@@ -97,10 +97,10 @@ Matemática de brincar para crianças de 4 a 8 anos: contar, somar, comparar, di
 
 **Palavras-chave (até 7, cada uma ≤ 30):** matemática infantil; jogo educativo; contar; somar e subtrair; crianças; offline; pré-escola
 
-**Novidades desta versão (≤ 1500):** _(240 caracteres)_
+**Novidades desta versão (≤ 1500):** _(384 caracteres)_
 
 ```text
-Novidades da 2.6.2: o texto acompanha o tamanho de fonte do sistema, o alto contraste liga sozinho quando o sistema pede, os destaques ficaram mais legíveis e a senha dos responsáveis ganhou proteção mais forte e não vai mais para o backup.
+Novidades da 2.6.3: ao tocar nos objetos para contar, a narração fala os números no idioma do jogo (antes falava sempre em português) e a política de privacidade foi atualizada para todas as plataformas. O instalador do Windows ganhou um identificador novo: quem tinha a 2.6.2 instalada pelo instalador pode desinstalar a versão antiga em Aplicativos instalados; o progresso continua.
 ```
 
 **Notas para a certificação (≤ 2000):** _(478 caracteres)_
@@ -168,10 +168,10 @@ Playful math for children aged 4 to 8: counting, addition, comparing, money and 
 
 **Palavras-chave (até 7, cada uma ≤ 30):** kids math; educational game; counting; addition; children; offline; preschool
 
-**Novidades desta versão (≤ 1500):** _(236 caracteres)_
+**Novidades desta versão (≤ 1500):** _(362 caracteres)_
 
 ```text
-What's new in 2.6.2: text follows the system font size, high contrast turns on by itself when the system asks for it, highlights are easier to read, and the parents' password has stronger protection and is no longer included in backups.
+What's new in 2.6.3: when tapping objects to count, the narration now says the numbers in the game's language (it used to always speak Portuguese), and the privacy policy was updated for every platform. The Windows installer has a new identifier: if you installed 2.6.2 with the installer, you can uninstall the old copy in Installed apps; your progress is kept.
 ```
 
 **Notas para a certificação (≤ 2000):** _(472 caracteres)_
@@ -239,10 +239,10 @@ Matemática lúdica para niños de 4 a 8 años: contar, sumar, comparar, dinero 
 
 **Palavras-chave (até 7, cada uma ≤ 30):** matemática niños; juego educativo; contar; sumar y restar; niños; sin conexión; preescolar
 
-**Novidades desta versão (≤ 1500):** _(252 caracteres)_
+**Novidades desta versão (≤ 1500):** _(401 caracteres)_
 
 ```text
-Novedades de la 2.6.2: el texto sigue el tamaño de fuente del sistema, el alto contraste se activa solo cuando el sistema lo pide, los destacados son más legibles y la contraseña de las familias tiene más protección y ya no va en la copia de seguridad.
+Novedades de la 2.6.3: al tocar los objetos para contar, la narración dice los números en el idioma del juego (antes siempre hablaba en portugués) y la política de privacidad se actualizó para todas las plataformas. El instalador de Windows tiene un identificador nuevo: si instalaste la 2.6.2 con el instalador, puedes desinstalar la copia antigua en Aplicaciones instaladas; el progreso se conserva.
 ```
 
 **Notas para a certificação (≤ 2000):** _(485 caracteres)_

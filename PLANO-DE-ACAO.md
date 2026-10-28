@@ -162,3 +162,12 @@ Auditoria de segurança, estrutura e design com `/security-review`, `/anthropic-
   - O movimento reduzido esmaece em vez de cortar.
   - O ícone de tela cheia virou 📺.
 
+## Fase 9 — Publicação nas lojas (v2.6.3)
+
+- [x] 9.1 Pacote das 5 lojas (Chrome, Edge, Firefox, Microsoft Store, Google Play) em pt, en e es: roteiros, 117 capturas, imagens promocionais, política trilíngue e vídeo.
+- [x] 9.2 Identificador único `com.klivfy.conta.comigo.matematica` (`IDENTIFICADORES.md`), conferido pelo `sync_check`.
+- [x] 9.3 Android: minSdk 24, targetSdk 36, R8 com mapping, AGP 8.13.2, Gradle 8.14.3; scripts de assinatura para Linux/macOS e Windows.
+- [x] 9.4 Contagem por toque no idioma do jogo.
+- [ ] 9.5 [você] ligar o GitHub Pages; criar o app novo no Play Console; identidade da Partner Center; conta Apple.
+- [ ] 9.6 Moeda do modo Dinheiro por região e voz es-419 (lacunas L1 e L3 de `PLATAFORMAS-E-MERCADOS.md`).
+

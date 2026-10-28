@@ -48,33 +48,33 @@ O **Conta Comigo** é um jogo educativo que ensina os primeiros conceitos de mat
 
 A narração usa a síntese de voz do próprio sistema com **seleção inteligente de qualidade**: as vozes são agrupadas de 🌟 naturais → ⚡ neurais/rede → padrão → básicas, priorizando as mais humanas disponíveis (ex.: *"Online (Natural)"* do Edge, *Premium/Enhanced* da Apple, Google de rede) e afastando motores robóticos. As opções mostram a **nota "Voz ativa"**, permitem velocidade e tonalidade por perfil e há **guia gratuito** para instalar vozes melhores em cada plataforma (Edge, Windows, Android, iPhone/Mac e Linux/Piper) — tudo em PT, EN e ES.
 
-## 📥 Downloads diretos — v2.6.2
+## 📥 Downloads diretos — v2.6.3
 
 | Plataforma | Pacote |
 |---|---|
-| 🟢 Chrome / Edge / Brave | [conta-comigo-chrome-2.6.2.zip](download/conta-comigo-chrome-2.6.2.zip) |
-| 🦊 Firefox (128+) | [conta-comigo-firefox-2.6.2.zip](download/conta-comigo-firefox-2.6.2.zip) |
-| 🤖 Android (PWA) | [conta-comigo-pwa-android-2.6.2.zip](download/conta-comigo-pwa-android-2.6.2.zip) |
+| 🟢 Chrome / Edge / Brave | [conta-comigo-chrome-2.6.3.zip](download/conta-comigo-chrome-2.6.3.zip) |
+| 🦊 Firefox (128+) | [conta-comigo-firefox-2.6.3.zip](download/conta-comigo-firefox-2.6.3.zip) |
+| 🤖 Android (PWA) | [conta-comigo-pwa-android-2.6.3.zip](download/conta-comigo-pwa-android-2.6.3.zip) |
 
 > Os pacotes ficam na pasta [`download/`](download/) e são gerados a partir de `download/conta-comigo/`. Versões anteriores: [releases](https://github.com/klivfy/Conta-Comigo/releases).
 
 ## 📦 Instalação
 
 **Chrome / Edge / Brave**
-1. Baixe `conta-comigo-chrome-2.6.2.zip` (tabela acima) e descompacte
+1. Baixe `conta-comigo-chrome-2.6.3.zip` (tabela acima) e descompacte
 2. Abra `chrome://extensions`, ative o **modo do desenvolvedor**
 3. Clique em **Carregar sem compactação** e escolha a pasta descompactada
 
 **Firefox**
-1. Baixe `conta-comigo-firefox-2.6.2.zip` e descompacte
+1. Baixe `conta-comigo-firefox-2.6.3.zip` e descompacte
 2. Abra `about:debugging#/runtime/this-firefox` → **Carregar extensão temporária**
 3. Selecione qualquer arquivo da pasta descompactada
 
 **Android (PWA)**
-1. Baixe `conta-comigo-pwa-android-2.6.2.zip` e hospede a pasta em qualquer servidor (local ou web)
+1. Baixe `conta-comigo-pwa-android-2.6.3.zip` e hospede a pasta em qualquer servidor (local ou web)
 2. Abra o endereço no Chrome do celular → menu ⋮ → **Adicionar à tela inicial**
 
-> **Atualização sem perder progresso:** recarregar a extensão (↻ em `chrome://extensions`) preserva estrelas, conquistas e perfis; remover e reinstalar apaga — antes, exporte o backup pelo botão 💾 e reimporte depois. Para confirmar a versão: o **selo `v2.6.2`** aparece no topo do jogo, ao lado de 🔥.
+> **Atualização sem perder progresso:** recarregar a extensão (↻ em `chrome://extensions`) preserva estrelas, conquistas e perfis; remover e reinstalar apaga — antes, exporte o backup pelo botão 💾 e reimporte depois. Para confirmar a versão: o **selo `v2.6.3`** aparece no topo do jogo, ao lado de 🔥.
 
 ## 🔐 Privacidade e público-infância
 

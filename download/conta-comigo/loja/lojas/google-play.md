@@ -1,6 +1,6 @@
-# Google Play — Conta Comigo 2.6.2 (Android)
+# Google Play — Conta Comigo 2.6.3 (Android)
 
-Painel: <https://play.google.com/console> · Pacote: o **AAB** gerado por *Actions → Android* (`conta-comigo-android-2.6.2`), assinado com a chave de upload. Ative o **Play App Signing**.
+Painel: <https://play.google.com/console> · Pacote: o **AAB** gerado por *Actions → Android* (`conta-comigo-android-2.6.3`), assinado com a chave de upload. Ative o **Play App Signing**.
 
 ## Antes do primeiro envio (obrigatório)
 
@@ -19,7 +19,7 @@ Painel: <https://play.google.com/console> · Pacote: o **AAB** gerado por *Actio
 | URL da política de privacidade | https://klivfy.github.io/Conta-Comigo/politica-de-privacidade.html |
 | Site | https://klivfy.github.io/Conta-Comigo/ |
 | E-mail de contato (obrigatório, público) | **preencher com o e-mail de suporte da Klivfy** |
-| Versão (versionName / versionCode) | 2.6.2 / 262 |
+| Versão (versionName / versionCode) | 2.6.3 / 263 |
 | minSdk / targetSdk | 24 (Android 7.0; a Proteção Automática do Play exige 24+) / 36 (o Play exige 36) |
 
 ## Conteúdo do app (Política → Conteúdo do app)
@@ -99,10 +99,10 @@ NO ANDROID
 • O texto acompanha o tamanho de fonte do sistema.
 ```
 
-**O que há de novo (≤ 500):** _(158 caracteres)_
+**O que há de novo (≤ 500):** _(156 caracteres)_
 
 ```text
-Texto que acompanha o tamanho de fonte do sistema, alto contraste automático, destaques mais legíveis e senha dos responsáveis mais segura (e fora do backup).
+A contagem por toque fala os números no idioma do jogo, o app ficou menor e passou a usar a versão mais recente do Android (exige Android 7.0 ou mais novo).
 ```
 
 ## English (`en-US`)
@@ -147,10 +147,10 @@ ON ANDROID
 • Text follows the system font size.
 ```
 
-**O que há de novo (≤ 500):** _(143 caracteres)_
+**O que há de novo (≤ 500):** _(148 caracteres)_
 
 ```text
-Text that follows the system font size, automatic high contrast, easier-to-read highlights and a safer parents' password (kept out of backups).
+Tap-to-count now says the numbers in the game's language, the app is smaller and targets the latest Android version (requires Android 7.0 or newer).
 ```
 
 ## Español (`es-419`)
@@ -195,10 +195,10 @@ EN ANDROID
 • El texto sigue el tamaño de fuente del sistema.
 ```
 
-**O que há de novo (≤ 500):** _(160 caracteres)_
+**O que há de novo (≤ 500):** _(159 caracteres)_
 
 ```text
-Texto que sigue el tamaño de fuente del sistema, alto contraste automático, destacados más legibles y contraseña de las familias más segura (fuera de la copia).
+El conteo con toques dice los números en el idioma del juego, la app es más liviana y usa la versión más reciente de Android (requiere Android 7.0 o superior).
 ```
 
 ## Checklist de envio

@@ -1174,7 +1174,7 @@ async function boot() {
     let vv = '';
     try { if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getManifest) vv = chrome.runtime.getManifest().version; } catch (e) { /* sem extensão */ }
     if (!vv) { const mt = document.querySelector('meta[name="cc-version"]'); if (mt) vv = mt.content; }
-    vb.textContent = 'v' + (vv || (window.ccVersion ? window.ccVersion() : '2.6.2'));
+    vb.textContent = 'v' + (vv || (window.ccVersion ? window.ccVersion() : '2.6.3'));
   }
   // v2.4 (A-198): saudação cordial com o nome — o 1º toque libera o áudio no navegador
   const greet = () => {

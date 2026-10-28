@@ -1,6 +1,6 @@
-# Microsoft Edge Add-ons — Conta Comigo 2.6.2
+# Microsoft Edge Add-ons — Conta Comigo 2.6.3
 
-Painel: <https://partner.microsoft.com/dashboard/microsoftedge/overview> · Pacote: o **mesmo** zip do Chrome, `download/conta-comigo-chrome-2.6.2.zip` (o Edge é baseado em Chromium e aceita MV3 com service worker).
+Painel: <https://partner.microsoft.com/dashboard/microsoftedge/overview> · Pacote: o **mesmo** zip do Chrome, `download/conta-comigo-chrome-2.6.3.zip` (o Edge é baseado em Chromium e aceita MV3 com service worker).
 
 ## Dados gerais
 
@@ -73,7 +73,7 @@ OBSERVAÇÕES
 Não é preciso conta nem senha para testar. Clique no ícone da extensão: o jogo abre em tela cheia. Escolha "Contar" ou "Somar" e toque nas respostas. A extensão usa só a permissão "storage", não faz requisições de rede e não coleta dados. Ela substitui a nova aba por um desafio rápido; dá para desligar na própria página. O pacote é o mesmo MV3 enviado à Chrome Web Store (service worker em background.js).
 ```
 
-**Notas da versão:** Novidades da 2.6.2: o texto acompanha o tamanho de fonte do sistema, o alto contraste liga sozinho quando o sistema pede, os destaques ficaram mais legíveis e a senha dos responsáveis ganhou proteção mais forte e não vai mais para o backup.
+**Notas da versão:** Novidades da 2.6.3: ao tocar nos objetos para contar, a narração fala os números no idioma do jogo (antes falava sempre em português) e a política de privacidade foi atualizada para todas as plataformas.
 
 
 ## English
@@ -125,7 +125,7 @@ NOTES
 No account or password is needed to test. Click the extension icon: the game opens full screen. Pick "Count" or "Add" and tap the answers. The extension uses only the "storage" permission, makes no network requests and collects no data. It replaces the new tab page with a quick challenge that can be turned off on the page itself. The package is the same MV3 build sent to the Chrome Web Store (service worker in background.js).
 ```
 
-**Notas da versão:** What's new in 2.6.2: text follows the system font size, high contrast turns on by itself when the system asks for it, highlights are easier to read, and the parents' password has stronger protection and is no longer included in backups.
+**Notas da versão:** What's new in 2.6.3: when tapping objects to count, the narration now says the numbers in the game's language (it used to always speak Portuguese), and the privacy policy was updated for every platform.
 
 
 ## Español
@@ -177,7 +177,7 @@ NOTAS
 No hace falta cuenta ni contraseña para probar. Haz clic en el icono de la extensión: el juego se abre a pantalla completa. Elige "Contar" o "Sumar" y toca las respuestas. La extensión usa solo el permiso "storage", no hace solicitudes de red y no recopila datos. Reemplaza la nueva pestaña por un desafío rápido que se puede apagar en la propia página. El paquete es el mismo MV3 enviado a la Chrome Web Store (service worker en background.js).
 ```
 
-**Notas da versão:** Novedades de la 2.6.2: el texto sigue el tamaño de fuente del sistema, el alto contraste se activa solo cuando el sistema lo pide, los destacados son más legibles y la contraseña de las familias tiene más protección y ya no va en la copia de seguridad.
+**Notas da versão:** Novedades de la 2.6.3: al tocar los objetos para contar, la narración dice los números en el idioma del juego (antes siempre hablaba en portugués) y la política de privacidad se actualizó para todas las plataformas.
 
 
 ## Checklist de envio

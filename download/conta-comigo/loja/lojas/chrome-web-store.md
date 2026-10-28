@@ -1,6 +1,6 @@
-# Chrome Web Store — Conta Comigo 2.6.2
+# Chrome Web Store — Conta Comigo 2.6.3
 
-Painel: <https://chrome.google.com/webstore/devconsole> · Pacote: `download/conta-comigo-chrome-2.6.2.zip` (envie o zip **sem** descompactar).
+Painel: <https://chrome.google.com/webstore/devconsole> · Pacote: `download/conta-comigo-chrome-2.6.3.zip` (envie o zip **sem** descompactar).
 
 ## Dados gerais (iguais nos 3 idiomas)
 
@@ -94,7 +94,7 @@ A permissão "storage" é usada somente para salvar, no próprio navegador, o pr
 A extensão substitui a nova aba (chrome_url_overrides) por um desafio rápido de matemática que também funciona como atalho para o jogo completo. É uma função declarada na descrição e pode ser desligada na própria página.
 ```
 
-**Notas da versão:** Novidades da 2.6.2: o texto acompanha o tamanho de fonte do sistema, o alto contraste liga sozinho quando o sistema pede, os destaques ficaram mais legíveis e a senha dos responsáveis ganhou proteção mais forte e não vai mais para o backup.
+**Notas da versão:** Novidades da 2.6.3: ao tocar nos objetos para contar, a narração fala os números no idioma do jogo (antes falava sempre em português) e a política de privacidade foi atualizada para todas as plataformas.
 
 
 ## English
@@ -156,7 +156,7 @@ The "storage" permission is used only to save the game's progress, profiles and 
 The extension replaces the new tab page (chrome_url_overrides) with a quick math challenge that doubles as a shortcut to the full game. This is declared in the description and can be turned off on the page itself.
 ```
 
-**Notas da versão:** What's new in 2.6.2: text follows the system font size, high contrast turns on by itself when the system asks for it, highlights are easier to read, and the parents' password has stronger protection and is no longer included in backups.
+**Notas da versão:** What's new in 2.6.3: when tapping objects to count, the narration now says the numbers in the game's language (it used to always speak Portuguese), and the privacy policy was updated for every platform.
 
 
 ## Español
@@ -218,7 +218,7 @@ El permiso "storage" se usa solo para guardar en el propio navegador el progreso
 La extensión reemplaza la nueva pestaña (chrome_url_overrides) por un desafío rápido de matemática que también sirve de atajo al juego completo. Está declarado en la descripción y se puede apagar en la propia página.
 ```
 
-**Notas da versão:** Novedades de la 2.6.2: el texto sigue el tamaño de fuente del sistema, el alto contraste se activa solo cuando el sistema lo pide, los destacados son más legibles y la contraseña de las familias tiene más protección y ya no va en la copia de seguridad.
+**Notas da versão:** Novedades de la 2.6.3: al tocar los objetos para contar, la narración dice los números en el idioma del juego (antes siempre hablaba en portugués) y la política de privacidad se actualizó para todas las plataformas.
 
 
 ## Checklist de envio

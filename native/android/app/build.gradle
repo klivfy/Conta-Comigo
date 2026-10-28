@@ -19,8 +19,8 @@ android {
         applicationId "com.klivfy.conta.comigo.matematica"
         minSdk 24
         targetSdk 36        // o Google Play exige API 36
-        versionCode 262        // v2.6.2
-        versionName "2.6.2"
+        versionCode 263        // v2.6.3
+        versionName "2.6.3"
     }
 
     signingConfigs {
