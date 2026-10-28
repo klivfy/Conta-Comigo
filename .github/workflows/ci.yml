@@ -31,7 +31,7 @@ jobs:
         with:
           node-version: '22'
 
-      - name: CSP (sem script inline, evento inline, javascript: ou eval)
+      - name: 'CSP (sem script inline, evento inline, javascript: ou eval)'
         run: python scripts/scan_csp.py
 
       - name: Sintaxe do JavaScript

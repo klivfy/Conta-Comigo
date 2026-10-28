@@ -45,6 +45,11 @@ for (const [name, other] of [['web/index.html', web], ['popup.html', popup]]) {
 const WF = path.join(ROOT, '.github', 'workflows');
 const KIT = path.join(ROOT, 'download', 'kit-fase1', 'workflows');
 for (const f of fs.readdirSync(WF)) {
+  // YAML: "name: texto: mais" sem aspas vira chave-valor e invalida o workflow inteiro (o CI some sem aviso)
+  read(WF, f).split('\n').forEach((l, i) => {
+    const m = l.match(/^\s*-?\s*name:\s+(.*)$/);
+    if (m && !/^['"]/.test(m[1]) && /:\s/.test(m[1])) bad.push('workflow: .github/workflows/' + f + ':' + (i + 1) + ' tem "name" com ": " sem aspas');
+  });
   if (!fs.existsSync(path.join(KIT, f))) bad.push('kit: falta download/kit-fase1/workflows/' + f);
   else if (read(WF, f) !== read(KIT, f)) bad.push('kit: download/kit-fase1/workflows/' + f + ' difere de .github/workflows/' + f);
 }
