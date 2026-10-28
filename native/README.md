@@ -43,7 +43,7 @@ Administração no repositório — clique manual, sem custo).
 ## TWA Android — por que tela cheia sem barra de URL
 
 O `assetlinks.json` publicado no site (`/.well-known/`) declara o pacote
-`com.klivfy.contacomigo` + fingerprint SHA256 da upload key, que fica fora do
+`com.conta.comigo.matematica.klivfy.com` (Android) + fingerprint SHA256 da upload key, que fica fora do
 repositório (GitHub Secrets no CI). O workflow Android confere a cada build
 que o fingerprint bate — se divergir, falha cedo com mensagem clara.
 

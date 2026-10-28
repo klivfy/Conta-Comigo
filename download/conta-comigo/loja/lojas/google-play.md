@@ -13,7 +13,7 @@ Painel: <https://play.google.com/console> · Pacote: o **AAB** gerado por *Actio
 | Campo | Valor |
 |---|---|
 | Tipo | Aplicativo (não jogo) · Categoria **Educação** |
-| Nome do pacote | `com.klivfy.contacomigo` |
+| Nome do pacote | `com.conta.comigo.matematica.klivfy.com` (definido pelo app já criado no Play Console; não muda mais) |
 | Preço | Gratuito, sem anúncios, sem compras no app |
 | Idioma padrão | Português (Brasil) — pt-BR; adicionar en-US e es-419 (e es-ES) |
 | URL da política de privacidade | https://klivfy.github.io/Conta-Comigo/politica-de-privacidade.html |

@@ -16,7 +16,7 @@ android {
     compileSdk 35
 
     defaultConfig {
-        applicationId "com.klivfy.contacomigo"
+        applicationId "com.conta.comigo.matematica.klivfy.com"
         minSdk 24
         targetSdk 35
         versionCode 262        // v2.6.2
