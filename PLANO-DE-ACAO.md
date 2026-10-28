@@ -170,4 +170,4 @@ Auditoria de segurança, estrutura e design com `/security-review`, `/anthropic-
 - [x] 9.4 Contagem por toque no idioma do jogo.
 - [ ] 9.5 [você] ligar o GitHub Pages; criar o app novo no Play Console; identidade da Partner Center; conta Apple.
 - [ ] 9.6 Moeda do modo Dinheiro por região e voz es-419 (lacunas L1 e L3 de `PLATAFORMAS-E-MERCADOS.md`).
-
+- [x] 9.7 Limpeza do repositório: 155 arquivos sem uso fora (geradores de estudos com caminho de outra máquina, scripts avulsos de versões antigas, PDFs intermediários, guia de push manual, capturas `qa/` e `qa2/`), 16 chaves de texto sem uso nos 3 idiomas, e `scripts/scan_csp.py` consertado e no CI.

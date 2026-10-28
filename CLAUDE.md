@@ -34,6 +34,7 @@ node --test tests/*.test.cjs        # motor: senha, backup, geradores, regras
 node scripts/i18n_check.cjs
 node scripts/sync_check.cjs
 python scripts/build_packages.py && python scripts/build_pwa.py
+python scripts/scan_csp.py          # CSP: sem script/evento inline, javascript: ou eval
 node scripts/a11y_check.cjs         # axe; precisa de playwright e axe-core
 node scripts/resp_check.cjs         # 8 aparelhos × 15 telas
 CC_TEXTO=200 node scripts/resp_check.cjs

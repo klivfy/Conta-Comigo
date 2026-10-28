@@ -31,6 +31,9 @@ jobs:
         with:
           node-version: '22'
 
+      - name: CSP (sem script inline, evento inline, javascript: ou eval)
+        run: python scripts/scan_csp.py
+
       - name: Sintaxe do JavaScript
         run: for f in download/conta-comigo/js/*.js download/conta-comigo/background.js; do node --check "$f"; done
 

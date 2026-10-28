@@ -93,9 +93,10 @@ download/*.zip                 Pacotes prontos das três plataformas
 download/conta-comigo/loja/    Materiais de publicação nas lojas
 native/android/                App nativo Android (TWA — Gradle + BrowserHelper)
 native/windows/                App nativo Windows 10/11 (Electron + electron-builder)
+native/ios/                    App iPhone e iPad (Capacitor)
 .github/workflows/             CI: Pages, APK/AAB e instalador Windows
-qa/                            Evidências de teste em múltiplos viewports
-scripts/                       Ferramentas de build, empacotamento e QA
+tests/                         Testes do motor (node --test tests/*.test.cjs)
+scripts/                       Build, empacotamento e verificações (i18n, sincronia, CSP, acessibilidade, responsividade)
 ```
 
 Tecnologia: **JavaScript vanilla**, Web Extensions **Manifest V3**, **PWA** com service worker e **Web Speech API** — sem frameworks, sem dependências externas, sem telemetria.
