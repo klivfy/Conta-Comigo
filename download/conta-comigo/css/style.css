@@ -157,6 +157,8 @@ body.calmo .mascot-main, body.calmo .deco { animation: none !important; }
 .d2 { bottom: 60px; right: 10px; font-size: 32px; animation-delay: 1.2s; }
 .d3 { top: 42%; right: 16px; font-size: 24px; animation-delay: 2.1s; }
 @keyframes floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+/* durante a rodada os enfeites saem: o ➕ ficava atrás dos pontos de progresso no celular */
+body:has(#screen-game.active) .deco { display: none; }
 
 /* barra superior */
 #topbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px; padding: 10px 8px 6px; position: relative; z-index: 6; }
@@ -631,14 +633,24 @@ body.hc .ans.hint { outline: 4px solid var(--focus); }
 /* ==================== v2.4 — voz cordial + acessibilidade ==================== */
 /* A-052: foco visível reforçado em todo o app (teclado e leitores de tela) */
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: var(--r-xs); }
-/* A-050: menos movimento — animações praticamente instantâneas (confetes já
-   são cortados em JS; animationend continua disparando para limpeza) */
+/* A-050: menos movimento — nada se desloca, gira ou pula, mas a mudança de
+   estado continua visível: cores e opacidade esmaecem em --dur-2, e balão,
+   "+pontos" e estrelas aparecem por esmaecimento (confetes já são cortados
+   em JS; animationend continua disparando para limpeza). Mesmo bloco abaixo,
+   em prefers-reduced-motion. */
 body.rm *, body.rm *::before, body.rm *::after {
   animation-duration: .001s !important;
   animation-delay: 0s !important;
   animation-iteration-count: 1 !important;
-  transition-duration: .001s !important;
+  transition-property: opacity, color, background-color, border-color !important;
+  transition-duration: var(--dur-2) !important;
 }
+@keyframes ccFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ccFadeInOut { 0% { opacity: 0; } 20%, 70% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes ccBreatheFade { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+body.rm #bubble.pop, body.rm .star-pop, body.rm #overlay-card { animation: ccFadeIn var(--dur-3) ease-out both !important; }
+body.rm .pts-pop { transform: translateX(-50%); animation: ccFadeInOut 1s ease-out both !important; }
+body.rm .breathe-ball { animation: ccBreatheFade 8s ease-in-out infinite !important; }
 /* A-179: linha de voz por perfil no painel dos responsáveis */
 .pp-row {
   display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center;
@@ -912,9 +924,13 @@ body.page-mode .diff-chip { min-height: 44px; }
    calmo (painel, nova aba). Quem desligou o calmo de propósito (motion-ok) vê tudo. */
 @media (prefers-reduced-motion: reduce) {
   body:not(.motion-ok) *, body:not(.motion-ok) *::before, body:not(.motion-ok) *::after {
-    animation-duration: .001s !important; animation-delay: 0s !important;
-    animation-iteration-count: 1 !important; transition-duration: .001s !important; scroll-behavior: auto !important;
+    animation-duration: .001s !important; animation-delay: 0s !important; animation-iteration-count: 1 !important;
+    transition-property: opacity, color, background-color, border-color !important; transition-duration: var(--dur-2) !important;
+    scroll-behavior: auto !important;
   }
+  body:not(.motion-ok) #bubble.pop, body:not(.motion-ok) .star-pop, body:not(.motion-ok) #overlay-card { animation: ccFadeIn var(--dur-3) ease-out both !important; }
+  body:not(.motion-ok) .pts-pop { transform: translateX(-50%); animation: ccFadeInOut 1s ease-out both !important; }
+  body:not(.motion-ok) .breathe-ball { animation: ccBreatheFade 8s ease-in-out infinite !important; }
 }
 /* "Reduzir transparência" do sistema: barra superior sólida, sem desfoque */
 @media (prefers-reduced-transparency: reduce) {

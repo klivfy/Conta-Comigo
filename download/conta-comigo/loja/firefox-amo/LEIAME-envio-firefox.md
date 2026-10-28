@@ -1,8 +1,8 @@
-# Envio ao Firefox Add-ons (AMO) — Conta Comigo v2.6.1
+# Envio ao Firefox Add-ons (AMO) — Conta Comigo v2.6.2
 
 ## 1. O arquivo a enviar
 
-`download/conta-comigo-firefox-2.6.1.zip` (≈ 136 KB, `manifest.json` na raiz)
+`download/conta-comigo-firefox-2.6.2.zip` (≈ 144 KB, `manifest.json` na raiz)
 
 Gerado por `python3 scripts/build_packages.py`. Não contém `demo.html`, `web/`
 nem `loja/`. Não há minificação, transpilação nem bibliotecas de terceiros, então
@@ -89,7 +89,7 @@ Validado em 27/10/2026:
 
 1. <https://addons.mozilla.org/developers/> → **Enviar um novo complemento**.
 2. Distribuição: **"Neste site"** (listado publicamente).
-3. Enviar `conta-comigo-firefox-2.6.1.zip`. A validação deve terminar sem erros
+3. Enviar `conta-comigo-firefox-2.6.2.zip`. A validação deve terminar sem erros
    (com os avisos de `innerHTML`).
 4. Código-fonte: **Não** (ver item 1).
 5. Preencher a listagem com `listagem-firefox-amo.md` (pt-BR; en e es opcionais).

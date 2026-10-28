@@ -19,8 +19,8 @@ android {
         applicationId "com.klivfy.contacomigo"
         minSdk 23
         targetSdk 35
-        versionCode 260        // v2.6.0
-        versionName "2.6.0"
+        versionCode 262        // v2.6.2
+        versionName "2.6.2"
     }
 
     signingConfigs {

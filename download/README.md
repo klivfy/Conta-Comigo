@@ -1,18 +1,18 @@
 # Conta Comigo — Arquivos gerados
 
 Extensão de navegador (Chrome + Firefox) de matemática lúdica para crianças a partir de 4 anos.
-Versão atual: **v2.6.0**
+Versão atual: **v2.6.2**
 
 ## ⚠️ A extensão parece igual? Como atualizar e confirmar
 
-Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo parece o de antes, o navegador provavelmente ainda está com a build antiga. Para confirmar em 1 segundo: abra o jogo e olhe o **topo da tela** — desde a v2.4.1 há um **selo de versão** (ex.: `v2.6.0`) ao lado de 🔥. Sem selo = build anterior à 2.4.1.
+Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo parece o de antes, o navegador provavelmente ainda está com a build antiga. Para confirmar em 1 segundo: abra o jogo e olhe o **topo da tela** — desde a v2.4.1 há um **selo de versão** (ex.: `v2.6.2`) ao lado de 🔥. Sem selo = build anterior à 2.4.1.
 
 **Importante sobre o progresso:** recarregar a extensão (botão ↻ em `chrome://extensions`) **preserva** estrelas, conquistas e perfis; **remover e reinstalar apaga**. Antes de remover, baixe o **backup datado** no botão 💾 da tela de Conquistas ou no painel dos responsáveis — depois reimporte no mesmo painel.
 
 **Atualizar (Chrome/Edge/Brave):** com a extensão ainda instalada, clique em ↻ Recarregar no cartão da extensão e escolha a pasta nova descompactada (preserva tudo). Ou: backup → remover → carregar o zip novo → importar o backup.
 **Atualizar (Firefox):** `about:debugging#/runtime/this-firefox` → *Recarregar*.
 
-## Novidades da v2.6.0
+## Novidades da v2.6.2
 
 - **Responsividade total** — o mesmo jogo se adapta de **320px** (celular pequeno) a **1920px+** (monitor): herói empilha em telas estreitas, tipografia fluida (`clamp`), grades que se reorganizam e nada transborda (testado em 320/360/768/844×390/1440/1920).
 - **Modo paisagem (celular deitado)** — quando a altura é curta, topbar compacta, herói em linha única e jogo encaixa sem rolagem.
@@ -35,9 +35,9 @@ Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo par
 
 | Arquivo | Uso |
 |---|---|
-| `conta-comigo-chrome-2.6.0.zip` | Pacote para Chrome/Edge/Brave (Manifest V3, service worker) |
-| `conta-comigo-firefox-2.6.0.zip` | Pacote para Firefox computador **e Android** (event page + `gecko_android` 113+) |
-| `conta-comigo-pwa-android-2.6.0.zip` | **Android/PWA**: jogo instalável e offline (manifest + service worker + ícones maskable) — hospedar em https e "Adicionar à tela inicial" |
+| `conta-comigo-chrome-2.6.2.zip` | Pacote para Chrome/Edge/Brave (Manifest V3, service worker) |
+| `conta-comigo-firefox-2.6.2.zip` | Pacote para Firefox computador **e Android** (event page + `gecko_android` 128+) |
+| `conta-comigo-pwa-android-2.6.2.zip` | **Android/PWA**: jogo instalável e offline (manifest + service worker + ícones maskable) — hospedar em https e "Adicionar à tela inicial" |
 
 - Instalação e novidades: abra `conta-comigo/demo.html` no navegador.
 - Pasta `conta-comigo/` = fonte única (build Chromium). As pastas `conta-comigo-firefox/` e `conta-comigo-pwa/` são geradas por `python scripts/build_packages.py` e `python scripts/build_pwa.py` e não ficam no Git.
