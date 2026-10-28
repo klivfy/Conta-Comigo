@@ -61,10 +61,9 @@ const CODE = String(maj * 100 + min * 10 + pat);
 const want = [
   ['native/windows/package.json', /"version": "([^"]+)"/, V],
   ['native/ios/package.json', /"version": "([^"]+)"/, V],
-  ['native/android/twa-manifest.json', /"appVersionName": "([^"]+)"/, V],
-  ['native/android/twa-manifest.json', /"appVersionCode": (\d+)/, CODE],
-  ['native/android/app/build.gradle', /versionName "([^"]+)"/, V],
-  ['native/android/app/build.gradle', /versionCode (\d+)/, CODE],
+  ['native/android/package.json', /"version": "([^"]+)"/, V],
+  ['native/android/android/app/build.gradle', /versionName "([^"]+)"/, V],
+  ['native/android/android/app/build.gradle', /versionCode (\d+)/, CODE],
   ['native/ios/ios/App/App.xcodeproj/project.pbxproj', /MARKETING_VERSION = ([^;]+);/g, V],
   ['download/conta-comigo/js/boot.js', /return '(\d+\.\d+\.\d+)';/, V],
   ['download/conta-comigo/js/ui.js', /ccVersion\(\) : '(\d+\.\d+\.\d+)'/, V],
@@ -84,11 +83,11 @@ for (const [file, re, expect] of want) {
 const APP_ID = 'com.klivfy.conta.comigo.matematica';
 const GECKO_ID = 'conta-comigo@klivfy.com'; // fixo: trocar cria outro add-on no AMO
 const ids = [
-  ['native/android/app/build.gradle', /applicationId "([^"]+)"/g],
-  ['native/android/app/build.gradle', /namespace '([^']+)'/g],
-  ['native/android/twa-manifest.json', /"packageId": "([^"]+)"/g],
-  ['native/android/assetlinks.json', /"package_name": "([^"]+)"/g],
-  ['native/android/app/src/main/res/values/strings.xml', /\\"package_name\\": \\"([^"\\]+)\\"/g],
+  ['native/android/android/app/build.gradle', /applicationId "([^"]+)"/g],
+  ['native/android/android/app/build.gradle', /namespace = "([^"]+)"/g],
+  ['native/android/capacitor.config.json', /"appId": "([^"]+)"/g],
+  ['native/android/android/app/src/main/res/values/strings.xml', /<string name="package_name">([^<]+)</g],
+  ['native/android/android/app/src/main/java/com/klivfy/conta/comigo/matematica/MainActivity.java', /^package ([\w.]+);/gm],
   ['native/windows/package.json', /"appId": "([^"]+)"/g],
   ['native/ios/capacitor.config.json', /"appId": "([^"]+)"/g],
   ['native/ios/ios/App/App.xcodeproj/project.pbxproj', /PRODUCT_BUNDLE_IDENTIFIER = ([^;]+);/g],

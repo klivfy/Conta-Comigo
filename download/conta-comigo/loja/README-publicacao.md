@@ -34,7 +34,7 @@ Refaça as duas coisas quando a tela do jogo mudar. Os limites de caracteres de 
 1. **E-mail de suporte**: Google Play exige um e-mail público de contato (preencher no painel). Os demais usam a página de issues do GitHub como suporte.
 2. **Contas de desenvolvedor** e taxas: Chrome (US$ 5, única), Edge (grátis), Firefox (grátis), Microsoft Store (conta individual ou empresa), Google Play (US$ 25, única).
 3. **Identidade da Microsoft Store**: copiar nome/publisher da Partner Center para as variáveis `APPX_*` antes de gerar o `.appx`.
-4. **Chave do Android**: gerar a chave de upload nova (fase A do `PLANO-DE-ACAO.md`) e, depois do 1º envio, acrescentar o SHA-256 do *Play App Signing* ao `assetlinks.json`.
+4. **Chave do Android**: gerar a chave de upload nova (fase A do `PLANO-DE-ACAO.md`) e assinar o AAB (`scripts/assinar_aab.ps1` no Windows). O app leva o jogo dentro do pacote, então não há `assetlinks.json` a atualizar.
 5. **Teste fechado no Google Play** (12 testadores por 14 dias) se a conta pessoal for recente.
 6. **Verificar a URL da política** abrindo-a depois que o workflow *Site* publicar (ela só existe após o merge na `main`).
 7. **Revisar as respostas** dos questionários de classificação e de segurança dos dados: elas valem como declaração sua perante as lojas.

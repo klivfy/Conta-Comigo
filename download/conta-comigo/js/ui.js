@@ -962,20 +962,14 @@ function openChest(ms) {
    (↻) preserva tudo; REMOVER e reinstalar apaga. O backup em arquivo é a rede
    de segurança — um clique baixa um .json que pode ser reimportado nas opções. */
 function downloadBackup() {
-  try {
-    const data = JSON.stringify(shareableDB(DB), null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'conta-comigo-backup-' + fmtDate() + '.json';
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  const data = JSON.stringify(shareableDB(DB), null, 2);
+  saveTextFile('conta-comigo-backup-' + fmtDate() + '.json', data, t('backup_share')).then((ok) => {
+    if (!ok) return; // cancelado na folha de compartilhar (app) ou falha: nada de "pronto"
     G().lastBackupAt = Date.now();
     saveState();
-    toast('💾 ' + t('backup_done'));
+    toast('💾 ' + t(FILE_VIA_SHARE ? 'backup_saved' : 'backup_done'));
     SFX.cash();
-  } catch (e) { /* silencioso */ }
+  });
 }
 
 /* ---------- overlays de fadiga (S10) e pausa (S28) ---------- */
@@ -1066,7 +1060,7 @@ function openOptions() {
   ensureAudio(); SFX.tap();
   const url = HAS_EXT ? chrome.runtime.getURL('options.html') : 'options.html';
   if (HAS_EXT) chrome.tabs ? chrome.tabs.create({ url }) : window.open(url, '_blank');
-  else location.href = url; // PWA/TWA/Electron: mesma janela; o “voltar” das opções retorna ao jogo
+  else location.href = url; // PWA/apps/Electron: mesma janela; o “voltar” das opções retorna ao jogo
 }
 
 /* ==================== inicialização ==================== */
@@ -1126,6 +1120,22 @@ function bindStatic() {
   }
   document.addEventListener('pointerdown', ensureAudio);
   document.addEventListener('keydown', onKey);
+  onNativeBack(onBackButton);
+}
+
+/* ---------- botão Voltar do Android (app) ----------
+   Fecha o balão aberto ou volta da tela para o início, como o botão da própria
+   tela; no início, o engine minimiza o app. Com um aviso aberto não faz nada:
+   o aviso tem os próprios botões, e a pausa de descanso não pode ser pulada. */
+const BACK_BUTTONS = { game: '#btn-home', end: '#btn-menu', shop: '#shop-back', ach: '#ach-back', duel: '#duel-back' };
+function onBackButton() {
+  if (overlayOpen()) return true;
+  if ($$('.popover').some((p) => !p.classList.contains('hidden'))) { closePopovers(); return true; }
+  const scr = $('.screen.active');
+  const sel = scr && BACK_BUTTONS[scr.id.replace('screen-', '')];
+  const btn = sel && $(sel);
+  if (btn) { btn.click(); return true; }
+  return false;
 }
 
 /* ---------- teclado (S20) ---------- */

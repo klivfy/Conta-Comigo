@@ -8,7 +8,7 @@ O Conta Comigo é um jogo em HTML, CSS e JavaScript puro, sem servidor, que func
 
 - **Hoje (prontos ou quase):** Chrome, Edge, Firefox (computador e Android), Microsoft Store, Google Play, versão web/PWA e o projeto de iPhone e iPad (compila no CI, ainda sem conta Apple).
 - **Bloqueios atuais, todos de configuração e não de código:**
-  1. GitHub Pages desligado: a política de privacidade, a PWA e o app Android dependem dele.
+  1. GitHub Pages desligado: a política de privacidade e a PWA dependem dele. O app Android não depende mais: desde 28/10/2026 o jogo vai dentro do app (Capacitor).
   2. Chave de upload do Android a criar.
   3. App novo no Play Console com o pacote `com.klivfy.conta.comigo.matematica`.
   4. Identidade da Partner Center para o pacote da Microsoft Store.
@@ -44,7 +44,7 @@ Detalhes em [`IDENTIFICADORES.md`](IDENTIFICADORES.md). Em resumo:
 | **Edge** | o mesmo zip | gerado pela Microsoft | igual ao Chrome | prontos nos 3 | Pronto para enviar |
 | **Firefox computador e Android** | `conta-comigo-firefox-2.6.3.zip` (event page, Firefox 128+) | `conta-comigo@klivfy.com` (fixo) | `_locales` nos 3 | prontos nos 3 | 2.6.1 já enviada; 2.6.3 pronta |
 | **Windows 10/11** | Electron 44: instalador NSIS, portátil e MSIX/APPX (x64) | `appId` = `com.klivfy.conta.comigo.matematica`; MSIX pela Partner Center | "Conta Comigo" (o pacote não traduz o nome; a listagem da loja traduz) | prontos nos 3 | Build verde; falta a identidade da Partner Center |
-| **Android (Google Play)** | TWA, `.aab` minSdk 24 / target 35 | `com.klivfy.conta.comigo.matematica` | "Conta Comigo" | prontos nos 3 | `.aab` gerado sem assinatura; falta chave, app novo no Console e Pages |
+| **Android (Google Play)** | Capacitor 8 com o jogo dentro do app, `.aab` minSdk 24 / target 36 | `com.klivfy.conta.comigo.matematica` | "Conta Comigo", "Count With Me" e "Cuenta Conmigo" (segue o idioma do aparelho) | prontos nos 3 | `.aab` gerado sem assinatura; falta a chave e o app novo no Console |
 | **iPhone e iPad** | Capacitor 8, iOS 15+, família 1,2 | `com.klivfy.conta.comigo.matematica` | "Conta Comigo" | não preparados | Compila no CI; falta conta Apple |
 | **Mac** | o app de iPad roda em Mac com Apple silicon | mesmo App ID | — | — | Possível sem código; não ligado |
 | **Web / PWA** | `download/conta-comigo-pwa/` e `web/index.html` (escolas) | URL | nos 3 | — | Pages desligado; o site não está no ar |
@@ -99,7 +99,7 @@ O jogo já tem os 3 idiomas e escolhe sozinho pelo idioma do navegador ou do sis
 | L2 | Só existe **pt-BR** | `i18n.js` | Portugal e África lusófona | Variante pt-PT (vocabulário, "tu", voz pt-PT) |
 | L3 | Voz **es-ES fixa** e vocabulário misto | `TTS_LANG` em `i18n.js` | Fala com sotaque da Espanha para a América Latina | Escolher es-MX/es-US/es-419 pela localidade do sistema; "cambio" ou "vuelto" por região |
 | L4 | Voz **en-US fixa** | `TTS_LANG` | Pequeno no Reino Unido e na Austrália | Usar en-GB/en-AU quando o sistema estiver nessa localidade |
-| L5 | Nome no Windows e no Android não traduzido ("Conta Comigo") | `package.json`, `strings.xml` | Ícone em português para quem usa o sistema em inglês ou espanhol | `values-en`/`values-es` no Android; o MSIX aceita `DisplayName` por idioma |
+| L5 | Nome no Windows não traduzido ("Conta Comigo"). **No Android já resolvido** (`values-en`/`values-es`, 28/10/2026) | `native/windows/package.json` | Ícone em português para quem usa o Windows em inglês ou espanhol | O MSIX aceita `DisplayName` por idioma |
 | L6 | Listagens das lojas sem pt-PT, en-GB e es-ES separados | `loja/lojas/*.md` | Menor conversão local | Duplicar com ajustes de vocabulário depois de L1 a L3 |
 
 ## 6. Regras de cada mercado para apps infantis
@@ -160,14 +160,14 @@ Esforço: **B** = horas a 2 dias · **M** = 1 a 2 semanas · **A** = mais de 2 s
 
 ### 7.5 Android além do Google Play
 
-A TWA exige um navegador compatível (Chrome, Edge, Samsung Internet…). Em aparelhos sem os serviços do Google, como Fire OS e Huawei recentes, ela cai para a aba personalizada ou falha. Para essas lojas, o melhor é um **build com WebView local**, com o jogo dentro do APK. O casco Capacitor do iOS mostra o caminho, e o Capacitor também gera Android.
+Desde 28/10/2026 o app Android é um **build com WebView local** (Capacitor), com o jogo dentro do APK. Ele não depende do Chrome nem dos serviços do Google, então o mesmo APK serve às lojas abaixo. Antes de cada envio, vale testar num aparelho da loja: o WebView do Fire OS e de alguns Huawei é mais antigo.
 
 | # | Plataforma | Como | Esforço | Alcance | Observações |
 |---|---|---|---|---|---|
-| 21 | **Samsung Galaxy Store** | O mesmo APK/AAB da TWA (a Samsung Internet suporta TWA) | B | Forte no Brasil e na América Latina | Conta gratuita na Samsung Seller Portal. |
-| 22 | **Amazon Appstore — tablets Fire (incluindo Fire Kids)** | Build Android com WebView local | M | Fire Kids é muito usado nos EUA e no Reino Unido | Desde 20/08/2025 a Amazon Appstore só existe em aparelhos Fire (Fire Tablet e Fire TV); saiu dos Android comuns. |
-| 23 | **Huawei AppGallery** | Build com WebView local | M | Pequeno nos mercados-alvo | HarmonyOS NEXT não roda APK; vale só para aparelhos com HMS e Android. |
-| 24 | **Xiaomi GetApps, Uptodown, Aptoide** | APK com WebView local | B (após o item 22) | Xiaomi tem fatia relevante na América Latina; a Uptodown é espanhola | Lojas alternativas aceitam o mesmo APK. |
+| 21 | **Samsung Galaxy Store** | O mesmo APK/AAB do Google Play | B | Forte no Brasil e na América Latina | Conta gratuita na Samsung Seller Portal. |
+| 22 | **Amazon Appstore — tablets Fire (incluindo Fire Kids)** | O mesmo APK (WebView local) | B | Fire Kids é muito usado nos EUA e no Reino Unido | Desde 20/08/2025 a Amazon Appstore só existe em aparelhos Fire (Fire Tablet e Fire TV); saiu dos Android comuns. |
+| 23 | **Huawei AppGallery** | O mesmo APK (sem serviços do Google) | B | Pequeno nos mercados-alvo | HarmonyOS NEXT não roda APK; vale só para aparelhos com HMS e Android. |
+| 24 | **Xiaomi GetApps, Uptodown, Aptoide** | O mesmo APK | B | Xiaomi tem fatia relevante na América Latina; a Uptodown é espanhola | Lojas alternativas aceitam o mesmo APK. |
 | 25 | **ChromeOS (Chromebooks escolares)** | Já atendido pelo Play, pela PWA e pela extensão; falta **instalação forçada pelo Google Admin** | B | Escolas públicas do Brasil, da América Latina e dos EUA | Documentar o ID da extensão e a URL da PWA para os administradores do Google Workspace for Education. |
 | 26 | **F-Droid** | — | — | — | **Não se aplica**: exige licença livre e o Conta Comigo é proprietário (`LICENSE`). |
 
@@ -177,7 +177,7 @@ A TWA exige um navegador compatível (Chrome, Edge, Samsung Internet…). Em apa
 |---|---|---|---|---|
 | 27 | **Android TV / Google TV** | Build Android com intenção `LEANBACK_LAUNCHER`, banner 320×180 e navegação pelo controle (o jogo já é jogável por teclado) | M | Família toda na sala; forte no Brasil. |
 | 28 | **Samsung Smart TV (Tizen) e LG (webOS)** | Empacotar o mesmo HTML como web app (`.wgt` e `.ipk`) | M | As duas TVs rodam apps web; precisa de navegação pelo controle remoto e de aprovação em cada loja (Samsung Seller Office, LG Seller Lounge). |
-| 29 | **Meta Quest** | A TWA tem a opção `isMetaQuest`; a PWA também roda no navegador do Quest | B | Público pequeno e a idade mínima do Quest é 10 anos: **baixa prioridade**. |
+| 29 | **Meta Quest** | O APK como app 2D (com os ajustes de manifesto que a Meta pede) ou a PWA no navegador do Quest | B | Público pequeno e a idade mínima do Quest é 10 anos: **baixa prioridade**. |
 | 30 | **KaiOS (celulares de teclado)** | Web app empacotado | M | Relevante em Angola e Moçambique; navegação por teclado numérico. Verificar a situação atual da KaiStore. |
 
 **Fora de alcance sem reescrita:**
@@ -201,11 +201,11 @@ A TWA exige um navegador compatível (Chrome, Edge, Samsung Internet…). Em apa
 
 | Fase | O que | Depende de |
 |---|---|---|
-| **0 — destravar (dias)** | Ligar o GitHub Pages; criar a chave Android e o app novo no Play Console; identidade da Partner Center; enviar Chrome, Edge e Firefox 2.6.3 | Você |
-| **1 — conteúdo (1 a 2 semanas)** | L1 (moeda por região) e L3 (voz es-419); baú com figurinha em ordem (ECA Digital); nome traduzido no Android e no Windows (L5) | Código |
+| **0 — destravar (dias)** | Ligar o GitHub Pages (política de privacidade e PWA); criar a chave Android e o app novo no Play Console; identidade da Partner Center; enviar Chrome, Edge e Firefox 2.6.3 | Você |
+| **1 — conteúdo (1 a 2 semanas)** | L1 (moeda por região) e L3 (voz es-419); baú com figurinha em ordem (ECA Digital); nome traduzido no Windows (L5) | Código |
 | **2 — mais lojas com o mesmo código (1 a 2 semanas)** | Opera (1), Windows ARM64 (11), winget (12), AppImage, Flathub e Snap (16–18), Galaxy Store (21), guias para Google Admin, Intune e Apple School Manager (25, 13, 10) | Fase 0 |
 | **3 — Apple (2 a 3 semanas)** | App Store iPhone e iPad (5) + Mac (6) + Safari (2) | Conta Apple |
-| **4 — novos aparelhos (3 a 6 semanas)** | Build Android com WebView local → Fire (22), Xiaomi e Uptodown (24), Android TV (27); Tizen e webOS (28) | Fase 2 |
+| **4 — novos aparelhos (3 a 6 semanas)** | O APK do Capacitor em Fire (22), Huawei (23), Xiaomi e Uptodown (24); Android TV (27); Tizen e webOS (28) | Fase 2 |
 | **5 — novos idiomas regionais** | pt-PT (L2), en-GB e es-ES separados nas listagens (L6) | Fase 1 |
 
 ## 9. O que só a Klivfy pode decidir ou fazer

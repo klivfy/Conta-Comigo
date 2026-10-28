@@ -21,5 +21,5 @@ jarsigner -keystore "$KS" -storepass:env PASS -keypass:env PASS \
 jarsigner -verify "$OUT" | grep -q "jar verified" || { echo "[ERRO] a assinatura não confere"; rm -f "$OUT"; exit 1; }
 
 echo "[OK] $OUT"
-echo "SHA256 da upload key (para conferir no Play Console e no assetlinks.json):"
+echo "SHA256 da upload key (para conferir no Play Console):"
 keytool -list -v -keystore "$KS" -storepass:env PASS -alias "$ALIAS" | sed -n 's/.*SHA256: //p' | head -1

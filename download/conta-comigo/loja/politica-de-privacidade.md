@@ -44,7 +44,7 @@ A área dos responsáveis pode ser protegida por uma senha criada pelo próprio 
 
 - **Extensões (Chrome, Edge, Firefox)**: apenas `storage`, para guardar progresso e preferências. A extensão substitui a página de nova aba por um desafio rápido de matemática, que pode ser desligado no próprio jogo. Não há permissão de sites, abas, histórico ou rede.
 - **Windows**: o aplicativo roda sem acesso à internet e sem permissões especiais.
-- **Android**: o aplicativo abre a versão web do jogo em tela cheia e funciona offline depois da primeira abertura; não pede câmera, microfone, localização, contatos nem armazenamento.
+- **Android**: o jogo vem dentro do aplicativo e funciona sem internet desde a primeira abertura; não pede câmera, microfone, localização, contatos nem armazenamento. O backup em arquivo sai pela folha de compartilhar do Android, para o lugar que o responsável escolher.
 
 ## Crianças
 
@@ -88,7 +88,7 @@ The parents' area can be protected by a password created by the adult. It is sto
 
 - **Extensions (Chrome, Edge, Firefox)**: only `storage`, to keep progress and preferences. The extension replaces the new tab page with a quick math challenge that can be turned off in the game. No site, tab, history or network permissions.
 - **Windows**: the app runs without internet access and without special permissions.
-- **Android**: the app opens the web version of the game full screen and works offline after the first launch; it asks for no camera, microphone, location, contacts or storage access.
+- **Android**: the game ships inside the app and works without internet from the first launch; it asks for no camera, microphone, location, contacts or storage access. The backup file goes out through the Android share sheet, to wherever the parent chooses.
 
 ## Children
 
@@ -132,7 +132,7 @@ El área de las familias puede protegerse con una contraseña creada por la pers
 
 - **Extensiones (Chrome, Edge, Firefox)**: solo `storage`, para guardar progreso y preferencias. La extensión reemplaza la página de nueva pestaña por un desafío rápido de matemática que se puede apagar en el juego. Sin permisos de sitios, pestañas, historial ni red.
 - **Windows**: la aplicación funciona sin acceso a internet y sin permisos especiales.
-- **Android**: la aplicación abre la versión web del juego a pantalla completa y funciona sin conexión tras el primer inicio; no pide cámara, micrófono, ubicación, contactos ni almacenamiento.
+- **Android**: el juego viene dentro de la aplicación y funciona sin conexión desde el primer inicio; no pide cámara, micrófono, ubicación, contactos ni almacenamiento. La copia de seguridad sale por el menú de compartir de Android, al lugar que la familia elija.
 
 ## Niños
 

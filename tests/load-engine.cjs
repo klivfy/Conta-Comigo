@@ -1,7 +1,8 @@
 'use strict';
 /* Carrega i18n.js + engine.js num contexto isolado, com stubs mínimos de
    navegador, do mesmo jeito que as páginas fazem (scripts globais, sem bundler).
-   opts.subtle: false simula contexto sem WebCrypto (fallback em JS puro). */
+   opts.subtle: false simula contexto sem WebCrypto (fallback em JS puro).
+   opts.capacitor: ponte simulada do app (window.Capacitor) para os caminhos nativos. */
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
@@ -18,7 +19,8 @@ function loadEngine(opts) {
     crypto: o.subtle === false
       ? { getRandomValues: (a) => nodeCrypto.getRandomValues(a) }
       : nodeCrypto.webcrypto,
-    window: { matchMedia: media, Capacitor: null, addEventListener() {}, removeEventListener() {} },
+    window: { matchMedia: media, Capacitor: o.capacitor || null, addEventListener() {}, removeEventListener() {} },
+    history: { back() { ctx.__backs = (ctx.__backs || 0) + 1; } },
     document: {
       querySelector: () => null, querySelectorAll: () => [],
       body: { dataset: {}, classList: { toggle() {}, contains: () => false } },

@@ -91,7 +91,7 @@
             <div class="feat"><b>🏅</b> <b>6 conquistas novas (20 no total)</b> — duas são SECRETAS (aparecem como ???)</div>
             <div class="feat"><b>💾</b> <b>Persistência das conquistas</b>: backup datado de um clique na vitrine (💾) e no painel, com lembrete da idade do backup</div>
             <div class="feat"><b>🔊</b> Som de caixa registradora nas compras e moldura do perfil que evolui com conquistas (dourada → arco-íris)</div>
-            <div class="feat"><b>📱</b> <b>Android pronto</b>: pacote PWA instalável e offline (manifest + service worker + ícones), Firefox Android compatível (gecko_android) e rota para a Play Store via TWA</div>
+            <div class="feat"><b>📱</b> <b>Android pronto</b>: pacote PWA instalável e offline (manifest + service worker + ícones), Firefox Android compatível (gecko_android) e app da Play Store com o jogo dentro do pacote</div>
           </div>
         </div>
 
@@ -171,7 +171,7 @@
           <ol>
             <li><b>PWA instalável (recomendado)</b>: hospede a pasta <code>conta-comigo-pwa/</code> (ou descompacte <code>conta-comigo-pwa-android-2.6.3.zip</code>) em qualquer endereço <b>https</b> — no Chrome do Android, toque em ⋮ → <b>Adicionar à tela inicial</b>. O jogo abre em tela cheia, com ícone próprio e <b>funciona offline</b> (service worker incluso).</li>
             <li><b>Firefox para Android</b>: a build Firefox 2.6.3 já declara <code>gecko_android</code> (Firefox 128+) — pronta para publicar no addons.mozilla.org e instalar pelo Firefox do celular.</li>
-            <li><b>Google Play (TWA)</b>: com a PWA publicada em https, gere o app assinado com <b>Bubblewrap</b> (CLI oficial) ou <b>PWABuilder.com</b> e publique na Play Console.</li>
+            <li><b>Google Play</b>: o app Android (<code>native/android/</code>, Capacitor) leva o jogo dentro do pacote e funciona sem internet desde a primeira abertura; o CI gera o AAB para a Play Console.</li>
           </ol>
           <p>Em todos os caminhos: sem servidores, sem contas, sem anúncios — tudo roda no dispositivo. Detalhes no arquivo <code>leia-me-android.md</code> dentro do pacote PWA e no estudo <i>Funções, Recompensas e Android</i>.</p>
         </div>

@@ -55,7 +55,7 @@ try {
   if (-not ((& $jarsigner -verify $out) -match 'jar verified')) { Remove-Item $out -Force; throw 'a assinatura não confere' }
 
   Write-Host "`n[OK] $out"
-  Write-Host 'SHA256 da upload key (para o Play Console e o assetlinks.json):'
+  Write-Host 'SHA256 da upload key (para conferir no Play Console):'
   (& $keytool -list -v -keystore $Keystore '-storepass:env' CC_PASS -alias $Alias) | Select-String 'SHA256:' | Select-Object -First 1 | ForEach-Object { $_.Line.Trim() }
   Write-Host "`nGuarde $Keystore e a senha num cofre, fora do Git. Sem eles não dá para assinar as próximas versões."
 } finally {

@@ -1,7 +1,7 @@
 # Kit da Fase 1 — Ativação do CI (Android · Windows · GitHub Pages)
 
 O código dos pacotes nativos **já está no GitHub** (commit `8af3947`):
-`native/android/` (TWA), `native/windows/` (Electron), keystore + `assetlinks.json`.
+`native/android/` (hoje Capacitor, com o jogo dentro do app; era TWA), `native/windows/` (Electron) e o guia do keystore.
 
 Falta apenas enviar os **3 workflows** (commit local `b5f9e94`, já pronto) —
 o GitHub exige um token com escopo **Workflows** para aceitar arquivos em
@@ -56,9 +56,8 @@ A upload key não fica mais no repositório. Cadastre `ANDROID_KEYSTORE_BASE64`,
 
 | Workflow | Resultado (aba **Actions → artefatos**) |
 |---|---|
-| Android (TWA) | `conta-comigo-android-2.6.0`: APK (sideload) + AAB (Play Console) |
+| Android (Capacitor) | `conta-comigo-android-<versão>`: APK (sideload) + AAB (Play Console); sem os secrets, `…-sem-assinatura` |
 | Windows (Electron) | `conta-comigo-windows-2.6.0`: instalador NSIS + portable (x64) |
-| Site (GitHub Pages) | https://klivfy.github.io/Conta-Comigo/ + `.well-known/assetlinks.json` + política de privacidade |
+| Site (GitHub Pages) | https://klivfy.github.io/Conta-Comigo/ + política de privacidade |
 
-Fingerprint já validado localmente e conferido no CI a cada build:
-`C7:33:72:0C:57:CC:9B:BA:9F:07:67:A9:A6:0C:EA:38:29:0A:49:5A:15:F0:79:A9:24:8B:45:BC:E4:C6:D7:E9`
+O app Android não usa mais `assetlinks.json` (o jogo vai dentro do pacote), então o CI não confere fingerprint. A chave antiga foi publicada e está **comprometida**: gere outra (`native/android/keystore/README.md`).

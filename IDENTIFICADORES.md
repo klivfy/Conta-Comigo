@@ -10,7 +10,7 @@
 3. **Quando a loja gera ou fixa o ID, vale o da loja.** Esses casos estão na tabela de exceções abaixo. Eles não podem ser escolhidos por nós, ou não podem mais mudar.
 4. **Onde não se aceitam pontos**, use a forma com hífens: `conta-comigo-matematica` (Snap, nomes de pacote npm, slugs de URL).
 5. **Arquivos gerados** seguem `conta-comigo-<plataforma>-<versão>[-<arquitetura>][-<variante>].<ext>`. Exemplos: `conta-comigo-chrome-2.6.3.zip`, `conta-comigo-windows-2.6.3-x64-instalador.exe`.
-6. **Nomes exibidos** vêm dos idiomas do jogo:
+6. **Nomes exibidos** vêm dos idiomas do jogo (no Android, `values/`, `values-en/` e `values-es/strings.xml` seguem o idioma do aparelho):
 
    | Idioma | Nome completo | Nome curto (ícone, lançador) |
    |---|---|---|
@@ -26,9 +26,9 @@ O `node scripts/sync_check.cjs`, que roda no CI, falha se algum arquivo da tabel
 
 | Plataforma | Campo | Arquivo | Valor |
 |---|---|---|---|
-| Android (Google Play, TWA) | `applicationId` e `namespace` | `native/android/app/build.gradle` | `com.klivfy.conta.comigo.matematica` |
-| Android | `packageId` | `native/android/twa-manifest.json` | idem |
-| Android (Digital Asset Links) | `package_name` | `native/android/assetlinks.json` e `app/src/main/res/values/strings.xml` | idem |
+| Android (Google Play, Capacitor) | `applicationId` e `namespace` | `native/android/android/app/build.gradle` | `com.klivfy.conta.comigo.matematica` |
+| Android | `appId` | `native/android/capacitor.config.json` | idem |
+| Android | `package_name` e pacote Java da `MainActivity` | `native/android/android/app/src/main/res/values/strings.xml` e `…/java/com/klivfy/conta/comigo/matematica/MainActivity.java` | idem |
 | iPhone e iPad (iOS/iPadOS) | `PRODUCT_BUNDLE_IDENTIFIER` | `native/ios/ios/App/App.xcodeproj/project.pbxproj` | idem (`TARGETED_DEVICE_FAMILY = 1,2`: iPhone e iPad no mesmo app) |
 | iPhone e iPad | `appId` | `native/ios/capacitor.config.json` | idem |
 | Mac (Apple silicon) | o mesmo App ID do iPad | App Store Connect → *Disponibilidade no Mac* | idem (o app de iPad roda no Mac sem build separado) |
@@ -52,7 +52,7 @@ O `node scripts/sync_check.cjs`, que roda no CI, falha se algum arquivo da tabel
 
 ## Efeitos da troca para quem já tem o jogo
 
-- **Android:** o app novo é outro app para o Google Play. Ninguém tinha a versão antiga instalada pela loja.
+- **Android:** o app novo é outro app para o Google Play. Ninguém tinha a versão antiga instalada pela loja. A troca da TWA pelo Capacitor (28/10/2026) mantém o mesmo identificador.
 - **iPhone e iPad:** o app não foi publicado. O progresso fica em *Preferences*, que é ligado ao bundle ID, mas não há usuários ainda.
 - **Windows:** o progresso fica na pasta definida pelo `productName` ("Conta Comigo"), que não mudou, então o progresso não se perde. O instalador NSIS usa o `appId` para se identificar: quem instalou a 2.6.x antiga vê duas entradas "Conta Comigo" em *Aplicativos instalados* e deve desinstalar a antiga.
 - **Extensões e web:** nada muda.

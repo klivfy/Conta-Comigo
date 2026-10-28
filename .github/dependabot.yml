@@ -23,8 +23,19 @@ updates:
       capacitor:
         patterns: ['@capacitor/*', '@capacitor-community/*']
 
-  - package-ecosystem: gradle
+  - package-ecosystem: npm
     directory: /native/android
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 14
+    groups:
+      capacitor:
+        patterns: ['@capacitor/*', '@capacitor-community/*']
+
+  # o Android Gradle Plugin; as bibliotecas do Capacitor vêm pelo npm acima
+  - package-ecosystem: gradle
+    directory: /native/android/android
     schedule:
       interval: monthly
     cooldown:

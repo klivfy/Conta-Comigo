@@ -91,7 +91,7 @@ download/*.zip                 Pacotes prontos das três plataformas
                                (Firefox e PWA são gerados: python scripts/build_packages.py
                                 e python scripts/build_pwa.py — não são versionados)
 download/conta-comigo/loja/    Materiais de publicação nas lojas
-native/android/                App nativo Android (TWA — Gradle + BrowserHelper)
+native/android/                App nativo Android (Capacitor — o jogo vai dentro do APK/AAB)
 native/windows/                App nativo Windows 10/11 (Electron + electron-builder)
 native/ios/                    App iPhone e iPad (Capacitor)
 .github/workflows/             CI: Pages, APK/AAB e instalador Windows
@@ -101,13 +101,14 @@ scripts/                       Build, empacotamento e verificações (i18n, sinc
 
 Tecnologia: **JavaScript vanilla**, Web Extensions **Manifest V3**, **PWA** com service worker e **Web Speech API** — sem frameworks, sem dependências externas, sem telemetria.
 
-## 🚀 Versões nativas (Android e Windows 10/11)
+## 🚀 Versões nativas (Android, Windows 10/11 e iOS)
 
 A partir da v2.6.0 o repositório gera **pacotes nativos por CI** (GitHub Actions), sem reescrever o jogo:
 
-- **Android (TWA)** — `native/android/`: APK para sideload + AAB para a Play Console, assinados com a upload key do repositório e validados contra o `assetlinks.json` publicado no site;
+- **Android (Capacitor)** — `native/android/`: APK para sideload + AAB para a Play Console, com o jogo dentro do pacote (funciona sem internet desde a primeira abertura e não depende do site); assinados com a upload key quando os secrets existem;
 - **Windows (Electron)** — `native/windows/`: instalador NSIS + versão portable (x64);
-- **Site (GitHub Pages)** — a mesma PWA publicada em `https://klivfy.github.io/Conta-Comigo/`, base do TWA.
+- **iPhone e iPad (Capacitor)** — `native/ios/`: build de teste no CI, sem assinatura até existir a conta Apple;
+- **Site (GitHub Pages)** — a mesma PWA publicada em `https://klivfy.github.io/Conta-Comigo/`, com a política de privacidade.
 
 Os pacotes aparecem como **artefatos na aba Actions** a cada push nos diretórios correspondentes (ou executando o workflow manualmente). Detalhes: [native/README.md](native/README.md) · Estudo de viabilidade: [Release v2.6.0](https://github.com/klivfy/Conta-Comigo/releases/tag/v2.6.0).
 

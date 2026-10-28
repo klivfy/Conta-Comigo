@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Conta Comigo — gera a upload key Android FORA do repositório.
 # Uso: bash scripts/fase1_keystore.sh <caminho/upload.jks> [alias]
-# Depois siga native/android/keystore/README.md (GitHub Secrets + assetlinks.json).
+# Depois siga native/android/keystore/README.md (GitHub Secrets e Play Console).
 set -euo pipefail
 KS=${1:?informe o caminho do keystore, ex.: ~/conta-comigo-keys/upload.jks}
 ALIAS=${2:-contacomigo-upload}
@@ -27,7 +27,7 @@ chmod 600 "$KS"
 
 echo
 echo "Alias: $ALIAS"
-echo "SHA256 (para assetlinks.json):"
+echo "SHA256 (para conferir no Play Console):"
 keytool -list -v -keystore "$KS" -storepass:env PASS -alias "$ALIAS" | sed -n 's/.*SHA256: //p' | head -1
 echo
 echo "Secret ANDROID_KEYSTORE_BASE64:  base64 -w0 \"$KS\""

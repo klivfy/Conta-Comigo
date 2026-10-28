@@ -1,0 +1,26 @@
+// Conta Comigo — app Android (Capacitor 8) com o jogo dentro do APK/AAB.
+// O jogo vem de download/conta-comigo/ via scripts/build_android_www.py → ../www → `npx cap sync android`.
+// Build no CI: .github/workflows/android.yml (Gradle 8.14.3 + AGP 8.13.2, API 36)
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.13.2'
+    }
+}
+
+apply from: "variables.gradle"
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+tasks.register('clean', Delete) {
+    delete rootProject.layout.buildDirectory
+}

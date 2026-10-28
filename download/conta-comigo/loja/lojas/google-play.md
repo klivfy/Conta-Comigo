@@ -1,11 +1,11 @@
 # Google Play — Conta Comigo 2.6.3 (Android)
 
-Painel: <https://play.google.com/console> · Pacote: o **AAB** gerado por *Actions → Android* (`conta-comigo-android-2.6.3`), assinado com a chave de upload. Ative o **Play App Signing**.
+Painel: <https://play.google.com/console> · Pacote: o **AAB** gerado por *Actions → Android (Capacitor)* (`conta-comigo-android-2.6.3`), assinado com a chave de upload. Ative o **Play App Signing**. O jogo vai dentro do AAB: o app não depende do site no ar.
 
 ## Antes do primeiro envio (obrigatório)
 
 1. Gere a chave de upload nova e guarde-a fora do Git (veja `PLANO-DE-ACAO.md`, fase A) e configure os 4 *secrets* do workflow.
-2. Depois do primeiro envio, em *Integridade do app → Assinatura de apps* copie o **SHA-256 da chave de assinatura do app** (a do Google) e acrescente **também** em `native/android/assetlinks.json`, `strings.xml` e `twa-manifest.json`. Sem isso a barra de endereço do navegador aparece dentro do app.
+2. Depois do primeiro envio, confira em *Integridade do app → Assinatura de apps* que o SHA-256 da **chave de upload** é o que o script de assinatura imprimiu. Não há `assetlinks.json` a atualizar: o jogo não é carregado de um site.
 3. Conta de desenvolvedor (taxa única de US$ 25). Contas pessoais criadas depois de nov/2023 precisam de teste fechado com pelo menos 12 testadores por 14 dias antes da produção.
 
 ## Dados gerais
@@ -65,7 +65,7 @@ _(25 caracteres)_
 **Descrição curta (≤ 80):** Matemática de brincar para crianças de 4 a 8 anos. Offline e sem anúncios.  
 _(74 caracteres)_
 
-**Descrição completa (≤ 4000):** _(2033 caracteres)_
+**Descrição completa (≤ 4000):** _(2051 caracteres)_
 
 ```text
 O Conta Comigo transforma a prática de matemática em brincadeira para crianças a partir de 4 anos. A raposa mascote narra cada pergunta em voz alta e a criança responde tocando — sem precisar saber ler.
@@ -94,15 +94,15 @@ PRIVACIDADE
 • Não coleta nem envia nenhum dado: o progresso fica só no seu aparelho.
 
 NO ANDROID
-• Instale e jogue: depois da primeira abertura o jogo funciona sem internet.
+• Instale e jogue: o jogo vem dentro do app e funciona sem internet desde a primeira abertura.
 • Feito para toque, em celular ou tablet, em pé ou deitado.
 • O texto acompanha o tamanho de fonte do sistema.
 ```
 
-**O que há de novo (≤ 500):** _(156 caracteres)_
+**O que há de novo (≤ 500):** _(254 caracteres)_
 
 ```text
-A contagem por toque fala os números no idioma do jogo, o app ficou menor e passou a usar a versão mais recente do Android (exige Android 7.0 ou mais novo).
+O jogo agora vem dentro do app e funciona sem internet desde a primeira abertura. A contagem por toque fala os números no idioma do jogo, o botão Voltar do Android leva ao início e o backup sai pela folha de compartilhar (exige Android 7.0 ou mais novo).
 ```
 
 ## English (`en-US`)
@@ -113,7 +113,7 @@ _(28 caracteres)_
 **Descrição curta (≤ 80):** Playful math for ages 4–8: count, add, compare and more. Offline, no ads.  
 _(73 caracteres)_
 
-**Descrição completa (≤ 4000):** _(1930 caracteres)_
+**Descrição completa (≤ 4000):** _(1954 caracteres)_
 
 ```text
 Count With Me turns math practice into playtime for children aged 4 and up. The fox mascot reads every question aloud and the child answers by tapping — no reading needed.
@@ -142,15 +142,15 @@ PRIVACY
 • Collects and sends no data: progress stays on your device only.
 
 ON ANDROID
-• Install and play: after the first launch the game works without internet.
+• Install and play: the game ships inside the app and works without internet from the first launch.
 • Made for touch, on phone or tablet, portrait or landscape.
 • Text follows the system font size.
 ```
 
-**O que há de novo (≤ 500):** _(148 caracteres)_
+**O que há de novo (≤ 500):** _(240 caracteres)_
 
 ```text
-Tap-to-count now says the numbers in the game's language, the app is smaller and targets the latest Android version (requires Android 7.0 or newer).
+The game now ships inside the app and works without internet from the first launch. Tap-to-count says the numbers in the game's language, the Android Back button goes home and the backup uses the share sheet (requires Android 7.0 or newer).
 ```
 
 ## Español (`es-419`)
@@ -161,7 +161,7 @@ _(26 caracteres)_
 **Descrição curta (≤ 80):** Matemática lúdica de 4 a 8 años. Sin conexión y sin anuncios.  
 _(61 caracteres)_
 
-**Descrição completa (≤ 4000):** _(2040 caracteres)_
+**Descrição completa (≤ 4000):** _(2062 caracteres)_
 
 ```text
 Cuenta Conmigo convierte la práctica de la matemática en un juego para niños desde los 4 años. La zorra mascota narra cada pregunta en voz alta y el niño responde tocando, sin necesidad de saber leer.
@@ -190,15 +190,15 @@ PRIVACIDAD
 • No recopila ni envía ningún dato: el progreso queda solo en tu dispositivo.
 
 EN ANDROID
-• Instala y juega: después del primer inicio el juego funciona sin internet.
+• Instala y juega: el juego viene dentro de la app y funciona sin internet desde el primer inicio.
 • Hecho para tocar, en celular o tableta, vertical u horizontal.
 • El texto sigue el tamaño de fuente del sistema.
 ```
 
-**O que há de novo (≤ 500):** _(159 caracteres)_
+**O que há de novo (≤ 500):** _(266 caracteres)_
 
 ```text
-El conteo con toques dice los números en el idioma del juego, la app es más liviana y usa la versión más reciente de Android (requiere Android 7.0 o superior).
+El juego ahora viene dentro de la app y funciona sin internet desde el primer inicio. El conteo con toques dice los números en el idioma del juego, el botón Atrás de Android vuelve al inicio y la copia sale por el menú de compartir (requiere Android 7.0 o superior).
 ```
 
 ## Checklist de envio
@@ -206,4 +206,4 @@ El conteo con toques dice los números en el idioma del juego, la app es más li
 1. Criar o app → preencher *Conteúdo do app* e *Segurança dos dados*.
 2. *Listagem principal da loja*: pt-BR; *Traduções*: en-US e es-419 (copiar o mesmo es-419 para es-ES se desejar).
 3. Subir o AAB numa faixa de **teste fechado**, convidar testadores, depois promover para produção.
-4. Conferir no Android real que o app abre em tela cheia, sem barra de endereço (assetlinks correto).
+4. Conferir num Android real (de preferência pelo teste fechado): o app abre direto no jogo, inclusive sem internet; a voz fala; o Voltar volta ao início e, no início, minimiza o app; o backup abre a folha de compartilhar; o nome aparece em inglês e espanhol quando o aparelho está nesses idiomas.

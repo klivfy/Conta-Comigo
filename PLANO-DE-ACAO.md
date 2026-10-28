@@ -8,7 +8,7 @@ Legenda: **[eu]** código na branch · **[você]** ação em conta/GitHub/loja.
 - [x] 0.2 [eu] Remover `upload.jks`, `sha256.txt` e senhas do repo; ignorar `native/android/keystore/`
 - [x] 0.3 [eu] Gradle e workflow Android leem o keystore de secrets/variáveis de ambiente
 - [ ] 0.4 [você] Revogar o token pessoal usado no primeiro push, que foi compartilhado numa sessão anterior (os workflows já estão em `.github/workflows/` — 2.6)
-- [ ] 0.5 [você] Decidir hospedagem do `assetlinks.json` na raiz do domínio (repo `klivfy.github.io` ou domínio próprio)
+- [x] 0.5 ~~Decidir hospedagem do `assetlinks.json` na raiz do domínio~~ — não é mais preciso: desde 9.8 o app Android leva o jogo dentro do pacote
 
 ## Fase 1 — Bugs que quebram o produto
 - [x] 1.1 PWA: incluir `options.html`/`options.js`/`boot.js` (`build_pwa.py:74-75`)
@@ -132,7 +132,7 @@ Disparada pelos testes manuais: distorções e botões fora do lugar. Auditoria 
 
 ## Fase 8 — Auditoria de outubro (v2.6.2)
 Auditoria de segurança, estrutura e design com `/security-review`, `/anthropic-skills:secure-ai-devsecops`, `/code-review`, `/apple-design`, `/impeccable audit` e `/setup-engine`. As letras seguem o plano de ação da auditoria.
-- [ ] 8.A [você] nova upload key do Android e os 4 secrets (item 0.1). Depois, [eu] troco o fingerprint em `assetlinks.json`, `strings.xml` e `twa-manifest.json`, e o CI passa a recusar o antigo.
+- [ ] 8.A [você] nova upload key do Android e os 4 secrets (item 0.1). Com o app Capacitor (9.8) não há fingerprint para trocar no repositório; sem os secrets o CI gera o AAB sem assinatura, para assinar com `scripts/assinar_aab.ps1`.
 - [x] 8.B **Dados e senha:**
   - **Backup importado:** os cartões de revisão aceitam só os campos de cada gerador, como inteiros. Os mapas do perfil, o tema e o idioma também são validados.
   - **Senha dos responsáveis:** usa PBKDF2-SHA-256 (600 mil rodadas), com migração no próximo acesso e mínimo de 6 caracteres.
@@ -168,6 +168,12 @@ Auditoria de segurança, estrutura e design com `/security-review`, `/anthropic-
 - [x] 9.2 Identificador único `com.klivfy.conta.comigo.matematica` (`IDENTIFICADORES.md`), conferido pelo `sync_check`.
 - [x] 9.3 Android: minSdk 24, targetSdk 36, R8 com mapping, AGP 8.13.2, Gradle 8.14.3; scripts de assinatura para Linux/macOS e Windows.
 - [x] 9.4 Contagem por toque no idioma do jogo.
-- [ ] 9.5 [você] ligar o GitHub Pages; criar o app novo no Play Console; identidade da Partner Center; conta Apple.
+- [ ] 9.5 [você] ligar o GitHub Pages (política de privacidade e PWA; o app Android não depende mais dele); criar o app novo no Play Console; identidade da Partner Center; conta Apple.
 - [ ] 9.6 Moeda do modo Dinheiro por região e voz es-419 (lacunas L1 e L3 de `PLATAFORMAS-E-MERCADOS.md`).
 - [x] 9.7 Limpeza do repositório: 155 arquivos sem uso fora (geradores de estudos com caminho de outra máquina, scripts avulsos de versões antigas, PDFs intermediários, guia de push manual, capturas `qa/` e `qa2/`), 16 chaves de texto sem uso nos 3 idiomas, e `scripts/scan_csp.py` consertado e no CI.
+- [x] 9.8 **Android com o jogo dentro do app (Capacitor 8), no lugar da TWA.** A TWA abria `klivfy.github.io/Conta-Comigo/` e mostrava 404: o Pages nunca publicou, o `assetlinks.json` precisava estar na raiz do domínio (outro repositório) e o fingerprint era o da chave vazada. Agora o jogo é servido de dentro do APK/AAB:
+  - **Projeto:** `native/android/` (como o iOS): `scripts/build_android_www.py` gera o `www`, o ícone adaptativo (com monocromático) e a abertura; `npx cap sync android` liga os plugins. O CI compila também nos PRs e, sem os secrets, publica o AAB sem assinatura.
+  - **Plugins:** Preferences (progresso), TextToSpeech (voz), Filesystem + Share (backup pela folha de compartilhar, porque o WebView não baixa `blob:`), App (botão Voltar). Os ícones das barras do sistema ficam claros nos temas escuros.
+  - **Nome traduzido** no Android: Count With Me e Cuenta Conmigo (lacuna L5).
+  - **Fora:** `twa-manifest.json`, `assetlinks.json` e a cópia dele no Pages, a conferência de fingerprint no CI e a parte Android de `scripts/fase1_icons.py`.
+- [ ] 9.9 [você] testar o AAB num aparelho pelo teste fechado (lista no fim de `loja/lojas/google-play.md`): esta sessão não tem emulador Android.

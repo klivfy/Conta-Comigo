@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- --bg-a do tema Clássico: fundo da abertura e da janela -->
+    <color name="cc_background">#EAF6FF</color>
+    <!-- meio do degradê do ícone: fundo do ícone na abertura do Android 12+ -->
+    <color name="cc_icon_background">#FF7C5D</color>
+    <color name="colorPrimary">#FF9A3D</color>
+    <color name="colorPrimaryDark">#F07E3F</color>
+    <color name="colorAccent">#FFD54A</color>
+</resources>

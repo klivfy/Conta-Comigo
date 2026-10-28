@@ -8,7 +8,6 @@ on:
       - 'scripts/build_pwa.py'
       - 'scripts/cc_build.py'
       - 'scripts/fonts/**'
-      - 'native/android/assetlinks.json'
       - 'docs/**'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
@@ -39,13 +38,12 @@ jobs:
         env:
           BASE: ${{ github.workspace }}
 
-      - name: Montar site (PWA + assetlinks + privacidade)
+      - name: Montar site (PWA + política de privacidade)
         run: |
-          mkdir -p site/.well-known
+          mkdir -p site
           cp -r download/conta-comigo-pwa/* site/
-          cp native/android/assetlinks.json site/.well-known/assetlinks.json
           cp docs/politica-de-privacidade.html site/politica-de-privacidade.html
-          echo "Site montado:" && ls -la site/ && ls -la site/.well-known/
+          echo "Site montado:" && ls -la site/
 
       - name: Configurar Pages
         uses: actions/configure-pages@v6

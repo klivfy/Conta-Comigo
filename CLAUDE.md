@@ -12,7 +12,7 @@ Jogo de matemática para crianças de 4 a 8 anos, 100% offline, em pt-BR, en e e
 Tudo sai de `download/conta-comigo/`. Os builds (`download/conta-comigo-pwa/` e `download/conta-comigo-firefox/`) são gerados e ficam fora do Git.
 - `python scripts/build_packages.py`: zips da Chrome e do Firefox (`download/*.zip`). O manifest do Firefox é montado no script.
 - `python scripts/build_pwa.py`: a PWA, que também é a base do Windows (Electron, em `native/windows/`) e do iOS (Capacitor, via `scripts/build_ios_www.py`).
-- Android (TWA) fica em `native/android/`. Keystore **nunca** entra no Git.
+- `python scripts/build_android_www.py`: o jogo para o app Android (Capacitor, em `native/android/`), com ícones e abertura; depois `npx cap sync android`. O jogo vai dentro do APK/AAB, sem depender do site. Keystore **nunca** entra no Git.
 
 ## Variantes de página
 `game.html` (página cheia, `body.page-mode`), `popup.html` (popup 400×600 da extensão) e `web/index.html` (versão para escolas, com caminhos `../`) têm **a mesma marcação** dentro do `<body>`. `scripts/sync_check.cjs` confere isso. Também existem `options.html` (painel dos responsáveis, atrás da senha), `newtab.html` e `demo.html`.

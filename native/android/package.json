@@ -1,0 +1,25 @@
+{
+  "name": "conta-comigo-android",
+  "version": "2.6.3",
+  "description": "App Android (Capacitor) do Conta Comigo — o jogo vai dentro do APK/AAB, com voz e armazenamento nativos",
+  "author": "Klivfy Tecnologia",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "www": "python3 ../../scripts/build_android_www.py",
+    "sync": "npm run www && cap sync android",
+    "open": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor-community/text-to-speech": "^8.0.2",
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/filesystem": "^8.1.4",
+    "@capacitor/preferences": "^8.0.1",
+    "@capacitor/share": "^8.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.3"
+  }
+}
