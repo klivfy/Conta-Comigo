@@ -209,7 +209,7 @@ Escala `--fs-*` para texto de interface: 10, 11, 12,5, 14, 16, 19, 24, 28 e 40px
 - **Body** (700, `--fs-md`/`--fs-lg`, 14–16px): histórias, mensagens e campos.
 - **Label** (800, `--fs-2xs`–`--fs-sm`, 10–12,5px): nome e descrição dos modos, chips, missões e selos.
 
-**Unidades (v2.6.2):** todo texto, inclusive a equação e os números das respostas, fica em `rem` (1rem = 16px no padrão). Assim ele acompanha o tamanho de fonte escolhido no navegador e no sistema; no iOS, `font: -apple-system-body` na raiz liga o texto ao Dynamic Type. Emojis de ícone e de ilustração (`.icon-btn`, `.mascot`, `.obj`, `.mode-emoji`, avatares, figurinhas) ficam em px: são imagem, e crescer com o texto estouraria as caixas de 44px. No Windows, Ctrl+= / Ctrl+− / Ctrl+0 e Ctrl+roda ampliam a página inteira até 300%.
+**Unidades (v2.6.2):** todo texto, inclusive a equação e os números das respostas, fica em `rem` (1rem = 16px no padrão). Assim ele acompanha o tamanho de fonte escolhido no navegador e no sistema; no iOS, `font: -apple-system-body` na raiz liga o texto ao Dynamic Type. Emojis de ícone e de ilustração (`.icon-btn`, `.mascot`, `.obj`, `.mode-emoji`, avatares, figurinhas) ficam em px: são imagem, e crescer com o texto estouraria as caixas de 44px. Os ajustes por breakpoint (`body.page-mode` e `@media`) seguem calibrados à parte, fora da escala `--fs-*`; juntá-los na escala é o item 7.2 do plano. No Windows, Ctrl+= / Ctrl+− / Ctrl+0 e Ctrl+roda ampliam a página inteira até 300%.
 
 ### Named Rules
 **The Peso-Mínimo-700 Rule.** Nenhum texto de interface fica abaixo de 700. Leitor iniciante precisa de traço grosso.
@@ -299,7 +299,7 @@ A raposa (🥚 → 🐣 → 🦊, com chapéu da loja) quica em loop. O balão d
 - **Do** use os tokens semânticos (`--ink`, `--card`, `--line`, `--tint`, `--success-*`, `--attention`, `--accent-text`, `--on-accent`, `--on-yellow`) e deixe o tema decidir a cor.
 - **Do** dê a todo controle tocável no mínimo 44×44px e uma aresta que afunda no `:active`.
 - **Do** teste cada mudança visual nos 8 modos de cor (7 temas mais alto contraste), no popup 400×600 e em celulares e tablets emulados, retrato e paisagem (`node scripts/resp_check.cjs`).
-- **Do** mantenha `game.html`, `popup.html` e `web/index.html` com a mesma marcação da tela inicial.
+- **Do** mantenha `game.html`, `popup.html` e `web/index.html` com a mesma marcação da tela inicial (`node scripts/sync_check.cjs` confere).
 - **Do** desligue animação em `body.calmo`, `body.rm` e `prefers-reduced-motion`.
 
 ### Don't:
