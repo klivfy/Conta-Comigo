@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- --bg-a do tema Clássico: fundo da abertura e da janela -->
+    <!-- fundo do tema Clássico (token bg-a do CSS): abertura e janela -->
     <color name="cc_background">#EAF6FF</color>
     <!-- meio do degradê do ícone: fundo do ícone na abertura do Android 12+ -->
     <color name="cc_icon_background">#FF7C5D</color>
