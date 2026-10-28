@@ -45,3 +45,14 @@ cd native/android && gradle assembleRelease bundleRelease
 ```
 
 Sem essas variáveis o release é gerado **sem assinatura**.
+
+## Enviar ao Google Play sem passar pelo GitHub Actions
+
+Se ainda não há GitHub Secrets, dá para gerar o `.aab` sem assinatura (`cd native/android && gradle bundleRelease`, saída em `app/build/outputs/bundle/release/app-release.aab`) e assiná-lo no seu computador:
+
+```bash
+bash scripts/fase1_keystore.sh ~/conta-comigo-keys/upload.jks          # só na primeira vez
+bash scripts/assinar_aab.sh app-release.aab ~/conta-comigo-keys/upload.jks
+```
+
+O resultado (`app-release-assinado.aab`) é o arquivo que o Play Console aceita. Na primeira vez, o Play registra essa chave como upload key; mantenha o `.jks` e a senha num cofre.
