@@ -103,12 +103,22 @@ function resolvedTheme(g) {
   if (th !== 'auto') return th;
   return DARK_QUERY && DARK_QUERY.matches ? 'espaco' : 'classico';
 }
+/* alto contraste: 'auto' liga junto com o "Aumentar contraste" do sistema
+   (prefers-contrast: more); 'on'/'off' são a escolha do adulto no painel */
+const CONTRAST_QUERY = window.matchMedia ? window.matchMedia('(prefers-contrast: more)') : null;
+function contrastOn(g) {
+  const c = (g && g.contrast) || 'auto';
+  return c === 'on' || (c === 'auto' && !!(CONTRAST_QUERY && CONTRAST_QUERY.matches));
+}
 function applyTheme(g) {
   document.body.dataset.theme = resolvedTheme(g);
-  document.body.classList.toggle('hc', !!(g && g.hc));
+  document.body.classList.toggle('hc', contrastOn(g));
 }
 if (DARK_QUERY && DARK_QUERY.addEventListener) {
   DARK_QUERY.addEventListener('change', () => { try { if (G().theme === 'auto') applyTheme(G()); } catch (e) { /* antes do boot */ } });
+}
+if (CONTRAST_QUERY && CONTRAST_QUERY.addEventListener) {
+  CONTRAST_QUERY.addEventListener('change', () => { try { applyTheme(G()); } catch (e) { /* antes do boot */ } });
 }
 /* Idioma inicial: segue o do navegador/sistema (pt, en ou es); se nenhum for
    suportado, usa português do Brasil. Só vale no primeiro uso — depois vale a
@@ -125,7 +135,7 @@ function detectLang() {
 }
 const DEFAULT_SETTINGS = {
   /* Fase 5: 'auto' segue o sistema (claro = Clássico, escuro = Espaço; ambos grátis) */
-  lang: detectLang(), theme: 'auto', hc: false, dys: false, calmo: null,
+  lang: detectLang(), theme: 'auto', contrast: 'auto', dys: false, calmo: null,
   mute: false, volume: 0.9, vRate: 0.95, vPitch: 1.15, vVoice: '',
   diffMode: 'auto', goalRounds: 3, sessionLimit: 15, sync: false,
   unlockAll: false, newtabOn: true, timer: true,
@@ -156,6 +166,9 @@ function parseDB(raw) {
     const d = JSON.parse(raw);
     if (!d || typeof d !== 'object') return null;
     if (d.v === 2 && Array.isArray(d.profiles) && d.profiles.length) {
+      // v2.6.2: o antigo hc (sim/não) vira contrast; "não" passa a seguir o sistema
+      const old = d.settings && typeof d.settings === 'object' ? d.settings : {};
+      if (!('contrast' in old) && 'hc' in old) old.contrast = old.hc === true ? 'on' : 'auto';
       d.settings = Object.assign({}, DEFAULT_SETTINGS, d.settings || {});
       normalizeDB(d);
       return d;
@@ -286,6 +299,8 @@ function normalizeDB(d) {
   s.calmo = (calmo === true || calmo === false) ? calmo : null;
   if (!Object.prototype.hasOwnProperty.call(TTS_LANG, s.lang)) s.lang = detectLang();
   if (THEMES.indexOf(s.theme) < 0) s.theme = 'auto';
+  if (['auto', 'on', 'off'].indexOf(s.contrast) < 0) s.contrast = 'auto';
+  delete s.hc;
   s.volume = clamp(s.volume, 0, 1);
   s.lastBackupAt = Number(s.lastBackupAt) || 0;
   ['passHash', 'passSalt', 'passHint'].forEach((k) => { if (typeof s[k] !== 'string') s[k] = ''; });

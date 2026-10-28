@@ -189,7 +189,10 @@ function renderOptions() {
   }
   thSel.value = cur;
   $$('#set-theme option').forEach((o) => { o.text = THEME_ICONS[o.value] + ' ' + t('th_' + o.value); });
-  $('#set-hc').checked = !!g.hc;
+  $('#set-hc').value = g.contrast || 'auto';
+  $('#set-hc').options[0].text = '🖥️ auto';
+  $('#set-hc').options[1].text = '🟢 ' + t('on');
+  $('#set-hc').options[2].text = '⚪ ' + t('off');
   $('#set-dys').checked = !!g.dys;
   $('#set-calmo').value = g.calmo == null ? 'auto' : (g.calmo ? 'on' : 'off');
   $('#set-calmo').options[0].text = '🖥️ auto';
@@ -449,7 +452,7 @@ function bindOptions() {
   $('#set-pitch').addEventListener('input', (e) => { G().vPitch = Number(e.target.value) / 100; set(); });
   $('#set-voice').addEventListener('change', (e) => { G().vVoice = e.target.value; set(); });
   $('#set-theme').addEventListener('change', (e) => { G().theme = e.target.value; set(); renderOptions(); });
-  $('#set-hc').addEventListener('change', (e) => { G().hc = e.target.checked; set(); renderOptions(); });
+  $('#set-hc').addEventListener('change', (e) => { G().contrast = e.target.value; set(); renderOptions(); });
   $('#set-dys').addEventListener('change', (e) => { G().dys = e.target.checked; set(); renderOptions(); });
   $('#set-calmo').addEventListener('change', (e) => { G().calmo = e.target.value === 'auto' ? null : e.target.value === 'on'; set(); });
   $('#set-goal').addEventListener('change', (e) => { G().goalRounds = Number(e.target.value); set(); });

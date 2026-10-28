@@ -24,6 +24,7 @@ colors:
   sun-yellow: "#ffc93c"
   on-yellow: "#5c4300"
   fox-orange: "#ff9a3d"
+  accent-text: "#a34a00"
   brand-a: "#ff8a3d"
   brand-b: "#ff5e7e"
   warm-tint: "#fff4dc"
@@ -33,6 +34,7 @@ colors:
   space-ink: "#eaf0ff"
   space-card: "#273159"
   space-bg: "#131a33"
+  space-accent-text: "#ff9a3d"
   hc-black: "#000000"
   hc-yellow: "#ffff00"
 typography:
@@ -158,7 +160,8 @@ A paleta é de brinquedo: matizes saturados para enfeite e identidade, versões 
 
 ### Primary
 - **Azul Resposta** (#2f5ce0): primeira resposta, botão principal (`.big-btn`), `.mini-btn` e links. Aresta em #1f3f9e.
-- **Laranja Raposa** (#ff9a3d): assinatura e atenção (ponto de "falta configurar", barra do próximo prêmio, recorde). É só enfeite, nunca fundo de texto. O degradê do título vai de #ff8a3d a #ff5e7e.
+- **Laranja Raposa** (#ff9a3d): assinatura e atenção (ponto de "falta configurar", barra do próximo prêmio). É só enfeite, nunca fundo de texto. O degradê do título vai de #ff8a3d a #ff5e7e.
+- **Laranja Texto** (`--accent-text`): o laranja que carrega texto ("Novo recorde de pontos!", "+pontos", prêmio do baú). É #a34a00 nos temas claros (≥4,8:1 em todos os fundos), #ff9a3d no Espaço (5,95:1 sobre o cartão) e amarelo no alto contraste.
 
 ### Secondary
 - **Verde-Petróleo** (#0e7c86), **Âmbar Queimado** (#b85500) e **Violeta Brinquedo** (#6b3fd4): respostas 2 a 4, cada uma com a sua aresta (#0a5960, #8a4000, #4b2a9e).
@@ -180,7 +183,7 @@ Cada tema redefine só os tokens semânticos: `--ink`, `--ink-soft`, `--sh` (cor
 - **Clássico** e **Espaço**. Espaço é escuro: #131a33, cartão #273159, tinta #eaf0ff e `color-scheme: dark`.
 - **Jardim**, **Arco-íris**, **Oceano**, **Doces** e **Neve**.
 
-O **Alto contraste** (`body.hc`) tem fundo #000, tinta #fff, secundário e foco #ffff00, e borda branca em todo componente interativo.
+O **Alto contraste** (`body.hc`) tem fundo #000, tinta #fff, secundário e foco #ffff00, e borda branca em todo componente interativo. Ele liga sozinho quando o sistema pede mais contraste (`prefers-contrast: more`); no painel, o adulto escolhe automático, ligado ou desligado. Com "Reduzir transparência" (`prefers-reduced-transparency`), a barra superior fica sólida, sem desfoque.
 
 O tema `auto` é o padrão de perfis novos: segue `prefers-color-scheme` ao vivo, Clássico no claro e Espaço no escuro.
 
@@ -206,7 +209,7 @@ Escala `--fs-*` para texto de interface: 10, 11, 12,5, 14, 16, 19, 24, 28 e 40px
 - **Body** (700, `--fs-md`/`--fs-lg`, 14–16px): histórias, mensagens e campos.
 - **Label** (800, `--fs-2xs`–`--fs-sm`, 10–12,5px): nome e descrição dos modos, chips, missões e selos.
 
-Emojis e números do jogo (`.mascot`, `.obj`, `.mode-emoji`, `.ans`, `#equation`) têm tamanhos próprios, porque são ilustração e não texto de interface. Os ajustes por breakpoint (`body.page-mode` e `@media`) também continuam em px calibrados.
+**Unidades (v2.6.2):** todo texto, inclusive a equação e os números das respostas, fica em `rem` (1rem = 16px no padrão). Assim ele acompanha o tamanho de fonte escolhido no navegador e no sistema; no iOS, `font: -apple-system-body` na raiz liga o texto ao Dynamic Type. Emojis de ícone e de ilustração (`.icon-btn`, `.mascot`, `.obj`, `.mode-emoji`, avatares, figurinhas) ficam em px: são imagem, e crescer com o texto estouraria as caixas de 44px. No Windows, Ctrl+= / Ctrl+− / Ctrl+0 e Ctrl+roda ampliam a página inteira até 300%.
 
 ### Named Rules
 **The Peso-Mínimo-700 Rule.** Nenhum texto de interface fica abaixo de 700. Leitor iniciante precisa de traço grosso.
@@ -228,7 +231,8 @@ Emojis e números do jogo (`.mascot`, `.obj`, `.mode-emoji`, `.ans`, `#equation`
 - **Alvos de toque:** nenhum controle com menos de 44×44px (botões, chips, objetos tocáveis). Texto de interface nunca abaixo de 11px.
 - **Elementos flutuantes** (popover, balão, modal) ficam sempre dentro da tela: `max-height` pela altura real e rolagem interna.
 - **Ritmo:** escala `--sp-*` de 2, 4, 6, 8, 12, 16, 24 e 36px. (Ainda definida, mas pouco aplicada: veja o item 7.2 do plano.)
-- **Teste:** `scripts/resp_check.cjs` mede 8 aparelhos emulados × 15 telas e roda no CI.
+- **Teste:** `scripts/resp_check.cjs` mede 8 aparelhos emulados × 15 telas e roda no CI, no tamanho padrão e com o texto a 200% (`CC_TEXTO=200`).
+- **Texto grande:** `overflow-wrap: anywhere` no `body`, grades com `minmax(0, 1fr)` e barra superior com `flex-wrap`. A 200% nada sai da tela; o jogo pode pedir rolagem vertical, que a WCAG permite.
 
 ## Elevation & Depth
 
@@ -292,7 +296,7 @@ A raposa (🥚 → 🐣 → 🦊, com chapéu da loja) quica em loop. O balão d
 ## Do's and Don'ts
 
 ### Do:
-- **Do** use os tokens semânticos (`--ink`, `--card`, `--line`, `--tint`, `--success-*`, `--attention`, `--on-accent`, `--on-yellow`) e deixe o tema decidir a cor.
+- **Do** use os tokens semânticos (`--ink`, `--card`, `--line`, `--tint`, `--success-*`, `--attention`, `--accent-text`, `--on-accent`, `--on-yellow`) e deixe o tema decidir a cor.
 - **Do** dê a todo controle tocável no mínimo 44×44px e uma aresta que afunda no `:active`.
 - **Do** teste cada mudança visual nos 8 modos de cor (7 temas mais alto contraste), no popup 400×600 e em celulares e tablets emulados, retrato e paisagem (`node scripts/resp_check.cjs`).
 - **Do** mantenha `game.html`, `popup.html` e `web/index.html` com a mesma marcação da tela inicial.

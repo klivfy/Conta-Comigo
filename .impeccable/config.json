@@ -1,0 +1,23 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font",
+        "value": "trebuchet ms",
+        "createdAt": "2026-10-28T11:27:53.165Z",
+        "reason": "DESIGN.md:197 documenta a fonte opcional para dislexia (body.dys): Trebuchet MS, Verdana ou Comic Sans MS"
+      },
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "download/conta-comigo/css/style.css"
+        ],
+        "createdAt": "2026-10-28T11:27:53.175Z",
+        "reason": "DESIGN.md:161 e :204 documentam o degradê de #ff8a3d a #ff5e7e como marca do título 'Conta Comigo'; o alto contraste usa cor sólida"
+      }
+    ]
+  }
+}

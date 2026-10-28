@@ -62,6 +62,9 @@ jobs:
       - name: Responsividade (celulares e tablets, retrato e paisagem)
         run: node scripts/resp_check.cjs
 
+      - name: Texto do sistema a 200% (nada sai da tela)
+        run: CC_TEXTO=200 node scripts/resp_check.cjs
+
       - uses: actions/upload-artifact@v7
         with:
           name: pacotes-ci

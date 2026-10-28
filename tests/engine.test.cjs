@@ -144,3 +144,13 @@ test('geradores: resposta entre as opções, opções únicas, e o cartão de re
   }
   E.ev('LANG = "pt"');
 });
+
+test('alto contraste: o antigo hc vira contrast (sim → on, não → segue o sistema)', () => {
+  const s = (settings) => j('parseDB(' + E.put('raw', JSON.stringify({ v: 2, activeId: 'p1', profiles: [{ id: 'p1' }], settings })) + ').settings');
+  assert.equal(s({ hc: true }).contrast, 'on');
+  assert.equal(s({ hc: false }).contrast, 'auto');
+  assert.equal(s({}).contrast, 'auto');
+  assert.equal(s({ contrast: 'off', hc: true }).contrast, 'off');
+  assert.equal(s({ contrast: '<x>' }).contrast, 'auto');
+  assert.equal('hc' in s({ hc: true }), false);
+});

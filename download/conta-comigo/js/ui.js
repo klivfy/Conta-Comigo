@@ -1122,9 +1122,13 @@ function breakOverlay() {
 function renderProfilePop() {
   const wrap = $('#pop-profile');
   wrap.setAttribute('aria-labelledby', 'pop-who');
-  wrap.innerHTML = '<b id="pop-who">' + t('who') + '</b>' + DB.profiles.map((pf) =>
-    '<button class="prof-row' + (pf.id === DB.activeId ? ' cur' : '') + '" data-pid="' + escHtml(pf.id) + '">' +
-    '<span class="pf-av">' + escHtml(pf.avatar) + '</span><span class="pf-name">' + escHtml(pf.name) + '</span><span class="pf-st">⭐ ' + pf.stars + ' · ⚡ ' + (pf.points || 0) + '</span></button>').join('') +
+  wrap.innerHTML = '<b id="pop-who">' + t('who') + '</b>' + DB.profiles.map((pf) => {
+    const cur = pf.id === DB.activeId;
+    return '<button class="prof-row' + (cur ? ' cur' : '') + '" data-pid="' + escHtml(pf.id) + '"' + (cur ? ' aria-current="true"' : '') + '>' +
+      '<span class="pf-av">' + escHtml(pf.avatar) + '</span><span class="pf-name">' + escHtml(pf.name) + '</span>' +
+      (cur ? '<span class="pf-cur" aria-hidden="true">✓</span>' : '') +
+      '<span class="pf-st">⭐ ' + pf.stars + ' · ⚡ ' + (pf.points || 0) + '</span></button>';
+  }).join('') +
     (DB.profiles.length < 4
       ? '<div class="prof-add"><input id="new-prof-name" maxlength="14" placeholder="' + t('name_ph') + '" aria-label="' + t('name_ph') + '">' +
         '<div class="av-row" role="group" aria-label="' + t('a_avatar') + '">' + AVATARS.map((a, i) => '<button class="av' + (i === 0 ? ' sel' : '') + '" aria-pressed="' + (i === 0) + '" data-av="' + a + '">' + a + '</button>').join('') + '</div>' +

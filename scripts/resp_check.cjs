@@ -26,6 +26,8 @@ const SCEN = [['home0', 0], ['home', 200], ...MODES.map((m) => ['jogo-' + m, 200
   ['conquistas', 200], ['modal', 200], ['perfis', 200], ['balao', 200]];
 const FAIL = ['scroll-horizontal', 'fora-da-tela-x', 'texto-fora-da-tela', 'sobreposicao', 'flutuante-fora', 'alvo<44', 'texto<11px'];
 const WARN = ['essencial-abaixo-da-dobra'];
+/* CC_TEXTO=200 simula o texto do sistema a 200% (raiz em rem maior, layout igual) */
+const TEXTO = Number(process.env.CC_TEXTO || 100);
 // o cadeado do "próximo prêmio" fica de propósito fora da caixa do emoji
 const IGNORE = (i) => i.type === 'texto-vaza-do-caixa' && /mode-emoji/.test(i.el);
 
@@ -102,7 +104,7 @@ function serve() {
         await p.reload(); await p.waitForTimeout(500); last = stars;
       }
       await p.evaluate(() => { try { hideOverlay(); } catch (e) { /* ok */ } const pp = document.querySelector('.popover'); if (pp) pp.classList.add('hidden'); show('home'); try { renderHome(); } catch (e) { /* ok */ } });
-      await p.addStyleTag({ content: '*{animation:none!important;transition:none!important}' }).catch(() => {});
+      await p.addStyleTag({ content: '*{animation:none!important;transition:none!important}' + (TEXTO !== 100 ? 'html{font-size:' + TEXTO + '%!important}' : '') }).catch(() => {});
       await p.evaluate((sn) => {
         if (sn.startsWith('jogo-')) startRound(sn.slice(5));
         else if (sn === 'fim') { startRound('contar'); endRound(); }
@@ -125,6 +127,6 @@ function serve() {
   await b.close(); srv.close();
   const uniq = (a) => [...new Set(a)];
   if (warn.length) console.log('Avisos (' + uniq(warn).length + '):\n  ' + uniq(warn).slice(0, 10).join('\n  '));
-  if (bad.length) { console.log('\nFALHOU — ' + uniq(bad).length + ' problemas de layout:\n  ' + uniq(bad).slice(0, 40).join('\n  ')); process.exit(1); }
-  console.log('OK — ' + Object.keys(DEV).length + ' dispositivos × ' + SCEN.length + ' telas sem estouro, sobreposição, alvo <44px ou texto <11px');
+  if (bad.length) { console.log('\nFALHOU — ' + uniq(bad).length + ' problemas de layout:\n  ' + uniq(bad).slice(0, Number(process.env.CC_MAX || 40)).join('\n  ')); process.exit(1); }
+  console.log('OK — ' + Object.keys(DEV).length + ' dispositivos × ' + SCEN.length + ' telas' + (TEXTO !== 100 ? ' com texto a ' + TEXTO + '%' : '') + ' sem estouro, sobreposição, alvo <44px ou texto <11px');
 })();
