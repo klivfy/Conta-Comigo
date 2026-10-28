@@ -21,7 +21,7 @@
   "isChromeOSOnly": false,
   "isMetaQuest": false,
   "fullScopeUrl": "https://klivfy.github.io/Conta-Comigo/",
-  "minSdkVersion": 23,
+  "minSdkVersion": 24,
   "orientation": "default",
   "fingerprints": [
     {
