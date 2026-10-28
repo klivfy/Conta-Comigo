@@ -27,3 +27,6 @@ download/conta-comigo-firefox/
 download/conta-comigo-pwa/
 __pycache__/
 node_modules/
+
+# intermediários do vídeo promocional (scripts/video/fazer_video.sh)
+.video-trabalho/

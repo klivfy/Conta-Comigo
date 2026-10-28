@@ -71,6 +71,11 @@ jobs:
       - name: Texto do sistema a 200% (nada sai da tela)
         run: CC_TEXTO=200 node scripts/resp_check.cjs
 
+      - name: Apps Capacitor (Voltar do Android, backup pela folha de compartilhar, barras do sistema)
+        run: |
+          python scripts/build_android_www.py
+          node scripts/app_check.cjs
+
       - uses: actions/upload-artifact@v7
         with:
           name: pacotes-ci

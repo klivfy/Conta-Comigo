@@ -4,8 +4,8 @@
 
 ### Matemática lúdica para crianças a partir de 4 anos
 
-![Versão](https://img.shields.io/badge/vers%C3%A3o-2.6.0-2EA043)
-![Plataformas](https://img.shields.io/badge/plataformas-Chrome%20%C2%B7%20Firefox%20%C2%B7%20PWA-0969DA)
+![Versão](https://img.shields.io/badge/vers%C3%A3o-2.6.3-2EA043)
+![Plataformas](https://img.shields.io/badge/plataformas-Chrome%20%C2%B7%20Edge%20%C2%B7%20Firefox%20%C2%B7%20Android%20%C2%B7%20Windows%20%C2%B7%20iOS%20%C2%B7%20PWA-0969DA)
 ![Idiomas](https://img.shields.io/badge/idiomas-PT%20%C2%B7%20EN%20%C2%B7%20ES-E16F24)
 ![Offline](https://img.shields.io/badge/100%25-offline-8250DF)
 ![Conformidade](https://img.shields.io/badge/COPPA%20%C2%B7%20LGPD--K%20%C2%B7%20GDPR--K-conforme-1F883D)
@@ -55,6 +55,8 @@ A narração usa a síntese de voz do próprio sistema com **seleção inteligen
 | 🟢 Chrome / Edge / Brave | [conta-comigo-chrome-2.6.3.zip](download/conta-comigo-chrome-2.6.3.zip) |
 | 🦊 Firefox (128+) | [conta-comigo-firefox-2.6.3.zip](download/conta-comigo-firefox-2.6.3.zip) |
 | 🤖 Android (PWA) | [conta-comigo-pwa-android-2.6.3.zip](download/conta-comigo-pwa-android-2.6.3.zip) |
+| 🤖 Android (app da Play Store) | AAB gerado pelo CI: *Actions → Android (Capacitor)*; assinatura em [native/android/keystore/README.md](native/android/keystore/README.md) |
+| 🎬 Vídeo promocional (2:19, pt-BR) | [conta-comigo-video-promocional-pt-BR.mp4](download/conta-comigo/loja/video/conta-comigo-video-promocional-pt-BR.mp4) + [legenda](download/conta-comigo/loja/video/conta-comigo-video-promocional-pt-BR.srt) |
 
 > Os pacotes ficam na pasta [`download/`](download/) e são gerados a partir de `download/conta-comigo/`. Versões anteriores: [releases](https://github.com/klivfy/Conta-Comigo/releases).
 
@@ -79,7 +81,7 @@ A narração usa a síntese de voz do próprio sistema com **seleção inteligen
 ## 🔐 Privacidade e público-infância
 
 - **Zero coleta**: nenhuma conta, nenhum dado pessoal, nenhuma telemetria — tudo fica no aparelho
-- **Portão dos responsáveis**: configurações e dados sensíveis atrás de verificação adulta (hash SHA-256 com bloqueio progressivo)
+- **Portão dos responsáveis**: configurações e dados sensíveis atrás de senha guardada só no aparelho (PBKDF2-SHA-256 com sal, bloqueio progressivo); senha, sal e lembrete nunca vão para o backup nem para a sincronização
 - **Conformidade**: COPPA, LGPD (com atenção especial a crianças — LGPD-K) e GDPR-K
 - **Áudio local**: a narração usa a síntese de voz do próprio sistema; nada é enviado a servidores
 
@@ -90,13 +92,15 @@ download/conta-comigo/         Fonte única do jogo (extensão Chrome MV3)
 download/*.zip                 Pacotes prontos das três plataformas
                                (Firefox e PWA são gerados: python scripts/build_packages.py
                                 e python scripts/build_pwa.py — não são versionados)
-download/conta-comigo/loja/    Materiais de publicação nas lojas
+download/conta-comigo/loja/    Materiais de publicação nas lojas (roteiros, capturas, gráficos, vídeo, política)
 native/android/                App nativo Android (Capacitor — o jogo vai dentro do APK/AAB)
 native/windows/                App nativo Windows 10/11 (Electron + electron-builder)
 native/ios/                    App iPhone e iPad (Capacitor)
 .github/workflows/             CI: Pages, APK/AAB e instalador Windows
 tests/                         Testes do motor (node --test tests/*.test.cjs)
-scripts/                       Build, empacotamento e verificações (i18n, sincronia, CSP, acessibilidade, responsividade)
+scripts/                       Build, empacotamento e verificações (i18n, sincronia, CSP, acessibilidade, responsividade, apps)
+scripts/video/                 Gerador do vídeo promocional (Piper + Playwright + ffmpeg)
+docs/                          Política de privacidade (HTML), ADRs e relatórios de revisão
 ```
 
 Tecnologia: **JavaScript vanilla**, Web Extensions **Manifest V3**, **PWA** com service worker e **Web Speech API** — sem frameworks, sem dependências externas, sem telemetria.
@@ -116,6 +120,9 @@ Os pacotes aparecem como **artefatos na aba Actions** a cada push nos diretório
 
 | Versão | Destaques |
 |---|---|
+| **2.6.3** | Pacote das 5 lojas em pt, en e es (117 capturas, gráficos, política trilíngue e vídeo promocional); identificador único `com.klivfy.conta.comigo.matematica`; **app Android com o jogo dentro do pacote** (Capacitor 8, API 36), backup pela folha de compartilhar, botão Voltar e nome traduzido; contagem por toque no idioma do jogo; limpeza do repositório |
+| **2.6.2** | Auditoria: backup importado validado, senha com PBKDF2 e segredos fora do backup e do sync; texto acompanha o tamanho do sistema (rem, Dynamic Type) e contraste revisto; Electron 44 e Dependabot; regras do jogo no motor, com testes |
+| **2.6.1** | Português do Brasil como padrão e idioma pelo navegador; pacote do Firefox Add-ons (128 ESR) e MSIX da Microsoft Store; correções de layout (Galaxy Fold, inglês) |
 | **2.6.0** | Responsividade total (320px–1920px+), modo paisagem, toque aprimorado, vozes humanizadas (Fase 2), PWA Android |
 | **2.5.0** | Contra o Tempo, baús de ofensiva, 5 mascotes adultas, 3 temas novos, álbum com 36 figurinhas, 20 conquistas, backup de um clique |
 | **2.4.1** | Selo de versão visível no jogo |

@@ -1,6 +1,6 @@
 # Vídeo promocional — YouTube (pt-BR)
 
-Arquivo: `conta-comigo-video-promocional-pt-BR.mp4` (2:19, 1080p) e legenda `conta-comigo-video-promocional-pt-BR.srt`. O link do YouTube é o que vai no campo "Vídeo" do Google Play.
+Arquivo: `loja/video/conta-comigo-video-promocional-pt-BR.mp4` (2:19, 1080p) e legenda `loja/video/conta-comigo-video-promocional-pt-BR.srt`. Para refazer o vídeo (por exemplo, depois de mudar o roteiro): `bash scripts/video/fazer_video.sh` (detalhes em `scripts/video/README.md`). O link do YouTube é o que vai no campo "Vídeo" do Google Play.
 
 ## Título (≤ 100)
 

@@ -38,5 +38,6 @@ python scripts/scan_csp.py          # CSP: sem script/evento inline, javascript:
 node scripts/a11y_check.cjs         # axe; precisa de playwright e axe-core
 node scripts/resp_check.cjs         # 8 aparelhos × 15 telas
 CC_TEXTO=200 node scripts/resp_check.cjs
+python scripts/build_android_www.py && node scripts/app_check.cjs   # apps: Voltar, backup nativo, barras
 ```
 O CI (`.github/workflows/ci.yml`) roda tudo isso. O Playwright do CI usa a localidade en-US, então teste também em inglês: os textos ficam mais longos.

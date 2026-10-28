@@ -177,3 +177,5 @@ Auditoria de segurança, estrutura e design com `/security-review`, `/anthropic-
   - **Nome traduzido** no Android: Count With Me e Cuenta Conmigo (lacuna L5).
   - **Fora:** `twa-manifest.json`, `assetlinks.json` e a cópia dele no Pages, a conferência de fingerprint no CI e a parte Android de `scripts/fase1_icons.py`.
 - [ ] 9.9 [você] testar o AAB num aparelho pelo teste fechado (lista no fim de `loja/lojas/google-play.md`): esta sessão não tem emulador Android.
+- [x] 9.10 No repositório: o vídeo promocional (`loja/video/`, mp4 e legenda) e o gerador dele (`scripts/video/`, com caminhos relativos), e `scripts/app_check.cjs` no CI (Voltar do Android, backup pela folha de compartilhar e barras do sistema, com uma ponte Capacitor simulada).
+- [ ] 9.11 [você] decidir entre os dois workflows do GitHub Pages: o `jekyll-gh-pages.yml` publica o README e deixa a política em `/docs/…`; o `pages.yml` publica o jogo e a política na URL das lojas. Os dois rodam a cada push na `main`.
