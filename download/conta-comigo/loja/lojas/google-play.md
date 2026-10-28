@@ -20,7 +20,7 @@ Painel: <https://play.google.com/console> · Pacote: o **AAB** gerado por *Actio
 | Site | https://klivfy.github.io/Conta-Comigo/ |
 | E-mail de contato (obrigatório, público) | **preencher com o e-mail de suporte da Klivfy** |
 | Versão (versionName / versionCode) | 2.6.2 / 262 |
-| minSdk | 24 (Android 7.0) — a Proteção Automática do Google Play exige 24 ou mais |
+| minSdk / targetSdk | 24 (Android 7.0; a Proteção Automática do Play exige 24+) / 36 (o Play exige 36) |
 
 ## Conteúdo do app (Política → Conteúdo do app)
 

@@ -13,12 +13,12 @@ def hasSigning = ksPath && ksPass && ksAlias && keyPass && file(ksPath).exists()
 
 android {
     namespace 'com.klivfy.conta.comigo.matematica'
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.klivfy.conta.comigo.matematica"
         minSdk 24
-        targetSdk 35
+        targetSdk 36        // o Google Play exige API 36
         versionCode 262        // v2.6.2
         versionName "2.6.2"
     }
@@ -38,7 +38,12 @@ android {
         release {
             // Sem keystore configurado, o release sai sem assinatura (não instalável).
             if (hasSigning) signingConfig signingConfigs.release
-            minifyEnabled false
+            // R8: encolhe o código; o mapping.txt vai dentro do .aab e o Play o usa para desofuscar falhas
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // símbolos de depuração de código nativo (se alguma dependência trouxer .so)
+            ndk { debugSymbolLevel 'FULL' }
         }
     }
 
