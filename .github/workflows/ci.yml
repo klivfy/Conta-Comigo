@@ -37,6 +37,9 @@ jobs:
       - name: Textos em pt/en/es (nenhuma chave faltando)
         run: node scripts/i18n_check.cjs
 
+      - name: Testes unitários do motor (senha, backup, geradores)
+        run: node --test tests/*.test.cjs
+
       # navegador do Playwright em cache, chaveado pela versão (troque as duas juntas)
       - name: Cache do Chromium do Playwright
         uses: actions/cache@v6

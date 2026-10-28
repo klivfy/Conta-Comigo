@@ -1080,7 +1080,7 @@ function openChest(ms) {
    de segurança — um clique baixa um .json que pode ser reimportado nas opções. */
 function downloadBackup() {
   try {
-    const data = JSON.stringify(DB, null, 2);
+    const data = JSON.stringify(shareableDB(DB), null, 2);
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1308,7 +1308,7 @@ async function boot() {
       chrome.storage.onChanged.addListener((ch, area) => {
         if (area === 'sync' && ch.cc_state_sync) {
           const remote = parseDB(JSON.stringify(ch.cc_state_sync.newValue));
-          if (remote && remote.updatedAt > DB.updatedAt + 500) { DB = remote; renderHome(); }
+          if (remote && remote.updatedAt > DB.updatedAt + 500) { DB = keepLocalSecrets(remote, DB); renderHome(); }
         }
       });
     }

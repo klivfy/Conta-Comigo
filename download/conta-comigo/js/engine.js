@@ -96,6 +96,7 @@ function newProfile(id, name, avatar) {
   };
 }
 /* ---------- tema (Fase 5.4): 'auto' acompanha prefers-color-scheme ao vivo ---------- */
+const THEMES = ['auto', 'classico', 'espaco', 'jardim', 'arcoiris', 'oceano', 'doces', 'neve'];
 const DARK_QUERY = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 function resolvedTheme(g) {
   const th = (g && g.theme) || 'auto';
@@ -182,6 +183,60 @@ function coerceLike(tpl, obj) {
   });
   return obj;
 }
+/* v2.6.2: mapas por modo (níveis, recordes, conquistas…) — só chaves simples
+   (nada de "__proto__") e valores no formato que o jogo grava */
+function cleanMap(o, fix) {
+  const out = {};
+  if (!o || typeof o !== 'object' || Array.isArray(o)) return out;
+  Object.keys(o).forEach((k) => {
+    if (!/^[A-Za-z0-9]{1,16}$/.test(k)) return;
+    const v = fix(o[k]);
+    if (v !== undefined) out[k] = v;
+  });
+  return out;
+}
+const finiteOr0 = (v) => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
+/* v2.6.2: cartões de revisão (S08) — cada modo aceita só os campos que o seu
+   gerador grava, como inteiros pequenos; op/kind só da lista. Qualquer outra
+   coisa (texto, HTML, número enorme) descarta o cartão inteiro. */
+const REVIEW_FIELDS = {
+  contar: ['it', 'n'], somar: ['it', 'a', 'b'], subtrair: ['it', 'a', 'b'], faltar: ['a', 's'],
+  comparar: ['a', 'b'], sequencia: ['s', 'd'], dobrar: ['n', 'half'], multiplicar: ['g', 'k'],
+  dividir: ['g', 'k'], historia: ['op', 'a', 'b', 'g', 'k', 'it', 'ni'],
+};
+const REVIEW_MONEY = { coins: ['n'], coins5: ['c5', 'c1'], change: ['p', 'v'] };
+const REVIEW_OPS = ['add', 'sub', 'mul', 'div'];
+const REVIEW_NUM_MAX = 500;
+function cleanReviewF(m, f) {
+  if (!f || typeof f !== 'object' || Array.isArray(f)) return null;
+  let keys;
+  if (m === 'dinheiro') {
+    if (!Object.prototype.hasOwnProperty.call(REVIEW_MONEY, f.kind)) return null;
+    keys = REVIEW_MONEY[f.kind];
+  } else if (Object.prototype.hasOwnProperty.call(REVIEW_FIELDS, m)) keys = REVIEW_FIELDS[m];
+  else return null;
+  const out = m === 'dinheiro' ? { kind: f.kind } : {};
+  for (const k of keys) {
+    const v = f[k];
+    if (k === 'op') { if (REVIEW_OPS.indexOf(v) < 0) return null; out.op = v; continue; }
+    if (typeof v !== 'number' || !Number.isInteger(v) || Math.abs(v) > REVIEW_NUM_MAX) return null;
+    if (v < 0 && k !== 'd') return null; // só o passo da sequência pode ser negativo
+    out[k] = v;
+  }
+  if (out.it != null && out.it >= ITEMS.length) return null;
+  if (out.ni != null && out.ni > 3) return null;
+  return out;
+}
+function cleanReviewCard(c) {
+  if (!c || typeof c !== 'object') return null;
+  const f = cleanReviewF(c.m, c.f);
+  if (!f) return null;
+  return {
+    m: c.m, lv: clamp(Math.round(Number(c.lv)) || 1, 1, MAX_LEVEL), f,
+    box: clamp(Math.round(Number(c.box)) || 1, 1, 5),
+    due: (typeof c.due === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(c.due)) ? c.due : fmtDate(),
+  };
+}
 /* v2.2: campos novos de pontos · v2.3: campos da senha dos responsáveis */
 function normalizeDB(d) {
   const seen = {};
@@ -200,16 +255,26 @@ function normalizeDB(d) {
     p.weeks = p.weeks.filter((w) => w && typeof w.k === 'string' && /^[0-9A-Za-z-]{1,12}$/.test(w.k))
       .map((w) => ({ k: w.k, rounds: Number(w.rounds) || 0, rights: Number(w.rights) || 0 }));
     p.points = Number(p.points) || 0;
-    p.bestPts = (p.bestPts && typeof p.bestPts === 'object') ? p.bestPts : {};
+    p.bestPts = cleanMap(p.bestPts, finiteOr0);
+    p.levels = cleanMap(p.levels, (v) => clamp(Math.round(Number(v)) || 1, 1, MAX_LEVEL));
+    p.recent = cleanMap(p.recent, (v) => (Array.isArray(v) ? v.slice(-5).map(Boolean) : undefined));
+    p.lvl = cleanMap(p.lvl, (byLv) => cleanMap(byLv, (b) => (b && typeof b === 'object' ? { r: finiteOr0(b.r), w: finiteOr0(b.w) } : undefined)));
+    p.played = cleanMap(p.played, () => 1);
+    p.today.modes = cleanMap(p.today.modes, () => 1);
+    p.review = p.review.map(cleanReviewCard).filter(Boolean).slice(-24);
+    ['vRate', 'vPitch'].forEach((k) => { if (p[k] != null && !Number.isFinite(p[k])) delete p[k]; });
+    if (p.vVoice != null && typeof p.vVoice !== 'string') delete p.vVoice;
     /* v2.5: persistência blindada de conquistas/coleções — nada some em migração */
-    p.ach = (p.ach && typeof p.ach === 'object') ? p.ach : {};
-    p.stickers = Array.isArray(p.stickers) ? p.stickers : [];
+    p.ach = cleanMap(p.ach, () => 1);
+    p.stickers = (Array.isArray(p.stickers) ? p.stickers : [])
+      .filter((i, j, a) => Number.isInteger(i) && i >= 0 && i < STICKERS.length && a.indexOf(i) === j);
     p.owned = (p.owned && typeof p.owned === 'object') ? p.owned : { themes: ['classico'], hats: [], pets: ['fox'] };
-    if (!Array.isArray(p.owned.themes)) p.owned.themes = ['classico'];
-    if (!Array.isArray(p.owned.hats)) p.owned.hats = [];
-    if (!Array.isArray(p.owned.pets) || !p.owned.pets.length) p.owned.pets = ['fox'];
+    const shortStrs = (a) => (Array.isArray(a) ? a.filter((x) => typeof x === 'string' && x.length <= 16) : []);
+    p.owned.themes = shortStrs(p.owned.themes); if (!p.owned.themes.length) p.owned.themes = ['classico'];
+    p.owned.hats = shortStrs(p.owned.hats);
+    p.owned.pets = shortStrs(p.owned.pets); if (!p.owned.pets.length) p.owned.pets = ['fox'];
     p.pet = typeof p.pet === 'string' ? p.pet : '';
-    p.chests = (p.chests && typeof p.chests === 'object') ? p.chests : {};
+    p.chests = cleanMap(p.chests, () => 1);
     p.bestSurvive = Number(p.bestSurvive) || 0;
     p.firstPet = !!p.firstPet;
   });
@@ -219,6 +284,9 @@ function normalizeDB(d) {
   coerceLike(DEFAULT_SETTINGS, s);
   s.diffMode = (diffMode === 1 || diffMode === 2 || diffMode === 3) ? diffMode : 'auto';
   s.calmo = (calmo === true || calmo === false) ? calmo : null;
+  if (!Object.prototype.hasOwnProperty.call(TTS_LANG, s.lang)) s.lang = detectLang();
+  if (THEMES.indexOf(s.theme) < 0) s.theme = 'auto';
+  s.volume = clamp(s.volume, 0, 1);
   s.lastBackupAt = Number(s.lastBackupAt) || 0;
   ['passHash', 'passSalt', 'passHint'].forEach((k) => { if (typeof s[k] !== 'string') s[k] = ''; });
   ['passSetAt', 'passTries', 'passLockUntil'].forEach((k) => { s[k] = Number(s[k]) || 0; });
@@ -276,7 +344,7 @@ async function initDB() {
     });
     if (syncData && syncData.updatedAt && (!d || (syncData.updatedAt > (d.updatedAt || 0)))) {
       const parsed = parseDB(JSON.stringify(syncData));
-      if (parsed) d = parsed;
+      if (parsed) d = keepLocalSecrets(parsed, d);
     }
   }
   if (!d) d = { v: 2, updatedAt: Date.now(), activeId: '', profiles: [], settings: Object.assign({}, DEFAULT_SETTINGS) };
@@ -321,7 +389,7 @@ function saveState(immediate) {
         chrome.storage.local.set({ cc_state: JSON.parse(json) }, () => { void chrome.runtime.lastError; });
       }
       if (G().sync && typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-        chrome.storage.sync.set({ cc_state_sync: JSON.parse(json) }, () => { void chrome.runtime.lastError; });
+        chrome.storage.sync.set({ cc_state_sync: shareableDB(DB) }, () => { void chrome.runtime.lastError; });
       }
     } catch (e) { /* ignora */ }
   };
@@ -543,11 +611,14 @@ const TTS = {
   stop() { if (this.ok) { this.speakingNow = false; this.cancelQueue(); } },
 };
 
-/* ---------- portão parental: hash de senha (v2.3) ----------
-   A senha NUNCA é guardada em texto puro: guardamos sha256(sal + ':' + senha).
-   O lembrete de segurança fica em texto (serve para ser lido pelo adulto em
-   "Esqueci a senha"). Nada sai do dispositivo — sem permissões de rede.
-   crypto.subtle quando disponível; fallback puro em JS (mesmo algoritmo). */
+/* ---------- portão parental: hash de senha (v2.3 · v2.6.2 PBKDF2) ----------
+   A senha NUNCA é guardada em texto puro. Desde a v2.6.2 guardamos
+   "pbkdf2$<rodadas>$<hex>" = PBKDF2-HMAC-SHA-256(senha, sal). O formato antigo,
+   sha256(sal + ':' + senha) numa rodada só, ainda é aceito e é trocado pelo novo
+   no primeiro acesso certo. O lembrete fica em texto (o adulto o lê em "Esqueci
+   a senha"). Senha, sal e lembrete ficam só no aparelho: não vão no backup, na
+   cópia nem no sync. crypto.subtle quando disponível; fallback puro em JS
+   (mesmo algoritmo, menos rodadas, para contextos sem WebCrypto). */
 function ccUtf8Bytes(str) {
   try { return Array.from(new TextEncoder().encode(str)); }
   catch (e) {
@@ -557,18 +628,35 @@ function ccUtf8Bytes(str) {
     return out;
   }
 }
-function ccSha256Hex(input) {
-  const K = [0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
-    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
-    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
-    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
-    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
-    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
-    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2];
-  const H0 = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
-  const rr = (v, a) => (((v >>> a) | (v << (32 - a))) >>> 0);
-  const bytes = ccUtf8Bytes(input);
+const SHA256_K = new Int32Array([0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+  0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+  0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+  0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+  0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+  0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+  0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+  0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2]);
+const SHA256_H0 = new Int32Array([0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19]);
+/* um bloco de 64 bytes: W[0..15] já preenchidos; atualiza H no lugar */
+function sha256Block(H, W) {
+  const rr = (v, a) => (v >>> a) | (v << (32 - a));
+  for (let i = 16; i < 64; i++) {
+    const s0 = rr(W[i - 15], 7) ^ rr(W[i - 15], 18) ^ (W[i - 15] >>> 3);
+    const s1 = rr(W[i - 2], 17) ^ rr(W[i - 2], 19) ^ (W[i - 2] >>> 10);
+    W[i] = (W[i - 16] + s0 + W[i - 7] + s1) | 0;
+  }
+  let a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+  for (let i = 0; i < 64; i++) {
+    const t1 = (h + (rr(e, 6) ^ rr(e, 11) ^ rr(e, 25)) + ((e & f) ^ (~e & g)) + SHA256_K[i] + W[i]) | 0;
+    const t2 = ((rr(a, 2) ^ rr(a, 13) ^ rr(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) | 0;
+    h = g; g = f; f = e; e = (d + t1) | 0;
+    d = c; c = b; b = a; a = (t1 + t2) | 0;
+  }
+  H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
+  H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+}
+/* SHA-256 de uma lista de bytes → 8 palavras de 32 bits */
+function sha256Words(bytes) {
   const msg = bytes.slice();
   msg.push(0x80);
   while (msg.length % 64 !== 56) msg.push(0);
@@ -576,34 +664,54 @@ function ccSha256Hex(input) {
   const bitsLo = (bytes.length * 8) >>> 0;
   msg.push((bitsHi >>> 24) & 255, (bitsHi >>> 16) & 255, (bitsHi >>> 8) & 255, bitsHi & 255,
     (bitsLo >>> 24) & 255, (bitsLo >>> 16) & 255, (bitsLo >>> 8) & 255, bitsLo & 255);
-  const H = H0.slice();
-  const w = new Array(64);
+  const H = Int32Array.from(SHA256_H0);
+  const W = new Int32Array(64);
   for (let off = 0; off < msg.length; off += 64) {
     for (let i = 0; i < 16; i++) {
       const j = off + i * 4;
-      w[i] = ((msg[j] << 24) | (msg[j + 1] << 16) | (msg[j + 2] << 8) | msg[j + 3]) | 0;
+      W[i] = (msg[j] << 24) | (msg[j + 1] << 16) | (msg[j + 2] << 8) | msg[j + 3];
     }
-    for (let i = 16; i < 64; i++) {
-      const s0 = rr(w[i - 15], 7) ^ rr(w[i - 15], 18) ^ (w[i - 15] >>> 3);
-      const s1 = rr(w[i - 2], 17) ^ rr(w[i - 2], 19) ^ (w[i - 2] >>> 10);
-      w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0;
-    }
-    let a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
-    for (let i = 0; i < 64; i++) {
-      const S1 = rr(e, 6) ^ rr(e, 11) ^ rr(e, 25);
-      const ch = (e & f) ^ (~e & g);
-      const t1 = (h + S1 + ch + K[i] + w[i]) | 0;
-      const S0 = rr(a, 2) ^ rr(a, 13) ^ rr(a, 22);
-      const maj = (a & b) ^ (a & c) ^ (b & c);
-      const t2 = (S0 + maj) | 0;
-      h = g; g = f; f = e; e = (d + t1) | 0;
-      d = c; c = b; b = a; a = (t1 + t2) | 0;
-    }
-    H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
-    H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+    sha256Block(H, W);
   }
-  return H.map((x) => (x >>> 0).toString(16).padStart(8, '0')).join('');
+  return H;
 }
+const wordsHex = (H) => Array.from(H, (x) => (x >>> 0).toString(16).padStart(8, '0')).join('');
+const wordsBytes = (H) => { const out = []; H.forEach((x) => out.push((x >>> 24) & 255, (x >>> 16) & 255, (x >>> 8) & 255, x & 255)); return out; };
+function ccSha256Hex(input) { return wordsHex(sha256Words(ccUtf8Bytes(input))); }
+/* PBKDF2-HMAC-SHA-256 com 32 bytes de saída (um bloco). Cada rodada parte dos
+   estados já processados de ipad/opad: duas compressões por rodada. */
+function ccPbkdf2Hex(pw, salt, iter) {
+  let key = ccUtf8Bytes(pw);
+  if (key.length > 64) key = wordsBytes(sha256Words(key));
+  const padded = (x) => { const b = []; for (let i = 0; i < 64; i++) b.push((key[i] || 0) ^ x); return b; };
+  const ipad = padded(0x36), opad = padded(0x5c);
+  const W = new Int32Array(64);
+  const stateAfter = (block) => {
+    const H = Int32Array.from(SHA256_H0);
+    for (let i = 0; i < 16; i++) W[i] = (block[i * 4] << 24) | (block[i * 4 + 1] << 16) | (block[i * 4 + 2] << 8) | block[i * 4 + 3];
+    sha256Block(H, W);
+    return H;
+  };
+  const iState = stateAfter(ipad), oState = stateAfter(opad);
+  const inner1 = sha256Words(ipad.concat(ccUtf8Bytes(salt), [0, 0, 0, 1]));
+  const U = sha256Words(opad.concat(wordsBytes(inner1)));
+  const T = Int32Array.from(U);
+  const H = new Int32Array(8);
+  // mensagem de 32 bytes depois de um bloco já processado: 0x80, zeros e 768 bits
+  const tail = () => { W[8] = 0x80000000 | 0; W.fill(0, 9, 15); W[15] = 768; };
+  for (let j = 1; j < iter; j++) {
+    H.set(iState); W.set(U, 0); tail(); sha256Block(H, W);
+    W.set(H, 0); H.set(oState); tail(); sha256Block(H, W);
+    U.set(H);
+    for (let k = 0; k < 8; k++) T[k] ^= H[k];
+  }
+  return wordsHex(T);
+}
+const PASS_MIN = 6;            // novas senhas (as antigas, de 4 ou 5, continuam valendo)
+const PASS_ITER = 600000;      // WebCrypto — recomendação da OWASP para PBKDF2-HMAC-SHA-256
+const PASS_ITER_JS = 100000;   // fallback em JS puro (contexto sem crypto.subtle)
+const PASS_ITER_MAX = 2000000;
+const PASS_FMT = /^pbkdf2\$(\d{1,7})\$([0-9a-f]{64})$/;
 const PASS = {
   salt() {
     try {
@@ -615,11 +723,33 @@ const PASS = {
     } catch (e) { /* cai para o fallback */ }
     return String(Date.now()) + String(Math.random()).slice(2, 12) + String(Math.random()).slice(2, 12);
   },
+  subtle() {
+    try { return (typeof crypto !== 'undefined' && crypto.subtle && crypto.subtle.deriveBits) ? crypto.subtle : null; }
+    catch (e) { return null; }
+  },
+  async pbkdf2(pw, salt, iter) {
+    const sub = this.subtle();
+    if (sub) {
+      try {
+        const enc = new TextEncoder();
+        const key = await sub.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveBits']);
+        const bits = await sub.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode(salt), iterations: iter }, key, 256);
+        return Array.from(new Uint8Array(bits)).map((b) => b.toString(16).padStart(2, '0')).join('');
+      } catch (e) { /* cai para o fallback */ }
+    }
+    return ccPbkdf2Hex(pw, salt, iter);
+  },
   async hash(pw, salt) {
+    const iter = this.subtle() ? PASS_ITER : PASS_ITER_JS;
+    return 'pbkdf2$' + iter + '$' + (await this.pbkdf2(pw, salt, iter));
+  },
+  /* formato v2.3 (uma rodada de SHA-256): só para conferir senhas antigas */
+  async legacyHash(pw, salt) {
     const text = salt + ':' + pw;
+    const sub = this.subtle();
     try {
-      if (typeof crypto !== 'undefined' && crypto.subtle && crypto.subtle.digest) {
-        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+      if (sub && sub.digest) {
+        const buf = await sub.digest('SHA-256', new TextEncoder().encode(text));
         return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
       }
     } catch (e) { /* cai para o fallback */ }
@@ -627,10 +757,35 @@ const PASS = {
   },
   async verify(pw, salt, expect) {
     if (!salt || !expect) return false;
-    return (await this.hash(pw, salt)) === expect;
+    const m = PASS_FMT.exec(expect);
+    if (m) {
+      const iter = Number(m[1]);
+      if (iter < 1 || iter > PASS_ITER_MAX) return false;
+      return (await this.pbkdf2(pw, salt, iter)) === m[2];
+    }
+    return /^[0-9a-f]{64}$/.test(expect) && (await this.legacyHash(pw, salt)) === expect;
+  },
+  /* hash antigo, ou feito em JS puro onde agora há WebCrypto: refazer no acesso */
+  needsUpgrade(expect) {
+    const m = PASS_FMT.exec(expect || '');
+    return !m || (Number(m[1]) < PASS_ITER && !!this.subtle());
   },
 };
 
+/* A senha pertence ao aparelho: backup, cópia e sync levam o progresso sem
+   hash, sal, lembrete nem bloqueio, e importar ou adotar uma cópia remota
+   mantém a senha que já está aqui. */
+const SECRET_KEYS = ['passHash', 'passSalt', 'passHint', 'passSetAt', 'passTries', 'passLockUntil'];
+function shareableDB(db) {
+  const out = JSON.parse(JSON.stringify(db));
+  if (out.settings) SECRET_KEYS.forEach((k) => { delete out.settings[k]; });
+  return out;
+}
+function keepLocalSecrets(incoming, local) {
+  const from = (local && local.settings) || DEFAULT_SETTINGS;
+  SECRET_KEYS.forEach((k) => { incoming.settings[k] = from[k] != null ? from[k] : DEFAULT_SETTINGS[k]; });
+  return incoming;
+}
 /* ---------- visuais de objetos ---------- */
 function emojisHTML(item, count, opts) {
   let s = '';
@@ -949,7 +1104,10 @@ function gradeReview(card, right) {
 }
 
 /* ---------- perguntas a partir de cartões de revisão ---------- */
+/* o cartão passa de novo pela validação: os geradores só recebem inteiros
+   conferidos, mesmo que um cartão ruim escape de outro caminho */
 function makeFromCard(card) {
-  const gen = GENS[card.m] || genContar;
-  return gen(clamp(card.lv, 1, MAX_LEVEL), card.f);
+  const c = cleanReviewCard(card);
+  if (!c) return genContar(1);
+  return GENS[c.m](c.lv, c.f);
 }
