@@ -30,7 +30,7 @@
 
   /* tipografia — escala para texto de interface (emojis e números do jogo
      têm tamanhos próprios, são ilustração) */
-  --fs-2xs: .6875rem; --fs-xs: .6875rem; --fs-sm: .78125rem; --fs-md: .875rem; --fs-lg: 1rem;
+  --fs-2xs: .75rem; --fs-xs: .75rem; --fs-sm: .8125rem; --fs-md: .875rem; --fs-lg: 1rem;
   --fs-xl: 1.1875rem; --fs-2xl: 1.5rem; --fs-3xl: 1.75rem; --fs-display: 2.5rem;
   /* espaço (gaps e respiros de layout) */
   --sp-1: 2px; --sp-2: 4px; --sp-3: 6px; --sp-4: 8px; --sp-5: 12px; --sp-6: 16px; --sp-7: 24px; --sp-8: 36px;
@@ -436,7 +436,7 @@ button:focus-visible, .mode-card:focus-visible { outline: 4px solid var(--focus)
 /* ---------- loja ---------- */
 .shop-head { display: flex; align-items: center; justify-content: space-between; width: 100%; }
 .shop-head { gap: var(--sp-4); }
-.shop-head h2 { font-size: var(--fs-2xl); font-weight: 900; min-width: 0; text-align: center; overflow-wrap: anywhere; }
+.shop-head h2 { font-size: var(--fs-2xl); font-weight: 900; flex: 1 1 auto; min-width: 0; text-align: center; overflow-wrap: anywhere; }
 #shop-stars { font-weight: 900; font-size: var(--fs-xl); background: var(--card); border-radius: var(--r-pill); padding: var(--sp-4) var(--sp-6); box-shadow: var(--lift-2); }
 .shop-sec { width: 100%; margin-top: var(--sp-5); }
 .shop-sec > b { font-size: var(--fs-lg); color: var(--ink-soft); }
@@ -686,6 +686,8 @@ body.rm .breathe-ball { animation: ccBreatheFade 8s ease-in-out infinite !import
 /* popup 400x600 (sem classe html-page): espaço curto — selo some no mini-molde,
    continua visível no jogo em tela cheia (page-mode) e nas opções */
 html:not(.html-page) .cc-ver { display: none; }
+/* v2.7.4: o selo de versão não fica mais na barra da criança (a versão está no painel); o elemento fica para conferir a build */
+#cc-ver { display: none; }
 
 /* ==================== v2.6 — responsividade multi-telas ====================
    Objetivo: o mesmo jogo se adapta de 320px (celular pequeno, PWA Android)
@@ -1081,3 +1083,12 @@ a.mini-btn { display: inline-flex; align-items: center; text-decoration: none; }
 .far-bar > i { display: block; height: 100%; background: var(--accent-text); border-radius: var(--r-pill); }
 #undo-buy { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 71; display: flex; align-items: center; gap: var(--sp-3); background: var(--ink); color: var(--card); border-radius: var(--r-pill); padding: var(--sp-3) var(--sp-4) var(--sp-3) var(--sp-6); font-weight: 800; font-size: var(--fs-md); max-width: calc(100vw - 32px); }
 #undo-buy button { min-height: 44px; min-width: 44px; padding: 0 var(--sp-6); border-radius: var(--r-pill); border: 2px solid var(--card); background: transparent; color: var(--card); font: inherit; cursor: pointer; }
+
+/* v2.7.4: telas grandes: os objetos do palco crescem com a altura da janela (antes ficavam pequenos num cartão enorme).
+   Emoji segue em px (regra do projeto); o clamp mantém o piso das telas pequenas. */
+@media (min-width: 900px) and (min-height: 640px) {
+  body.page-mode .obj { font-size: clamp(38px, 6vh, 60px); margin: var(--sp-2); }
+  body.page-mode .obj.small { font-size: clamp(25px, 4vh, 40px); }
+  body.page-mode .grp { max-width: clamp(168px, 30vw, 300px); }
+  body.page-mode .grp.plain { max-width: 100%; }
+}

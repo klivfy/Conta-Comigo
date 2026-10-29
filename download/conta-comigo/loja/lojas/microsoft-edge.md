@@ -1,6 +1,6 @@
-# Microsoft Edge Add-ons — Conta Comigo 2.7.3
+# Microsoft Edge Add-ons — Conta Comigo 2.7.4
 
-Painel: <https://partner.microsoft.com/dashboard/microsoftedge/overview> · Pacote: o **mesmo** zip do Chrome, `download/conta-comigo-chrome-2.7.3.zip` (o Edge é baseado em Chromium e aceita MV3 com service worker).
+Painel: <https://partner.microsoft.com/dashboard/microsoftedge/overview> · Pacote: o **mesmo** zip do Chrome, `download/conta-comigo-chrome-2.7.4.zip` (o Edge é baseado em Chromium e aceita MV3 com service worker).
 
 ## Dados gerais
 
@@ -73,7 +73,7 @@ OBSERVAÇÕES
 Não é preciso conta nem senha para testar. Clique no ícone da extensão: o jogo abre em tela cheia. Escolha "Contar" ou "Somar" e toque nas respostas. A extensão usa só a permissão "storage", não faz requisições de rede e não coleta dados. Ela substitui a nova aba por um desafio rápido; dá para desligar na própria página. O pacote é o mesmo MV3 enviado à Chrome Web Store (service worker em background.js).
 ```
 
-**Notas da versão:** Novidades da 2.7.3: a nova aba não trava mais depois do acerto e volta a contar a ofensiva do dia; histórias e dicas em inglês e espanhol usam o nome certo dos objetos; o nome padrão do jogador aparece no seu idioma; avisos não cobrem mais os botões durante a rodada; e criar a senha dos responsáveis pede antes uma conta de adulto.
+**Notas da versão:** Novidades da 2.7.4: a nova aba não trava mais depois do acerto e volta a contar a ofensiva do dia; histórias e dicas em inglês e espanhol usam o nome certo dos objetos; o nome padrão do jogador aparece no seu idioma; avisos não cobrem mais os botões durante a rodada; e criar a senha dos responsáveis pede antes uma conta de adulto.
 
 
 ## English
@@ -125,7 +125,7 @@ NOTES
 No account or password is needed to test. Click the extension icon: the game opens full screen. Pick "Count" or "Add" and tap the answers. The extension uses only the "storage" permission, makes no network requests and collects no data. It replaces the new tab page with a quick challenge that can be turned off on the page itself. The package is the same MV3 build sent to the Chrome Web Store (service worker in background.js).
 ```
 
-**Notas da versão:** What's new in 2.7.3: the new tab no longer freezes after a correct answer and counts the daily streak again; stories and hints in English and Spanish use the right word for each object; the default player name shows in your language; notices no longer cover the buttons during a round; and creating the parents' password first asks a grown-up math question.
+**Notas da versão:** What's new in 2.7.4: the new tab no longer freezes after a correct answer and counts the daily streak again; stories and hints in English and Spanish use the right word for each object; the default player name shows in your language; notices no longer cover the buttons during a round; and creating the parents' password first asks a grown-up math question.
 
 
 ## Español
@@ -177,7 +177,7 @@ NOTAS
 No hace falta cuenta ni contraseña para probar. Haz clic en el icono de la extensión: el juego se abre a pantalla completa. Elige "Contar" o "Sumar" y toca las respuestas. La extensión usa solo el permiso "storage", no hace solicitudes de red y no recopila datos. Reemplaza la nueva pestaña por un desafío rápido que se puede apagar en la propia página. El paquete es el mismo MV3 enviado a la Chrome Web Store (service worker en background.js).
 ```
 
-**Notas da versão:** Novedades de la 2.7.3: la pestaña nueva ya no se traba después de acertar y vuelve a contar la racha del día; las historias y pistas en inglés y español usan el nombre correcto de cada objeto; el nombre predeterminado del jugador sale en tu idioma; los avisos ya no tapan los botones durante la ronda; y crear la contraseña de los responsables pide antes una cuenta para adultos.
+**Notas da versão:** Novedades de la 2.7.4: la pestaña nueva ya no se traba después de acertar y vuelve a contar la racha del día; las historias y pistas en inglés y español usan el nombre correcto de cada objeto; el nombre predeterminado del jugador sale en tu idioma; los avisos ya no tapan los botones durante la ronda; y crear la contraseña de los responsables pide antes una cuenta para adultos.
 
 
 ## Checklist de envio

@@ -30,7 +30,7 @@ function showGate() {
   $('#ge-reset-in').placeholder = t('gate_reset_ph');
   if (has) gateEnterIdle(); else gateAdultAsk();
 }
-/* v2.7.3: antes de criar a senha, uma conta que criança de 4 a 8 anos não resolve sozinha */
+/* v2.7.4: antes de criar a senha, uma conta que criança de 4 a 8 anos não resolve sozinha */
 let gcAdultAnswer = '', gcAdultOk = false;
 function gateAdultAsk() {
   const a = rand(12, 19), b = rand(13, 19);
@@ -186,7 +186,7 @@ function renderOptions() {
   $('#set-diff').value = String(g.diffMode);
   $('#set-unlock').checked = !!g.unlockAll;
   $('#set-newtab').checked = !!g.newtabOn;
-  $('#set-timer').checked = !!g.timer; // v2.7.3: desligado por padrão
+  $('#set-timer').checked = !!g.timer; // v2.7.4: desligado por padrão
   $('#set-lang').value = g.lang || 'pt';
   $('#set-mute').checked = !!g.mute;
   $('#set-voice-on').checked = g.voiceOn !== false; // v2.4 (A-186)
@@ -230,7 +230,7 @@ function renderOptions() {
   paintSyncStatus();
   renderSec();
   $('#imp-area').placeholder = t('imp_ph');
-  $('#opt-version').textContent = t('version') + ': ' + (window.ccVersion ? window.ccVersion() : '2.7.3');
+  $('#opt-version').textContent = t('version') + ': ' + (window.ccVersion ? window.ccVersion() : '2.7.4');
 }
 
 /* ---------- painel (S26 + S09) ---------- */
@@ -369,7 +369,7 @@ function paintConsent() {
   $('#set-ck-track').checked = Consent.allows('track');
   paintConsentBanner();
 }
-/* v2.7.3: o aviso mora no painel (adulto), nunca na tela da criança. Some assim que há escolha. */
+/* v2.7.4: o aviso mora no painel (adulto), nunca na tela da criança. Some assim que há escolha. */
 function paintConsentBanner() {
   let b = document.getElementById('consent');
   if (Consent.decided() || $('#opt-content').classList.contains('hidden')) { if (b) b.remove(); return; } // atrás da senha não aparece

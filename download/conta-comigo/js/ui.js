@@ -117,7 +117,7 @@ function showBubble(emoji, text) {
   bubbleTimer = setTimeout(hideBubble, bubbleMs(G()));
 }
 function hideBubble() { const b = $('#bubble'); if (b) b.classList.add('hidden'); }
-/* v2.7.3: durante a rodada o toast cobria "Ouvir de novo" e tirava o foco da conta.
+/* v2.7.4: durante a rodada o toast cobria "Ouvir de novo" e tirava o foco da conta.
    Ali ele só vai para o leitor de tela e aparece na tela quando a criança sai do jogo. */
 const toastQueue = [];
 function toast(msg) {
@@ -917,7 +917,7 @@ const SHOP_HATS = [
 ];
 /* "Usar", "Comprar 60⭐"... repetem em todo cartão: o leitor de tela ouve também o item */
 function itemLbl(action, item) { return ' aria-label="' + escHtml(action + ' — ' + item) + '"'; }
-/* v2.7.3: item que ainda não dá para comprar vira um caminho (tem/preço + barra), não um botão que nega */
+/* v2.7.4: item que ainda não dá para comprar vira um caminho (tem/preço + barra), não um botão que nega */
 function buyBtn(kind, id, price, name, stars) {
   if (stars >= price) return '<button class="mini-btn" data-buy' + kind + '="' + id + '"' + itemLbl(t('buy') + ' ' + price + '⭐', name) + '>' + t('buy') + ' ' + price + '⭐</button>';
   const miss = price - stars, txt = stars + '/' + price + '⭐';
@@ -973,7 +973,7 @@ function renderShop() {
   $$('#shop-pets [data-pet]').forEach((b) => b.addEventListener('click', () => { P().pet = b.dataset.pet; saveState(); renderShop(); renderMascot(); SFX.tap(); showBubble(PETS.find((x) => x.id === b.dataset.pet).emoji, tpick('greet', { name: pName(P()) })); }));
   $$('#shop-pets [data-buypet]').forEach((b) => b.addEventListener('click', () => buyPet(b.dataset.buypet)));
 }
-/* v2.7.3: "Comprado! Desfazer" por 5 s. Devolve as estrelas e o que estava em uso. */
+/* v2.7.4: "Comprado! Desfazer" por 5 s. Devolve as estrelas e o que estava em uso. */
 let undoTimer = null;
 function offerUndo(fn) {
   closeUndo();
@@ -1165,8 +1165,6 @@ function bindStatic() {
   $('#btn-repeat').addEventListener('click', () => { ensureAudio(); SFX.tap(); if (R.current) TTS.speak(R.current.tts, { calm: true }); });
   $('#btn-shop').addEventListener('click', () => { SFX.tap(); renderShop(); show('shop'); });
   $('#btn-ach').addEventListener('click', () => { SFX.tap(); renderAch(); show('ach'); });
-  $('#shop-back').addEventListener('click', () => { SFX.tap(); renderHome(); show('home'); });
-  $('#ach-back').addEventListener('click', () => { SFX.tap(); renderHome(); show('home'); });
   $('#btn-sticker').addEventListener('click', () => { ensureAudio(); buySticker(); });
   $('#sp-review').addEventListener('click', () => { ensureAudio(); SFX.tap(); startReview(); });
   $('#sp-boss').addEventListener('click', () => { ensureAudio(); SFX.tap(); startBoss(); });
@@ -1212,7 +1210,7 @@ function bindStatic() {
    Fecha o balão aberto ou volta da tela para o início, como o botão da própria
    tela; no início, o engine minimiza o app. Com um aviso aberto não faz nada:
    o aviso tem os próprios botões, e a pausa de descanso não pode ser pulada. */
-const BACK_BUTTONS = { game: '#btn-home', end: '#btn-menu', shop: '#shop-back', ach: '#ach-back', duel: '#duel-back' };
+const BACK_BUTTONS = { game: '#btn-home', end: '#btn-menu', shop: '#btn-home', ach: '#btn-home', duel: '#duel-back' };
 function onBackButton() {
   if (overlayOpen()) return true;
   if ($$('.popover').some((p) => !p.classList.contains('hidden'))) { closePopovers(); return true; }
@@ -1305,7 +1303,7 @@ function bindLegal() {
   if (c) c.addEventListener('click', () => { SFX.tap(); openConsentPrefs(); });
 }
 
-/* v2.7.3: som e imagem no mesmo instante. O toque soa quando o dedo desce (o botão afunda nesse frame);
+/* v2.7.4: som e imagem no mesmo instante. O toque soa quando o dedo desce (o botão afunda nesse frame);
    o SFX.tap() do click, logo depois, é descartado para não soar duas vezes. As respostas têm som próprio. */
 let tapDownAt = 0;
 (function () {
@@ -1329,14 +1327,14 @@ async function boot() {
   ensureMissions();
   renderHome();
   show('home');
-  // v2.7.3: o aviso de cookies não aparece mais para a criança; ele fica no painel (options.js)
+  // v2.7.4: o aviso de cookies não aparece mais para a criança; ele fica no painel (options.js)
   // v2.4.1: selo de versão visível no topo — confirmação instantânea da build
   const vb = $('#cc-ver');
   if (vb) {
     let vv = '';
     try { if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getManifest) vv = chrome.runtime.getManifest().version; } catch (e) { /* sem extensão */ }
     if (!vv) { const mt = document.querySelector('meta[name="cc-version"]'); if (mt) vv = mt.content; }
-    vb.textContent = 'v' + (vv || (window.ccVersion ? window.ccVersion() : '2.7.3'));
+    vb.textContent = 'v' + (vv || (window.ccVersion ? window.ccVersion() : '2.7.4'));
   }
   // v2.4 (A-198): saudação cordial com o nome — o 1º toque libera o áudio no navegador
   const greet = () => {

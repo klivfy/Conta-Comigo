@@ -90,9 +90,9 @@ async function answerContrast(page, label, found, min) {
     await page.keyboard.press('Escape');
     await page.click('#btn-shop'); await page.waitForTimeout(300);
     await audit(page, tag('loja'), found);
-    await page.click('#shop-back'); await page.click('#btn-ach'); await page.waitForTimeout(300);
+    await page.click('#btn-home'); await page.click('#btn-ach'); await page.waitForTimeout(300);
     await audit(page, tag('conquistas'), found);
-    await page.click('#ach-back');
+    await page.click('#btn-home');
 
     await page.locator('#modes-grid > *').first().click(); await page.waitForTimeout(1500);
     await audit(page, tag('rodada'), found);
@@ -100,7 +100,7 @@ async function answerContrast(page, label, found, min) {
 
     await page.goto(base + 'options.html'); await page.waitForTimeout(1000);
     await audit(page, tag('opcoes'), found);
-    // v2.7.3: conferência de adulto antes do formulário de senha
+    // v2.7.4: conferência de adulto antes do formulário de senha
     const q = await page.evaluate(() => document.getElementById('gc-adult-q').textContent);
     const m = q.match(/(\d+)\s*×\s*(\d+)/);
     await page.fill('#gc-adult-in', String(Number(m[1]) * Number(m[2]))); await page.click('#gc-adult-go');

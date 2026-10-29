@@ -1,7 +1,7 @@
 # Conta Comigo — assina o .aab para o Google Play no Windows (PowerShell).
 # Se a upload key ainda não existe, cria. A senha é pedida aqui e não é gravada em lugar nenhum.
 # Uso (na pasta onde está o .aab):
-#   powershell -ExecutionPolicy Bypass -File assinar_aab.ps1 -Aab conta-comigo-2.7.3-273-sem-assinatura.aab
+#   powershell -ExecutionPolicy Bypass -File assinar_aab.ps1 -Aab conta-comigo-2.7.4-274-sem-assinatura.aab
 # Parâmetros opcionais: -Keystore <caminho.jks> (padrão: %USERPROFILE%\conta-comigo-keys\upload.jks) e -Alias <nome>.
 # Precisa de um JDK 17+ (keytool e jarsigner). Sem JDK: winget install EclipseAdoptium.Temurin.21.JDK
 param(
