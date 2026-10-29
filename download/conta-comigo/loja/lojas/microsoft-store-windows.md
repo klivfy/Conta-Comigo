@@ -1,6 +1,6 @@
-# Microsoft Store (Windows 10/11) — Conta Comigo 2.7.2
+# Microsoft Store (Windows 10/11) — Conta Comigo 2.7.3
 
-Painel: <https://partner.microsoft.com/dashboard/apps-and-games/overview> · Pacote: o `.msix`/`.appx` gerado por **Actions → Windows (Electron)** (`conta-comigo-windows-2.7.2-x64-loja.appx`), não o instalador NSIS.
+Painel: <https://partner.microsoft.com/dashboard/apps-and-games/overview> · Pacote: o `.msix`/`.appx` gerado por **Actions → Windows (Electron)** (`conta-comigo-windows-2.7.3-x64-loja.appx`), não o instalador NSIS.
 
 ## Antes de enviar o pacote
 
@@ -100,7 +100,7 @@ Matemática de brincar para crianças de 4 a 8 anos: contar, somar, comparar, di
 **Novidades desta versão (≤ 1500):** _(384 caracteres)_
 
 ```text
-Novidades da 2.7.2: a nova aba não trava mais depois do acerto e volta a contar a ofensiva do dia; histórias e dicas em inglês e espanhol usam o nome certo dos objetos; o nome padrão do jogador aparece no seu idioma; avisos não cobrem mais os botões durante a rodada; e criar a senha dos responsáveis pede antes uma conta de adulto. O instalador do Windows ganhou um identificador novo: quem tinha a 2.6.2 instalada pelo instalador pode desinstalar a versão antiga em Aplicativos instalados; o progresso continua.
+Novidades da 2.7.3: a nova aba não trava mais depois do acerto e volta a contar a ofensiva do dia; histórias e dicas em inglês e espanhol usam o nome certo dos objetos; o nome padrão do jogador aparece no seu idioma; avisos não cobrem mais os botões durante a rodada; e criar a senha dos responsáveis pede antes uma conta de adulto. O instalador do Windows ganhou um identificador novo: quem tinha a 2.6.2 instalada pelo instalador pode desinstalar a versão antiga em Aplicativos instalados; o progresso continua.
 ```
 
 **Notas para a certificação (≤ 2000):** _(478 caracteres)_
@@ -171,7 +171,7 @@ Playful math for children aged 4 to 8: counting, addition, comparing, money and 
 **Novidades desta versão (≤ 1500):** _(362 caracteres)_
 
 ```text
-What's new in 2.7.2: the new tab no longer freezes after a correct answer and counts the daily streak again; stories and hints in English and Spanish use the right word for each object; the default player name shows in your language; notices no longer cover the buttons during a round; and creating the parents' password first asks a grown-up math question. The Windows installer has a new identifier: if you installed 2.6.2 with the installer, you can uninstall the old copy in Installed apps; your progress is kept.
+What's new in 2.7.3: the new tab no longer freezes after a correct answer and counts the daily streak again; stories and hints in English and Spanish use the right word for each object; the default player name shows in your language; notices no longer cover the buttons during a round; and creating the parents' password first asks a grown-up math question. The Windows installer has a new identifier: if you installed 2.6.2 with the installer, you can uninstall the old copy in Installed apps; your progress is kept.
 ```
 
 **Notas para a certificação (≤ 2000):** _(472 caracteres)_
@@ -242,7 +242,7 @@ Matemática lúdica para niños de 4 a 8 años: contar, sumar, comparar, dinero 
 **Novidades desta versão (≤ 1500):** _(401 caracteres)_
 
 ```text
-Novedades de la 2.7.2: la pestaña nueva ya no se traba después de acertar y vuelve a contar la racha del día; las historias y pistas en inglés y español usan el nombre correcto de cada objeto; el nombre predeterminado del jugador sale en tu idioma; los avisos ya no tapan los botones durante la ronda; y crear la contraseña de los responsables pide antes una cuenta para adultos. El instalador de Windows tiene un identificador nuevo: si instalaste la 2.6.2 con el instalador, puedes desinstalar la copia antigua en Aplicaciones instaladas; el progreso se conserva.
+Novedades de la 2.7.3: la pestaña nueva ya no se traba después de acertar y vuelve a contar la racha del día; las historias y pistas en inglés y español usan el nombre correcto de cada objeto; el nombre predeterminado del jugador sale en tu idioma; los avisos ya no tapan los botones durante la ronda; y crear la contraseña de los responsables pide antes una cuenta para adultos. El instalador de Windows tiene un identificador nuevo: si instalaste la 2.6.2 con el instalador, puedes desinstalar la copia antigua en Aplicaciones instaladas; el progreso se conserva.
 ```
 
 **Notas para a certificação (≤ 2000):** _(485 caracteres)_

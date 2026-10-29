@@ -32,9 +32,9 @@ plataformas (Chrome, Firefox, Web/PWA, Android, Windows, iOS) numa tacada só.
 
 | Workflow | Gatilho | Saída (aba *Actions* → artefatos) |
 |---|---|---|
-| `Android (Capacitor)` | push ou PR em `native/android/**`, no jogo ou manual | `conta-comigo-android-2.7.2` — APK (sideload) + AAB (Play Console); sem os secrets da chave, `…-sem-assinatura` |
-| `Windows (Electron)` | push em `native/windows/**` ou manual | `conta-comigo-windows-2.7.2` — instalador NSIS + portable (x64) |
-| `iOS (Capacitor)` | push em `native/ios/**`, no jogo ou manual | `conta-comigo-ios-simulator-2.7.2` — app para o Simulador (assinatura e TestFlight: Fase C) |
+| `Android (Capacitor)` | push ou PR em `native/android/**`, no jogo ou manual | `conta-comigo-android-2.7.3` — APK (sideload) + AAB (Play Console); sem os secrets da chave, `…-sem-assinatura` |
+| `Windows (Electron)` | push em `native/windows/**` ou manual | `conta-comigo-windows-2.7.3` — instalador NSIS + portable (x64) |
+| `iOS (Capacitor)` | push em `native/ios/**`, no jogo ou manual | `conta-comigo-ios-simulator-2.7.3` — app para o Simulador (assinatura e TestFlight: Fase C) |
 | `Site (GitHub Pages)` | push em `download/conta-comigo/**` ou manual | site PWA + política de privacidade |
 
 Requisito de uma única vez para o Pages: **Settings → Pages → Build and

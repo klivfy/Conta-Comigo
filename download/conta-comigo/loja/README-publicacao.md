@@ -1,12 +1,12 @@
-# Conta Comigo v2.7.2 — Material de publicação nas lojas
+# Conta Comigo v2.7.3 — Material de publicação nas lojas
 
 Tudo o que é preciso para publicar nas 5 lojas, com **português (Brasil) como idioma padrão** e inglês e espanhol como traduções.
 
 | Loja | Roteiro e textos (pt, en, es) | Pacote a enviar |
 |---|---|---|
-| Chrome Web Store | [`lojas/chrome-web-store.md`](lojas/chrome-web-store.md) | `download/conta-comigo-chrome-2.7.2.zip` |
+| Chrome Web Store | [`lojas/chrome-web-store.md`](lojas/chrome-web-store.md) | `download/conta-comigo-chrome-2.7.3.zip` |
 | Microsoft Edge Add-ons | [`lojas/microsoft-edge.md`](lojas/microsoft-edge.md) | o mesmo zip do Chrome |
-| Firefox Add-ons (AMO) | [`firefox-amo/listagem-firefox-amo.md`](firefox-amo/listagem-firefox-amo.md) e [`firefox-amo/LEIAME-envio-firefox.md`](firefox-amo/LEIAME-envio-firefox.md) | `download/conta-comigo-firefox-2.7.2.zip` |
+| Firefox Add-ons (AMO) | [`firefox-amo/listagem-firefox-amo.md`](firefox-amo/listagem-firefox-amo.md) e [`firefox-amo/LEIAME-envio-firefox.md`](firefox-amo/LEIAME-envio-firefox.md) | `download/conta-comigo-firefox-2.7.3.zip` |
 | Microsoft Store (Windows 10/11) | [`lojas/microsoft-store-windows.md`](lojas/microsoft-store-windows.md) | `.appx` do workflow *Windows (Electron)* |
 | Google Play (Android) | [`lojas/google-play.md`](lojas/google-play.md) | `.aab` do workflow *Android* |
 

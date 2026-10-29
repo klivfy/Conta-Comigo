@@ -2,7 +2,7 @@
 
 [Português](#pt) · [English](#en) · [Español](#es)
 
-Última atualização: 28 de outubro de 2026 · Versão do aplicativo: 2.7.2
+Última atualização: 28 de outubro de 2026 · Versão do aplicativo: 2.7.3
 
 ## Princípio geral
 
@@ -56,7 +56,7 @@ Mudanças nesta política terão nova data e serão citadas nas notas de versão
 
 # Privacy Policy — Count With Me
 
-Last updated: October 28, 2026 · App version: 2.7.2
+Last updated: October 28, 2026 · App version: 2.7.3
 
 ## Summary
 
@@ -100,7 +100,7 @@ Changes to this policy will carry a new date and be mentioned in the store relea
 
 # Política de Privacidad — Cuenta Conmigo
 
-Última actualización: 28 de octubre de 2026 · Versión de la aplicación: 2.7.2
+Última actualización: 28 de octubre de 2026 · Versión de la aplicación: 2.7.3
 
 ## Resumen
 
