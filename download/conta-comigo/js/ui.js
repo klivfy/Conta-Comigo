@@ -32,6 +32,7 @@ function adoptIfSafe() {
   if (ok) { applyLang(); applySettings(); ensureMissions(); renderHome(); }
 }
 function show(name) {
+  if (name !== 'shop') closeUndo();
   const prev = document.activeElement;
   $$('.screen').forEach((s) => s.classList.remove('active'));
   const el = $('#screen-' + name);
@@ -44,7 +45,6 @@ function show(name) {
     const tEl = $('#toast');
     if (tEl && tEl.classList.contains('show')) { toastQueue.push(tEl.textContent); tEl.classList.remove('show'); clearTimeout(toastTimer); }
   }
-  syncConsentBanner();
 }
 function focusScreen(el) {
   if (overlayOpen()) return;
@@ -117,7 +117,7 @@ function showBubble(emoji, text) {
   bubbleTimer = setTimeout(hideBubble, bubbleMs(G()));
 }
 function hideBubble() { const b = $('#bubble'); if (b) b.classList.add('hidden'); }
-/* v2.7.1: durante a rodada o toast cobria "Ouvir de novo" e tirava o foco da conta.
+/* v2.7.2: durante a rodada o toast cobria "Ouvir de novo" e tirava o foco da conta.
    Ali ele só vai para o leitor de tela e aparece na tela quando a criança sai do jogo. */
 const toastQueue = [];
 function toast(msg) {
@@ -153,7 +153,7 @@ function announce(text) {
    clique), o foco entra no modal e volta ao botão de origem ao fechar */
 let overlayReturn = null;
 function setBackgroundInert(on) {
-  ['#topbar', '#screens', '#pop-profile', '#consent'].forEach((sel) => { const el = $(sel); if (el) el.inert = on; });
+  ['#topbar', '#screens', '#pop-profile'].forEach((sel) => { const el = $(sel); if (el) el.inert = on; });
 }
 function showOverlay(html) {
   const o = $('#overlay'), card = $('#overlay-card');
@@ -656,8 +656,6 @@ const Timer = {
     const bar = $('#timer-bar');
     if (bar) bar.style.width = pct + '%';
     w.setAttribute('aria-valuenow', String(pct));
-    w.classList.toggle('warn', pct < 50 && pct >= 25);
-    w.classList.toggle('low', pct < 25 && pct > 0);
   },
   stop() { if (this.global) return; this.active = false; if (this.iv) { clearInterval(this.iv); this.iv = null; } },
   hide() { this.global = false; this.stop(); const w = $('#timer-wrap'); if (w) w.classList.add('hidden'); },
@@ -919,6 +917,13 @@ const SHOP_HATS = [
 ];
 /* "Usar", "Comprar 60⭐"... repetem em todo cartão: o leitor de tela ouve também o item */
 function itemLbl(action, item) { return ' aria-label="' + escHtml(action + ' — ' + item) + '"'; }
+/* v2.7.2: item que ainda não dá para comprar vira um caminho (tem/preço + barra), não um botão que nega */
+function buyBtn(kind, id, price, name, stars) {
+  if (stars >= price) return '<button class="mini-btn" data-buy' + kind + '="' + id + '"' + itemLbl(t('buy') + ' ' + price + '⭐', name) + '>' + t('buy') + ' ' + price + '⭐</button>';
+  const miss = price - stars, txt = stars + '/' + price + '⭐';
+  return '<span class="far-bar" aria-hidden="true"><i style="width:' + Math.round(100 * stars / price) + '%"></i></span>' +
+    '<button class="mini-btn far" data-far="' + miss + '" aria-disabled="true"' + itemLbl(t('far', { n: miss }), name) + '>' + txt + '</button>';
+}
 function renderShop() {
   const p = P();
   $('#shop-stars').textContent = String(p.stars);
@@ -929,7 +934,7 @@ function renderShop() {
     return '<div class="shop-item th-' + th.id + '"><span class="swatch"></span><b>' + t(th.key) + '</b>' +
       (owned
         ? '<button class="mini-btn' + (inUse ? ' using' : '') + '" data-th="' + th.id + '"' + itemLbl(inUse ? t('in_use') : t('equip'), t(th.key)) + '>' + (inUse ? t('in_use') : t('equip')) + '</button>'
-        : '<button class="mini-btn" data-buyth="' + th.id + '"' + itemLbl(t('buy') + ' ' + th.price + '⭐', t(th.key)) + '>' + t('buy') + ' ' + th.price + '⭐</button>') +
+        : buyBtn('th', th.id, th.price, t(th.key), p.stars)) +
       '</div>';
   }).join('');
   const hatRow = $('#shop-hats');
@@ -939,7 +944,7 @@ function renderShop() {
     return '<div class="shop-item"><span class="shop-emoji">' + (h.emoji || '🦊') + '</span><b>' + t(h.key) + '</b>' +
       (owned
         ? '<button class="mini-btn' + (inUse ? ' using' : '') + '" data-hat="' + h.id + '"' + itemLbl(inUse ? t('in_use') : t('equip'), t(h.key)) + '>' + (inUse ? t('in_use') : t('equip')) + '</button>'
-        : '<button class="mini-btn" data-buyhat="' + h.id + '"' + itemLbl(t('buy') + ' ' + h.price + '⭐', t(h.key)) + '>' + t('buy') + ' ' + h.price + '⭐</button>') +
+        : buyBtn('hat', h.id, h.price, t(h.key), p.stars)) +
       '</div>';
   }).join('');
   /* v2.5: mascotes adultas escolhíveis */
@@ -952,7 +957,7 @@ function renderShop() {
       return '<div class="shop-item"><span class="shop-emoji">' + pt.emoji + '</span><b>' + t(pt.key) + '</b>' +
         (owned
           ? '<button class="mini-btn' + (inUse ? ' using' : '') + '" data-pet="' + pt.id + '"' + itemLbl(inUse ? t('in_use') : t('equip'), t(pt.key)) + '>' + (inUse ? t('in_use') : t('equip')) + '</button>'
-          : '<button class="mini-btn" data-buypet="' + pt.id + '"' + itemLbl(t('buy') + ' ' + pt.price + '⭐', t(pt.key)) + '>' + t('buy') + ' ' + pt.price + '⭐</button>') +
+          : buyBtn('pet', pt.id, pt.price, t(pt.key), p.stars)) +
         (!ready && !owned ? '<small class="pet-note">' + t('pet_note') + '</small>' : '') +
         '</div>';
     }).join('');
@@ -961,32 +966,50 @@ function renderShop() {
   alb.innerHTML = STICKERS.map((s, i) => '<span class="stk' + (p.stickers.includes(i) ? ' got' : '') + '">' + (p.stickers.includes(i) ? s : '❔') + '</span>').join('');
   $('#album-count').textContent = t('album', { a: p.stickers.length });
   $$('#shop-themes [data-th]').forEach((b) => b.addEventListener('click', () => { G().theme = b.dataset.th; saveState(); applySettings(); renderShop(); SFX.tap(); }));
+  $$('#shop-themes [data-far], #shop-hats [data-far], #shop-pets [data-far]').forEach((b) => b.addEventListener('click', () => { SFX.tap(); showBubble('🦊', t('far', { n: b.dataset.far })); }));
   $$('#shop-themes [data-buyth]').forEach((b) => b.addEventListener('click', () => buyTheme(b.dataset.buyth)));
   $$('#shop-hats [data-hat]').forEach((b) => b.addEventListener('click', () => { P().hat = b.dataset.hat; saveState(); renderShop(); renderMascot(); SFX.tap(); }));
   $$('#shop-hats [data-buyhat]').forEach((b) => b.addEventListener('click', () => buyHat(b.dataset.buyhat)));
   $$('#shop-pets [data-pet]').forEach((b) => b.addEventListener('click', () => { P().pet = b.dataset.pet; saveState(); renderShop(); renderMascot(); SFX.tap(); showBubble(PETS.find((x) => x.id === b.dataset.pet).emoji, tpick('greet', { name: pName(P()) })); }));
   $$('#shop-pets [data-buypet]').forEach((b) => b.addEventListener('click', () => buyPet(b.dataset.buypet)));
 }
+/* v2.7.2: "Comprado! Desfazer" por 5 s. Devolve as estrelas e o que estava em uso. */
+let undoTimer = null;
+function offerUndo(fn) {
+  closeUndo();
+  const box = document.createElement('div'); box.id = 'undo-buy'; box.setAttribute('role', 'group');
+  const msg = document.createElement('span'); msg.textContent = t('bought');
+  const btn = document.createElement('button'); btn.type = 'button'; btn.textContent = t('undo');
+  btn.addEventListener('click', () => { closeUndo(); fn(); SFX.tap(); });
+  box.append(msg, btn); document.body.appendChild(box);
+  announce(t('bought'));
+  undoTimer = setTimeout(closeUndo, 5000);
+}
+function closeUndo() { clearTimeout(undoTimer); const b = document.getElementById('undo-buy'); if (b) b.remove(); }
 function buyTheme(id) {
   const th = SHOP_THEMES.find((x) => x.id === id); const p = P();
   if (!th || p.owned.themes.includes(id)) return;
-  if (p.stars < th.price) { showBubble('😢', t('locked', { n: th.price - p.stars })); return; }
+  if (p.stars < th.price) { showBubble('🦊', t('far', { n: th.price - p.stars })); return; }
+  const prevTheme = G().theme, firstBuy = !!p.firstBuy;
   p.stars -= th.price; p.owned.themes.push(id); p.firstBuy = true;
   G().theme = id;
   checkAch(); saveState(); applySettings(); renderShop(); renderMascot(); refreshChrome(); SFX.cash(); confetti(20);
+  offerUndo(() => { p.stars += th.price; p.owned.themes = p.owned.themes.filter((x) => x !== id); p.firstBuy = firstBuy; G().theme = prevTheme; saveState(); applySettings(); renderShop(); renderMascot(); refreshChrome(); });
 }
 function buyHat(id) {
   const h = SHOP_HATS.find((x) => x.id === id); const p = P();
   if (!h || p.owned.hats.includes(id)) return;
-  if (p.stars < h.price) { showBubble('😢', t('locked', { n: h.price - p.stars })); return; }
+  if (p.stars < h.price) { showBubble('🦊', t('far', { n: h.price - p.stars })); return; }
+  const prevHat = p.hat, firstBuy = !!p.firstBuy;
   p.stars -= h.price; p.owned.hats.push(id); p.firstBuy = true; p.hat = id;
   checkAch(); saveState(); renderShop(); renderMascot(); refreshChrome(); SFX.cash(); confetti(20);
+  offerUndo(() => { p.stars += h.price; p.owned.hats = p.owned.hats.filter((x) => x !== id); p.firstBuy = firstBuy; p.hat = prevHat; saveState(); renderShop(); renderMascot(); refreshChrome(); });
 }
 /* v2.5: compra de mascote adulta */
 function buyPet(id) {
   const pt = PETS.find((x) => x.id === id); const p = P();
   if (!pt || p.owned.pets.includes(id)) return;
-  if (p.stars < pt.price) { showBubble('😢', t('locked', { n: pt.price - p.stars })); return; }
+  if (p.stars < pt.price) { showBubble('🦊', t('far', { n: pt.price - p.stars })); return; }
   p.stars -= pt.price; p.owned.pets.push(id); p.firstBuy = true; p.firstPet = true; p.pet = id;
   checkAch(); saveState(); renderShop(); renderMascot(); refreshChrome();
   showOverlay('<div class="ov-emoji">' + pt.emoji + '</div><h3>' + t('pet_new', { n: t(pt.key) }) + '</h3><button class="big-btn" data-close="1">' + t('ok') + '</button>');
@@ -994,7 +1017,7 @@ function buyPet(id) {
 }
 function buySticker() {
   const p = P();
-  if (p.stars < 5) { showBubble('😢', t('locked', { n: 5 - p.stars })); return; }
+  if (p.stars < 5) { showBubble('🦊', t('far', { n: 5 - p.stars })); return; }
   p.stars -= 5;
   const i = rand(0, STICKERS.length - 1);
   let msg;
@@ -1256,33 +1279,7 @@ function adultCheck(onOk) {
 }
 function ckSaved(stats, track) {
   Consent.set(stats, track); saveState(true);
-  removeConsentBanner(); toast(t('ck_saved'));
-}
-function removeConsentBanner() { const b = $('#consent'); if (b) b.remove(); }
-function syncConsentBanner() {
-  const b = $('#consent'); if (!b) return;
-  const home = $('#screen-home');
-  b.classList.toggle('hidden', !(home && home.classList.contains('active')));
-}
-function showConsentBanner() {
-  if (Consent.decided() || $('#consent')) return;
-  const b = document.createElement('div');
-  b.id = 'consent'; b.className = 'consent';
-  b.setAttribute('role', 'region'); b.setAttribute('aria-label', t('ck_title'));
-  b.innerHTML = '<p>' + t('ck_msg') + '</p><div class="consent-actions">' +
-    '<button type="button" class="ck-btn ck-link" data-ck="custom">' + t('ck_custom') + '</button>' +
-    '<button type="button" class="ck-btn" data-ck="reject">' + t('ck_reject') + '</button>' +
-    '<button type="button" class="ck-btn" data-ck="accept">' + t('ck_accept') + '</button></div>';
-  $('#app').appendChild(b);
-  b.addEventListener('click', (e) => {
-    const k = e.target && e.target.closest ? e.target.closest('[data-ck]') : null;
-    if (!k) return;
-    SFX.tap();
-    if (k.dataset.ck === 'reject') ckSaved(false, false);
-    else if (k.dataset.ck === 'accept') adultCheck(() => ckSaved(true, true));
-    else openConsentPrefs();
-  });
-  syncConsentBanner();
+  toast(t('ck_saved'));
 }
 function openConsentPrefs() {
   const row = (id, title, desc, on, locked) =>
@@ -1319,14 +1316,14 @@ async function boot() {
   ensureMissions();
   renderHome();
   show('home');
-  setTimeout(showConsentBanner, 1200); // discreto: entra depois que a criança já viu o jogo
+  // v2.7.2: o aviso de cookies não aparece mais para a criança; ele fica no painel (options.js)
   // v2.4.1: selo de versão visível no topo — confirmação instantânea da build
   const vb = $('#cc-ver');
   if (vb) {
     let vv = '';
     try { if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getManifest) vv = chrome.runtime.getManifest().version; } catch (e) { /* sem extensão */ }
     if (!vv) { const mt = document.querySelector('meta[name="cc-version"]'); if (mt) vv = mt.content; }
-    vb.textContent = 'v' + (vv || (window.ccVersion ? window.ccVersion() : '2.7.1'));
+    vb.textContent = 'v' + (vv || (window.ccVersion ? window.ccVersion() : '2.7.2'));
   }
   // v2.4 (A-198): saudação cordial com o nome — o 1º toque libera o áudio no navegador
   const greet = () => {

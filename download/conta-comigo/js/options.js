@@ -30,7 +30,7 @@ function showGate() {
   $('#ge-reset-in').placeholder = t('gate_reset_ph');
   if (has) gateEnterIdle(); else gateAdultAsk();
 }
-/* v2.7.1: antes de criar a senha, uma conta que criança de 4 a 8 anos não resolve sozinha */
+/* v2.7.2: antes de criar a senha, uma conta que criança de 4 a 8 anos não resolve sozinha */
 let gcAdultAnswer = '', gcAdultOk = false;
 function gateAdultAsk() {
   const a = rand(12, 19), b = rand(13, 19);
@@ -186,7 +186,7 @@ function renderOptions() {
   $('#set-diff').value = String(g.diffMode);
   $('#set-unlock').checked = !!g.unlockAll;
   $('#set-newtab').checked = !!g.newtabOn;
-  $('#set-timer').checked = g.timer !== false; // v2.2: ligado por padrão
+  $('#set-timer').checked = !!g.timer; // v2.7.2: desligado por padrão
   $('#set-lang').value = g.lang || 'pt';
   $('#set-mute').checked = !!g.mute;
   $('#set-voice-on').checked = g.voiceOn !== false; // v2.4 (A-186)
@@ -230,7 +230,7 @@ function renderOptions() {
   paintSyncStatus();
   renderSec();
   $('#imp-area').placeholder = t('imp_ph');
-  $('#opt-version').textContent = t('version') + ': ' + (window.ccVersion ? window.ccVersion() : '2.7.1');
+  $('#opt-version').textContent = t('version') + ': ' + (window.ccVersion ? window.ccVersion() : '2.7.2');
 }
 
 /* ---------- painel (S26 + S09) ---------- */
@@ -367,6 +367,27 @@ function paintConsent() {
   $('#lnk-privacy').href = LEGAL.privacy; $('#lnk-terms').href = LEGAL.terms; $('#lnk-support').href = LEGAL.support;
   $('#set-ck-stats').checked = Consent.allows('stats');
   $('#set-ck-track').checked = Consent.allows('track');
+  paintConsentBanner();
+}
+/* v2.7.2: o aviso mora no painel (adulto), nunca na tela da criança. Some assim que há escolha. */
+function paintConsentBanner() {
+  let b = document.getElementById('consent');
+  if (Consent.decided() || $('#opt-content').classList.contains('hidden')) { if (b) b.remove(); return; } // atrás da senha não aparece
+  if (b) return;
+  b = document.createElement('div'); b.id = 'consent'; b.className = 'consent';
+  b.setAttribute('role', 'region'); b.setAttribute('aria-label', t('ck_title'));
+  b.innerHTML = '<p>' + t('ck_msg') + '</p><div class="consent-actions">' +
+    '<button type="button" class="ck-btn ck-link" data-ck="custom">' + t('ck_custom') + '</button>' +
+    '<button type="button" class="ck-btn" data-ck="reject">' + t('ck_reject') + '</button>' +
+    '<button type="button" class="ck-btn" data-ck="accept">' + t('ck_accept') + '</button></div>';
+  document.body.appendChild(b);
+  b.addEventListener('click', (e) => {
+    const k = e.target.closest ? e.target.closest('[data-ck]') : null;
+    if (!k) return;
+    if (k.dataset.ck === 'reject') { Consent.rejectAll(); saveState(true); paintConsent(); }
+    else if (k.dataset.ck === 'accept') { Consent.acceptAll(); saveState(true); paintConsent(); }
+    else { const c = $('#set-ck-stats'); c.scrollIntoView({ block: 'center' }); c.focus(); }
+  });
 }
 function bindConsent() {
   const save = () => { Consent.set($('#set-ck-stats').checked, $('#set-ck-track').checked); saveState(true); paintConsent(); };

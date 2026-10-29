@@ -538,3 +538,8 @@ test('objetos: histórias e dicas usam o nome e o gênero do idioma do jogo', ()
   }
   E.ev('LANG = "pt"');
 });
+
+/* ---------- v2.7.2: cronômetro desligado por padrão ---------- */
+test('cronômetro de pontos vem desligado em instalação nova (sem pressão para 4 e 5 anos)', () => {
+  assert.equal(E.ev('DEFAULT_SETTINGS.timer'), false);
+});

@@ -1,6 +1,6 @@
 # Conta Comigo — plataformas e mercados
 
-Relatório de presença futura · 28/10/2026 · versão do jogo 2.7.1
+Relatório de presença futura · 28/10/2026 · versão do jogo 2.7.2
 
 ## 1. Resumo
 
@@ -40,9 +40,9 @@ Detalhes em [`IDENTIFICADORES.md`](IDENTIFICADORES.md). Em resumo:
 
 | Plataforma | Pacote | Identificador | Nome exibido | Idiomas da listagem | Estado |
 |---|---|---|---|---|---|
-| **Chrome / Chromium** | `conta-comigo-chrome-2.7.1.zip` (MV3, service worker) | gerado pela loja | `_locales`: pt-BR (padrão), en, es | textos e imagens prontos nos 3 | Pronto para enviar |
+| **Chrome / Chromium** | `conta-comigo-chrome-2.7.2.zip` (MV3, service worker) | gerado pela loja | `_locales`: pt-BR (padrão), en, es | textos e imagens prontos nos 3 | Pronto para enviar |
 | **Edge** | o mesmo zip | gerado pela Microsoft | igual ao Chrome | prontos nos 3 | Pronto para enviar |
-| **Firefox computador e Android** | `conta-comigo-firefox-2.7.1.zip` (event page, Firefox 128+) | `conta-comigo@klivfy.com` (fixo) | `_locales` nos 3 | prontos nos 3 | 2.6.1 já enviada; 2.7.1 pronta |
+| **Firefox computador e Android** | `conta-comigo-firefox-2.7.2.zip` (event page, Firefox 128+) | `conta-comigo@klivfy.com` (fixo) | `_locales` nos 3 | prontos nos 3 | 2.6.1 já enviada; 2.7.2 pronta |
 | **Windows 10/11** | Electron 44: instalador NSIS, portátil e MSIX/APPX (x64) | `appId` = `com.klivfy.conta.comigo.matematica`; MSIX pela Partner Center | "Conta Comigo" (o pacote não traduz o nome; a listagem da loja traduz) | prontos nos 3 | Build verde; falta a identidade da Partner Center |
 | **Android (Google Play)** | Capacitor 8 com o jogo dentro do app, `.aab` minSdk 24 / target 36 | `com.klivfy.conta.comigo.matematica` | "Conta Comigo", "Count With Me" e "Cuenta Conmigo" (segue o idioma do aparelho) | prontos nos 3 | `.aab` gerado sem assinatura; falta a chave e o app novo no Console |
 | **iPhone e iPad** | Capacitor 8, iOS 15+, família 1,2 | `com.klivfy.conta.comigo.matematica` | "Conta Comigo" | não preparados | Compila no CI; falta conta Apple |
@@ -201,7 +201,7 @@ Desde 28/10/2026 o app Android é um **build com WebView local** (Capacitor), co
 
 | Fase | O que | Depende de |
 |---|---|---|
-| **0 — destravar (dias)** | Ligar o GitHub Pages (política de privacidade e PWA); criar a chave Android e o app novo no Play Console; identidade da Partner Center; enviar Chrome, Edge e Firefox 2.7.1 | Você |
+| **0 — destravar (dias)** | Ligar o GitHub Pages (política de privacidade e PWA); criar a chave Android e o app novo no Play Console; identidade da Partner Center; enviar Chrome, Edge e Firefox 2.7.2 | Você |
 | **1 — conteúdo (1 a 2 semanas)** | L1 (moeda por região) e L3 (voz es-419); baú com figurinha em ordem (ECA Digital); nome traduzido no Windows (L5) | Código |
 | **2 — mais lojas com o mesmo código (1 a 2 semanas)** | Opera (1), Windows ARM64 (11), winget (12), AppImage, Flathub e Snap (16–18), Galaxy Store (21), guias para Google Admin, Intune e Apple School Manager (25, 13, 10) | Fase 0 |
 | **3 — Apple (2 a 3 semanas)** | App Store iPhone e iPad (5) + Mac (6) + Safari (2) | Conta Apple |

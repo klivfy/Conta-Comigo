@@ -1,4 +1,4 @@
-# Conta Comigo v2.7.1 — Listagem para o Firefox Add-ons (AMO)
+# Conta Comigo v2.7.2 — Listagem para o Firefox Add-ons (AMO)
 
 Textos prontos para copiar e colar em
 <https://addons.mozilla.org/developers/> → *Editar detalhes do produto*.
@@ -48,7 +48,7 @@ OBSERVAÇÕES
 • A extensão substitui a página de nova aba por um desafio rápido de matemática. Dá para desligar o desafio na própria página; para voltar à nova aba padrão do Firefox, desative ou remova a extensão.
 • Atalho de teclado para abrir o jogo: Ctrl+Shift+U (Command+Shift+U no Mac).
 
-**Notas da versão 2.7.1:**
+**Notas da versão 2.7.2:**
 a nova aba não trava mais depois do acerto e volta a contar a ofensiva do dia; histórias e dicas em inglês e espanhol usam o nome certo dos objetos; o nome padrão do jogador aparece no seu idioma; avisos não cobrem mais os botões durante a rodada; e criar a senha dos responsáveis pede antes uma conta de adulto. Requer Firefox 128 ou superior.
 
 **Categoria sugerida:** Games & Entertainment (alternativa: Other)
@@ -95,7 +95,7 @@ NOTES
 • The extension replaces the new tab page with a quick math challenge. You can turn the challenge off on that page; to get Firefox's default new tab back, disable or remove the extension.
 • Keyboard shortcut to open the game: Ctrl+Shift+U (Command+Shift+U on Mac).
 
-**Release notes 2.7.1:**
+**Release notes 2.7.2:**
 the new tab no longer freezes after a correct answer and counts the daily streak again; stories and hints in English and Spanish use the right word for each object; the default player name shows in your language; notices no longer cover the buttons during a round; and creating the parents' password first asks a grown-up math question. Requires Firefox 128 or later.
 
 ---
@@ -138,7 +138,7 @@ PRIVACIDAD
 NOTAS
 • La extensión reemplaza la página de nueva pestaña por un desafío rápido de matemática. Puedes apagar el desafío en esa misma página; para recuperar la nueva pestaña predeterminada de Firefox, desactiva o elimina la extensión.
 
-**Notas de la versión 2.7.1:**
+**Notas de la versión 2.7.2:**
 la pestaña nueva ya no se traba después de acertar y vuelve a contar la racha del día; las historias y pistas en inglés y español usan el nombre correcto de cada objeto; el nombre predeterminado del jugador sale en tu idioma; los avisos ya no tapan los botones durante la ronda; y crear la contraseña de los responsables pide antes una cuenta para adultos. Requiere Firefox 128 o superior.
 
 ---

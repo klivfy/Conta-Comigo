@@ -16,5 +16,5 @@ window.ccVersion = function () {
       return chrome.runtime.getManifest().version;
     }
   } catch (e) { /* demo/web sem contexto de extensão */ }
-  return '2.7.1';
+  return '2.7.2';
 };

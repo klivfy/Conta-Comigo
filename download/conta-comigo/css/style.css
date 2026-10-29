@@ -309,9 +309,7 @@ body.hc .np-bar { border: 1px solid var(--line); }
 /* v2.2 — barra de tempo suave (nunca pune: só zera o bônus de rapidez) */
 #timer-wrap { width: 100%; height: 10px; border-radius: var(--r-pill); background: rgba(var(--sh), .12); overflow: hidden; margin: 0 0 var(--sp-4); }
 #timer-wrap.hidden { display: none; }
-#timer-bar { display: block; height: 100%; width: 100%; background: var(--green); border-radius: var(--r-pill); transition: width var(--dur-2) linear, background-color var(--dur-3); }
-#timer-wrap.warn #timer-bar { background: var(--yellow); }
-#timer-wrap.low #timer-bar { background: var(--red); }
+#timer-bar { display: block; height: 100%; width: 100%; background: var(--accent-text); border-radius: var(--r-pill); transition: width var(--dur-2) linear, background-color var(--dur-3); }
 #timer-wrap.out #timer-bar { background: rgba(var(--sh), .25); }
 body.hc #timer-wrap { border: 2px solid var(--line); }
 .pts-pop { position: absolute; left: 50%; top: 30%; font-size: 1.625rem; font-weight: 900; color: var(--accent-text); text-shadow: 0 2px 0 var(--card), 0 0 6px var(--card); pointer-events: none; animation: ptsUp 1s forwards; z-index: 6; }
@@ -481,7 +479,8 @@ button:focus-visible, .mode-card:focus-visible { outline: 4px solid var(--focus)
 
 /* ---------- conquistas ---------- */
 #ach-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); width: 100%; margin-top: 10px; }
-.ach-card { background: var(--card); border-radius: var(--r-md); padding: 10px; display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); box-shadow: var(--lift-2); text-align: center; opacity: .55; }
+.ach-card { background: var(--card); border-radius: var(--r-md); padding: 10px; display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); box-shadow: var(--lift-2); text-align: center; }
+.ach-card:not(.got) .ach-emoji { opacity: .5; filter: grayscale(1); }
 .ach-card.got { opacity: 1; border: 2px solid var(--yellow); }
 .ach-emoji { font-size: 26px; }
 .ach-card b { font-size: var(--fs-sm); }
@@ -1070,3 +1069,11 @@ body.page-mode .cmp-side .obj.small { font-size: clamp(20px, 6vw, 30px); }
 body.rm .consent { animation: none; }
 .opt-sub { font-size: var(--fs-md); font-weight: 800; margin: var(--sp-5) 0 var(--sp-2); }
 a.mini-btn { display: inline-flex; align-items: center; text-decoration: none; }
+
+/* v2.7.2: loja sem frustração. Item ainda caro mostra o caminho (quanto falta), não um botão que nega. */
+.mini-btn.far { background: transparent; color: var(--ink-soft); border: 2px dashed var(--line); box-shadow: none; font-weight: 700; }
+.mini-btn.far:active { transform: none; }
+.far-bar { display: block; width: 100%; height: 6px; border-radius: var(--r-pill); background: rgba(var(--sh), .12); overflow: hidden; }
+.far-bar > i { display: block; height: 100%; background: var(--accent-text); border-radius: var(--r-pill); }
+#undo-buy { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 71; display: flex; align-items: center; gap: var(--sp-3); background: var(--ink); color: var(--card); border-radius: var(--r-pill); padding: var(--sp-3) var(--sp-4) var(--sp-3) var(--sp-6); font-weight: 800; font-size: var(--fs-md); max-width: calc(100vw - 32px); }
+#undo-buy button { min-height: 44px; min-width: 44px; padding: 0 var(--sp-6); border-radius: var(--r-pill); border: 2px solid var(--card); background: transparent; color: var(--card); font: inherit; cursor: pointer; }

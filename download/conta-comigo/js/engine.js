@@ -231,7 +231,7 @@ const DEFAULT_SETTINGS = {
   lang: detectLang(), currency: 'auto', theme: 'auto', contrast: 'auto', dys: false, calmo: null,
   mute: false, volume: 0.9, vRate: VOICE_RATE, vPitch: VOICE_PITCH, vVoice: '',
   diffMode: 'auto', goalRounds: 3, sessionLimit: 15, sync: false,
-  unlockAll: false, newtabOn: true, timer: true,
+  unlockAll: false, newtabOn: true, timer: false, /* v2.7.2: desligado por padrão (sem pressão); perfis antigos mantêm a escolha */
   /* v2.4 — voz cordial: narração e efeitos independentes, tempo extra, menos movimento */
   voiceOn: true, sfxOn: true, timeScale: 1, reduceMotion: false, shopOff: false,
   /* v2.3 — portão parental por senha (tudo fica no dispositivo) */
