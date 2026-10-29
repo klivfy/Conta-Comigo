@@ -95,7 +95,7 @@ O jogo já tem os 3 idiomas e escolhe sozinho pelo idioma do navegador ou do sis
 
 | # | Lacuna | Onde | Impacto | Correção sugerida |
 |---|---|---|---|---|
-| L1 | **Modo Dinheiro sempre em reais** ("How many reais…", "¿Cuántos reales…", `R$ ?`) | `engine.js` (`R$`), `i18n.js` (`t_m_coins`, `t_2x2`, `t_change`) | Conteúdo errado para crianças fora do Brasil; revisores de loja e professores percebem | Moeda por região (BRL, EUR, USD, GBP, MXN…) a partir do idioma do sistema, com escolha no painel dos responsáveis; ou moeda genérica ("moedas") como padrão em en e es |
+| L1 ✅ | **Modo Dinheiro sempre em reais** (resolvido na 2.6.3: moeda pela região do aparelho, com escolha no painel) ("How many reais…", "¿Cuántos reales…", `R$ ?`) | `engine.js` (`R$`), `i18n.js` (`t_m_coins`, `t_2x2`, `t_change`) | Conteúdo errado para crianças fora do Brasil; revisores de loja e professores percebem | Moeda por região (BRL, EUR, USD, GBP, MXN…) a partir do idioma do sistema, com escolha no painel dos responsáveis; ou moeda genérica ("moedas") como padrão em en e es |
 | L2 | Só existe **pt-BR** | `i18n.js` | Portugal e África lusófona | Variante pt-PT (vocabulário, "tu", voz pt-PT) |
 | L3 | Voz **es-ES fixa** e vocabulário misto | `TTS_LANG` em `i18n.js` | Fala com sotaque da Espanha para a América Latina | Escolher es-MX/es-US/es-419 pela localidade do sistema; "cambio" ou "vuelto" por região |
 | L4 | Voz **en-US fixa** | `TTS_LANG` | Pequeno no Reino Unido e na Austrália | Usar en-GB/en-AU quando o sistema estiver nessa localidade |

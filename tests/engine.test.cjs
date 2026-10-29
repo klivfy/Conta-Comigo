@@ -325,3 +325,43 @@ test('balão: fica mais tempo sem voz e respeita o tempo extra dos responsáveis
   assert.equal(ms({ timeScale: 2 }), 4800);
   assert.equal(ms({ mute: true, timeScale: 9 }), 18000, 'o fator para em 3');
 });
+
+test('moeda: pela região do aparelho, e só moedas quando não dá para saber', () => {
+  const cur = (tags) => E.ev('currencyFromTags(' + E.put('tg', tags) + ')');
+  assert.equal(cur(['pt-BR']), 'BRL');
+  assert.equal(cur(['pt-PT']), 'EUR');
+  assert.equal(cur(['en-US']), 'USD');
+  assert.equal(cur(['en-GB']), 'GBP');
+  assert.equal(cur(['es-MX']), 'MXN');
+  assert.equal(cur(['es-ES']), 'EUR');
+  assert.equal(cur(['en-AU']), 'GENERIC', 'região fora da lista: não chuta moeda');
+  assert.equal(cur(['en']), 'GENERIC');
+  assert.equal(cur(['es']), 'GENERIC');
+  assert.equal(cur(['pt']), 'BRL');
+  assert.equal(cur(['en', 'pt-BR']), 'BRL', 'a primeira tag com região manda');
+});
+
+test('moeda: o texto e a pergunta do modo Dinheiro usam a moeda escolhida, nos três idiomas', () => {
+  const dinheiro = (lang, cur, f) => {
+    const e = loadEngine({ lang });
+    e.ev('DB.settings.lang = ' + JSON.stringify(lang) + '; DB.settings.currency = ' + JSON.stringify(cur) + '; LANG = ' + JSON.stringify(lang));
+    return JSON.parse(e.ev('JSON.stringify(genDinheiro(3, ' + JSON.stringify(f) + '))'));
+  };
+  const c5 = { kind: 'coins5', c5: 2, c1: 3 };
+  assert.equal(dinheiro('pt', 'BRL', c5).display, 'R$ ?');
+  assert.equal(dinheiro('en', 'USD', c5).display, '$ ?');
+  assert.equal(dinheiro('es', 'EUR', c5).display, '€ ?');
+  assert.equal(dinheiro('pt', 'GENERIC', c5).display, '🪙 ?');
+  assert.match(dinheiro('pt', 'EUR', c5).tts, /5 euros/);
+  assert.match(dinheiro('en', 'GBP', { kind: 'coins', n: 3 }).tts, /How many pounds/);
+  assert.match(dinheiro('es', 'MXN', { kind: 'change', p: 12, v: 20 }).tts, /pesos/);
+  assert.match(dinheiro('pt', 'GENERIC', { kind: 'change', p: 12, v: 20 }).tts, /moedas/);
+  for (const l of ['pt', 'en', 'es']) assert.doesNotMatch(dinheiro(l, 'USD', c5).tts, /\{m\}|reais|reales/, 'sem sobra de {m} nem de real fixo');
+});
+
+test('moeda: backup com valor estranho volta para automática', () => {
+  const bad = E.put('d', { v: 2, activeId: 'p1', profiles: [{ id: 'p1', name: 'A' }], settings: { currency: '<img src=x onerror=alert(1)>' } });
+  assert.equal(j('parseDB(JSON.stringify(' + bad + ')).settings.currency'), 'auto');
+  const ok = E.put('d2', { v: 2, activeId: 'p1', profiles: [{ id: 'p1', name: 'A' }], settings: { currency: 'EUR' } });
+  assert.equal(j('parseDB(JSON.stringify(' + ok + ')).settings.currency'), 'EUR');
+});

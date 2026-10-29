@@ -170,7 +170,8 @@ Auditoria de segurança, estrutura e design com `/security-review`, `/anthropic-
 - [x] 9.3 Android: minSdk 24, targetSdk 36, R8 com mapping, AGP 8.13.2, Gradle 8.14.3; scripts de assinatura para Linux/macOS e Windows.
 - [x] 9.4 Contagem por toque no idioma do jogo.
 - [ ] 9.5 [você] ligar o GitHub Pages (política de privacidade e PWA; o app Android não depende mais dele); criar o app novo no Play Console; identidade da Partner Center; conta Apple.
-- [ ] 9.6 Moeda do modo Dinheiro por região e voz es-419 (lacunas L1 e L3 de `PLATAFORMAS-E-MERCADOS.md`).
+- [x] 9.6a Moeda do modo Dinheiro por região (L1): real, euro, dólar, libra e peso mexicano pela região do aparelho; sem região conhecida, só "moedas". Escolha no painel (`currency`), validada em `normalizeDB`.
+- [ ] 9.6b Voz es-419 (L3 de `PLATAFORMAS-E-MERCADOS.md`): voz es-MX/es-US pela localidade e "vuelto" ou "cambio" por região.
 - [x] 9.7 Limpeza do repositório: 155 arquivos sem uso fora (geradores de estudos com caminho de outra máquina, scripts avulsos de versões antigas, PDFs intermediários, guia de push manual, capturas `qa/` e `qa2/`), 16 chaves de texto sem uso nos 3 idiomas, e `scripts/scan_csp.py` consertado e no CI.
 - [x] 9.8 **Android com o jogo dentro do app (Capacitor 8), no lugar da TWA.** A TWA abria `klivfy.github.io/Conta-Comigo/` e mostrava 404: o Pages nunca publicou, o `assetlinks.json` precisava estar na raiz do domínio (outro repositório) e o fingerprint era o da chave vazada. Agora o jogo é servido de dentro do APK/AAB:
   - **Projeto:** `native/android/` (como o iOS): `scripts/build_android_www.py` gera o `www`, o ícone adaptativo (com monocromático) e a abertura; `npx cap sync android` liga os plugins. O CI compila também nos PRs e, sem os secrets, publica o AAB sem assinatura.

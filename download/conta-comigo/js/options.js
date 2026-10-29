@@ -171,6 +171,9 @@ function renderOptions() {
   $('#set-mute').checked = !!g.mute;
   $('#set-voice-on').checked = g.voiceOn !== false; // v2.4 (A-186)
   $('#set-sfx-on').checked = g.sfxOn !== false; // v2.4 (A-186)
+  const curSel = $('#set-cur');
+  curSel.innerHTML = ['auto'].concat(Object.keys(CURRENCIES)).map((k) => '<option value="' + k + '">' + escHtml(t('cur_' + k)) + '</option>').join('');
+  curSel.value = g.currency || 'auto';
   $('#set-tscale').value = String(g.timeScale || 1); // v2.4 (A-047)
   $('#set-tscale').options[0].text = t('ts_1');
   $('#set-tscale').options[1].text = t('ts_15');
@@ -439,6 +442,7 @@ function bindOptions() {
   // v2.4: narração e efeitos independentes + tempo extra + menos movimento + sem loja
   $('#set-voice-on').addEventListener('change', (e) => { G().voiceOn = e.target.checked; set(); });
   $('#set-sfx-on').addEventListener('change', (e) => { G().sfxOn = e.target.checked; set(); });
+  $('#set-cur').addEventListener('change', (e) => { G().currency = e.target.value; set(); });
   $('#set-tscale').addEventListener('change', (e) => { G().timeScale = Number(e.target.value); set(); });
   $('#set-rm').addEventListener('change', (e) => { G().reduceMotion = e.target.checked; document.body.classList.toggle('rm', !!e.target.checked); set(); });
   $('#set-noshop').addEventListener('change', (e) => { G().shopOff = e.target.checked; set(); });

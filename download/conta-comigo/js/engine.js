@@ -144,9 +144,44 @@ function detectLang() {
   }
   return 'pt';
 }
+/* ---------- moeda do modo Dinheiro (L1 de PLATAFORMAS-E-MERCADOS.md) ----------
+   Antes era sempre real. Agora a moeda vem da região do aparelho (pt-PT → euro, en-US → dólar…) e os
+   responsáveis podem trocar no painel. Sem região conhecida: só "moedas", que não erra o país. */
+const CURRENCIES = {
+  BRL: { sym: 'R$', w: { pt: 'reais', en: 'reais', es: 'reales' } },
+  EUR: { sym: '€', w: { pt: 'euros', en: 'euros', es: 'euros' } },
+  USD: { sym: '$', w: { pt: 'dólares', en: 'dollars', es: 'dólares' } },
+  GBP: { sym: '£', w: { pt: 'libras', en: 'pounds', es: 'libras' } },
+  MXN: { sym: '$', w: { pt: 'pesos', en: 'pesos', es: 'pesos' } },
+  GENERIC: { sym: '🪙', w: { pt: 'moedas', en: 'coins', es: 'monedas' } },
+};
+const EURO_REGIONS = ['PT', 'ES', 'FR', 'DE', 'IT', 'NL', 'BE', 'AT', 'IE', 'FI', 'GR', 'LU', 'SK', 'SI', 'EE', 'LV', 'LT', 'MT', 'CY', 'HR'];
+/* tags de idioma do aparelho (['pt-BR', 'en']) → moeda; a primeira com região conhecida manda */
+function currencyFromTags(tags) {
+  for (const tag of tags || []) {
+    const m = /^[a-z]{2,3}[-_]([a-z]{2})\b/i.exec(String(tag || ''));
+    const r = m ? m[1].toUpperCase() : '';
+    if (r === 'BR') return 'BRL';
+    if (r === 'US') return 'USD';
+    if (r === 'GB') return 'GBP';
+    if (r === 'MX') return 'MXN';
+    if (EURO_REGIONS.indexOf(r) >= 0) return 'EUR';
+  }
+  const first = String((tags && tags[0]) || '').slice(0, 2).toLowerCase();
+  return first === 'pt' ? 'BRL' : 'GENERIC'; // pt sem região: o jogo nasceu no Brasil; en e es sem região: só moedas
+}
+function currentCurrency() {
+  const c = G().currency;
+  if (c !== 'auto' && Object.prototype.hasOwnProperty.call(CURRENCIES, c)) return c;
+  const tags = [];
+  try { if (typeof navigator !== 'undefined') tags.push(...(navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language])); } catch (e) { /* sem navigator */ }
+  return currencyFromTags(tags);
+}
+const curWord = () => CURRENCIES[currentCurrency()].w[LANG] || CURRENCIES[currentCurrency()].w.pt;
+const curSym = () => CURRENCIES[currentCurrency()].sym;
 const DEFAULT_SETTINGS = {
   /* Fase 5: 'auto' segue o sistema (claro = Clássico, escuro = Espaço; ambos grátis) */
-  lang: detectLang(), theme: 'auto', contrast: 'auto', dys: false, calmo: null,
+  lang: detectLang(), currency: 'auto', theme: 'auto', contrast: 'auto', dys: false, calmo: null,
   mute: false, volume: 0.9, vRate: 0.95, vPitch: 1.15, vVoice: '',
   diffMode: 'auto', goalRounds: 3, sessionLimit: 15, sync: false,
   unlockAll: false, newtabOn: true, timer: true,
@@ -310,6 +345,7 @@ function normalizeDB(d) {
   s.calmo = (calmo === true || calmo === false) ? calmo : null;
   if (!Object.prototype.hasOwnProperty.call(TTS_LANG, s.lang)) s.lang = detectLang();
   if (THEMES.indexOf(s.theme) < 0) s.theme = 'auto';
+  if (s.currency !== 'auto' && !Object.prototype.hasOwnProperty.call(CURRENCIES, s.currency)) s.currency = 'auto';
   if (['auto', 'on', 'off'].indexOf(s.contrast) < 0) s.contrast = 'auto';
   delete s.hc;
   s.volume = clamp(s.volume, 0, 1);
@@ -1227,20 +1263,20 @@ function genDinheiro(level, f) {
   const kind = f ? f.kind : (level <= 2 ? 'coins' : level === 3 ? pick(['coins5', 'change']) : 'change');
   if (kind === 'coins') {
     const n = f ? f.n : rand(1, [5, 8][level - 1] || 5);
-    answer = n; display = n + ' 🪙 = ?'; tts = t('t_m_coins');
+    answer = n; display = n + ' 🪙 = ?'; tts = t('t_m_coins', { m: curWord() });
     visual = '<div class="grp plain">' + emojisHTML({ emoji: '🪙' }, n, { small: n > 6 }) + '</div>';
     fd = { kind, n };
   } else if (kind === 'coins5') {
     const c5 = f ? f.c5 : rand(1, 4); const c1 = f ? f.c1 : rand(1, 5);
-    answer = c5 * 5 + c1; display = 'R$ ?';
-    tts = t('t_2x2');
+    answer = c5 * 5 + c1; display = curSym() + ' ?';
+    tts = t('t_2x2', { m: curWord() });
     visual = '<div class="grp">' + emojisHTML({ emoji: '⭐' }, c5, { small: c5 > 4 }) + '</div><div class="grp">' + emojisHTML({ emoji: '🪙' }, c1, { small: c1 > 4 }) + '</div>';
     fd = { kind, c5, c1 };
   } else {
     const p = f ? f.p : rand(2, [20, 30, 40, 50][level - 3] || 20);
     const v = f ? f.v : p + rand(1, 20);
     answer = v - p; display = v + ' − ' + p + ' = ?';
-    tts = t('t_change', { p: numWord(LANG, p), v: numWord(LANG, v) });
+    tts = t('t_change', { p: numWord(LANG, p), v: numWord(LANG, v), m: curWord() });
     visual = '<div class="story">🛒 ' + display + ' · 💰 ' + v + '</div>';
     fd = { kind, p, v };
   }
