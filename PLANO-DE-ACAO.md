@@ -125,8 +125,9 @@ Disparada pelos testes manuais: distorções e botões fora do lugar. Auditoria 
 - [ ] 7.2 **Dívida do design system** (a fazer; mexe em muito CSS, então precisa de rodada própria):
   - **Faixas de largura:** são 12 faixas de largura; o ideal é consolidar em 4 ou 5 classes de tamanho.
   - **Popup vs página cheia:** 235 seletores `body.page-mode` duplicam cada regra. O ideal é um só conjunto de regras fluidas, em que o popup seja só uma janela pequena.
-  - **Tokens `--sp-*`:** estão definidos e têm 0 usos.
-  - **Valores soltos:** 247 valores soltos de padding/margin/gap e 124 tamanhos de fonte em px nos overrides.
+  - [x] **Tokens `--sp-*`:** 211 valores soltos de padding/margin/gap que casavam com a escala (2, 4, 6, 8, 12, 16, 24 e 36px) viraram `var(--sp-N)`, e 30 `font-size` em rem viraram `var(--fs-*)`. Conferido por pixel (`scripts/visual_diff.cjs`: 10 tamanhos de tela × 15 telas, mais o popup, também com texto a 200%), sem nenhuma mudança visível. `scripts/tokens_check.cjs` trava a volta dos valores soltos.
+  - [x] **Tamanhos de fonte em px:** os 54 que restam são todos emoji e ilustração (`.obj`, `.mascot`, `.mode-emoji`…), que a regra do projeto manda ficar em px. Os "124" da contagem anterior misturavam isso com texto; não há texto de interface em px.
+  - [ ] **Valores soltos fora da escala:** 137 (10px, 14px, 18px…). Trocar exige escolher o degrau mais próximo, o que mexe no visual; fica para a rodada com revisão humana.
   - **Tipografia:** passar a escala para `clamp()`.
 - [ ] 7.3 **Testar em aparelho real:** notch e Dynamic Island (`safe-area`), barra de URL dinâmica e fonte grande do sistema (Android/iOS). O emulador não reproduz esses três.
 
@@ -155,7 +156,7 @@ Auditoria de segurança, estrutura e design com `/security-review`, `/anthropic-
   - **Guarda de cópias:** `scripts/sync_check.cjs` confere a tela do jogo, os workflows do kit e a versão.
   - **`CLAUDE.md`:** novo, com a stack, as regras e os comandos de verificação.
   - **Correções de comportamento:** o combo zera no erro, e a medalha do Contra o Tempo sai na mesma rodada.
-- [ ] 8.E4 Juntar popup e `page-mode` num CSS só e aplicar a escala tipográfica aos ajustes por breakpoint (item 7.2). Precisa de rodada própria com revisão visual.
+- [ ] 8.E4 Juntar popup e `page-mode` num CSS só e consolidar as faixas de largura (item 7.2). Medido em 29/10/2026: as 235 regras `body.page-mode` (93 seletores) não são cópias; só 4 de 135 declarações repetem o valor do CSS base, então não há o que apagar sem mudar o visual. É redesenho fluido (`clamp()`), e precisa de pessoa olhando. A rede de segurança já existe: `node scripts/visual_diff.cjs salvar <pasta>` antes e `comparar <pasta>` depois.
 - [x] 8.F **Polimento:**
   - O toast não deixa mais o ⭐ sozinho na linha.
   - Os enfeites saem durante a rodada.

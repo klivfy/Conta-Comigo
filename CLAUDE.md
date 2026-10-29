@@ -37,7 +37,8 @@ python scripts/build_packages.py && python scripts/build_pwa.py
 python scripts/scan_csp.py          # CSP: sem script/evento inline, javascript: ou eval
 node scripts/a11y_check.cjs         # axe; precisa de playwright e axe-core
 node scripts/resp_check.cjs         # 8 aparelhos × 15 telas
+node scripts/tokens_check.cjs       # espaço e fonte: usar var(--sp-*) e var(--fs-*) quando o valor existe na escala
 CC_TEXTO=200 node scripts/resp_check.cjs
 python scripts/build_android_www.py && node scripts/app_check.cjs   # apps: Voltar, backup nativo, barras
 ```
-O CI (`.github/workflows/ci.yml`) roda tudo isso. O Playwright do CI usa a localidade en-US, então teste também em inglês: os textos ficam mais longos.
+Ao refatorar CSS, tire capturas antes e compare depois: `node scripts/visual_diff.cjs salvar <pasta>` e `comparar <pasta>` (não roda no CI). O CI (`.github/workflows/ci.yml`) roda o resto. O Playwright do CI usa a localidade en-US, então teste também em inglês: os textos ficam mais longos.
