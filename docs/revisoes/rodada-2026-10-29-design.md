@@ -148,3 +148,33 @@ Ordenadas por valor para o PRODUCT.md (criança quer voltar todo dia; adulto vê
 
 Cada fase sobe a versão própria (2.7.1 para 10.0; 2.8.0 para as funcionalidades), com `sync_check` e as
 notas de loja em pt, en e es.
+
+
+## Andamento e plano dos próximos lotes (atualizado em 29/10/2026)
+
+Decisão: **sem subir versão por enquanto.** O trabalho novo acumula na 2.8.0 (PR #13). Versão, `versionCode`, notas
+de loja, README e zips só mudam quando o responsável decidir fechar a versão.
+
+| Fase | Estado | Entregue em |
+| --- | --- | --- |
+| 10.0 e 10.4.1 | feitas | 2.7.1 |
+| 10.1.1 a 10.1.4 (D1, D2) | feitas | 2.7.2 |
+| 10.2 | feita (dívida: `box-shadow` em loop em `attention` e `pulse`) | 2.7.3 |
+| 10.3.1 (rem), 10.3.3, 10.3.5, 10.3.6 | feitas | 2.7.4 |
+| N1, N2, N3 | feitas (N2 sem as estrelas voando) | 2.8.0 |
+
+### Lotes pendentes
+
+| Lote | Conteúdo | Esforço | Risco |
+| --- | --- | --- | --- |
+| A | Fechar a 10.3: grade da home sem órfão (10.3.2), órfãos (10.3.4), dobra a 200% no iPhone SE (10.3.7), tamanhos em px consolidados e `DESIGN.md` corrigido (10.3.1), `box-shadow` em loop trocado por pseudo-camada | M | médio (CSS inteiro; regressão visual) |
+| B | N6 loja "quase lá" (ordem por proximidade, voz, prévia do tema) e N7 missões e conquistas narradas | M | baixo |
+| C | Painel: resumo com próxima ação, âncoras por seção, um primário por seção, zona de perigo, desktop e leitor de tela (10.4.2 a 10.4.5) | M | médio |
+| D | Mapa de domínio com mínimo de 20 questões e rótulo em texto, semanas legíveis, textos de pais (10.1.5, 10.1.6) | M | baixo (teste de motor) |
+| E | N5 háptica nos apps (`@capacitor/haptics`), com interruptor e mudo no modo calmo | P | médio (sem teste em CI; exige aparelho) |
+| F | N4 arrastar para contar: protótipo só em Contar, com alternativa por toque e teclado | G | alto (acessibilidade) |
+
+N8 (voz neural embarcada) fica fora dos lotes: pacote por idioma e licença de voz pedem projeto próprio.
+
+**Critério de cada lote:** testes do motor (um novo por regra), `a11y_check`, `pages_check`, `resp_check` normal e a 200%,
+`app_check`, `scan_csp`, `tokens_check`, `i18n_check` e CI verdes; lotes de CSS com `visual_diff` antes e depois.
