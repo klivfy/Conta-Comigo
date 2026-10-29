@@ -152,7 +152,7 @@ function renderOptions() {
   $$('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
   applyI18nLabels(document);
   document.title = t('appName') + ' — ' + t('gate_title');
-  document.documentElement.lang = TTS_LANG[g.lang] || 'pt-BR';
+  document.documentElement.lang = speechLang(g.lang) || 'pt-BR';
   applyTheme(g);
   document.body.classList.toggle('dys', !!g.dys);
 

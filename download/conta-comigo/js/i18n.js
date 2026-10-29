@@ -380,14 +380,14 @@ const I18N = {
     m_comparar: 'Comparar', d_comparar: '¿Mayor o menor?', m_sequencia: 'Secuencia', d_sequencia: '¿Qué viene después?',
     m_dobrar: 'Doble y mitad', d_dobrar: 'Duplicar o dividir', m_multiplicar: 'Multiplicar', d_multiplicar: 'Grupos iguales',
     m_dividir: 'Dividir', d_dividir: 'Repartir igual', m_historia: 'Historias', d_historia: 'Problemas con historia',
-    m_dinheiro: 'Dinero', d_dinheiro: 'Monedas y vuelto', m_mistar: 'Mezcla', d_mistar: '¡Todo junto!',
+    m_dinheiro: 'Dinero', d_dinheiro: 'Monedas y cambio', m_mistar: 'Mezcla', d_mistar: '¡Todo junto!',
     m_tempo: 'Contra el Reloj', d_tempo: '¡60 segundos de aliento!',
     m_tempo: 'Contra el Reloj', d_tempo: '¡60 segundos de aliento!',
     t_see: '¿Cuántos ves?', t_add: '¿Cuánto es {a} más {b}?', t_sub: '¿Cuánto es {a} menos {b}?',
     t_mul: '¿Cuánto es {a} por {b}?', t_div: '¿Cuánto es {a} dividido entre {b}?',
     t_miss: '{a} más ¿cuánto hace {s}?', t_cmp: '¿Qué grupo es mayor?', t_eq: '¿Son iguales?',
     t_seq: '¿Qué número viene después?', t_double: '¿Cuál es el doble de {n}?', t_half: '¿Cuál es la mitad de {n}?',
-    pp_voice: 'Voz del perfil', pp_default: 'Usar el ajuste general', pp_saved: '¡Voz del perfil guardada!', t_m_coins: '¿Cuántos {m} hay aquí?', t_2x2: 'Cada estrella vale 5 {m} y cada moneda vale 1. ¿Cuántos {m} hay en total?', fixed_lbl: 'fijo', t_change: 'Costó {p} {m}. Pagaste {v}. ¿Cuál es el vuelto?',
+    pp_voice: 'Voz del perfil', pp_default: 'Usar el ajuste general', pp_saved: '¡Voz del perfil guardada!', t_m_coins: '¿Cuántos {m} hay aquí?', t_2x2: 'Cada estrella vale 5 {m} y cada moneda vale 1. ¿Cuántos {m} hay en total?', fixed_lbl: 'fijo', t_change: 'Costó {p} {m}. Pagaste {v}. ¿Cuál es el {c}?',
     st_1: '{name} tenía {a} {item} y recibió {b} más. ¿Cuántos tiene ahora?',
     st_2: '{name} tenía {a} {item} y dio {b} a un amigo. ¿Cuántos le quedan?',
     st_3: 'Cada amigo recibió {k} {item}. Son {g} amigos. ¿Cuál es el total?',
@@ -562,7 +562,7 @@ const TTS_LANG = { pt: 'pt-BR', en: 'en-US', es: 'es-ES' };
 /* Aplica o idioma aos elementos estáticos (usado por todas as páginas) */
 function applyLang() {
   try { LANG = (typeof G === 'function' && G() && G().lang) ? G().lang : 'pt'; } catch (e) { LANG = 'pt'; }
-  document.documentElement.lang = TTS_LANG[LANG] || 'pt-BR';
+  document.documentElement.lang = (typeof speechLang === 'function' ? speechLang(LANG) : TTS_LANG[LANG]) || 'pt-BR';
   document.title = t('appName') + ' — ' + t('subtitle');
   document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
   applyI18nLabels(document);

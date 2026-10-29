@@ -365,3 +365,52 @@ test('moeda: backup com valor estranho volta para automática', () => {
   const ok = E.put('d2', { v: 2, activeId: 'p1', profiles: [{ id: 'p1', name: 'A' }], settings: { currency: 'EUR' } });
   assert.equal(j('parseDB(JSON.stringify(' + ok + ')).settings.currency'), 'EUR');
 });
+
+test('espanhol: região do aparelho, idioma pedido à voz e palavra do troco', () => {
+  const reg = (tags) => E.ev('esRegionFromTags(' + E.put('tg', tags) + ')');
+  assert.equal(reg(['es-MX']), 'MX');
+  assert.equal(reg(['en-US', 'es-419']), '419');
+  assert.equal(reg(['es']), '');
+  assert.equal(reg(['pt-BR']), '');
+  const falar = (lang) => loadEngine({ lang }).ev('speechLang("es")');
+  assert.equal(falar('es-ES'), 'es-ES');
+  assert.equal(falar('es-MX'), 'es-MX');
+  assert.equal(falar('es-AR'), 'es-MX', 'o motor do app não tem es-AR: cai na voz latino-americana');
+  assert.equal(falar('es-US'), 'es-US');
+  assert.equal(falar('es'), 'es-MX', 'sem região: a maioria dos falantes é latino-americana');
+  assert.equal(loadEngine({ lang: 'pt-BR' }).ev('speechLang("pt")'), 'pt-BR');
+  assert.equal(loadEngine({ lang: 'en-GB' }).ev('speechLang("en")'), 'en-US');
+  const troco = (lang) => loadEngine({ lang }).ev('esChangeWord()');
+  assert.equal(troco('es-AR'), 'vuelto');
+  assert.equal(troco('es-CL'), 'vuelto');
+  assert.equal(troco('es-MX'), 'cambio');
+  assert.equal(troco('es-ES'), 'cambio');
+});
+
+test('espanhol: a voz da região do aparelho vence, e voz robótica não ganha por região', () => {
+  const escolhe = (lang, vozes) => {
+    const e = loadEngine({ lang });
+    e.ev('DB.settings.lang = "es"; TTS.voices = ' + e.put('v', vozes));
+    return e.ev('TTS.pickVoice("es").name');
+  };
+  const mx = { name: 'Google español de México', lang: 'es-MX', voiceURI: 'mx', localService: false };
+  const es = { name: 'Google español', lang: 'es-ES', voiceURI: 'es', localService: false };
+  const us = { name: 'Google español de Estados Unidos', lang: 'es-US', voiceURI: 'us', localService: false };
+  assert.equal(escolhe('es-MX', [es, mx]), mx.name);
+  assert.equal(escolhe('es-ES', [mx, es]), es.name);
+  assert.equal(escolhe('es-AR', [es, us]), us.name, 'sem es-AR: a latino-americana mais próxima, não a da Espanha');
+  assert.equal(escolhe('es-MX', [es]), es.name, 'sem voz da região: usa a que existe');
+  const robo = { name: 'eSpeak es-419', lang: 'es-419', voiceURI: 'e', localService: true };
+  assert.equal(escolhe('es-MX', [robo, es]), es.name, 'a voz robótica da região não passa a natural de outra');
+});
+
+test('espanhol: a pergunta do troco usa a palavra da região', () => {
+  const troco = (lang) => {
+    const e = loadEngine({ lang });
+    e.ev('DB.settings.lang = "es"; DB.settings.currency = "GENERIC"; LANG = "es"');
+    return JSON.parse(e.ev('JSON.stringify(genDinheiro(3, { kind: "change", p: 12, v: 20 }))')).tts;
+  };
+  assert.match(troco('es-AR'), /¿Cuál es el vuelto\?/);
+  assert.match(troco('es-MX'), /¿Cuál es el cambio\?/);
+  assert.doesNotMatch(troco('es-ES'), /\{c\}|vuelto/);
+});

@@ -179,6 +179,34 @@ function currentCurrency() {
 }
 const curWord = () => CURRENCIES[currentCurrency()].w[LANG] || CURRENCIES[currentCurrency()].w.pt;
 const curSym = () => CURRENCIES[currentCurrency()].sym;
+/* ---------- espanhol por região (L3 de PLATAFORMAS-E-MERCADOS.md) ----------
+   A voz era sempre es-ES, com sotaque da Espanha para toda a América Latina. Agora a região vem
+   do idioma do aparelho (es-MX, es-AR, es-ES…): a fala pede a voz daquela região (ou a latino-americana
+   mais próxima) e a pergunta do troco usa a palavra do lugar ("cambio" ou "vuelto"). */
+const ES_LATAM = ['AR', 'BO', 'CL', 'CO', 'CR', 'CU', 'DO', 'EC', 'GT', 'HN', 'MX', 'NI', 'PA', 'PE', 'PR', 'PY', 'SV', 'US', 'UY', 'VE', '419'];
+const ES_VUELTO = ['AR', 'UY', 'PY', 'BO', 'CL', 'PE']; // onde o troco se diz "vuelto"; no resto, "cambio"
+function esRegionFromTags(tags) {
+  for (const tag of tags || []) {
+    const m = /^es[-_]([a-z]{2}|419)\b/i.exec(String(tag || ''));
+    if (m) return m[1].toUpperCase();
+  }
+  return ''; // "es" sem região
+}
+const esIsLatam = (r) => r === '' || ES_LATAM.indexOf(r) >= 0; // sem região: a maioria dos falantes é latino-americana
+function esRegion() {
+  const tags = [];
+  try { if (typeof navigator !== 'undefined') tags.push(...(navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language])); } catch (e) { /* sem navigator */ }
+  try { if (typeof chrome !== 'undefined' && chrome.i18n && chrome.i18n.getUILanguage) tags.push(chrome.i18n.getUILanguage()); } catch (e) { /* sem extensão */ }
+  return esRegionFromTags(tags);
+}
+/* idioma pedido ao sintetizador. Só es-ES, es-US e es-MX: são os que o Android e o iOS têm, e um
+   idioma que o motor não conhece deixaria a fala muda */
+function speechLang(lang) {
+  if (lang !== 'es') return TTS_LANG[lang] || 'pt-BR';
+  const r = esRegion();
+  return !esIsLatam(r) ? 'es-ES' : r === 'US' ? 'es-US' : 'es-MX';
+}
+const esChangeWord = () => (ES_VUELTO.indexOf(esRegion()) >= 0 ? 'vuelto' : 'cambio');
 const DEFAULT_SETTINGS = {
   /* Fase 5: 'auto' segue o sistema (claro = Clássico, escuro = Espaço; ambos grátis) */
   lang: detectLang(), currency: 'auto', theme: 'auto', contrast: 'auto', dys: false, calmo: null,
@@ -784,7 +812,17 @@ const TTS = {
     const g = G();
     const mine = (g.vVoice || '') || ((typeof P === 'function' && P() && P().vVoice) || '');
     if (mine) { const c = vs.find((v) => v.voiceURI === mine); if (c) return c; }
-    return vs.slice().sort((a, b) => this.scoreVoice(b) - this.scoreVoice(a))[0];
+    /* espanhol: a voz da região do aparelho (3), senão da mesma "família" — latino-americana ou
+       da Espanha (2), senão qualquer uma (1). Voz robótica não ganha por região. */
+    const r = want2 === 'es' ? esRegion() : null;
+    const regionRank = (v) => {
+      if (r === null || this.voiceTier(v) === 0) return 0;
+      const m = /^es[-_]([a-z]{2,3})/i.exec(v.lang || '');
+      const vr = m ? m[1].toUpperCase() : '';
+      if (vr && vr === r) return 3;
+      return (esIsLatam(r) ? (vr !== 'ES' && vr !== '') : vr === 'ES') ? 2 : 1;
+    };
+    return vs.slice().sort((a, b) => (regionRank(b) - regionRank(a)) || (this.scoreVoice(b) - this.scoreVoice(a)))[0];
   },
   stripEmoji(s) {
     try { return String(s).replace(/\p{Extended_Pictographic}/gu, '').replace(/\s{2,}/g, ' ').trim(); }
@@ -816,7 +854,7 @@ const TTS = {
     if (!seg) { this.speakingNow = false; return; }
     try {
       const g = G();
-      const want = TTS_LANG[g.lang] || 'pt-BR';
+      const want = speechLang(g.lang);
       const prof = (typeof P === 'function' && P()) || {};
       const rate = (typeof prof.vRate === 'number' ? prof.vRate : (g.vRate || 0.95)) * (seg.calm ? 0.85 : 1);
       const pitch = (typeof prof.vPitch === 'number' ? prof.vPitch : (g.vPitch || 1.15));
@@ -1276,7 +1314,7 @@ function genDinheiro(level, f) {
     const p = f ? f.p : rand(2, [20, 30, 40, 50][level - 3] || 20);
     const v = f ? f.v : p + rand(1, 20);
     answer = v - p; display = v + ' − ' + p + ' = ?';
-    tts = t('t_change', { p: numWord(LANG, p), v: numWord(LANG, v), m: curWord() });
+    tts = t('t_change', { p: numWord(LANG, p), v: numWord(LANG, v), m: curWord(), c: esChangeWord() });
     visual = '<div class="story">🛒 ' + display + ' · 💰 ' + v + '</div>';
     fd = { kind, p, v };
   }
