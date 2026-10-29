@@ -33,7 +33,7 @@ Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo par
 - **Responsividade total** — o mesmo jogo se adapta de **320px** (celular pequeno) a **1920px+** (monitor): herói empilha em telas estreitas, tipografia fluida (`clamp`), grades que se reorganizam e nada transborda (testado em 320/360/768/844×390/1440/1920).
 - **Modo paisagem (celular deitado)** — quando a altura é curta, topbar compacta, herói em linha única e jogo encaixa sem rolagem.
 - **Toque aprimorado** — alvos ≥44px, `touch-action: manipulation` (sem atraso de 300ms/zoom duplo) e feedback por pressão em telas sem hover.
-- **Android/PWA** — `dvh` + `safe-area` (notch/barra de gestos) e `viewport-fit=cover` no jogo.
+- **Apps e PWA** — `dvh` + `safe-area` (notch/barra de gestos) e `viewport-fit=cover` no jogo.
 - **Vozes humanizadas (Fase 2 do estudo de voz)** — lista de vozes **agrupada por qualidade** (🌟 naturais → ⚡ neurais/rede → padrão → básicas), detector que prioriza "Online (Natural)" do Edge, Premium/Enhanced da Apple e Google de rede e afasta motores robóticos (eSpeak, Pico…), **nota "Voz ativa"** nas opções e **guia gratuito** para obter vozes mais humanas por plataforma (Edge, Windows, Android, iPhone/Mac, Linux/Piper) — tudo em PT/EN/ES.
 - Estudo completo: `Conta-Comigo-Estudo-Vozes-Humanizadas-v2.pdf` (comparativo e roteiro).
 
@@ -53,7 +53,7 @@ Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo par
 |---|---|
 | `conta-comigo-chrome-2.6.4.zip` | Pacote para Chrome/Edge/Brave (Manifest V3, service worker) |
 | `conta-comigo-firefox-2.6.4.zip` | Pacote para Firefox computador **e Android** (event page + `gecko_android` 128+) |
-| `conta-comigo-pwa-android-2.6.4.zip` | **Android/PWA**: jogo instalável e offline (manifest + service worker + ícones maskable) — hospedar em https e "Adicionar à tela inicial" |
+| `conta-comigo-pwa-2.6.4.zip` | **Web/PWA** (computador e iPhone): instalável e offline. O Android não usa a PWA: lá o jogo é o app local da Play Store |
 
 - Instalação e novidades: abra `conta-comigo/demo.html` no navegador.
 - Pasta `conta-comigo/` = fonte única (build Chromium). As pastas `conta-comigo-firefox/` e `conta-comigo-pwa/` são geradas por `python scripts/build_packages.py` e `python scripts/build_pwa.py` e não ficam no Git.

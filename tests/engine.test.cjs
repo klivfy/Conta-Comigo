@@ -414,3 +414,96 @@ test('espanhol: a pergunta do troco usa a palavra da região', () => {
   assert.match(troco('es-MX'), /¿Cuál es el cambio\?/);
   assert.doesNotMatch(troco('es-ES'), /\{c\}|vuelto/);
 });
+
+/* ---------- v2.7: cookies, voz e efeitos sonoros ---------- */
+test('consentimento: sem escolha tudo o que é opcional fica desligado, e a escolha só vale neste aparelho', () => {
+  E.ev(`DB = parseDB(JSON.stringify({ v: 2, activeId: 'p1', profiles: [{ id: 'p1' }], settings: {} }))`);
+  assert.equal(E.ev('Consent.decided()'), false);
+  assert.equal(E.ev('Consent.allows("essential")'), true);
+  assert.equal(E.ev('Consent.allows("stats")'), false);
+  assert.equal(E.ev('Consent.allows("track")'), false);
+  E.ev('Consent.set(true, false)');
+  assert.equal(E.ev('Consent.decided()'), true);
+  assert.equal(E.ev('Consent.allows("stats")'), true);
+  assert.equal(E.ev('Consent.allows("track")'), false);
+  E.ev('Consent.rejectAll()');
+  assert.equal(E.ev('Consent.allows("stats") || Consent.allows("track")'), false);
+  E.ev('Consent.acceptAll()');
+  assert.equal(E.ev('Consent.allows("stats") && Consent.allows("track")'), true);
+  // nunca vai no backup nem na sincronização, e importar mantém a escolha local
+  const out = j('shareableDB(DB)');
+  for (const k of ['consentAt', 'consentStats', 'consentTrack']) assert.equal(k in out.settings, false, k);
+  const incoming = 'JSON.parse(JSON.stringify({ v: 2, activeId: "p1", profiles: [{ id: "p1" }], settings: { consentAt: 1, consentStats: false, consentTrack: false } }))';
+  const kept = j('keepLocalSecrets(parseDB(JSON.stringify(' + incoming + ')), DB).settings');
+  assert.equal(kept.consentStats, true);
+  assert.equal(kept.consentTrack, true);
+});
+
+test('consentimento: backup importado não consegue ligar rastreamento sem data de escolha', () => {
+  const d = j(`parseDB(JSON.stringify({ v: 2, activeId: 'p1', profiles: [{ id: 'p1' }],
+    settings: { consentAt: 0, consentStats: true, consentTrack: true } })).settings`);
+  assert.equal(d.consentStats, false);
+  assert.equal(d.consentTrack, false);
+  const bad = j(`parseDB(JSON.stringify({ v: 2, activeId: 'p1', profiles: [{ id: 'p1' }],
+    settings: { consentAt: 'x', consentStats: 'sim', consentTrack: 1 } })).settings`);
+  assert.equal(bad.consentAt, 0);
+  assert.equal(bad.consentStats, false);
+  assert.equal(bad.consentTrack, false);
+  const ok = j(`parseDB(JSON.stringify({ v: 2, activeId: 'p1', profiles: [{ id: 'p1' }],
+    settings: { consentAt: 5, consentStats: true, consentTrack: 'sim' } })).settings`);
+  assert.equal(ok.consentStats, true);
+  assert.equal(ok.consentTrack, false);
+});
+
+test('voz: quem nunca mexeu nos controles recebe o tom natural novo; escolha própria fica', () => {
+  const s = (o) => j(`parseDB(JSON.stringify({ v: 2, activeId: 'p1', profiles: [{ id: 'p1' }], settings: ${JSON.stringify(o)} })).settings`);
+  const old = s({ vRate: 0.95, vPitch: 1.15 });
+  assert.equal(old.vRate, E.ev('VOICE_RATE'));
+  assert.equal(old.vPitch, E.ev('VOICE_PITCH'));
+  assert.ok(old.vPitch < 1.1, 'o tom padrão não pode voltar a soar fino');
+  const mine = s({ vRate: 0.8, vPitch: 1.3 });
+  assert.equal(mine.vRate, 0.8);
+  assert.equal(mine.vPitch, 1.3);
+});
+
+test('voz: frases ganham tipo (pergunta, exclamação, afirmação) para a entonação', () => {
+  const seg = j('TTS.segments("Quanto é 2 mais 3? Muito bem! Vamos lá.")');
+  assert.deepEqual(seg.map((x) => x.kind), ['q', 'e', 's']);
+  assert.ok(seg.every((x) => x.pause > 0 && x.pause <= 380));
+});
+
+test('voz: sem rede, voz que depende de internet perde para a instalada no aparelho', () => {
+  const net = { name: 'Google português do Brasil', voiceURI: 'pt-br-x-abc-network', lang: 'pt-BR', localService: false };
+  const loc = { name: 'Voz do aparelho', voiceURI: 'pt-br-x-abc-local', lang: 'pt-BR', localService: true };
+  const score = (v) => E.ev('TTS.scoreVoice(' + E.put('v', v) + ')');
+  E.ctx.navigator.onLine = true;
+  const onlineGap = score(net) - score(loc);
+  E.ctx.navigator.onLine = false;
+  try { assert.ok(score(loc) > score(net), 'offline: a local vence'); }
+  finally { delete E.ctx.navigator.onLine; }
+  assert.ok(onlineGap > -80, 'o corte só vale offline');
+});
+
+test('efeitos sonoros: tocam notas, respeitam mudo e o interruptor de efeitos, nunca estouram', () => {
+  let starts = 0;
+  const param = () => ({ value: 0, setValueAtTime() {}, linearRampToValueAtTime() {}, exponentialRampToValueAtTime() {} });
+  const node = () => ({ connect() {}, gain: param(), frequency: param(), detune: param(), Q: param(), threshold: param(), knee: param(), ratio: param(), attack: param(), release: param(), start() { starts++; }, stop() {} });
+  class FakeAudio {
+    constructor() { this.currentTime = 0; this.sampleRate = 8000; this.state = 'running'; this.destination = {}; }
+    createGain() { return node(); } createOscillator() { return node(); } createBiquadFilter() { return node(); }
+    createDynamicsCompressor() { return node(); } createConvolver() { return node(); } createBufferSource() { return node(); }
+    createBuffer(ch, n) { const d = new Float32Array(n); return { getChannelData: () => d }; }
+    resume() {}
+  }
+  E.ctx.window.AudioContext = FakeAudio;
+  E.ev(`DB = parseDB(JSON.stringify({ v: 2, activeId: 'p1', profiles: [{ id: 'p1' }], settings: {} }))`);
+  E.ev('ensureAudio()');
+  const all = ['tap', 'correct', 'wrong', 'star', 'fanfare', 'cash'];
+  for (const k of all) { starts = 0; E.ev('SFX.' + k + '()'); assert.ok(starts > 0, k + ' deve tocar'); }
+  for (let i = 0; i < 20; i++) all.forEach((k) => E.ev('SFX.' + k + '()')); // sem exceções em rajada
+  E.ev('G().mute = true'); starts = 0; all.forEach((k) => E.ev('SFX.' + k + '()'));
+  assert.equal(starts, 0, 'mudo não toca');
+  E.ev('G().mute = false; G().sfxOn = false'); starts = 0; all.forEach((k) => E.ev('SFX.' + k + '()'));
+  assert.equal(starts, 0, 'efeitos desligados não tocam');
+  E.ev('G().sfxOn = true');
+});

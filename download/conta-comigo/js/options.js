@@ -171,6 +171,7 @@ function renderOptions() {
   $('#set-mute').checked = !!g.mute;
   $('#set-voice-on').checked = g.voiceOn !== false; // v2.4 (A-186)
   $('#set-sfx-on').checked = g.sfxOn !== false; // v2.4 (A-186)
+  paintConsent();
   const curSel = $('#set-cur');
   curSel.innerHTML = ['auto'].concat(Object.keys(CURRENCIES)).map((k) => '<option value="' + k + '">' + escHtml(t('cur_' + k)) + '</option>').join('');
   curSel.value = g.currency || 'auto';
@@ -181,8 +182,8 @@ function renderOptions() {
   $('#set-rm').checked = !!g.reduceMotion; // v2.4 (A-050)
   $('#set-noshop').checked = !!g.shopOff; // v2.4 (A-101)
   $('#set-vol').value = String(Math.round((g.volume != null ? g.volume : 0.9) * 100));
-  $('#set-rate').value = String(Math.round((g.vRate || 0.95) * 100));
-  $('#set-pitch').value = String(Math.round((g.vPitch || 1.15) * 100));
+  $('#set-rate').value = String(Math.round((g.vRate || VOICE_RATE) * 100));
+  $('#set-pitch').value = String(Math.round((g.vPitch || VOICE_PITCH) * 100));
   fillVoices();
   const thSel = $('#set-theme');
   // tema comprado na loja (Oceano, Doces, Neve) aparece no seletor para não ficar em branco
@@ -282,8 +283,8 @@ function renderProfList() {
     const pp = pf.id === ppOpen ? (
       '<div class="pp-row">' +
       '<span class="pp-t">🎙️ ' + t('pp_voice') + '</span>' +
-      '<label for="pp-rate">' + t('s_rate') + '</label><input id="pp-rate" type="range" min="60" max="160" step="5" value="' + Math.round((pf.vRate != null ? pf.vRate : (g.vRate || 0.95)) * 100) + '" data-pprate="' + escHtml(pf.id) + '">' +
-      '<label for="pp-pitch">' + t('s_pitch') + '</label><input id="pp-pitch" type="range" min="50" max="200" step="5" value="' + Math.round((pf.vPitch != null ? pf.vPitch : (g.vPitch || 1.15)) * 100) + '" data-pppitch="' + escHtml(pf.id) + '">' +
+      '<label for="pp-rate">' + t('s_rate') + '</label><input id="pp-rate" type="range" min="60" max="160" step="5" value="' + Math.round((pf.vRate != null ? pf.vRate : (g.vRate || VOICE_RATE)) * 100) + '" data-pprate="' + escHtml(pf.id) + '">' +
+      '<label for="pp-pitch">' + t('s_pitch') + '</label><input id="pp-pitch" type="range" min="50" max="200" step="5" value="' + Math.round((pf.vPitch != null ? pf.vPitch : (g.vPitch || VOICE_PITCH)) * 100) + '" data-pppitch="' + escHtml(pf.id) + '">' +
       '<select aria-label="' + escHtml(t('s_voice')) + '" data-ppvoice="' + escHtml(pf.id) + '">' + voiceOptionsHtml(pf.vVoice || '') + '</select>' +
       '<button class="mini-btn" data-ppreset="' + escHtml(pf.id) + '">' + t('pp_default') + '</button>' +
       '</div>'
@@ -341,6 +342,20 @@ function renderProfList() {
   }));
 }
 
+/* ---------- canais oficiais e cookies (v2.7) ---------- */
+function paintConsent() {
+  $('#lnk-privacy').href = LEGAL.privacy; $('#lnk-terms').href = LEGAL.terms; $('#lnk-support').href = LEGAL.support;
+  $('#set-ck-stats').checked = Consent.allows('stats');
+  $('#set-ck-track').checked = Consent.allows('track');
+}
+function bindConsent() {
+  const save = () => { Consent.set($('#set-ck-stats').checked, $('#set-ck-track').checked); saveState(true); paintConsent(); };
+  $('#set-ck-stats').addEventListener('change', save);
+  $('#set-ck-track').addEventListener('change', save);
+  $('#btn-ck-accept').addEventListener('click', () => { Consent.acceptAll(); saveState(true); paintConsent(); });
+  $('#btn-ck-reject').addEventListener('click', () => { Consent.rejectAll(); saveState(true); paintConsent(); });
+}
+
 /* ---------- vozes (S22 + estudo v2.6) ---------- */
 function fillVoices() {
   const g = G();
@@ -360,7 +375,7 @@ function paintVoiceTierNote() {
   if (!v) { el.textContent = t('v_none'); return; }
   const tier = TTS.voiceTier(v);
   const q = tier === 3 ? t('v_tier_natural') : tier === 2 ? t('v_tier_neural') : tier === 0 ? t('v_tier_basic') : t('v_tier_std');
-  el.textContent = t('v_current', { q: q, n: v.name || v.voiceURI || '' });
+  el.textContent = t('v_current', { q: q, n: v.name || v.voiceURI || '' }) + (tier <= 1 ? ' ' + t('v_install') : '');
 }
 
 /* ---------- exportar / importar (S29) + backup com data (v2.5) ---------- */
@@ -442,6 +457,7 @@ function bindOptions() {
   // v2.4: narração e efeitos independentes + tempo extra + menos movimento + sem loja
   $('#set-voice-on').addEventListener('change', (e) => { G().voiceOn = e.target.checked; set(); });
   $('#set-sfx-on').addEventListener('change', (e) => { G().sfxOn = e.target.checked; set(); });
+  bindConsent();
   $('#set-cur').addEventListener('change', (e) => { G().currency = e.target.value; set(); });
   $('#set-tscale').addEventListener('change', (e) => { G().timeScale = Number(e.target.value); set(); });
   $('#set-rm').addEventListener('change', (e) => { G().reduceMotion = e.target.checked; document.body.classList.toggle('rm', !!e.target.checked); set(); });

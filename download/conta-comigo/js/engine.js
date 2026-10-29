@@ -207,10 +207,13 @@ function speechLang(lang) {
   return !esIsLatam(r) ? 'es-ES' : r === 'US' ? 'es-US' : 'es-MX';
 }
 const esChangeWord = () => (ES_VUELTO.indexOf(esRegion()) >= 0 ? 'vuelto' : 'cambio');
+/* v2.7: tom e ritmo de fala mais próximos da voz humana (o antigo 1.15 soava fino e mecânico) */
+const VOICE_RATE = 0.92, VOICE_PITCH = 1.02;
+const OLD_VOICE_DEFAULTS = { rate: 0.95, pitch: 1.15 };
 const DEFAULT_SETTINGS = {
   /* Fase 5: 'auto' segue o sistema (claro = Clássico, escuro = Espaço; ambos grátis) */
   lang: detectLang(), currency: 'auto', theme: 'auto', contrast: 'auto', dys: false, calmo: null,
-  mute: false, volume: 0.9, vRate: 0.95, vPitch: 1.15, vVoice: '',
+  mute: false, volume: 0.9, vRate: VOICE_RATE, vPitch: VOICE_PITCH, vVoice: '',
   diffMode: 'auto', goalRounds: 3, sessionLimit: 15, sync: false,
   unlockAll: false, newtabOn: true, timer: true,
   /* v2.4 — voz cordial: narração e efeitos independentes, tempo extra, menos movimento */
@@ -218,6 +221,8 @@ const DEFAULT_SETTINGS = {
   /* v2.3 — portão parental por senha (tudo fica no dispositivo) */
   passHash: '', passSalt: '', passHint: '', passSetAt: 0,
   passTries: 0, passLockUntil: 0,
+  /* v2.7 — escolhas de cookies e rastreamento: valem só neste aparelho (nunca vão no backup) */
+  consentAt: 0, consentStats: false, consentTrack: false,
 };
 let DB = { v: 2, updatedAt: 0, activeId: '', profiles: [], settings: Object.assign({}, DEFAULT_SETTINGS) };
 function P() { return DB.profiles.find((p) => p.id === DB.activeId) || DB.profiles[0]; }
@@ -367,7 +372,7 @@ function normalizeDB(d) {
   });
   if (typeof d.activeId !== 'string') d.activeId = '';
   const s = d.settings = (d.settings && typeof d.settings === 'object') ? d.settings : Object.assign({}, DEFAULT_SETTINGS);
-  const diffMode = s.diffMode, calmo = s.calmo;
+  const diffMode = s.diffMode, calmo = s.calmo, cStats = s.consentStats, cTrack = s.consentTrack;
   coerceLike(DEFAULT_SETTINGS, s);
   s.diffMode = (diffMode === 1 || diffMode === 2 || diffMode === 3) ? diffMode : 'auto';
   s.calmo = (calmo === true || calmo === false) ? calmo : null;
@@ -380,6 +385,11 @@ function normalizeDB(d) {
   s.lastBackupAt = Number(s.lastBackupAt) || 0;
   ['passHash', 'passSalt', 'passHint'].forEach((k) => { if (typeof s[k] !== 'string') s[k] = ''; });
   ['passSetAt', 'passTries', 'passLockUntil'].forEach((k) => { s[k] = Number(s[k]) || 0; });
+  s.consentAt = Math.max(0, Number(s.consentAt) || 0);
+  s.consentStats = s.consentAt > 0 && cStats === true; // só booleano verdadeiro, e só com data de escolha
+  s.consentTrack = s.consentAt > 0 && cTrack === true;
+  if (s.vRate === OLD_VOICE_DEFAULTS.rate) s.vRate = VOICE_RATE;
+  if (s.vPitch === OLD_VOICE_DEFAULTS.pitch) s.vPitch = VOICE_PITCH;
   return d;
 }
 /* ---------- casco nativo (Fase 6.1 — "Fase A" do estudo de apps nativos) ----------
@@ -682,45 +692,132 @@ function adoptRemote(remote) {
   return true;
 }
 
-/* ---------- áudio ---------- */
-let actx = null;
+/* ---------- áudio ----------
+   v2.7: efeitos sem cara de "bipe". Cada nota é um timbre de caixinha de música
+   (fundamental + harmônicos que se apagam mais rápido), com ataque macio, filtro
+   passa-baixa, reverberação curta e um compressor no fim da cadeia. Notas na escala
+   pentatônica de Dó (nada soa "errado" junto), com variação mínima de afinação e
+   de tempo para a mesma sequência nunca soar idêntica. Tudo sintetizado no
+   aparelho: nenhum arquivo de áudio, nenhuma rede. */
+let actx = null, bus = null, clickBuf = null;
+function impulse(sec, decay) {
+  const n = Math.floor(actx.sampleRate * sec), b = actx.createBuffer(2, n, actx.sampleRate);
+  for (let c = 0; c < 2; c++) {
+    const d = b.getChannelData(c);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, decay);
+  }
+  return b;
+}
+function buildBus() {
+  try {
+    const master = actx.createGain();
+    const comp = actx.createDynamicsCompressor();
+    comp.threshold.value = -20; comp.knee.value = 24; comp.ratio.value = 3; comp.attack.value = 0.004; comp.release.value = 0.2;
+    master.connect(comp); comp.connect(actx.destination);
+    const verb = actx.createConvolver(); verb.buffer = impulse(0.6, 3);
+    const wet = actx.createGain(); wet.gain.value = 0.2;
+    verb.connect(wet); wet.connect(comp);
+    const n = Math.floor(actx.sampleRate * 0.04);
+    clickBuf = actx.createBuffer(1, n, actx.sampleRate);
+    const d = clickBuf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 4);
+    bus = { master, verb };
+  } catch (e) { bus = { master: actx.destination, verb: null }; }
+}
 function ensureAudio() {
   try {
-    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    if (!actx) { actx = new (window.AudioContext || window.webkitAudioContext)(); buildBus(); }
     if (actx.state === 'suspended') actx.resume();
   } catch (e) { /* sem áudio */ }
 }
-function tone(freq, delay, dur, type, vol) {
-  if (G().mute || !actx) return;
+const SFX_ON = () => !G().mute && G().sfxOn !== false && !!actx && !!bus;
+/* efeitos abaixam enquanto a narração fala (A-185) */
+const sfxGain = (vol) => (vol || 0.1) * (G().volume != null ? G().volume : 0.9) * ((typeof TTS !== 'undefined' && TTS.speakingNow) ? 0.35 : 1);
+/* timbres: [razão do harmônico, amplitude, fração da duração em que ele vive] */
+const TIMBRE = {
+  box: [[1, 1, 1], [2, 0.3, 0.55], [3, 0.1, 0.35]],
+  soft: [[1, 1, 1], [2, 0.12, 0.4]],
+  bell: [[1, 1, 1], [2.76, 0.22, 0.45], [5.4, 0.08, 0.25]],
+};
+function sfxNote(freq, delay, dur, o) {
+  if (!SFX_ON()) return;
+  o = o || {};
   try {
-    const t0 = actx.currentTime + delay;
-    const o = actx.createOscillator(); const g = actx.createGain();
-    o.type = type || 'sine'; o.frequency.setValueAtTime(freq, t0);
-    // v2.4 (A-185 mixagem clara): efeitos abaixam enquanto a narração fala
-    const duck = (typeof TTS !== 'undefined' && TTS.speakingNow) ? 0.35 : 1;
-    g.gain.setValueAtTime(0.0001, t0);
-    g.gain.exponentialRampToValueAtTime((vol || 0.12) * (G().volume != null ? G().volume : 0.9) * duck, t0 + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    o.connect(g); g.connect(actx.destination);
-    o.start(t0); o.stop(t0 + dur + 0.05);
+    const t0 = actx.currentTime + delay + Math.random() * 0.008;
+    const cents = (Math.random() - 0.5) * 12;
+    const env = actx.createGain();
+    env.gain.setValueAtTime(0.0001, t0);
+    env.gain.linearRampToValueAtTime(sfxGain(o.vol), t0 + (o.atk || 0.008));
+    env.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    const lp = actx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = o.lp || 5200; lp.Q.value = 0.5;
+    env.connect(lp); lp.connect(bus.master);
+    if (bus.verb && o.wet !== 0) { const send = actx.createGain(); send.gain.value = o.wet != null ? o.wet : 1; lp.connect(send); send.connect(bus.verb); }
+    (TIMBRE[o.timbre] || TIMBRE.box).forEach((p) => {
+      const osc = actx.createOscillator(), g = actx.createGain();
+      osc.type = 'sine'; osc.frequency.setValueAtTime(freq * p[0], t0); osc.detune.value = cents;
+      g.gain.setValueAtTime(p[1], t0);
+      g.gain.exponentialRampToValueAtTime(0.0005, t0 + Math.max(0.05, dur * p[2]));
+      osc.connect(g); g.connect(env);
+      osc.start(t0); osc.stop(t0 + dur + 0.05);
+    });
   } catch (e) { /* ignora */ }
 }
+/* "toc" de madeira: estalo curto filtrado, sem tom */
+function sfxTick(delay, freq, vol) {
+  if (!SFX_ON() || !clickBuf) return;
+  try {
+    const t0 = actx.currentTime + delay;
+    const src = actx.createBufferSource(); src.buffer = clickBuf;
+    const bp = actx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = freq || 1500; bp.Q.value = 1.2;
+    const g = actx.createGain(); g.gain.value = sfxGain(vol || 0.5);
+    src.connect(bp); bp.connect(g); g.connect(bus.master);
+    src.start(t0);
+  } catch (e) { /* ignora */ }
+}
+/* escala pentatônica de Dó (C5 D5 E5 G5 A5 C6 D6 E6 G6) */
+const PENTA = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.51, 1567.98];
 const SFX = {
-  tap: () => tone(360, 0, 0.06, 'triangle', 0.05),
-  correct: () => { tone(659, 0, 0.12, 'triangle', 0.12); tone(880, 0.1, 0.12, 'triangle', 0.12); tone(1175, 0.2, 0.25, 'triangle', 0.12); },
-  wrong: () => { tone(233, 0, 0.18, 'sine', 0.09); tone(174, 0.16, 0.25, 'sine', 0.09); },
-  star: () => { tone(1568, 0, 0.1, 'triangle', 0.08); tone(2093, 0.08, 0.16, 'triangle', 0.07); },
-  /* v2.4 (A-183): vitória com variações — nunca a mesma sequência duas vezes seguidas */
+  tap: () => { sfxTick(0, 1700, 0.35); sfxNote(330, 0, 0.09, { timbre: 'soft', vol: 0.04, wet: 0.3 }); },
+  /* três jeitos de dizer "acertou"; nunca o mesmo duas vezes seguidas */
+  _ok: -1,
+  correct: () => {
+    const seqs = [[2, 3, 5], [1, 4, 6], [3, 5, 7]];
+    let i = rand(0, seqs.length - 1);
+    if (i === SFX._ok) i = (i + 1) % seqs.length;
+    SFX._ok = i;
+    const s = seqs[i];
+    sfxNote(PENTA[s[0]], 0, 0.3, { vol: 0.11 });
+    sfxNote(PENTA[s[1]], 0.1, 0.3, { vol: 0.11 });
+    sfxNote(PENTA[s[2]], 0.2, 0.7, { vol: 0.12 });
+    sfxNote(PENTA[s[2]] / 2, 0.2, 0.7, { vol: 0.05, timbre: 'soft' });
+  },
+  /* errou: um "ops" suave e curto, que convida a tentar de novo (nada de buzina) */
+  wrong: () => {
+    sfxNote(392, 0, 0.26, { timbre: 'soft', vol: 0.085, lp: 1800, atk: 0.02, wet: 0.5 });
+    sfxNote(329.63, 0.17, 0.4, { timbre: 'soft', vol: 0.08, lp: 1600, atk: 0.02, wet: 0.5 });
+  },
+  star: () => {
+    const base = rand(4, 6);
+    [0, 1, 2].forEach((k) => sfxNote(PENTA[Math.min(base + k, PENTA.length - 1)] * 2, k * 0.075, 0.5, { timbre: 'bell', vol: 0.05 }));
+  },
   _fx: 0,
   fanfare: () => {
-    const seqs = [[523, 659, 784, 1047], [392, 523, 659, 784], [523, 659, 784, 880, 1047]];
+    const seqs = [[0, 2, 3, 5], [3, 5, 6, 7], [0, 2, 4, 5, 7]];
     let i = rand(0, seqs.length - 1);
     if (i === SFX._fx) i = (i + 1) % seqs.length;
     SFX._fx = i;
-    seqs[i].forEach((f, j) => tone(f, j * 0.13, 0.28, 'triangle', 0.11));
+    const s = seqs[i];
+    s.forEach((n, j) => {
+      const last = j === s.length - 1;
+      sfxNote(PENTA[n], j * 0.13, last ? 0.9 : 0.34, { vol: 0.1 });
+      if (last) { sfxNote(PENTA[n] * 1.5, j * 0.13, 0.9, { vol: 0.05, timbre: 'soft' }); sfxNote(PENTA[n] / 2, j * 0.13, 0.9, { vol: 0.05, timbre: 'soft' }); }
+    });
   },
-  /* v2.5: caixa registradora — compras na loja ganham som próprio */
-  cash: () => { tone(880, 0, 0.07, 'square', 0.05); tone(1319, 0.08, 0.16, 'triangle', 0.09); tone(1760, 0.18, 0.22, 'triangle', 0.08); },
+  cash: () => {
+    sfxTick(0, 3200, 0.4);
+    sfxNote(1567.98, 0.02, 0.35, { timbre: 'bell', vol: 0.07 });
+    sfxNote(2093, 0.11, 0.55, { timbre: 'bell', vol: 0.07 });
+  },
 };
 
 /* ---------- voz cordial (S22 + Fase 1 do estudo de voz, v2.4) ----------
@@ -786,6 +883,10 @@ const TTS = {
     if (/(thalita|francisca|antonio|brenda|elza|giovanni|giovana|leticia|luciana|yara|joana|maria|camila|aria|jenny|emma|michelle|ana online|elvira|dalia|salome|helena|paulina|monica|monica|isabela)/.test(n)) s += 8;
     // penaliza motores notoriamente robóticos
     if (/(espeak|pico|festival|fife|flite|cmu|compact|robosoft)/.test(n)) s -= 30;
+    /* v2.7: o jogo é local. Voz que depende de rede (Android "-network", Edge "Online") só
+       conta quando há conexão; sem ela, a voz instalada no aparelho vence sempre. */
+    const needsNet = v.localService === false || /-network\b|online/.test(n);
+    if (needsNet && !(typeof navigator !== 'undefined' && navigator.onLine !== false && !IN_NATIVE_APP)) s -= 80;
     return s;
   },
   /* camada de qualidade para a interface: 3=🌟 natural · 2=⚡ neural/rede ·
@@ -833,9 +934,10 @@ const TTS = {
     const parts = String(text).split(/(?<=[.!?…])\s+|(?<=[:;])\s+/).filter(Boolean);
     const out = parts.map((p) => ({
       text: p,
-      pause: /…|\.\.\.$/.test(p) ? 420 : /[!?]$/.test(p) ? 300 : /[.]$/.test(p) ? 260 : 140,
+      kind: /\?$/.test(p) ? 'q' : /!$/.test(p) ? 'e' : 's',
+      pause: /…|\.\.\.$/.test(p) ? 380 : /[!?]$/.test(p) ? 250 : /[.]$/.test(p) ? 220 : 120,
     }));
-    return out.length ? out : [{ text: String(text), pause: 0 }];
+    return out.length ? out : [{ text: String(text), kind: 's', pause: 0 }];
   },
   speak(text, opts) {
     if (!this.ok || !G().voiceOn || G().mute || !text) return;
@@ -844,7 +946,7 @@ const TTS = {
     this.lastText = text; this.lastAt = now;
     this.cancelQueue();
     const calm = !!(opts && opts.calm); // A-194: repetir com calma (15% mais devagar)
-    this.queue = this.segments(this.stripEmoji(text)).map((s) => ({ text: s.text, pause: s.pause, calm }));
+    this.queue = this.segments(this.stripEmoji(text)).map((s) => ({ text: s.text, pause: s.pause, kind: s.kind, calm }));
     this.speakingNow = true;
     this.next();
   },
@@ -856,8 +958,11 @@ const TTS = {
       const g = G();
       const want = speechLang(g.lang);
       const prof = (typeof P === 'function' && P()) || {};
-      const rate = (typeof prof.vRate === 'number' ? prof.vRate : (g.vRate || 0.95)) * (seg.calm ? 0.85 : 1);
-      const pitch = (typeof prof.vPitch === 'number' ? prof.vPitch : (g.vPitch || 1.15));
+      /* v2.7: entonação por tipo de frase + variação mínima, para a fala não soar em linha reta */
+      const jit = (Math.random() - 0.5) * 0.04;
+      const shape = seg.kind === 'q' ? { p: 0.06, r: 0 } : seg.kind === 'e' ? { p: 0.05, r: 0.04 } : { p: -0.02, r: 0 };
+      const rate = ((typeof prof.vRate === 'number' ? prof.vRate : (g.vRate || VOICE_RATE)) + shape.r) * (seg.calm ? 0.85 : 1);
+      const pitch = (typeof prof.vPitch === 'number' ? prof.vPitch : (g.vPitch || VOICE_PITCH)) + shape.p + jit;
       const v = this.pickVoice(want.slice(0, 2).toLowerCase());
       const self = this;
       if (this.native) {
@@ -1070,7 +1175,8 @@ const PASS = {
 /* A senha pertence ao aparelho: backup, cópia e sync levam o progresso sem
    hash, sal, lembrete nem bloqueio, e importar ou adotar uma cópia remota
    mantém a senha que já está aqui. */
-const SECRET_KEYS = ['passHash', 'passSalt', 'passHint', 'passSetAt', 'passTries', 'passLockUntil'];
+const SECRET_KEYS = ['passHash', 'passSalt', 'passHint', 'passSetAt', 'passTries', 'passLockUntil',
+  'consentAt', 'consentStats', 'consentTrack'];
 function shareableDB(db) {
   const out = JSON.parse(JSON.stringify(db));
   if (out.settings) SECRET_KEYS.forEach((k) => { delete out.settings[k]; });
@@ -1081,6 +1187,30 @@ function keepLocalSecrets(incoming, local) {
   SECRET_KEYS.forEach((k) => { incoming.settings[k] = from[k] != null ? from[k] : DEFAULT_SETTINGS[k]; });
   return incoming;
 }
+/* ---------- canais oficiais e consentimento (v2.7) ----------
+   O jogo não usa cookies de terceiros nem rastreadores. Mesmo assim guardamos a
+   escolha do responsável por categoria, só neste aparelho (SECRET_KEYS), para que
+   qualquer recurso futuro nasça respeitando o que foi decidido. Sem escolha
+   registrada, tudo o que é opcional fica DESLIGADO. */
+const LEGAL = Object.freeze({
+  privacy: 'https://klivfy.com/privacidade',
+  terms: 'https://klivfy.com/termos-de-uso',
+  support: 'https://klivfy.com/suporte',
+});
+const Consent = {
+  decided() { return (Number(G().consentAt) || 0) > 0; },
+  allows(cat) {
+    if (cat === 'essential') return true;
+    if (!this.decided()) return false;
+    return cat === 'stats' ? G().consentStats === true : cat === 'track' ? G().consentTrack === true : false;
+  },
+  set(stats, track) {
+    const g = G();
+    g.consentStats = stats === true; g.consentTrack = track === true; g.consentAt = Date.now();
+  },
+  acceptAll() { this.set(true, true); },
+  rejectAll() { this.set(false, false); },
+};
 /* ---------- visuais de objetos ---------- */
 function emojisHTML(item, count, opts) {
   let s = '';

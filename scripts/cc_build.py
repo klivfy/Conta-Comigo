@@ -82,7 +82,7 @@ def gradient(w, h):
 # ---------- jogo para os apps Capacitor (iOS e Android) ----------
 def capacitor_www(dest, plataforma):
     """Copia a PWA (build_pwa.py) para dest, sem o que não serve dentro do app:
-    service worker, manifest, leia-me do Android, .well-known e política de privacidade.
+    service worker, manifest, leia-me, .well-known e política de privacidade.
     O WebView do Capacitor serve os arquivos de dentro do pacote, então o jogo já
     funciona offline sem service worker."""
     import re, shutil, subprocess
@@ -92,11 +92,14 @@ def capacitor_www(dest, plataforma):
     if os.path.exists(dest):
         shutil.rmtree(dest)
     shutil.copytree(pwa, dest, ignore=shutil.ignore_patterns(
-        "sw.js", "manifest.webmanifest", "leia-me-android.md", ".well-known", "privacidade*"))
+        "sw.js", "manifest.webmanifest", "leia-me.md", ".well-known", "privacidade*"))
     # boot.js: tira o registro do service worker (bloco acrescentado pelo build_pwa.py)
     boot = os.path.join(dest, "js", "boot.js")
     src = open(boot, encoding="utf-8").read()
-    src, n = re.subn(r"\nif \('serviceWorker' in navigator\) \{.*?\n\}\n", "\n", src, flags=re.S)
+    # ... e a guarda de Android (remove manifesto e service worker de quem abre a PWA no navegador)
+    src, n0 = re.subn(r"\n/\* Android não é plataforma da PWA.*?\*/\nconst ANDROID_WEB = .*?\n\}\n", "\n", src, flags=re.S)
+    assert n0 == 1, "guarda de Android não encontrada em boot.js"
+    src, n = re.subn(r"\nif \('serviceWorker' in navigator[^)]*\) \{.*?\n\}\n", "\n", src, flags=re.S)
     assert n == 1, "registro do service worker não encontrado em boot.js"
     open(boot, "w", encoding="utf-8").write(
         src + "/* " + plataforma + " (Capacitor): sem service worker — os arquivos vêm do próprio app */\n")

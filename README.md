@@ -5,7 +5,7 @@
 ### Matemática lúdica para crianças a partir de 4 anos
 
 ![Versão](https://img.shields.io/badge/vers%C3%A3o-2.6.4-2EA043)
-![Plataformas](https://img.shields.io/badge/plataformas-Chrome%20%C2%B7%20Edge%20%C2%B7%20Firefox%20%C2%B7%20Android%20%C2%B7%20Windows%20%C2%B7%20iOS%20%C2%B7%20PWA-0969DA)
+![Plataformas](https://img.shields.io/badge/plataformas-Chrome%20%C2%B7%20Edge%20%C2%B7%20Firefox%20%C2%B7%20Android%20%C2%B7%20Windows%20%C2%B7%20iOS%20%C2%B7%20Web-0969DA)
 ![Idiomas](https://img.shields.io/badge/idiomas-PT%20%C2%B7%20EN%20%C2%B7%20ES-E16F24)
 ![Offline](https://img.shields.io/badge/100%25-offline-8250DF)
 ![Conformidade](https://img.shields.io/badge/COPPA%20%C2%B7%20LGPD--K%20%C2%B7%20GDPR--K-conforme-1F883D)
@@ -54,8 +54,8 @@ A narração usa a síntese de voz do próprio sistema com **seleção inteligen
 |---|---|
 | 🟢 Chrome / Edge / Brave | [conta-comigo-chrome-2.6.4.zip](download/conta-comigo-chrome-2.6.4.zip) |
 | 🦊 Firefox (128+) | [conta-comigo-firefox-2.6.4.zip](download/conta-comigo-firefox-2.6.4.zip) |
-| 🤖 Android (PWA) | [conta-comigo-pwa-android-2.6.4.zip](download/conta-comigo-pwa-android-2.6.4.zip) |
-| 🤖 Android (app da Play Store) | AAB gerado pelo CI: *Actions → Android (Capacitor)*; assinatura em [native/android/keystore/README.md](native/android/keystore/README.md) |
+| 🌐 Web / PWA (computador e iPhone) | [conta-comigo-pwa-2.6.4.zip](download/conta-comigo-pwa-2.6.4.zip) |
+| 🤖 Android (app local da Play Store, sem PWA) | AAB gerado pelo CI: *Actions → Android (Capacitor)*; assinatura em [native/android/keystore/README.md](native/android/keystore/README.md) |
 | 🎬 Vídeo promocional (2:19, pt-BR) | [conta-comigo-video-promocional-pt-BR.mp4](download/conta-comigo/loja/video/conta-comigo-video-promocional-pt-BR.mp4) + [legenda](download/conta-comigo/loja/video/conta-comigo-video-promocional-pt-BR.srt) |
 
 > Os pacotes ficam na pasta [`download/`](download/) e são gerados a partir de `download/conta-comigo/`. Versões anteriores: [releases](https://github.com/klivfy/Conta-Comigo/releases).
@@ -72,15 +72,19 @@ A narração usa a síntese de voz do próprio sistema com **seleção inteligen
 2. Abra `about:debugging#/runtime/this-firefox` → **Carregar extensão temporária**
 3. Selecione qualquer arquivo da pasta descompactada
 
-**Android (PWA)**
-1. Baixe `conta-comigo-pwa-android-2.6.4.zip` e hospede a pasta em qualquer servidor (local ou web)
-2. Abra o endereço no Chrome do celular → menu ⋮ → **Adicionar à tela inicial**
+**Android**
+Instale o app da Google Play. O jogo vai dentro do pacote e roda 100% local, sem internet e sem site. A PWA não é mais oferecida no Android.
+
+**Web / PWA (computador e iPhone)**
+1. Baixe `conta-comigo-pwa-2.6.4.zip` e hospede a pasta em um endereço https
+2. Abra no navegador e use **Instalar** (Chrome/Edge) ou **Adicionar à Tela de Início** (Safari)
 
 > **Atualização sem perder progresso:** recarregar a extensão (↻ em `chrome://extensions`) preserva estrelas, conquistas e perfis; remover e reinstalar apaga — antes, exporte o backup pelo botão 💾 e reimporte depois. Para confirmar a versão: o **selo `v2.6.4`** aparece no topo do jogo, ao lado de 🔥.
 
 ## 🔐 Privacidade e público-infância
 
 - **Zero coleta**: nenhuma conta, nenhum dado pessoal, nenhuma telemetria — tudo fica no aparelho
+- **Cookies e rastreamento**: o jogo não usa nenhum; mesmo assim, um aviso discreto deixa o responsável aceitar, recusar ou personalizar, e o botão "Personalizar aceites" fica sempre no rodapé. Links de privacidade, termos e suporte passam por uma conferência para adultos
 - **Portão dos responsáveis**: configurações e dados sensíveis atrás de senha guardada só no aparelho (PBKDF2-SHA-256 com sal, bloqueio progressivo); senha, sal e lembrete nunca vão para o backup nem para a sincronização
 - **Conformidade**: COPPA, LGPD (com atenção especial a crianças — LGPD-K) e GDPR-K
 - **Áudio local**: a narração usa a síntese de voz do próprio sistema; nada é enviado a servidores

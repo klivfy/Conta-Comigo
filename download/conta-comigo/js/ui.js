@@ -39,6 +39,7 @@ function show(name) {
   // teclado/leitor de tela: se o foco ficou numa tela que sumiu, ele vai para a nova
   if (el && prev && prev.closest && prev.closest('.screen') && !el.contains(prev)) focusScreen(el);
   if (name === 'home') adoptIfSafe();
+  syncConsentBanner();
 }
 function focusScreen(el) {
   if (overlayOpen()) return;
@@ -125,7 +126,7 @@ function announce(text) {
    clique), o foco entra no modal e volta ao botão de origem ao fechar */
 let overlayReturn = null;
 function setBackgroundInert(on) {
-  ['#topbar', '#screens', '#pop-profile'].forEach((sel) => { const el = $(sel); if (el) el.inert = on; });
+  ['#topbar', '#screens', '#pop-profile', '#consent'].forEach((sel) => { const el = $(sel); if (el) el.inert = on; });
 }
 function showOverlay(html) {
   const o = $('#overlay'), card = $('#overlay-card');
@@ -1203,6 +1204,82 @@ setInterval(() => {
   if (lim > 0 && sessionSec >= lim * 60) breakOverlay();
 }, 1000);
 
+/* ==================== canais oficiais, rodapé e cookies (v2.7) ====================
+   Criança não sai do jogo sozinha: todo link externo e toda escolha que LIGA algo
+   passam antes por uma conferência para adultos. Recusar é sempre imediato. */
+function openExternal(url) {
+  const a = document.createElement('a');
+  a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+function adultCheck(onOk) {
+  const a = rand(12, 19), b = rand(13, 19), want = String(a * b);
+  showOverlay('<div class="ov-emoji">🔒</div><h3>' + t('ad_title') + '</h3><p>' + t('ad_q', { q: a + ' × ' + b }) + '</p>' +
+    '<input id="ad-in" class="ad-input" type="text" inputmode="numeric" autocomplete="off" aria-label="' + t('ad_label') + '">' +
+    '<div class="gate-err" id="ad-err" role="alert"></div>' +
+    '<div class="ov-actions"><button class="big-btn" id="ad-ok">' + t('ok') + '</button>' +
+    '<button class="big-btn alt" data-close="1">' + t('ck_cancel') + '</button></div>');
+  const go = () => {
+    if ($('#ad-in').value.trim() === want) { hideOverlay(); onOk(); }
+    else { $('#ad-err').textContent = t('ad_wrong'); $('#ad-in').select(); }
+  };
+  $('#ad-ok').addEventListener('click', go);
+  $('#ad-in').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+}
+function ckSaved(stats, track) {
+  Consent.set(stats, track); saveState(true);
+  removeConsentBanner(); toast(t('ck_saved'));
+}
+function removeConsentBanner() { const b = $('#consent'); if (b) b.remove(); }
+function syncConsentBanner() {
+  const b = $('#consent'); if (!b) return;
+  const home = $('#screen-home');
+  b.classList.toggle('hidden', !(home && home.classList.contains('active')));
+}
+function showConsentBanner() {
+  if (Consent.decided() || $('#consent')) return;
+  const b = document.createElement('div');
+  b.id = 'consent'; b.className = 'consent';
+  b.setAttribute('role', 'region'); b.setAttribute('aria-label', t('ck_title'));
+  b.innerHTML = '<p>' + t('ck_msg') + '</p><div class="consent-actions">' +
+    '<button type="button" class="ck-btn ck-link" data-ck="custom">' + t('ck_custom') + '</button>' +
+    '<button type="button" class="ck-btn" data-ck="reject">' + t('ck_reject') + '</button>' +
+    '<button type="button" class="ck-btn" data-ck="accept">' + t('ck_accept') + '</button></div>';
+  $('#app').appendChild(b);
+  b.addEventListener('click', (e) => {
+    const k = e.target && e.target.closest ? e.target.closest('[data-ck]') : null;
+    if (!k) return;
+    SFX.tap();
+    if (k.dataset.ck === 'reject') ckSaved(false, false);
+    else if (k.dataset.ck === 'accept') adultCheck(() => ckSaved(true, true));
+    else openConsentPrefs();
+  });
+  syncConsentBanner();
+}
+function openConsentPrefs() {
+  const row = (id, title, desc, on, locked) =>
+    '<div class="ck-row"><div class="ck-txt"><b>' + title + '</b><span>' + desc + '</span></div>' +
+    '<input type="checkbox" class="ck-switch" id="' + id + '" aria-label="' + title + '"' + (on ? ' checked' : '') + (locked ? ' disabled' : '') + '></div>';
+  showOverlay('<h3>' + t('ck_title') + '</h3><p class="ck-note">' + t('ck_note') + '</p>' +
+    row('ck-ess', t('ck_ess'), t('ck_ess_d'), true, true) +
+    row('ck-stats', t('ck_stats'), t('ck_stats_d'), Consent.allows('stats'), false) +
+    row('ck-track', t('ck_track'), t('ck_track_d'), Consent.allows('track'), false) +
+    '<div class="ov-actions"><button class="big-btn" id="ck-save">' + t('ck_save') + '</button>' +
+    '<button class="big-btn alt" data-close="1">' + t('ck_cancel') + '</button></div>');
+  $('#ck-save').addEventListener('click', () => {
+    const st = $('#ck-stats').checked, tr = $('#ck-track').checked;
+    if (!st && !tr) { hideOverlay(); ckSaved(false, false); return; }
+    hideOverlay(); adultCheck(() => ckSaved(st, tr));
+  });
+}
+function bindLegal() {
+  $$('.legal-link[data-legal]').forEach((btn) => btn.addEventListener('click', () => {
+    SFX.tap(); adultCheck(() => openExternal(LEGAL[btn.dataset.legal]));
+  }));
+  const c = $('#btn-consent');
+  if (c) c.addEventListener('click', () => { SFX.tap(); openConsentPrefs(); });
+}
+
 /* ---------- boot ---------- */
 async function boot() {
   await initDB();
@@ -1210,9 +1287,11 @@ async function boot() {
   applyLang();
   applySettings();
   bindStatic();
+  bindLegal();
   ensureMissions();
   renderHome();
   show('home');
+  setTimeout(showConsentBanner, 1200); // discreto: entra depois que a criança já viu o jogo
   // v2.4.1: selo de versão visível no topo — confirmação instantânea da build
   const vb = $('#cc-ver');
   if (vb) {
