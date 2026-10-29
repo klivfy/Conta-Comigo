@@ -1,18 +1,18 @@
 # Conta Comigo — Arquivos gerados
 
 Extensão de navegador (Chrome + Firefox) de matemática lúdica para crianças a partir de 4 anos.
-Versão atual: **v2.6.4**
+Versão atual: **v2.7.0**
 
 ## ⚠️ A extensão parece igual? Como atualizar e confirmar
 
-Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo parece o de antes, o navegador provavelmente ainda está com a build antiga. Para confirmar em 1 segundo: abra o jogo e olhe o **topo da tela** — desde a v2.4.1 há um **selo de versão** (ex.: `v2.6.4`) ao lado de 🔥. Sem selo = build anterior à 2.4.1.
+Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo parece o de antes, o navegador provavelmente ainda está com a build antiga. Para confirmar em 1 segundo: abra o jogo e olhe o **topo da tela** — desde a v2.4.1 há um **selo de versão** (ex.: `v2.7.0`) ao lado de 🔥. Sem selo = build anterior à 2.4.1.
 
 **Importante sobre o progresso:** recarregar a extensão (botão ↻ em `chrome://extensions`) **preserva** estrelas, conquistas e perfis; **remover e reinstalar apaga**. Antes de remover, baixe o **backup datado** no botão 💾 da tela de Conquistas ou no painel dos responsáveis — depois reimporte no mesmo painel.
 
 **Atualizar (Chrome/Edge/Brave):** com a extensão ainda instalada, clique em ↻ Recarregar no cartão da extensão e escolha a pasta nova descompactada (preserva tudo). Ou: backup → remover → carregar o zip novo → importar o backup.
 **Atualizar (Firefox):** `about:debugging#/runtime/this-firefox` → *Recarregar*.
 
-## Novidades da v2.6.4
+## Novidades da v2.7.0
 
 - **Progresso protegido**: o jogo, o painel dos responsáveis e a nova aba não se sobrescrevem mais (antes, um painel aberto podia devolver as estrelas ao valor antigo).
 - **Sincronização por perfil**: funciona com vários perfis (antes falhava em silêncio acima de 8 KB) e o painel mostra se deu certo.
@@ -51,9 +51,9 @@ Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo par
 
 | Arquivo | Uso |
 |---|---|
-| `conta-comigo-chrome-2.6.4.zip` | Pacote para Chrome/Edge/Brave (Manifest V3, service worker) |
-| `conta-comigo-firefox-2.6.4.zip` | Pacote para Firefox computador **e Android** (event page + `gecko_android` 128+) |
-| `conta-comigo-pwa-2.6.4.zip` | **Web/PWA** (computador e iPhone): instalável e offline. O Android não usa a PWA: lá o jogo é o app local da Play Store |
+| `conta-comigo-chrome-2.7.0.zip` | Pacote para Chrome/Edge/Brave (Manifest V3, service worker) |
+| `conta-comigo-firefox-2.7.0.zip` | Pacote para Firefox computador **e Android** (event page + `gecko_android` 128+) |
+| `conta-comigo-pwa-2.7.0.zip` | **Web/PWA** (computador e iPhone): instalável e offline. O Android não usa a PWA: lá o jogo é o app local da Play Store |
 
 - Instalação e novidades: abra `conta-comigo/demo.html` no navegador.
 - Pasta `conta-comigo/` = fonte única (build Chromium). As pastas `conta-comigo-firefox/` e `conta-comigo-pwa/` são geradas por `python scripts/build_packages.py` e `python scripts/build_pwa.py` e não ficam no Git.

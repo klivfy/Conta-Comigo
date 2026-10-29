@@ -1,6 +1,6 @@
-# Microsoft Store (Windows 10/11) — Conta Comigo 2.6.4
+# Microsoft Store (Windows 10/11) — Conta Comigo 2.7.0
 
-Painel: <https://partner.microsoft.com/dashboard/apps-and-games/overview> · Pacote: o `.msix`/`.appx` gerado por **Actions → Windows (Electron)** (`conta-comigo-windows-2.6.4-x64-loja.appx`), não o instalador NSIS.
+Painel: <https://partner.microsoft.com/dashboard/apps-and-games/overview> · Pacote: o `.msix`/`.appx` gerado por **Actions → Windows (Electron)** (`conta-comigo-windows-2.7.0-x64-loja.appx`), não o instalador NSIS.
 
 ## Antes de enviar o pacote
 
@@ -100,7 +100,7 @@ Matemática de brincar para crianças de 4 a 8 anos: contar, somar, comparar, di
 **Novidades desta versão (≤ 1500):** _(384 caracteres)_
 
 ```text
-Novidades da 2.6.4: o progresso não se perde mais quando o painel dos responsáveis ou outra aba está aberta; a sincronização funciona com vários perfis e mostra se deu certo; o leitor de tela não diz mais a resposta ao contar e dá para contar pelo teclado; o modo Dinheiro usa a moeda da sua região; e a voz em espanhol segue o seu país. O instalador do Windows ganhou um identificador novo: quem tinha a 2.6.2 instalada pelo instalador pode desinstalar a versão antiga em Aplicativos instalados; o progresso continua.
+Novidades da 2.7.0: efeitos sonoros mais suaves e naturais e voz com entonação melhor; links de Privacidade, Termos de Uso e Suporte no rodapé, atrás de uma conferência para adultos; e um aviso de cookies em que o responsável aceita, recusa ou personaliza (o jogo continua sem rastreadores). O instalador do Windows ganhou um identificador novo: quem tinha a 2.6.2 instalada pelo instalador pode desinstalar a versão antiga em Aplicativos instalados; o progresso continua.
 ```
 
 **Notas para a certificação (≤ 2000):** _(478 caracteres)_
@@ -171,7 +171,7 @@ Playful math for children aged 4 to 8: counting, addition, comparing, money and 
 **Novidades desta versão (≤ 1500):** _(362 caracteres)_
 
 ```text
-What's new in 2.6.4: progress is no longer lost when the parents' panel or another tab is open; sync now works with several profiles and shows whether it worked; screen readers no longer announce the answer when counting, and counting works from the keyboard; Money mode uses your region's currency; and the Spanish voice follows your country. The Windows installer has a new identifier: if you installed 2.6.2 with the installer, you can uninstall the old copy in Installed apps; your progress is kept.
+What's new in 2.7.0: softer, more natural sound effects and a voice with better intonation; Privacy, Terms of Use and Support links in the footer, behind an adult check; and a cookie notice where a parent can accept, reject or customize (the game still has no trackers). The Windows installer has a new identifier: if you installed 2.6.2 with the installer, you can uninstall the old copy in Installed apps; your progress is kept.
 ```
 
 **Notas para a certificação (≤ 2000):** _(472 caracteres)_
@@ -242,7 +242,7 @@ Matemática lúdica para niños de 4 a 8 años: contar, sumar, comparar, dinero 
 **Novidades desta versão (≤ 1500):** _(401 caracteres)_
 
 ```text
-Novedades de la 2.6.4: el progreso ya no se pierde cuando el panel de los responsables u otra pestaña está abierta; la sincronización funciona con varios perfiles y muestra si salió bien; el lector de pantalla ya no dice la respuesta al contar y se puede contar con el teclado; el modo Dinero usa la moneda de tu región; y la voz en español sigue tu país. El instalador de Windows tiene un identificador nuevo: si instalaste la 2.6.2 con el instalador, puedes desinstalar la copia antigua en Aplicaciones instaladas; el progreso se conserva.
+Novedades de la 2.7.0: efectos de sonido más suaves y naturales y una voz con mejor entonación; enlaces de Privacidad, Términos de Uso y Soporte en el pie, detrás de una verificación para adultos; y un aviso de cookies en el que el responsable acepta, rechaza o personaliza (el juego sigue sin rastreadores). El instalador de Windows tiene un identificador nuevo: si instalaste la 2.6.2 con el instalador, puedes desinstalar la copia antigua en Aplicaciones instaladas; el progreso se conserva.
 ```
 
 **Notas para a certificação (≤ 2000):** _(485 caracteres)_

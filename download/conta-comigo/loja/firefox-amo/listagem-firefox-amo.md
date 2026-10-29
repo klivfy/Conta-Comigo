@@ -1,4 +1,4 @@
-# Conta Comigo v2.6.4 — Listagem para o Firefox Add-ons (AMO)
+# Conta Comigo v2.7.0 — Listagem para o Firefox Add-ons (AMO)
 
 Textos prontos para copiar e colar em
 <https://addons.mozilla.org/developers/> → *Editar detalhes do produto*.
@@ -48,8 +48,8 @@ OBSERVAÇÕES
 • A extensão substitui a página de nova aba por um desafio rápido de matemática. Dá para desligar o desafio na própria página; para voltar à nova aba padrão do Firefox, desative ou remova a extensão.
 • Atalho de teclado para abrir o jogo: Ctrl+Shift+U (Command+Shift+U no Mac).
 
-**Notas da versão 2.6.4:**
-o progresso não se perde mais quando o painel dos responsáveis ou outra aba está aberta; a sincronização funciona com vários perfis e mostra se deu certo; o leitor de tela não diz mais a resposta ao contar e dá para contar pelo teclado; o modo Dinheiro usa a moeda da sua região; e a voz em espanhol segue o seu país. Requer Firefox 128 ou superior.
+**Notas da versão 2.7.0:**
+efeitos sonoros mais suaves e naturais e voz com entonação melhor; links de Privacidade, Termos de Uso e Suporte no rodapé, atrás de uma conferência para adultos; e um aviso de cookies em que o responsável aceita, recusa ou personaliza (o jogo continua sem rastreadores). Requer Firefox 128 ou superior.
 
 **Categoria sugerida:** Games & Entertainment (alternativa: Other)
 **Etiquetas (tags):** matemática, crianças, educação, jogo, contar, aprendizado, offline, infantil
@@ -95,8 +95,8 @@ NOTES
 • The extension replaces the new tab page with a quick math challenge. You can turn the challenge off on that page; to get Firefox's default new tab back, disable or remove the extension.
 • Keyboard shortcut to open the game: Ctrl+Shift+U (Command+Shift+U on Mac).
 
-**Release notes 2.6.4:**
-progress is no longer lost when the parents' panel or another tab is open; sync now works with several profiles and shows whether it worked; screen readers no longer announce the answer when counting, and counting works from the keyboard; Money mode uses your region's currency; and the Spanish voice follows your country. Requires Firefox 128 or later.
+**Release notes 2.7.0:**
+softer, more natural sound effects and a voice with better intonation; Privacy, Terms of Use and Support links in the footer, behind an adult check; and a cookie notice where a parent can accept, reject or customize (the game still has no trackers). Requires Firefox 128 or later.
 
 ---
 
@@ -138,8 +138,8 @@ PRIVACIDAD
 NOTAS
 • La extensión reemplaza la página de nueva pestaña por un desafío rápido de matemática. Puedes apagar el desafío en esa misma página; para recuperar la nueva pestaña predeterminada de Firefox, desactiva o elimina la extensión.
 
-**Notas de la versión 2.6.4:**
-el progreso ya no se pierde cuando el panel de los responsables u otra pestaña está abierta; la sincronización funciona con varios perfiles y muestra si salió bien; el lector de pantalla ya no dice la respuesta al contar y se puede contar con el teclado; el modo Dinero usa la moneda de tu región; y la voz en español sigue tu país. Requiere Firefox 128 o superior.
+**Notas de la versión 2.7.0:**
+efectos de sonido más suaves y naturales y una voz con mejor entonación; enlaces de Privacidad, Términos de Uso y Soporte en el pie, detrás de una verificación para adultos; y un aviso de cookies en el que el responsable acepta, rechaza o personaliza (el juego sigue sin rastreadores). Requiere Firefox 128 o superior.
 
 ---
 

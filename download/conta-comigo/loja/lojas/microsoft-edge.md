@@ -1,6 +1,6 @@
-# Microsoft Edge Add-ons — Conta Comigo 2.6.4
+# Microsoft Edge Add-ons — Conta Comigo 2.7.0
 
-Painel: <https://partner.microsoft.com/dashboard/microsoftedge/overview> · Pacote: o **mesmo** zip do Chrome, `download/conta-comigo-chrome-2.6.4.zip` (o Edge é baseado em Chromium e aceita MV3 com service worker).
+Painel: <https://partner.microsoft.com/dashboard/microsoftedge/overview> · Pacote: o **mesmo** zip do Chrome, `download/conta-comigo-chrome-2.7.0.zip` (o Edge é baseado em Chromium e aceita MV3 com service worker).
 
 ## Dados gerais
 
@@ -73,7 +73,7 @@ OBSERVAÇÕES
 Não é preciso conta nem senha para testar. Clique no ícone da extensão: o jogo abre em tela cheia. Escolha "Contar" ou "Somar" e toque nas respostas. A extensão usa só a permissão "storage", não faz requisições de rede e não coleta dados. Ela substitui a nova aba por um desafio rápido; dá para desligar na própria página. O pacote é o mesmo MV3 enviado à Chrome Web Store (service worker em background.js).
 ```
 
-**Notas da versão:** Novidades da 2.6.4: o progresso não se perde mais quando o painel dos responsáveis ou outra aba está aberta; a sincronização funciona com vários perfis e mostra se deu certo; o leitor de tela não diz mais a resposta ao contar e dá para contar pelo teclado; o modo Dinheiro usa a moeda da sua região; e a voz em espanhol segue o seu país.
+**Notas da versão:** Novidades da 2.7.0: efeitos sonoros mais suaves e naturais e voz com entonação melhor; links de Privacidade, Termos de Uso e Suporte no rodapé, atrás de uma conferência para adultos; e um aviso de cookies em que o responsável aceita, recusa ou personaliza (o jogo continua sem rastreadores).
 
 
 ## English
@@ -125,7 +125,7 @@ NOTES
 No account or password is needed to test. Click the extension icon: the game opens full screen. Pick "Count" or "Add" and tap the answers. The extension uses only the "storage" permission, makes no network requests and collects no data. It replaces the new tab page with a quick challenge that can be turned off on the page itself. The package is the same MV3 build sent to the Chrome Web Store (service worker in background.js).
 ```
 
-**Notas da versão:** What's new in 2.6.4: progress is no longer lost when the parents' panel or another tab is open; sync now works with several profiles and shows whether it worked; screen readers no longer announce the answer when counting, and counting works from the keyboard; Money mode uses your region's currency; and the Spanish voice follows your country.
+**Notas da versão:** What's new in 2.7.0: softer, more natural sound effects and a voice with better intonation; Privacy, Terms of Use and Support links in the footer, behind an adult check; and a cookie notice where a parent can accept, reject or customize (the game still has no trackers).
 
 
 ## Español
@@ -177,7 +177,7 @@ NOTAS
 No hace falta cuenta ni contraseña para probar. Haz clic en el icono de la extensión: el juego se abre a pantalla completa. Elige "Contar" o "Sumar" y toca las respuestas. La extensión usa solo el permiso "storage", no hace solicitudes de red y no recopila datos. Reemplaza la nueva pestaña por un desafío rápido que se puede apagar en la propia página. El paquete es el mismo MV3 enviado a la Chrome Web Store (service worker en background.js).
 ```
 
-**Notas da versão:** Novedades de la 2.6.4: el progreso ya no se pierde cuando el panel de los responsables u otra pestaña está abierta; la sincronización funciona con varios perfiles y muestra si salió bien; el lector de pantalla ya no dice la respuesta al contar y se puede contar con el teclado; el modo Dinero usa la moneda de tu región; y la voz en español sigue tu país.
+**Notas da versão:** Novedades de la 2.7.0: efectos de sonido más suaves y naturales y una voz con mejor entonación; enlaces de Privacidad, Términos de Uso y Soporte en el pie, detrás de una verificación para adultos; y un aviso de cookies en el que el responsable acepta, rechaza o personaliza (el juego sigue sin rastreadores).
 
 
 ## Checklist de envio

@@ -210,7 +210,7 @@ function renderOptions() {
   paintSyncStatus();
   renderSec();
   $('#imp-area').placeholder = t('imp_ph');
-  $('#opt-version').textContent = t('version') + ': ' + (window.ccVersion ? window.ccVersion() : '2.6.4');
+  $('#opt-version').textContent = t('version') + ': ' + (window.ccVersion ? window.ccVersion() : '2.7.0');
 }
 
 /* ---------- painel (S26 + S09) ---------- */
