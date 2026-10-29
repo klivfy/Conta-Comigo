@@ -363,16 +363,10 @@ function loadRaw() {
 async function initDB() {
   let d = await loadRaw();
   // S32: se sync habilitado e a cópia sincronizada é mais recente, adota-a
-  if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-    const syncData = await new Promise((r) => {
-      try {
-        chrome.storage.sync.get(['cc_state_sync'], (res) => r(res && res.cc_state_sync));
-      } catch (e) { r(null); }
-    });
-    if (syncData && syncData.updatedAt && (!d || (syncData.updatedAt > (d.updatedAt || 0)))) {
-      const parsed = parseDB(JSON.stringify(syncData));
-      if (parsed) d = keepLocalSecrets(parsed, d);
-    }
+  const syncData = await loadSyncDB();
+  if (syncData && syncData.updatedAt && (!d || (syncData.updatedAt > (d.updatedAt || 0)))) {
+    const parsed = parseDB(JSON.stringify(syncData));
+    if (parsed) d = keepLocalSecrets(parsed, d);
   }
   if (!d) d = { v: 2, updatedAt: Date.now(), activeId: '', profiles: [], settings: Object.assign({}, DEFAULT_SETTINGS) };
   if (!d.profiles.length) d.profiles.push(newProfile('p1', 'Jogador', '🦊'));
@@ -380,6 +374,11 @@ async function initDB() {
   d.settings = Object.assign({}, DEFAULT_SETTINGS, d.settings || {});
   normalizeDB(d);
   DB = d;
+  /* a cópia adotada (nativa ou do sync) pode ser mais nova que a do localStorage: grava
+     já, senão a primeira mesclagem partiria da cópia velha e perderia o que veio de fora */
+  const ls = readStored();
+  if (!ls || (DB.updatedAt || 0) > (ls.updatedAt || 0)) writeState({ noSync: true, noMerge: true });
+  else BASE = JSON.stringify(DB);
   askPersistentStorage();
   return DB;
 }
@@ -443,24 +442,180 @@ function onNativeBack(handler) {
     });
   } catch (e) { /* ignora */ }
 }
+/* ADR-001: o jogo, o painel e a nova aba carregam o banco uma vez e gravam depois.
+   Gravar a cópia da memória apagava o que outra página tinha feito no meio tempo
+   (10 → 35 → 10 ⭐). Agora toda gravação relê o banco do localStorage e aplica só o que
+   ESTA página mudou desde a última vez que leu ou gravou (BASE): mesclagem de 3 vias. */
+let BASE = null; // JSON do banco como esta página o viu pela última vez; null = grava sem mesclar
+const COUNTERS = ['stars', 'points', 'rounds', 'firsts', 'rights', 'wrongs', 'playSec', 'missionsDone', 'reviewWins', 'persistRounds'];
+const isObj = (x) => x && typeof x === 'object' && !Array.isArray(x);
+const sameJSON = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+/* b = base, m = minha cópia, t = a mais nova gravada. Valor que não mudei fica como está na gravada;
+   objeto mescla campo a campo; vetor é valor inteiro; contador soma só a minha diferença. */
+function mergeVal(b, m, t, counters) {
+  if (sameJSON(b, m)) return t;
+  if (isObj(m) && isObj(t)) {
+    const out = Object.assign({}, t);
+    const bb = isObj(b) ? b : {};
+    Object.keys(m).forEach((k) => {
+      const v = mergeVal(bb[k], m[k], t[k], null);
+      if (v === undefined) delete out[k]; else out[k] = v;
+    });
+    Object.keys(bb).forEach((k) => { if (!(k in m)) delete out[k]; });
+    if (counters) {
+      counters.forEach((k) => {
+        if (typeof m[k] === 'number' && typeof bb[k] === 'number' && typeof t[k] === 'number') out[k] = Math.max(0, t[k] + (m[k] - bb[k]));
+      });
+    }
+    return out;
+  }
+  return m;
+}
+function mergeDB(base, mine, theirs) {
+  const rest = (o) => { const c = Object.assign({}, o); delete c.profiles; return c; };
+  const out = mergeVal(rest(base), rest(mine), rest(theirs), null);
+  const byId = (a) => { const r = {}; (a || []).forEach((p) => { r[p.id] = p; }); return r; };
+  const b = byId(base.profiles), m = byId(mine.profiles), t = byId(theirs.profiles);
+  const list = [];
+  theirs.profiles.forEach((tp) => {
+    if (m[tp.id]) list.push(mergeVal(b[tp.id] || {}, m[tp.id], tp, COUNTERS));
+    else if (!b[tp.id]) list.push(tp); // outra página criou
+    /* senão, esta página apagou */
+  });
+  mine.profiles.forEach((mp) => { if (!t[mp.id] && !b[mp.id]) list.push(mp); }); // esta página criou
+  out.profiles = list.length ? list : mine.profiles;
+  if (!out.profiles.find((p) => p.id === out.activeId)) out.activeId = out.profiles[0].id;
+  return out;
+}
+function readStored() {
+  try { const raw = localStorage.getItem('cc_state'); return raw ? parseDB(raw) : null; } catch (e) { return null; }
+}
 let saveTimer = null;
+function writeState(opts) {
+  const o = opts || {};
+  let out = DB;
+  if (BASE && !o.noMerge) {
+    const theirs = readStored();
+    if (theirs) {
+      try { out = mergeDB(JSON.parse(BASE), DB, theirs); out.v = DB.v; out.updatedAt = DB.updatedAt; normalizeDB(out); } catch (e) { out = DB; }
+    }
+  }
+  const json = JSON.stringify(out);
+  BASE = JSON.stringify(DB);
+  try { localStorage.setItem('cc_state', json); } catch (e) { /* ignora */ }
+  if (NATIVE_PREFS) { try { NATIVE_PREFS.set({ key: 'cc_state', value: json }).catch(() => { /* ignora */ }); } catch (e) { /* ignora */ } }
+  try {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set({ cc_state: JSON.parse(json) }, () => { void chrome.runtime.lastError; });
+    }
+    if (!o.noSync && out.settings && out.settings.sync && typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) syncDB(out);
+  } catch (e) { /* ignora */ }
+}
 function saveState(immediate) {
   DB.updatedAt = Date.now();
-  const json = JSON.stringify(DB);
-  const write = () => {
-    try { localStorage.setItem('cc_state', json); } catch (e) { /* ignora */ }
-    if (NATIVE_PREFS) { try { NATIVE_PREFS.set({ key: 'cc_state', value: json }).catch(() => { /* ignora */ }); } catch (e) { /* ignora */ } }
-    try {
-      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        chrome.storage.local.set({ cc_state: JSON.parse(json) }, () => { void chrome.runtime.lastError; });
-      }
-      if (G().sync && typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-        chrome.storage.sync.set({ cc_state_sync: shareableDB(DB) }, () => { void chrome.runtime.lastError; });
-      }
-    } catch (e) { /* ignora */ }
-  };
   clearTimeout(saveTimer);
-  if (immediate) write(); else saveTimer = setTimeout(write, 250);
+  if (immediate) writeState(); else saveTimer = setTimeout(writeState, 250);
+}
+/* grava já o que estiver esperando no temporizador */
+function flushSave() { if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; writeState(); } }
+/* depois de importar ou zerar: a cópia da memória vale inteira, sem mesclar */
+function replaceDB(d) { DB = d; BASE = null; }
+/* outra página gravou (evento storage): grava o que falta aqui e adota o banco mais novo.
+   Chame só num momento seguro (fora de uma rodada), porque troca o objeto DB. */
+function adoptLatest() {
+  flushSave();
+  const d = readStored();
+  if (!d) return false;
+  if (!d.profiles.find((p) => p.id === d.activeId)) d.activeId = d.profiles[0].id;
+  d.settings = Object.assign({}, DEFAULT_SETTINGS, d.settings || {});
+  DB = d;
+  BASE = JSON.stringify(DB);
+  return true;
+}
+/* chama cb() quando OUTRA página do mesmo endereço grava o progresso */
+function onExternalSave(cb) {
+  try {
+    window.addEventListener('storage', (e) => { if (e.key === 'cc_state' || e.key === null) cb(); });
+  } catch (e) { /* ignora */ }
+}
+
+/* ---------- sync por perfil (ADR-001) ----------
+   chrome.storage.sync aceita 8.192 bytes por item e 102.400 no total. Um item por perfil
+   (cc_sync_<id>) mais cc_sync_meta, cada um cortado para caber, e o resultado fica visível. */
+const SYNC_META = 'cc_sync_meta', SYNC_PREFIX = 'cc_sync_', SYNC_ITEM_MAX = 7500, SYNC_TOTAL_MAX = 100000;
+function byteLen(str) {
+  try { return new TextEncoder().encode(str).length; } catch (e) { return str.length * 3; }
+}
+/* copia o perfil e tira as revisões e semanas mais antigas até caber; over = true se não coube */
+function fitSyncProfile(p) {
+  const c = JSON.parse(JSON.stringify(p));
+  const size = () => byteLen(JSON.stringify(c));
+  let trimmed = false;
+  ['review', 'weeks'].forEach((k) => {
+    while (Array.isArray(c[k]) && c[k].length && size() > SYNC_ITEM_MAX) { c[k].shift(); trimmed = true; }
+  });
+  const bytes = size();
+  return { p: c, bytes, trimmed, over: bytes > SYNC_ITEM_MAX };
+}
+function setSyncStatus(st) {
+  try { localStorage.setItem('cc_sync_status', JSON.stringify(st)); } catch (e) { /* ignora */ }
+}
+function syncStatus() {
+  try { return JSON.parse(localStorage.getItem('cc_sync_status') || 'null'); } catch (e) { return null; }
+}
+function syncDB(db) {
+  const sh = shareableDB(db);
+  const items = {};
+  const ids = [];
+  let big = null, trimmed = false;
+  sh.profiles.forEach((p) => {
+    const r = fitSyncProfile(p);
+    ids.push(p.id);
+    items[SYNC_PREFIX + p.id] = r.p;
+    if (r.trimmed) trimmed = true;
+    if (r.over && !big) big = { name: p.name, bytes: r.bytes };
+  });
+  items[SYNC_META] = { v: 2, updatedAt: db.updatedAt, activeId: sh.activeId, ids, settings: sh.settings };
+  const total = Object.keys(items).reduce((n, k) => n + byteLen(k) + byteLen(JSON.stringify(items[k])), 0);
+  if (!big && total > SYNC_TOTAL_MAX) big = { name: '', bytes: total };
+  if (big) { setSyncStatus({ ok: false, at: Date.now(), kb: Math.ceil(big.bytes / 1024), name: big.name }); return; }
+  chrome.storage.sync.get(null, (all) => {
+    void chrome.runtime.lastError;
+    /* sobras: perfis apagados e o item único da versão antiga */
+    const stale = Object.keys(all || {}).filter((k) => k === 'cc_state_sync' || (k.indexOf(SYNC_PREFIX) === 0 && !(k in items)));
+    chrome.storage.sync.set(items, () => {
+      const err = chrome.runtime.lastError;
+      if (err) { setSyncStatus({ ok: false, at: Date.now(), err: String(err.message || err) }); return; }
+      setSyncStatus({ ok: true, at: Date.now(), trimmed });
+      if (stale.length) chrome.storage.sync.remove(stale, () => { void chrome.runtime.lastError; });
+    });
+  });
+}
+/* monta o banco a partir do sync (formato por perfil; ou o item único da versão antiga) */
+function loadSyncDB() {
+  return new Promise((resolve) => {
+    try {
+      if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.sync) { resolve(null); return; }
+      chrome.storage.sync.get(null, (all) => {
+        try {
+          if (!all) { resolve(null); return; }
+          const m = all[SYNC_META];
+          if (m && Array.isArray(m.ids)) {
+            const profiles = m.ids.map((id) => all[SYNC_PREFIX + id]).filter(Boolean);
+            resolve(profiles.length ? { v: 2, updatedAt: m.updatedAt, activeId: m.activeId, settings: m.settings, profiles } : null);
+          } else resolve(all.cc_state_sync || null);
+        } catch (e) { resolve(null); }
+      });
+    } catch (e) { resolve(null); }
+  });
+}
+/* outro computador sincronizou: adota o banco dele, mantendo a senha deste aparelho */
+function adoptRemote(remote) {
+  const parsed = parseDB(JSON.stringify(remote));
+  if (!parsed) return false;
+  DB = keepLocalSecrets(parsed, DB);
+  writeState({ noSync: true, noMerge: true });
+  return true;
 }
 
 /* ---------- áudio ---------- */

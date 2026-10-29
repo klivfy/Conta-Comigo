@@ -203,6 +203,7 @@ function renderOptions() {
   $('#set-limit').value = String(g.sessionLimit != null ? g.sessionLimit : 15);
   $('#set-limit').options[0].text = t('no_limit');
   $('#set-sync').checked = !!g.sync;
+  paintSyncStatus();
   renderSec();
   $('#imp-area').placeholder = t('imp_ph');
   $('#opt-version').textContent = t('version') + ': ' + (window.ccVersion ? window.ccVersion() : '2.6.3');
@@ -391,7 +392,7 @@ function paintBackupHint() {
 function doImport(text) {
   const d = parseDB(text);
   if (!d) { toastOpt('⚠️ ' + t('imp_bad')); return; }
-  DB = keepLocalSecrets(d, DB); // a senha deste aparelho continua valendo
+  replaceDB(keepLocalSecrets(d, DB)); // a senha deste aparelho continua valendo; o backup vale inteiro
   if (!DB.profiles.length) DB.profiles = [newProfile('p1', 'Jogador', '🦊')];
   if (!DB.profiles.find((x) => x.id === DB.activeId)) DB.activeId = DB.profiles[0].id;
   DB.settings = Object.assign({}, DEFAULT_SETTINGS, DB.settings || {});
@@ -454,7 +455,7 @@ function bindOptions() {
   $('#set-calmo').addEventListener('change', (e) => { G().calmo = e.target.value === 'auto' ? null : e.target.value === 'on'; set(); });
   $('#set-goal').addEventListener('change', (e) => { G().goalRounds = Number(e.target.value); set(); });
   $('#set-limit').addEventListener('change', (e) => { G().sessionLimit = Number(e.target.value); set(); });
-  $('#set-sync').addEventListener('change', (e) => { G().sync = e.target.checked; set(); if (G().sync) saveState(true); });
+  $('#set-sync').addEventListener('change', (e) => { G().sync = e.target.checked; set(); if (G().sync) saveState(true); setTimeout(paintSyncStatus, 800); });
 
   $('#btn-export').addEventListener('click', doExport);
   $('#btn-backup-dl').addEventListener('click', doBackupDownload); // v2.5: backup datado
@@ -477,6 +478,7 @@ function bindOptions() {
     const cur = P();
     const fresh = newProfile(cur.id, cur.name, cur.avatar);
     DB.profiles = DB.profiles.map((x) => (x.id === cur.id ? fresh : x));
+    replaceDB(DB); // zerar vale inteiro, sem somar com o que outra página gravou
     saveState(true); renderOptions(); toastOpt('🧹');
   });
   $('#btn-reset-all').addEventListener('click', () => {
@@ -485,6 +487,20 @@ function bindOptions() {
   });
 }
 
+/* ADR-001: resultado da última sincronização, para os responsáveis saberem se ela funciona */
+function paintSyncStatus() {
+  const el = $('#sync-status');
+  if (!el) return;
+  const st = syncStatus();
+  let txt = '';
+  if (G().sync) {
+    if (!st) txt = t('sync_never');
+    else if (st.ok) txt = '✅ ' + t('sync_ok', { h: new Date(st.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }) + (st.trimmed ? ' ' + t('sync_trimmed') : '');
+    else if (st.kb) txt = '⚠️ ' + t('sync_big', { kb: st.kb, max: 7 });
+    else txt = '⚠️ ' + t('sync_err', { err: st.err || '?' });
+  }
+  el.textContent = txt;
+}
 async function bootOptions() {
   await initDB();
   TTS.init();
@@ -492,6 +508,11 @@ async function bootOptions() {
   bindOptions();
   showGate();
   renderOptions();
+  /* o jogo gravou em outra aba: traz o progresso novo e redesenha (quando a aba está à vista) */
+  let stale = false;
+  const refresh = () => { if (document.hidden) { stale = true; return; } stale = false; if (adoptLatest()) renderOptions(); };
+  onExternalSave(() => { clearTimeout(refresh.t); refresh.t = setTimeout(refresh, 300); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && stale) refresh(); });
 }
 window.CC = {};
 bootOptions();

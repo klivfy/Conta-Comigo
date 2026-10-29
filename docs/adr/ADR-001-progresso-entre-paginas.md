@@ -1,6 +1,6 @@
 # ADR-001: Progresso consistente entre páginas e sincronização dentro da cota
 
-**Status:** Proposto
+**Status:** Aceito (29/10/2026), implementado na v2.6.3
 **Data:** 28/10/2026
 **Quem decide:** Klivfy Tecnologia (produto) e quem mantém o `engine.js`
 
@@ -84,10 +84,16 @@ O risco real hoje é **tempo**: uma página com cópia velha gravando minutos ou
 
 ## Ações
 
-1. [ ] `engine.js`: `freshDB()` e `mutate(fn)`; `saveState` só grava o que `mutate` devolve.
-2. [ ] `ui.js`, `options.js`, `newtab.js`: trocar mudanças diretas em `P()`/`G()` + `saveState()` por `mutate(...)`.
-3. [ ] Ouvinte de `storage` nas 3 páginas, adotando o banco quando não houver rodada em andamento.
-4. [ ] Sincronização por perfil (`cc_sync_meta`, `cc_sync_<id>`), corte a 7.500 bytes, `lastError` conferido e status no painel (chaves novas em pt, en e es).
-5. [ ] `background.js`: achar a janela do jogo por URL.
-6. [ ] Testes em `tests/`: duas páginas com o mesmo armazenamento (o caso das 10 → 35 → 10 ⭐), tamanho de cada item de sincronização com 4 perfis cheios e leitura do formato antigo `cc_state_sync`.
-7. [ ] Atualizar a política de privacidade só se o texto sobre sincronização mudar (hoje ele continua correto).
+1. [x] `engine.js`: `saveState` passou a mesclar. Em vez de converter as 61 chamadas para `mutate(fn)`, a gravação relê o banco do `localStorage` e aplica só o que esta página mudou desde que leu ou gravou (mesclagem de 3 vias, `mergeDB`). Cobre todas as chamadas de uma vez e mantém o mesmo efeito da decisão 1. Contadores (estrelas, pontos, rodadas…) somam só a diferença desta página; o resto vale o último que gravou. Importar um backup e zerar o perfil usam `replaceDB` e valem inteiros.
+2. [x] Nenhuma troca de chamadas nas páginas: `ui.js`, `options.js` e `newtab.js` continuam usando `P()`/`G()` + `saveState()`. A nova aba não precisa adotar nada, porque soma +1 em cima da cópia mais nova.
+3. [x] Ouvinte de `storage` (`onExternalSave` + `adoptLatest`) no jogo, que adota só com a tela inicial aberta, e no painel, que redesenha quando a aba está à vista.
+4. [x] Sincronização por perfil: `cc_sync_meta` + `cc_sync_<id>`, corte a 7.500 bytes (revisões e semanas antigas saem primeiro), erro do navegador guardado em `cc_sync_status` e mostrado no painel (chaves `sync_*` em pt, en e es). Lê o formato antigo `cc_state_sync` e o remove ao gravar.
+5. [x] `background.js`: o id da janela do jogo fica em `chrome.storage.session`, que sobrevive ao sono do service worker. A busca por URL (`chrome.tabs.query`) pediria a permissão `tabs`, com nova revisão e aviso de permissão nas lojas.
+6. [x] Testes em `tests/persistencia.test.cjs`: duas páginas (10 → 35 → 10 ⭐), contador, perfil criado e apagado, `adoptLatest`, `replaceDB`, cota de 8 KB com 4 perfis cheios, perfil que não cabe, corte, erro de rede e formato antigo.
+7. [x] Política de privacidade: o texto sobre sincronização continua correto.
+
+## Limites que ficam
+
+- Dois valores de **configuração** mudados ao mesmo tempo em páginas diferentes: vale o último que gravou.
+- O jogo não adota o banco de fora no meio de uma rodada; adota ao voltar para a tela inicial.
+- O limite de 120 gravações por minuto do `storage.sync` continua valendo; se estourar, o erro agora aparece no painel.

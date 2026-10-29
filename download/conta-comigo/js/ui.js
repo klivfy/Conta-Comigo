@@ -20,6 +20,17 @@ let sessionSec = 0;
 let bubbleTimer = null, toastTimer = null;
 
 /* ---------- navegação de telas ---------- */
+/* ADR-001: outra página gravou (evento storage) ou outro computador sincronizou. O banco só é
+   trocado com a tela inicial aberta, nunca no meio de uma rodada. */
+let externalPending = false, remotePending = null;
+function adoptIfSafe() {
+  const home = $('#screen-home');
+  if ((!externalPending && !remotePending) || !home || !home.classList.contains('active') || overlayOpen()) return;
+  const remote = remotePending;
+  externalPending = false; remotePending = null;
+  const ok = remote ? adoptRemote(remote) : adoptLatest();
+  if (ok) { applyLang(); applySettings(); ensureMissions(); renderHome(); }
+}
 function show(name) {
   const prev = document.activeElement;
   $$('.screen').forEach((s) => s.classList.remove('active'));
@@ -27,6 +38,7 @@ function show(name) {
   if (el) el.classList.add('active');
   // teclado/leitor de tela: se o foco ficou numa tela que sumiu, ele vai para a nova
   if (el && prev && prev.closest && prev.closest('.screen') && !el.contains(prev)) focusScreen(el);
+  if (name === 'home') adoptIfSafe();
 }
 function focusScreen(el) {
   if (overlayOpen()) return;
@@ -1199,14 +1211,16 @@ async function boot() {
   if (HAS_EXT && typeof chrome !== 'undefined' && chrome.tabs) {
     try { chrome.runtime.sendMessage('cc-page-ready', () => void chrome.runtime.lastError); } catch (e) { /* ignora */ }
   }
+  // ADR-001: outra página gravou o progresso (painel, nova aba, outra aba da PWA)
+  onExternalSave(() => { externalPending = true; adoptIfSafe(); });
   // S32: adotar mudanças remotas
   try {
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged && G().sync) {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
       chrome.storage.onChanged.addListener((ch, area) => {
-        if (area === 'sync' && ch.cc_state_sync) {
-          const remote = parseDB(JSON.stringify(ch.cc_state_sync.newValue));
-          if (remote && remote.updatedAt > DB.updatedAt + 500) { DB = keepLocalSecrets(remote, DB); renderHome(); }
-        }
+        if (area !== 'sync' || !G().sync || !Object.keys(ch).some((k) => k === 'cc_state_sync' || k.indexOf('cc_sync_') === 0)) return;
+        loadSyncDB().then((remote) => {
+          if (remote && remote.updatedAt > DB.updatedAt + 500) { remotePending = remote; adoptIfSafe(); }
+        });
       });
     }
   } catch (e) { /* ignora */ }
