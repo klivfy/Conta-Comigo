@@ -1,6 +1,6 @@
 # ADR-001: Progresso consistente entre páginas e sincronização dentro da cota
 
-**Status:** Aceito (29/10/2026), implementado na v2.6.3
+**Status:** Aceito (29/10/2026), implementado na v2.6.4
 **Data:** 28/10/2026
 **Quem decide:** Klivfy Tecnologia (produto) e quem mantém o `engine.js`
 

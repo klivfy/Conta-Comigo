@@ -1,6 +1,6 @@
-# Chrome Web Store — Conta Comigo 2.6.3
+# Chrome Web Store — Conta Comigo 2.6.4
 
-Painel: <https://chrome.google.com/webstore/devconsole> · Pacote: `download/conta-comigo-chrome-2.6.3.zip` (envie o zip **sem** descompactar).
+Painel: <https://chrome.google.com/webstore/devconsole> · Pacote: `download/conta-comigo-chrome-2.6.4.zip` (envie o zip **sem** descompactar).
 
 ## Dados gerais (iguais nos 3 idiomas)
 
@@ -94,7 +94,7 @@ A permissão "storage" é usada somente para salvar, no próprio navegador, o pr
 A extensão substitui a nova aba (chrome_url_overrides) por um desafio rápido de matemática que também funciona como atalho para o jogo completo. É uma função declarada na descrição e pode ser desligada na própria página.
 ```
 
-**Notas da versão:** Novidades da 2.6.3: ao tocar nos objetos para contar, a narração fala os números no idioma do jogo (antes falava sempre em português) e a política de privacidade foi atualizada para todas as plataformas.
+**Notas da versão:** Novidades da 2.6.4: o progresso não se perde mais quando o painel dos responsáveis ou outra aba está aberta; a sincronização funciona com vários perfis e mostra se deu certo; o leitor de tela não diz mais a resposta ao contar e dá para contar pelo teclado; o modo Dinheiro usa a moeda da sua região; e a voz em espanhol segue o seu país.
 
 
 ## English
@@ -156,7 +156,7 @@ The "storage" permission is used only to save the game's progress, profiles and 
 The extension replaces the new tab page (chrome_url_overrides) with a quick math challenge that doubles as a shortcut to the full game. This is declared in the description and can be turned off on the page itself.
 ```
 
-**Notas da versão:** What's new in 2.6.3: when tapping objects to count, the narration now says the numbers in the game's language (it used to always speak Portuguese), and the privacy policy was updated for every platform.
+**Notas da versão:** What's new in 2.6.4: progress is no longer lost when the parents' panel or another tab is open; sync now works with several profiles and shows whether it worked; screen readers no longer announce the answer when counting, and counting works from the keyboard; Money mode uses your region's currency; and the Spanish voice follows your country.
 
 
 ## Español
@@ -218,7 +218,7 @@ El permiso "storage" se usa solo para guardar en el propio navegador el progreso
 La extensión reemplaza la nueva pestaña (chrome_url_overrides) por un desafío rápido de matemática que también sirve de atajo al juego completo. Está declarado en la descripción y se puede apagar en la propia página.
 ```
 
-**Notas da versão:** Novedades de la 2.6.3: al tocar los objetos para contar, la narración dice los números en el idioma del juego (antes siempre hablaba en portugués) y la política de privacidad se actualizó para todas las plataformas.
+**Notas da versão:** Novedades de la 2.6.4: el progreso ya no se pierde cuando el panel de los responsables u otra pestaña está abierta; la sincronización funciona con varios perfiles y muestra si salió bien; el lector de pantalla ya no dice la respuesta al contar y se puede contar con el teclado; el modo Dinero usa la moneda de tu región; y la voz en español sigue tu país.
 
 
 ## Checklist de envio

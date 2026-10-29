@@ -163,7 +163,7 @@ Auditoria de segurança, estrutura e design com `/security-review`, `/anthropic-
   - O movimento reduzido esmaece em vez de cortar.
   - O ícone de tela cheia virou 📺.
 
-## Fase 9 — Publicação nas lojas (v2.6.3)
+## Fase 9 — Publicação nas lojas (v2.6.3 e 2.6.4)
 
 - [x] 9.1 Pacote das 5 lojas (Chrome, Edge, Firefox, Microsoft Store, Google Play) em pt, en e es: roteiros, 117 capturas, imagens promocionais, política trilíngue e vídeo.
 - [x] 9.2 Identificador único `com.klivfy.conta.comigo.matematica` (`IDENTIFICADORES.md`), conferido pelo `sync_check`.
@@ -181,3 +181,4 @@ Auditoria de segurança, estrutura e design com `/security-review`, `/anthropic-
 - [ ] 9.9 [você] testar o AAB num aparelho pelo teste fechado (lista no fim de `loja/lojas/google-play.md`): esta sessão não tem emulador Android.
 - [x] 9.10 No repositório: o vídeo promocional (`loja/video/`, mp4 e legenda) e o gerador dele (`scripts/video/`, com caminhos relativos), e `scripts/app_check.cjs` no CI (Voltar do Android, backup pela folha de compartilhar e barras do sistema, com uma ponte Capacitor simulada).
 - [ ] 9.11 [você] decidir entre os dois workflows do GitHub Pages: o `jekyll-gh-pages.yml` publica o README e deixa a política em `/docs/…`; o `pages.yml` publica o jogo e a política na URL das lojas. Os dois rodam a cada push na `main`.
+- [x] 9.12 **Versão 2.6.4** (29/10/2026): sobe de 2.6.3 porque o PR #13 muda o comportamento (progresso entre páginas, sync por perfil, acessibilidade, moeda e voz por região) e uma loja recusa pacote com o mesmo número. `versionCode` 264; zips, notas de versão em pt, en e es, política (campo de versão) e changelogs atualizados; o `sync_check` confere os 13 lugares. Nenhum envio às lojas foi feito.

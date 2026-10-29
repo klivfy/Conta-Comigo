@@ -1,6 +1,6 @@
 # Identificadores do Conta Comigo — regra única para todas as plataformas
 
-Última revisão: 28/10/2026 · versão 2.6.3
+Última revisão: 28/10/2026 · versão 2.6.4
 
 ## A regra
 
@@ -9,7 +9,7 @@
 2. **Itens filhos acrescentam sufixo**, nunca outra raiz. Exemplos: extensão do Safari `com.klivfy.conta.comigo.matematica.extensao`, widget `com.klivfy.conta.comigo.matematica.widget`.
 3. **Quando a loja gera ou fixa o ID, vale o da loja.** Esses casos estão na tabela de exceções abaixo. Eles não podem ser escolhidos por nós, ou não podem mais mudar.
 4. **Onde não se aceitam pontos**, use a forma com hífens: `conta-comigo-matematica` (Snap, nomes de pacote npm, slugs de URL).
-5. **Arquivos gerados** seguem `conta-comigo-<plataforma>-<versão>[-<arquitetura>][-<variante>].<ext>`. Exemplos: `conta-comigo-chrome-2.6.3.zip`, `conta-comigo-windows-2.6.3-x64-instalador.exe`.
+5. **Arquivos gerados** seguem `conta-comigo-<plataforma>-<versão>[-<arquitetura>][-<variante>].<ext>`. Exemplos: `conta-comigo-chrome-2.6.4.zip`, `conta-comigo-windows-2.6.4-x64-instalador.exe`.
 6. **Nomes exibidos** vêm dos idiomas do jogo (no Android, `values/`, `values-en/` e `values-es/strings.xml` seguem o idioma do aparelho):
 
    | Idioma | Nome completo | Nome curto (ícone, lançador) |

@@ -1,6 +1,6 @@
-# Google Play — Conta Comigo 2.6.3 (Android)
+# Google Play — Conta Comigo 2.6.4 (Android)
 
-Painel: <https://play.google.com/console> · Pacote: o **AAB** gerado por *Actions → Android (Capacitor)* (`conta-comigo-android-2.6.3`), assinado com a chave de upload. Ative o **Play App Signing**. O jogo vai dentro do AAB: o app não depende do site no ar.
+Painel: <https://play.google.com/console> · Pacote: o **AAB** gerado por *Actions → Android (Capacitor)* (`conta-comigo-android-2.6.4`), assinado com a chave de upload. Ative o **Play App Signing**. O jogo vai dentro do AAB: o app não depende do site no ar.
 
 ## Antes do primeiro envio (obrigatório)
 
@@ -19,7 +19,7 @@ Painel: <https://play.google.com/console> · Pacote: o **AAB** gerado por *Actio
 | URL da política de privacidade | https://klivfy.github.io/Conta-Comigo/politica-de-privacidade.html |
 | Site | https://klivfy.github.io/Conta-Comigo/ |
 | E-mail de contato (obrigatório, público) | **preencher com o e-mail de suporte da Klivfy** |
-| Versão (versionName / versionCode) | 2.6.3 / 263 |
+| Versão (versionName / versionCode) | 2.6.4 / 264 |
 | minSdk / targetSdk | 24 (Android 7.0; a Proteção Automática do Play exige 24+) / 36 (o Play exige 36) |
 
 ## Conteúdo do app (Política → Conteúdo do app)
