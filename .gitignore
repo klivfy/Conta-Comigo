@@ -31,3 +31,7 @@ node_modules/
 
 # intermediários do vídeo promocional (scripts/video/fazer_video.sh)
 .video-trabalho/
+
+# saídas de trabalho das skills de design (capturas, relatórios)
+.taste-skill/
+.impeccable/
