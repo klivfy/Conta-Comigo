@@ -1,5 +1,5 @@
 ---
-name: apple-design
+name: apple-design-dickwu
 description: >
   Cross-platform UI/UX design reviewer grounded in Apple's Human Interface Guidelines (123 pages
   pulled from developer.apple.com, including 57 component pages) plus a design-craft lens for
