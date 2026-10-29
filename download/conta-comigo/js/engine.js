@@ -1038,6 +1038,11 @@ function distractors(answer, extras, maxCap) {
 }
 
 /* ==================== geradores (cada um aceita dados "forced" p/ revisão S08) ==================== */
+/* quantos dos modos do jogo o perfil já jogou (para o painel); chaves antigas ou de backup não contam */
+function modesPlayed(p) {
+  const all = Object.keys(MODES);
+  return { n: all.filter((m) => p.played && p.played[m]).length, total: all.length };
+}
 function genContar(level, f) {
   const maxN = [5, 8, 10, 15, 20][level - 1] || 10;
   const it = (f && f.it != null) ? ITEMS[f.it] : pick(ITEMS);
@@ -1048,6 +1053,7 @@ function genContar(level, f) {
   return {
     visual: '<div class="grp plain">' + emojisHTML(it, n, { tap: true }) + '</div>',
     display, tts: t('t_see'), answer: n, options: distractors(n, null, maxN), f: { it: ITEMS.indexOf(it), n },
+    countQuest: true, // a quantidade É a pergunta: a descrição para leitor de tela não pode dizer o total
   };
 }
 function genSomar(level, f) {

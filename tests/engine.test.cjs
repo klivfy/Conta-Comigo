@@ -299,3 +299,20 @@ test('fora do app o Voltar nativo não é registrado', () => {
   const E = loadEngine();
   assert.equal(E.ev('onNativeBack(() => true); IN_NATIVE_APP'), false);
 });
+
+test('Contar marca que a quantidade é a pergunta; Comparar mantém A, B, = na ordem', () => {
+  const c = j('genContar(2)');
+  assert.equal(c.countQuest, true, 'a descrição da cena não pode dar o total');
+  for (let i = 0; i < 30; i++) {
+    const q = j('genComparar(3)');
+    assert.deepEqual(q.options, ['A', 'B', '='], 'o nível 3 mostra os três botões na mesma ordem');
+    assert.equal(j('genComparar(1)').options.length, 2);
+  }
+});
+
+test('modesPlayed: conta só modos que existem e usa o total de MODES (nunca passa de 12)', () => {
+  const total = E.ev('Object.keys(MODES).length');
+  const p = E.put('pl', { contar: 1, somar: 3, naoExiste: 9, __proto__x: 1 });
+  assert.deepEqual(j('modesPlayed({ played: ' + p + ' })'), { n: 2, total });
+  assert.deepEqual(j('modesPlayed({ played: {} })'), { n: 0, total });
+});

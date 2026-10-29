@@ -214,11 +214,10 @@ function renderDash() {
   const p = DB.profiles.find((x) => x.id === $('#dash-prof').value) || P();
   const totalQ = p.rights + p.wrongs;
   const acc = totalQ ? Math.round((100 * p.rights) / totalQ) : 0;
-  const stage = p.stars >= 100 ? '🦊' : p.stars >= 30 ? '🐣' : '🥚';
   $('#stat-grid').innerHTML = [
     ['⭐', p.stars, t('d_stars')], ['⚡', p.points || 0, t('d_points')], ['🔥', p.streak || 0, t('d_streak')],
     ['🎮', p.rounds, t('d_rounds')], ['⏱️', Math.round(p.playSec / 60) + ' min', t('d_time')],
-    ['✅', acc + '%', t('d_acc')], [stage, Object.keys(p.played).length + '/12', t('m_mistar')],
+    ['✅', acc + '%', t('d_acc')], ['🎲', modesPlayed(p).n + '/' + modesPlayed(p).total, t('d_modes')],
   ].map((s) => '<div class="stat"><b>' + s[1] + '</b><span>' + s[0] + ' ' + s[2] + '</span></div>').join('');
 
   // mapa de domínio S09
@@ -281,7 +280,7 @@ function renderProfList() {
       '<div class="pp-row">' +
       '<span class="pp-t">🎙️ ' + t('pp_voice') + '</span>' +
       '<label for="pp-rate">' + t('s_rate') + '</label><input id="pp-rate" type="range" min="60" max="160" step="5" value="' + Math.round((pf.vRate != null ? pf.vRate : (g.vRate || 0.95)) * 100) + '" data-pprate="' + escHtml(pf.id) + '">' +
-      '<label for="pp-pitch">' + t('s_pitch') + '</label><input id="pp-pitch" type="range" min="50" max="200" step="5" value="' + Math.round(pf.vPitch != null ? pf.vPitch : (g.vPitch || 1.15) * 100) + '" data-pppitch="' + escHtml(pf.id) + '">' +
+      '<label for="pp-pitch">' + t('s_pitch') + '</label><input id="pp-pitch" type="range" min="50" max="200" step="5" value="' + Math.round((pf.vPitch != null ? pf.vPitch : (g.vPitch || 1.15)) * 100) + '" data-pppitch="' + escHtml(pf.id) + '">' +
       '<select aria-label="' + escHtml(t('s_voice')) + '" data-ppvoice="' + escHtml(pf.id) + '">' + voiceOptionsHtml(pf.vVoice || '') + '</select>' +
       '<button class="mini-btn" data-ppreset="' + escHtml(pf.id) + '">' + t('pp_default') + '</button>' +
       '</div>'

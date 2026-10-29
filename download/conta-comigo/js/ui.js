@@ -355,7 +355,7 @@ function renderDiffChips() {
 /* ==================== rodadas ==================== */
 /* Nome acessível da cena: conta os objetos em sequência (🍎🍎🍎 → "3 🍎") e
    mantém textos como sinais, letras A/B e números da sequência */
-function describeVisual(root) {
+function describeVisual(root, hideTotal) {
   const out = []; let run = null;
   const flush = () => {
     if (run) out.push(run.n + ' ' + run.e + (run.x ? ' (' + t('sc_crossed', { n: run.x }) + ')' : ''));
@@ -372,6 +372,12 @@ function describeVisual(root) {
     });
   })(root);
   flush();
+  /* quando a quantidade é a pergunta (Contar), o leitor de tela não ganha o total:
+     ouve só que há um grupo e que cada objeto se conta pelo toque ou pelo teclado */
+  if (hideTotal) {
+    const e = root.querySelector('.obj');
+    return t('sc_count', { e: e ? e.textContent.trim() : '' });
+  }
   return out.join(' ');
 }
 /* botões de escolha única (avatares): classe .sel + aria-pressed */
@@ -482,8 +488,9 @@ function nextQuestion() {
   const vis = $('#visual');
   vis.innerHTML = q.visual || '';
   vis.classList.toggle('naked', !q.visual);
-  const scene = q.visual ? describeVisual(vis) : '';
-  if (scene) { vis.setAttribute('role', 'img'); vis.setAttribute('aria-label', scene); vis.removeAttribute('aria-hidden'); }
+  const scene = q.visual ? describeVisual(vis, q.countQuest) : '';
+  /* com objetos tocáveis o contêiner é grupo (role=img esconderia os botões dos filhos) */
+  if (scene) { vis.setAttribute('role', vis.querySelector('.tappable') ? 'group' : 'img'); vis.setAttribute('aria-label', scene); vis.removeAttribute('aria-hidden'); }
   else { vis.removeAttribute('role'); vis.removeAttribute('aria-label'); vis.setAttribute('aria-hidden', 'true'); }
   $('#equation').textContent = q.display;
   $('#equation').classList.toggle('small-text', String(q.display).length > 16);
@@ -492,15 +499,17 @@ function nextQuestion() {
   box.innerHTML = '';
   box.classList.remove('locked');
   box.classList.toggle('n3', q.options.length === 3 && q.kind === 'cmp');
-  let opts = shuffle(q.options);
+  /* Comparar: a ordem A, B, = fica sempre igual, como as caixas na tela (embaralhar trocava os botões) */
+  let opts = q.kind === 'cmp' ? q.options.slice() : shuffle(q.options);
   // v2.4 (A-163): a resposta certa não cai na mesma posição 2× seguidas
   const ansStr = String(q.answer);
-  if (opts.length > 1) {
+  if (opts.length > 1 && q.kind !== 'cmp') {
     for (let tries = 0; tries < 7 && opts.findIndex((o) => String(o) === ansStr) === R.lastAnsPos; tries++) {
       opts = shuffle(q.options);
     }
     R.lastAnsPos = opts.findIndex((o) => String(o) === ansStr);
   }
+  if (q.kind === 'cmp') R.lastAnsPos = -1;
   opts.forEach((opt, i) => {
     const b = document.createElement('button');
     b.className = 'ans';
@@ -647,15 +656,23 @@ function ptsPop(pts) {
 
 /* ---------- contagem tocável ---------- */
 function bindCounting(q) {
+  const count = (el) => {
+    ensureAudio();
+    const i = Number(el.dataset.i);
+    el.classList.add('counted');
+    el.style.setProperty('--cnt', '"' + (i + 1) + '"');
+    SFX.tap();
+    // no idioma do jogo (antes falava "um, dois, três" também em inglês e espanhol)
+    TTS.speak(numWord(LANG, i + 1), { force: true }); // repetir o mesmo número é intencional
+  };
   $$('#visual .obj.tappable').forEach((el) => {
-    el.addEventListener('click', () => {
-      ensureAudio();
-      const i = Number(el.dataset.i);
-      el.classList.add('counted');
-      el.style.setProperty('--cnt', '"' + (i + 1) + '"');
-      SFX.tap();
-      // no idioma do jogo (antes falava "um, dois, três" também em inglês e espanhol)
-      TTS.speak(numWord(LANG, i + 1), { force: true }); // repetir o mesmo número é intencional
+    /* teclado e leitor de tela: cada objeto é um botão ("🍎 3"); Enter e Espaço contam */
+    el.setAttribute('role', 'button');
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('aria-label', el.textContent.trim() + ' ' + (Number(el.dataset.i) + 1));
+    el.addEventListener('click', () => count(el));
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); count(el); }
     });
   });
 }
@@ -1158,6 +1175,8 @@ function onKey(e) {
     // depois" clicava também no primeiro botão do modal
     const tag = e.target && e.target.tagName;
     if (e.key === 'Enter' && tag !== 'BUTTON' && tag !== 'INPUT') { const b = $('#overlay-card .big-btn:not([disabled])'); if (b) b.click(); }
+    /* Esc fecha os avisos de um botão só (nível novo, figurinha, mascote); senha e apagar ficam como estão */
+    if (e.key === 'Escape') { const cl = $$('#overlay-card [data-close]'); if (cl.length === 1 && $$('#overlay-card button').length === 1) cl[0].click(); }
     return;
   }
   if ($('#screen-game').classList.contains('active')) {
