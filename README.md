@@ -4,7 +4,7 @@
 
 ### Matemática lúdica para crianças a partir de 4 anos
 
-![Versão](https://img.shields.io/badge/vers%C3%A3o-2.7.4-2EA043)
+![Versão](https://img.shields.io/badge/vers%C3%A3o-2.8.0-2EA043)
 ![Plataformas](https://img.shields.io/badge/plataformas-Chrome%20%C2%B7%20Edge%20%C2%B7%20Firefox%20%C2%B7%20Android%20%C2%B7%20Windows%20%C2%B7%20iOS%20%C2%B7%20Web-0969DA)
 ![Idiomas](https://img.shields.io/badge/idiomas-PT%20%C2%B7%20EN%20%C2%B7%20ES-E16F24)
 ![Offline](https://img.shields.io/badge/100%25-offline-8250DF)
@@ -48,13 +48,13 @@ O **Conta Comigo** é um jogo educativo que ensina os primeiros conceitos de mat
 
 A narração usa a síntese de voz do próprio sistema com **seleção inteligente de qualidade**: as vozes são agrupadas de 🌟 naturais → ⚡ neurais/rede → padrão → básicas, priorizando as mais humanas disponíveis (ex.: *"Online (Natural)"* do Edge, *Premium/Enhanced* da Apple, Google de rede) e afastando motores robóticos. As opções mostram a **nota "Voz ativa"**, permitem velocidade e tonalidade por perfil e há **guia gratuito** para instalar vozes melhores em cada plataforma (Edge, Windows, Android, iPhone/Mac e Linux/Piper) — tudo em PT, EN e ES.
 
-## 📥 Downloads diretos — v2.7.4
+## 📥 Downloads diretos — v2.8.0
 
 | Plataforma | Pacote |
 |---|---|
-| 🟢 Chrome / Edge / Brave | [conta-comigo-chrome-2.7.4.zip](download/conta-comigo-chrome-2.7.4.zip) |
-| 🦊 Firefox (128+) | [conta-comigo-firefox-2.7.4.zip](download/conta-comigo-firefox-2.7.4.zip) |
-| 🌐 Web / PWA (computador e iPhone) | [conta-comigo-pwa-2.7.4.zip](download/conta-comigo-pwa-2.7.4.zip) |
+| 🟢 Chrome / Edge / Brave | [conta-comigo-chrome-2.8.0.zip](download/conta-comigo-chrome-2.8.0.zip) |
+| 🦊 Firefox (128+) | [conta-comigo-firefox-2.8.0.zip](download/conta-comigo-firefox-2.8.0.zip) |
+| 🌐 Web / PWA (computador e iPhone) | [conta-comigo-pwa-2.8.0.zip](download/conta-comigo-pwa-2.8.0.zip) |
 | 🤖 Android (app local da Play Store, sem PWA) | AAB gerado pelo CI: *Actions → Android (Capacitor)*; assinatura em [native/android/keystore/README.md](native/android/keystore/README.md) |
 | 🎬 Vídeo promocional (2:19, pt-BR) | [conta-comigo-video-promocional-pt-BR.mp4](download/conta-comigo/loja/video/conta-comigo-video-promocional-pt-BR.mp4) + [legenda](download/conta-comigo/loja/video/conta-comigo-video-promocional-pt-BR.srt) |
 
@@ -63,12 +63,12 @@ A narração usa a síntese de voz do próprio sistema com **seleção inteligen
 ## 📦 Instalação
 
 **Chrome / Edge / Brave**
-1. Baixe `conta-comigo-chrome-2.7.4.zip` (tabela acima) e descompacte
+1. Baixe `conta-comigo-chrome-2.8.0.zip` (tabela acima) e descompacte
 2. Abra `chrome://extensions`, ative o **modo do desenvolvedor**
 3. Clique em **Carregar sem compactação** e escolha a pasta descompactada
 
 **Firefox**
-1. Baixe `conta-comigo-firefox-2.7.4.zip` e descompacte
+1. Baixe `conta-comigo-firefox-2.8.0.zip` e descompacte
 2. Abra `about:debugging#/runtime/this-firefox` → **Carregar extensão temporária**
 3. Selecione qualquer arquivo da pasta descompactada
 
@@ -76,10 +76,10 @@ A narração usa a síntese de voz do próprio sistema com **seleção inteligen
 Instale o app da Google Play. O jogo vai dentro do pacote e roda 100% local, sem internet e sem site. A PWA não é mais oferecida no Android.
 
 **Web / PWA (computador e iPhone)**
-1. Baixe `conta-comigo-pwa-2.7.4.zip` e hospede a pasta em um endereço https
+1. Baixe `conta-comigo-pwa-2.8.0.zip` e hospede a pasta em um endereço https
 2. Abra no navegador e use **Instalar** (Chrome/Edge) ou **Adicionar à Tela de Início** (Safari)
 
-> **Atualização sem perder progresso:** recarregar a extensão (↻ em `chrome://extensions`) preserva estrelas, conquistas e perfis; remover e reinstalar apaga — antes, exporte o backup pelo botão 💾 e reimporte depois. Para confirmar a versão: o **selo `v2.7.4`** aparece no topo do jogo, ao lado de 🔥.
+> **Atualização sem perder progresso:** recarregar a extensão (↻ em `chrome://extensions`) preserva estrelas, conquistas e perfis; remover e reinstalar apaga — antes, exporte o backup pelo botão 💾 e reimporte depois. Para confirmar a versão: o **selo `v2.8.0`** aparece no topo do jogo, ao lado de 🔥.
 
 ## 🔐 Privacidade e público-infância
 
@@ -124,6 +124,7 @@ Os pacotes aparecem como **artefatos na aba Actions** a cada push nos diretório
 
 | Versão | Destaques |
 |---|---|
+| **2.8.0** | "Jogar agora": um toque grande na home com a sugestão do dia (chefe, revisão devida ou o modo mais fraco ainda não jogado); fim de rodada com barra "faltam N ⭐ para chocar", emoji do objeto nas fichas e conta errada que volta por voz; boas-vindas na primeira abertura (avatar, nome falado e primeira conta) |
 | **2.7.4** | Tipografia e composição: piso de texto de 12 a 13 px (escala sem tamanhos duplicados), objetos do palco crescem em telas grandes, botão 🏠 repetido sai da loja e das conquistas, selo de versão sai da barra da criança |
 | **2.7.3** | Movimento mais gentil: curvas próprias em todas as transições, som do toque no mesmo instante em que o botão afunda, diálogos entram sem quicar, modo calmo mantém o afundar do botão, mascote quica 3 vezes e para, barra de tempo sem recálculo de layout e saída do aviso mais rápida que a entrada |
 | **2.7.2** | Cronômetro de tom único e desligado por padrão em perfis novos; loja mostra o caminho (quanto falta) em vez de recusar, com "Comprado! Desfazer" por 5 s; conquistas trancadas legíveis; o aviso de cookies saiu da tela da criança e fica no painel dos responsáveis |

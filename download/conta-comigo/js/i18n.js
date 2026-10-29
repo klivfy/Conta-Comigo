@@ -22,6 +22,7 @@ const I18N = {
     fullscreen: 'Tela cheia', repeat: 'Ouvir de novo', level: 'Nível', auto: 'auto',
     difficulty: 'Dificuldade', q_of: 'Questão {a} de {b}',
     pick_game: 'Escolha um jogo',
+    play_now: 'Jogar agora', end_hatch: 'Faltam {n} ⭐ para chocar!', wl_title: 'Oi! Quem vai jogar?', wl_name: 'Como você se chama?', wl_hear: 'Ouvir meu nome', wl_go: 'Vamos jogar!', wl_skip: 'Agora não', wl_hello: '{name}! Que nome bonito!',
     review_btn: 'Revisar ({n})', sp_boss: 'Desafio-chefe', sp_duel: 'Duelo', sp_diag: 'Meu nível',
     goal_line: '🎯 Meta: {a}/{b}', goal_done: 'Meta do dia concluída! +5 ⭐',
     // modos
@@ -227,6 +228,7 @@ const I18N = {
     fullscreen: 'Fullscreen', repeat: 'Say it again', level: 'Level', auto: 'auto',
     difficulty: 'Difficulty', q_of: 'Question {a} of {b}',
     pick_game: 'Pick a game',
+    play_now: 'Play now', end_hatch: '{n} ⭐ to hatch!', wl_title: 'Hi! Who is playing?', wl_name: 'What is your name?', wl_hear: 'Hear my name', wl_go: "Let's play!", wl_skip: 'Not now', wl_hello: '{name}! What a lovely name!',
     review_btn: 'Review ({n})', sp_boss: 'Boss challenge', sp_duel: 'Duel', sp_diag: 'My level',
     goal_line: '🎯 Goal: {a}/{b}', goal_done: 'Daily goal done! +5 ⭐',
     m_contar: 'Count', d_contar: 'How many?', m_somar: 'Add', d_somar: 'Put together',
@@ -418,6 +420,7 @@ const I18N = {
     fullscreen: 'Pantalla completa', repeat: 'Escuchar otra vez', level: 'Nivel', auto: 'auto',
     difficulty: 'Dificultad', q_of: 'Pregunta {a} de {b}',
     pick_game: 'Elige un juego',
+    play_now: 'Jugar ya', end_hatch: '¡{n} ⭐ para eclosionar!', wl_title: '¡Hola! ¿Quién juega?', wl_name: '¿Cómo te llamas?', wl_hear: 'Escuchar mi nombre', wl_go: '¡A jugar!', wl_skip: 'Ahora no', wl_hello: '¡{name}! ¡Qué nombre tan bonito!',
     review_btn: 'Repasar ({n})', sp_boss: 'Reto jefe', sp_duel: 'Duelo', sp_diag: 'Mi nivel',
     goal_line: '🎯 Meta: {a}/{b}', goal_done: '¡Meta del día lograda! +5 ⭐',
     m_contar: 'Contar', d_contar: '¿Cuántos hay?', m_somar: 'Sumar', d_somar: 'Juntar todo',

@@ -1092,3 +1092,18 @@ a.mini-btn { display: inline-flex; align-items: center; text-decoration: none; }
   body.page-mode .grp { max-width: clamp(168px, 30vw, 300px); }
   body.page-mode .grp.plain { max-width: 100%; }
 }
+
+/* v2.8.0: "Jogar agora" (N3), progresso do mascote no fim (N2) e boas-vindas (N1) */
+.play-now { display: flex; align-items: center; gap: var(--sp-6); width: 100%; min-height: 72px; padding: var(--sp-5) var(--sp-7); margin: 0 0 var(--sp-5); border: none; border-radius: var(--r-lg); background: var(--ans-1); color: var(--on-accent); box-shadow: 0 6px 0 var(--ans-1-edge); cursor: pointer; font-family: inherit; text-align: left; transition: transform var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out); }
+.play-now:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--ans-1-edge); }
+.play-now .pn-emoji { font-size: 40px; line-height: 1; }
+.play-now .pn-txt { display: flex; flex-direction: column; min-width: 0; }
+.play-now b { font-size: var(--fs-xl); font-weight: 900; }
+.play-now small { font-size: var(--fs-md); font-weight: 700; opacity: 1; }
+#end-next { display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); width: min(280px, 100%); margin: var(--sp-4) auto 0; font-size: var(--fs-md); font-weight: 800; color: var(--ink-soft); }
+#end-next.hidden { display: none; }
+#end-next .np-bar { display: block; width: 100%; height: 8px; border-radius: var(--r-pill); background: rgba(var(--sh), .12); overflow: hidden; }
+#end-next .np-bar > i { display: block; height: 100%; background: var(--accent-text); border-radius: var(--r-pill); }
+.hrow .hemo { font-size: 1.125em; }
+button.hrow { border: none; font: inherit; font-weight: 800; color: var(--ink-soft); cursor: pointer; min-height: 44px; }
+.wl-lbl { display: block; margin: var(--sp-5) 0 var(--sp-3); font-weight: 800; color: var(--ink-soft); }

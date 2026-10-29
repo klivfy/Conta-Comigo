@@ -100,7 +100,7 @@ async function answerContrast(page, label, found, min) {
 
     await page.goto(base + 'options.html'); await page.waitForTimeout(1000);
     await audit(page, tag('opcoes'), found);
-    // v2.7.4: conferência de adulto antes do formulário de senha
+    // v2.8.0: conferência de adulto antes do formulário de senha
     const q = await page.evaluate(() => document.getElementById('gc-adult-q').textContent);
     const m = q.match(/(\d+)\s*×\s*(\d+)/);
     await page.fill('#gc-adult-in', String(Number(m[1]) * Number(m[2]))); await page.click('#gc-adult-go');

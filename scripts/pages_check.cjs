@@ -2,6 +2,7 @@
 /* Páginas que o a11y_check e o resp_check não abrem (eles testam só a PWA):
    - nova aba (newtab.html): o acerto não quebra a página, conta a ofensiva do dia,
      a próxima pergunta volta, e o botão liga/desliga tem nome e estado;
+   - jogo (game.html): "Jogar agora", fim de rodada e boas-vindas (v2.8.0);
    - versão para escolas (web/index.html) e nova aba: axe sem violação séria ou crítica;
    - painel (options.html): sem senha criada, a conferência de adulto vem antes do formulário.
    Serve a fonte (download/conta-comigo) num servidor local.
@@ -97,6 +98,57 @@ function serve() {
     await page.fill('#gc-adult-in', String(Number(m[1]) * Number(m[2]))); await page.click('#gc-adult-go');
     const after = await page.evaluate(() => !document.getElementById('gc-form').classList.contains('hidden'));
     ok(after, 'painel: resposta certa abre o formulário de senha');
+    await ctx.close();
+  }
+
+  // 4) v2.8.0: "Jogar agora" (N3), fim de rodada (N2) e boas-vindas (N1)
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: 'pt-BR', bypassCSP: true });
+    const page = await ctx.newPage();
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    await page.goto(base + 'game.html'); await page.waitForTimeout(900);
+    await page.evaluate(() => { P().stars = 120; saveState(); renderHome(); });
+    const pn = await page.evaluate(() => { const b = document.getElementById('play-now'); return b ? { label: b.getAttribute('aria-label'), h: b.getBoundingClientRect().height } : null; });
+    ok(!!pn && pn.h >= 44 && /Jogar agora/.test(pn.label), 'home: cartão "Jogar agora" existe, alvo >= 44px ("' + (pn && pn.label) + '")');
+    await page.click('#play-now'); await page.waitForTimeout(500);
+    ok(await page.evaluate(() => document.getElementById('screen-game').classList.contains('active')), 'home: "Jogar agora" abre uma rodada');
+    // responde tudo: a primeira conta errada de propósito, para a ficha de revisão por voz
+    let wrongOnce = false;
+    for (let i = 0; i < 12; i++) {
+      const done = await page.evaluate(() => document.getElementById('screen-end').classList.contains('active'));
+      if (done) break;
+      await page.evaluate((w) => {
+        const q = R.current; if (!q || R.locked) return;
+        const btns = [...document.querySelectorAll('#answers button')];
+        const bad = btns.find((b) => String(b.dataset.v) !== String(q.answer));
+        const good = btns.find((b) => String(b.dataset.v) === String(q.answer));
+        (w && bad ? bad : good).click();
+      }, !wrongOnce && (wrongOnce = true));
+      await page.waitForTimeout(450);
+      await page.evaluate(() => { const b = [...document.querySelectorAll('#answers button')].find((x) => String(x.dataset.v) === String(R.current && R.current.answer)); if (b && !R.locked) b.click(); });
+      await page.waitForTimeout(1300);
+    }
+    ok(await page.evaluate(() => document.getElementById('screen-end').classList.contains('active')), 'fim: a rodada chega à tela final');
+    const end = await page.evaluate(() => ({
+      next: !!document.getElementById('end-next') && !document.getElementById('end-next').classList.contains('hidden'),
+      emo: document.querySelectorAll('#end-history .hemo').length,
+      say: document.querySelectorAll('#end-history button[data-say]').length,
+    }));
+    ok(end.emo > 0, 'fim: fichas com o emoji do objeto (' + end.emo + ')');
+    ok(end.say >= 1, 'fim: a conta errada volta por voz (botão com 🔊)');
+    await page.addScriptTag({ content: AXE });
+    const ax = await page.evaluate(async () => { const r = await window.axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa'] } }); return r.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => v.id + ' (' + v.nodes.length + ')'); });
+    ok(ax.length === 0, 'axe fim de rodada' + (ax.length ? ': ' + ax.join(', ') : ''));
+    // N1: boas-vindas
+    await page.evaluate(() => { const p = P(); p.rounds = 0; p.name = DEFAULT_NAME; hideOverlay(); renderHome(); show('home'); showWelcome(); });
+    await page.waitForTimeout(400);
+    const ax2 = await page.evaluate(async () => { const r = await window.axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa'] } }); return r.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => v.id + ' (' + v.nodes.length + ')'); });
+    ok(ax2.length === 0, 'axe boas-vindas' + (ax2.length ? ': ' + ax2.join(', ') : ''));
+    await page.click('[data-wav="🐼"]'); await page.fill('#wl-name', 'Bia'); await page.click('#wl-go'); await page.waitForTimeout(600);
+    const w = await page.evaluate(() => ({ name: P().name, av: P().avatar, game: document.getElementById('screen-game').classList.contains('active') }));
+    ok(w.name === 'Bia' && w.av === '🐼' && w.game, 'boas-vindas: avatar e nome salvos e a primeira conta começa (' + w.name + ' ' + w.av + ')');
+    ok(errors.length === 0, 'jogo: sem erro de JavaScript' + (errors.length ? ' (' + errors.join(' | ') + ')' : ''));
     await ctx.close();
   }
 

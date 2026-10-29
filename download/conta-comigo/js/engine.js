@@ -1547,6 +1547,31 @@ function dueReviews() {
   const today = fmtDate();
   return p.review.filter((c) => c.due <= today);
 }
+/* v2.8.0 (N3): "Jogar agora". Uma escolha só para a criança: chefe pronto, depois revisão devida,
+   depois o modo liberado que ela ainda não jogou hoje e que está mais fraco (últimas 5 respostas).
+   Sem dado, vale a ordem da home. Mistar e Contra o Tempo são desafios: nunca são a sugestão. */
+function recommendNext() {
+  const p = P();
+  if (!p) return { kind: 'mode', mode: 'somar' };
+  if (p.bossReady) return { kind: 'boss' };
+  const today = fmtDate();
+  const due = p.review.filter((c) => c.due <= today).length;
+  if (due > 0) return { kind: 'review', n: due };
+  const modes = Object.keys(MODES).filter((m) => m !== 'mistar' && m !== 'tempo' && modeUnlocked(m));
+  const played = (m) => !!(p.today && p.today.modes && p.today.modes[m]);
+  const acc = (m) => { const r = p.recent[m]; return r && r.length ? r.filter(Boolean).length / r.length : 0.5; };
+  const pool = modes.filter((m) => !played(m));
+  const from = pool.length ? pool : modes;
+  let best = from[0];
+  for (const m of from) if (acc(m) < acc(best)) best = m;
+  return { kind: 'mode', mode: best };
+}
+/* v2.8.0 (N2): quanto falta para o mascote mudar de fase (0 a 100) */
+function mascotProgress(stars) {
+  if (stars >= 100) return { pct: 100, need: 0, to: null };
+  const lo = stars >= 30 ? 30 : 0, hi = stars >= 30 ? 100 : 30;
+  return { pct: Math.round(100 * (stars - lo) / (hi - lo)), need: hi - stars, to: stars >= 30 ? 'big' : 'baby' };
+}
 function gradeReview(card, right) {
   const p = P();
   if (right) {

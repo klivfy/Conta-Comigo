@@ -117,7 +117,7 @@ function showBubble(emoji, text) {
   bubbleTimer = setTimeout(hideBubble, bubbleMs(G()));
 }
 function hideBubble() { const b = $('#bubble'); if (b) b.classList.add('hidden'); }
-/* v2.7.4: durante a rodada o toast cobria "Ouvir de novo" e tirava o foco da conta.
+/* v2.8.0: durante a rodada o toast cobria "Ouvir de novo" e tirava o foco da conta.
    Ali ele só vai para o leitor de tela e aparece na tela quando a criança sai do jogo. */
 const toastQueue = [];
 function toast(msg) {
@@ -373,7 +373,26 @@ function renderHome() {
   if (btnBoss) btnBoss.classList.toggle('hidden', !p.bossReady);
   const btnDiag = $('#sp-diag');
   if (btnDiag) btnDiag.classList.toggle('attention', !p.assessed);
-  renderDiffChips(); refreshChrome();
+  renderPlayNow(); renderDiffChips(); refreshChrome();
+}
+/* v2.8.0 (N3): um toque grande com a sugestão do dia; os outros modos ficam logo abaixo */
+function renderPlayNow() {
+  const host = $('#screen-home'); if (!host) return;
+  let b = $('#play-now');
+  if (!b) {
+    b = document.createElement('button'); b.id = 'play-now'; b.type = 'button'; b.className = 'play-now';
+    const anchor = host.querySelector('.sec-title'); host.insertBefore(b, anchor || host.firstChild);
+    b.addEventListener('click', () => {
+      ensureAudio(); SFX.tap();
+      const r = recommendNext();
+      if (r.kind === 'boss') startBoss(); else if (r.kind === 'review') startReview(); else startRound(r.mode);
+    });
+  }
+  const r = recommendNext();
+  const emoji = r.kind === 'boss' ? '⚔️' : r.kind === 'review' ? '📚' : MODES[r.mode].emoji;
+  const what = r.kind === 'boss' ? t('sp_boss') : r.kind === 'review' ? t('review_btn', { n: r.n }) : t('m_' + r.mode);
+  b.innerHTML = '<span class="pn-emoji" aria-hidden="true">' + emoji + '</span><span class="pn-txt"><b>' + t('play_now') + '</b><small>' + escHtml(what) + '</small></span>';
+  b.setAttribute('aria-label', t('play_now') + ': ' + what);
 }
 
 /* ---------- dificuldade manual (chips auto + 1..5) ---------- */
@@ -762,7 +781,8 @@ function onCorrect(btn, firstTry) {
   }
   if (R.kind === 'duel' && firstTry) { if (R.duel.turn === 1) R.duel.s1++; else R.duel.s2++; }
 
-  R.history.push({ txt: R.current.display, ok: firstTry });
+  const eM = /class="obj[^"]*"[^>]*>([^<]+)</.exec(R.current.visual || '');
+  R.history.push({ txt: R.current.display, ok: firstTry, emo: eM ? eM[1].trim() : '', say: R.current.tts || '' });
   R.qIndex++;
   setTimeout(() => {
     if (R.qIndex >= R.total) endRound();
@@ -869,7 +889,19 @@ function renderEndScreen(res) {
   const hist = $('#end-history');
   // sem respostas (ex.: tempo esgotado antes da 1ª), nada de rótulo órfão
   hist.innerHTML = R.history.length ? '<b>' + t('history') + '</b><div class="hist-list">' +
-    R.history.map((h) => '<span class="hrow' + (h.ok ? ' ok' : ' no') + '">' + (h.ok ? '✅' : '🔁') + ' ' + escHtml(h.txt) + '</span>').join('') + '</div>' : '';
+    R.history.map((h, i) => {
+      const body = (h.ok ? '✅' : '🔁') + ' ' + (h.emo ? '<span class="hemo" aria-hidden="true">' + escHtml(h.emo) + '</span> ' : '') + escHtml(h.txt);
+      /* v2.8.0 (N2): a conta que ficou difícil volta por voz, sem a criança precisar ler */
+      return h.ok || !h.say ? '<span class="hrow ok">' + body + '</span>'
+        : '<button type="button" class="hrow no" data-say="' + i + '" aria-label="' + escHtml(t('repeat') + ': ' + h.txt) + '">' + body + ' 🔊</button>';
+    }).join('') + '</div>' : '';
+  $$('#end-history [data-say]').forEach((b) => b.addEventListener('click', () => { ensureAudio(); TTS.speak(R.history[Number(b.dataset.say)].say, { calm: true }); }));
+  // v2.8.0 (N2): quanto falta para o mascote mudar de fase
+  let nx = $('#end-next');
+  if (!nx) { nx = document.createElement('div'); nx.id = 'end-next'; const anchor = $('#end-msg'); anchor.parentNode.insertBefore(nx, anchor.nextSibling); }
+  const mp = mascotProgress(p.stars);
+  nx.classList.toggle('hidden', mp.to == null);
+  if (mp.to != null) nx.innerHTML = '<span class="np-bar" aria-hidden="true"><i style="width:' + Math.max(4, mp.pct) + '%"></i></span><span>' + (mp.to === 'baby' ? t('end_hatch', { n: mp.need }) : t('to_next', { n: mp.need })) + '</span>';
   // v2.4 (A-144): parabéns personalizado falado — recorde tem fala própria
   if (R.kind === 'normal' || R.kind === 'review') {
     const spoken = R.newRecord ? tpick('pr_record', { name: pName(p), n: R.points }) : tpick('pr_end', { name: pName(p) });
@@ -917,7 +949,7 @@ const SHOP_HATS = [
 ];
 /* "Usar", "Comprar 60⭐"... repetem em todo cartão: o leitor de tela ouve também o item */
 function itemLbl(action, item) { return ' aria-label="' + escHtml(action + ' — ' + item) + '"'; }
-/* v2.7.4: item que ainda não dá para comprar vira um caminho (tem/preço + barra), não um botão que nega */
+/* v2.8.0: item que ainda não dá para comprar vira um caminho (tem/preço + barra), não um botão que nega */
 function buyBtn(kind, id, price, name, stars) {
   if (stars >= price) return '<button class="mini-btn" data-buy' + kind + '="' + id + '"' + itemLbl(t('buy') + ' ' + price + '⭐', name) + '>' + t('buy') + ' ' + price + '⭐</button>';
   const miss = price - stars, txt = stars + '/' + price + '⭐';
@@ -973,7 +1005,7 @@ function renderShop() {
   $$('#shop-pets [data-pet]').forEach((b) => b.addEventListener('click', () => { P().pet = b.dataset.pet; saveState(); renderShop(); renderMascot(); SFX.tap(); showBubble(PETS.find((x) => x.id === b.dataset.pet).emoji, tpick('greet', { name: pName(P()) })); }));
   $$('#shop-pets [data-buypet]').forEach((b) => b.addEventListener('click', () => buyPet(b.dataset.buypet)));
 }
-/* v2.7.4: "Comprado! Desfazer" por 5 s. Devolve as estrelas e o que estava em uso. */
+/* v2.8.0: "Comprado! Desfazer" por 5 s. Devolve as estrelas e o que estava em uso. */
 let undoTimer = null;
 function offerUndo(fn) {
   closeUndo();
@@ -1303,7 +1335,7 @@ function bindLegal() {
   if (c) c.addEventListener('click', () => { SFX.tap(); openConsentPrefs(); });
 }
 
-/* v2.7.4: som e imagem no mesmo instante. O toque soa quando o dedo desce (o botão afunda nesse frame);
+/* v2.8.0: som e imagem no mesmo instante. O toque soa quando o dedo desce (o botão afunda nesse frame);
    o SFX.tap() do click, logo depois, é descartado para não soar duas vezes. As respostas têm som próprio. */
 let tapDownAt = 0;
 (function () {
@@ -1316,6 +1348,36 @@ let tapDownAt = 0;
   }, true);
 })();
 
+/* ---------- boas-vindas (N1, v2.8.0) ----------
+   Primeira abertura: avatar, nome falado e a primeira conta, num cartão só. "Agora não" fecha até a próxima abertura;
+   some de vez quando a criança joga uma rodada ou o nome deixa de ser o padrão. */
+function needsWelcome() {
+  const p = P();
+  return !!p && DB.profiles.length === 1 && p.rounds === 0 && p.name === DEFAULT_NAME;
+}
+function showWelcome() {
+  const p = P(); if (!p) return;
+  let av = p.avatar || AVATARS[0];
+  showOverlay('<div class="ov-emoji" aria-hidden="true">👋</div><h3>' + t('wl_title') + '</h3>' +
+    '<div class="av-row" role="group" aria-label="' + escHtml(t('a_avatar')) + '">' + AVATARS.map((a) => '<button type="button" class="av' + (a === av ? ' sel' : '') + '" aria-pressed="' + (a === av) + '" data-wav="' + a + '">' + a + '</button>').join('') + '</div>' +
+    '<label class="wl-lbl" for="wl-name">' + t('wl_name') + '</label>' +
+    '<input id="wl-name" class="ad-input" type="text" maxlength="20" autocomplete="off">' +
+    '<div class="ov-actions"><button type="button" class="big-btn" id="wl-go">' + t('wl_go') + '</button>' +
+    '<button type="button" class="big-btn alt" id="wl-hear">🔊 ' + t('wl_hear') + '</button>' +
+    '<button type="button" class="ck-btn ck-link" id="wl-skip">' + t('wl_skip') + '</button></div>');
+  const nm = () => cleanName(($('#wl-name').value || '').trim());
+  $$('#overlay-card [data-wav]').forEach((b) => b.addEventListener('click', () => { av = b.dataset.wav; markPicked($$('#overlay-card [data-wav]'), b); }));
+  $('#wl-hear').addEventListener('click', () => { ensureAudio(); const n = nm(); TTS.speak(t('wl_hello', { name: n || pName(P()) })); });
+  $('#wl-skip').addEventListener('click', () => { hideOverlay(); });
+  $('#wl-go').addEventListener('click', () => {
+    ensureAudio(); const n = nm(); const pr = P();
+    pr.avatar = av; if (n) pr.name = n;
+    saveState(true); hideOverlay(); renderHome(); refreshChrome();
+    if (n) TTS.speak(t('wl_hello', { name: n }));
+    startRound('contar');
+  });
+}
+
 /* ---------- boot ---------- */
 async function boot() {
   await initDB();
@@ -1327,14 +1389,14 @@ async function boot() {
   ensureMissions();
   renderHome();
   show('home');
-  // v2.7.4: o aviso de cookies não aparece mais para a criança; ele fica no painel (options.js)
+  // v2.8.0: o aviso de cookies não aparece mais para a criança; ele fica no painel (options.js)
   // v2.4.1: selo de versão visível no topo — confirmação instantânea da build
   const vb = $('#cc-ver');
   if (vb) {
     let vv = '';
     try { if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getManifest) vv = chrome.runtime.getManifest().version; } catch (e) { /* sem extensão */ }
     if (!vv) { const mt = document.querySelector('meta[name="cc-version"]'); if (mt) vv = mt.content; }
-    vb.textContent = 'v' + (vv || (window.ccVersion ? window.ccVersion() : '2.7.4'));
+    vb.textContent = 'v' + (vv || (window.ccVersion ? window.ccVersion() : '2.8.0'));
   }
   // v2.4 (A-198): saudação cordial com o nome — o 1º toque libera o áudio no navegador
   const greet = () => {

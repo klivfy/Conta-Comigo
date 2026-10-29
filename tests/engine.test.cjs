@@ -543,3 +543,30 @@ test('objetos: histórias e dicas usam o nome e o gênero do idioma do jogo', ()
 test('cronômetro de pontos vem desligado em instalação nova (sem pressão para 4 e 5 anos)', () => {
   assert.equal(E.ev('DEFAULT_SETTINGS.timer'), false);
 });
+
+/* ---------- v2.8.0: "Jogar agora" (N3) e progresso do mascote (N2) ---------- */
+test('recommendNext: chefe, depois revisão devida, depois o modo mais fraco ainda não jogado hoje', () => {
+  const r = E.ev(`(() => {
+    const p = P(); p.stars = 200; p.bossReady = false; p.review = []; p.today = { d: '', rounds: 0, done: false, modes: {} }; p.recent = {};
+    const out = {};
+    p.bossReady = true; out.boss = recommendNext().kind; p.bossReady = false;
+    p.review = [{ m: 'somar', lv: 1, f: { a: 1, b: 2 }, box: 1, due: '2000-01-01' }]; out.rev = recommendNext();
+    p.review = [];
+    p.recent = { contar: [true, true, true, true, true], somar: [false, false, false, true, true], comparar: [true, true, true, true, true] };
+    out.weak = recommendNext().mode;
+    p.today.modes = { somar: 1 }; out.skipPlayed = recommendNext().mode;
+    out.never = ['mistar', 'tempo'].indexOf(recommendNext().mode) < 0;
+    return JSON.stringify(out);
+  })()`);
+  const o = JSON.parse(r);
+  assert.equal(o.boss, 'boss');
+  assert.equal(o.rev.kind, 'review'); assert.equal(o.rev.n, 1);
+  assert.equal(o.weak, 'somar');
+  assert.notEqual(o.skipPlayed, 'somar');
+  assert.ok(o.never);
+});
+test('mascotProgress: ovo até 30, filhote até 100, adulto cheio', () => {
+  assert.deepEqual(j('mascotProgress(15)'), { pct: 50, need: 15, to: 'baby' });
+  assert.deepEqual(j('mascotProgress(65)'), { pct: 50, need: 35, to: 'big' });
+  assert.deepEqual(j('mascotProgress(150)'), { pct: 100, need: 0, to: null });
+});
