@@ -4,6 +4,8 @@ const I18N = {
   pt: {
     appName: 'Conta Comigo', subtitle: 'Vamos brincar com os números!',
     tip: 'Toque em um modo para começar! 👆', home: 'Início',
+    default_player: 'Jogador',
+    nt_turn_on: 'Ligar a continha na nova aba', nt_turn_off: 'Desligar a continha na nova aba',
     /* v2.7 — canais oficiais, cookies e verificação para adultos */
     lg_group: 'Informações legais', lg_privacy: 'Privacidade', lg_terms: 'Termos de Uso', lg_support: 'Suporte',
     lg_owner: '© 2026 Klivfy Tecnologia e Consultoria em TI LTDA. Todos os direitos reservados.',
@@ -201,12 +203,14 @@ const I18N = {
     confirm_reset: 'Tem certeza? Esta ação não pode ser desfeita.',
     copied: 'Copiado!', imp_ok: 'Progresso importado!', imp_bad: 'Arquivo inválido.',
     goal_opt: 'Sem meta', no_limit: 'Sem limite', off: 'Desligado', on: 'Ligado',
-    version: 'Versão', store_note: 'Material de publicação (S35) incluído na pasta loja/ da extensão.',
+    version: 'Versão',
   },
 
   en: {
     appName: 'Count With Me', subtitle: 'Let\'s play with numbers!',
     tip: 'Tap a mode to start! 👆', home: 'Home',
+    default_player: 'Player',
+    nt_turn_on: 'Turn on the quick sum in new tabs', nt_turn_off: 'Turn off the quick sum in new tabs',
     /* v2.7 — official channels, cookies and the adult check */
     lg_group: 'Legal information', lg_privacy: 'Privacy', lg_terms: 'Terms of Use', lg_support: 'Support',
     lg_owner: '© 2026 Klivfy Tecnologia e Consultoria em TI LTDA. All rights reserved.',
@@ -390,12 +394,14 @@ const I18N = {
     confirm_reset: 'Are you sure? This cannot be undone.',
     copied: 'Copied!', imp_ok: 'Progress imported!', imp_bad: 'Invalid file.',
     goal_opt: 'No goal', no_limit: 'No limit', off: 'Off', on: 'On',
-    version: 'Version', store_note: 'Store listing material (S35) included in the extension\'s loja/ folder.',
+    version: 'Version',
   },
 
   es: {
     appName: 'Cuenta Conmigo', subtitle: '¡Vamos a jugar con los números!',
     tip: '¡Toca un modo para empezar! 👆', home: 'Inicio',
+    default_player: 'Jugador',
+    nt_turn_on: 'Activar la cuenta rápida en la pestaña nueva', nt_turn_off: 'Desactivar la cuenta rápida en la pestaña nueva',
     /* v2.7 — canales oficiales, cookies y verificación para adultos */
     lg_group: 'Información legal', lg_privacy: 'Privacidad', lg_terms: 'Términos de Uso', lg_support: 'Soporte',
     lg_owner: '© 2026 Klivfy Tecnologia e Consultoria em TI LTDA. Todos los derechos reservados.',
@@ -579,7 +585,7 @@ const I18N = {
     confirm_reset: '¿Estás seguro? No se puede deshacer.',
     copied: '¡Copiado!', imp_ok: '¡Progreso importado!', imp_bad: 'Archivo inválido.',
     goal_opt: 'Sin meta', no_limit: 'Sin límite', off: 'Apagado', on: 'Encendido',
-    version: 'Versión', store_note: 'Material de publicación (S35) incluido en la carpeta loja/ de la extensión.',
+    version: 'Versión',
   },
 };
 

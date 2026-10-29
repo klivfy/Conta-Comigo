@@ -507,3 +507,34 @@ test('efeitos sonoros: tocam notas, respeitam mudo e o interruptor de efeitos, n
   assert.equal(starts, 0, 'efeitos desligados não tocam');
   E.ev('G().sfxOn = true');
 });
+
+/* ---------- v2.7.1: nome padrão e nomes dos objetos no idioma do jogo ---------- */
+test('nome padrão sai no idioma do jogo; nome escolhido nunca muda', () => {
+  const name = (lang, n) => { E.ev('LANG = "' + lang + '"'); return E.ev('pName(' + E.put('p', { name: n }) + ')'); };
+  assert.equal(name('pt', 'Jogador'), 'Jogador');
+  assert.equal(name('en', 'Jogador'), 'Player');
+  assert.equal(name('es', 'Jogador'), 'Jugador');
+  assert.equal(name('en', ''), 'Player');
+  assert.equal(name('en', 'Bia'), 'Bia');
+  E.ev('LANG = "pt"');
+});
+
+test('objetos: histórias e dicas usam o nome e o gênero do idioma do jogo', () => {
+  const word = (lang, i, n) => { E.ev('LANG = "' + lang + '"'); return E.ev('itemWord(ITEMS[' + i + '], ' + n + ')'); };
+  const fem = (lang, i) => { E.ev('LANG = "' + lang + '"'); return E.ev('itemFem(ITEMS[' + i + '])'); };
+  assert.equal(word('pt', 0, 3), 'maçãs');
+  assert.equal(word('en', 0, 3), 'apples');
+  assert.equal(word('en', 0, 1), 'apple');
+  assert.equal(word('es', 6, 2), 'galletas');
+  assert.equal(fem('pt', 1), false); // morango
+  assert.equal(fem('es', 1), true);  // fresa
+  const all = j('ITEMS.map((it) => [it.en && it.en.length, it.es && it.es.length])');
+  all.forEach(([en, es], i) => { assert.equal(en, 2, 'en do item ' + i); assert.equal(es, 3, 'es do item ' + i); });
+  // a história em inglês não pode trazer palavra portuguesa do objeto
+  E.ev('LANG = "en"');
+  for (let k = 0; k < 40; k++) {
+    const q = j('GENS.historia(2)');
+    assert.ok(!/maçã|morango|balão|peixe|borboleta|biscoito|pintinho|uva|flor|estrela/.test(q.tts), q.tts);
+  }
+  E.ev('LANG = "pt"');
+});

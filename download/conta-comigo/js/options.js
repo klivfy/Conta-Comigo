@@ -28,7 +28,26 @@ function showGate() {
   $('#ge-pwd').placeholder = t('gate_pwd_ph');
   $('#gc-hint').placeholder = t('ob_hint_ph');
   $('#ge-reset-in').placeholder = t('gate_reset_ph');
-  if (has) gateEnterIdle();
+  if (has) gateEnterIdle(); else gateAdultAsk();
+}
+/* v2.7.1: antes de criar a senha, uma conta que criança de 4 a 8 anos não resolve sozinha */
+let gcAdultAnswer = '', gcAdultOk = false;
+function gateAdultAsk() {
+  const a = rand(12, 19), b = rand(13, 19);
+  gcAdultAnswer = String(a * b); gcAdultOk = false;
+  $('#gc-adult').classList.remove('hidden');
+  $('#gc-form').classList.add('hidden');
+  $('#gc-adult-q').textContent = t('ad_title') + '. ' + t('ad_q', { q: a + ' × ' + b });
+  $('#gc-adult-in').value = ''; $('#gc-adult-err').textContent = '';
+}
+function gateAdultCheck() {
+  if ($('#gc-adult-in').value.trim() !== gcAdultAnswer) {
+    $('#gc-adult-err').textContent = t('ad_wrong'); $('#gc-adult-in').select(); return;
+  }
+  gcAdultOk = true;
+  $('#gc-adult').classList.add('hidden');
+  $('#gc-form').classList.remove('hidden');
+  $('#gc-pwd').focus();
 }
 function gateEnterIdle() {
   clearInterval(gateTriesTimer);
@@ -88,6 +107,7 @@ function showContent() {
   renderOptions();
 }
 async function tryCreateGate() {
+  if (!gcAdultOk) return; // o formulário só existe depois da conferência de adulto
   const a = $('#gc-pwd').value || '';
   const b = $('#gc-pwd2').value || '';
   const hint = ($('#gc-hint').value || '').trim();
@@ -158,7 +178,7 @@ function renderOptions() {
 
   // seletor de jogador do painel
   const dp = $('#dash-prof');
-  dp.innerHTML = DB.profiles.map((pf) => '<option value="' + escHtml(pf.id) + '"' + (pf.id === DB.activeId ? ' selected' : '') + '>' + escHtml(pf.avatar + ' ' + pf.name) + '</option>').join('');
+  dp.innerHTML = DB.profiles.map((pf) => '<option value="' + escHtml(pf.id) + '"' + (pf.id === DB.activeId ? ' selected' : '') + '>' + escHtml(pf.avatar + ' ' + pName(pf)) + '</option>').join('');
   renderDash();
   renderProfList();
   paintBackupHint(); // v2.5: estado do backup das conquistas
@@ -210,7 +230,7 @@ function renderOptions() {
   paintSyncStatus();
   renderSec();
   $('#imp-area').placeholder = t('imp_ph');
-  $('#opt-version').textContent = t('version') + ': ' + (window.ccVersion ? window.ccVersion() : '2.7.0');
+  $('#opt-version').textContent = t('version') + ': ' + (window.ccVersion ? window.ccVersion() : '2.7.1');
 }
 
 /* ---------- painel (S26 + S09) ---------- */
@@ -291,11 +311,11 @@ function renderProfList() {
     ) : '';
     return '<div class="prof-line" data-pid="' + escHtml(pf.id) + '">' +
       '<span style="font-size:24px" aria-hidden="true">' + escHtml(pf.avatar) + '</span>' +
-      '<input value="' + escHtml(pf.name) + '" maxlength="' + NAME_MAX + '" aria-label="' + escHtml(t('name_ph')) + '" data-name="' + escHtml(pf.id) + '">' +
-      '<div class="av-row" role="group" aria-label="' + escHtml(t('a_avatar') + ' — ' + pf.name) + '">' + AVATARS.map((a) => '<button class="av' + (a === pf.avatar ? ' sel' : '') + '" aria-pressed="' + (a === pf.avatar) + '" data-av="' + a + '" data-setav="' + escHtml(pf.id) + '">' + a + '</button>').join('') + '</div>' +
-      '<button class="mini-btn' + (cur ? ' using' : '') + '" data-use="' + escHtml(pf.id) + '" aria-label="' + escHtml((cur ? t('in_use') : t('equip')) + ' — ' + pf.name) + '">' + (cur ? t('in_use') : t('equip')) + '</button>' +
-      '<button class="mini-btn" data-pp="' + escHtml(pf.id) + '" title="' + escHtml(t('pp_voice')) + '" aria-label="' + escHtml(t('pp_voice') + ' — ' + pf.name) + '" aria-expanded="' + (pf.id === ppOpen) + '">🎙️</button>' +
-      (DB.profiles.length > 1 ? '<button class="mini-btn danger-btn" data-del="' + escHtml(pf.id) + '" title="' + escHtml(t('del_prof') + ' — ' + pf.name) + '" aria-label="' + escHtml(t('del_prof') + ' — ' + pf.name) + '">✕</button>' : '') +
+      '<input value="' + escHtml(pName(pf)) + '" maxlength="' + NAME_MAX + '" aria-label="' + escHtml(t('name_ph')) + '" data-name="' + escHtml(pf.id) + '">' +
+      '<div class="av-row" role="group" aria-label="' + escHtml(t('a_avatar') + ' — ' + pName(pf)) + '">' + AVATARS.map((a) => '<button class="av' + (a === pf.avatar ? ' sel' : '') + '" aria-pressed="' + (a === pf.avatar) + '" data-av="' + a + '" data-setav="' + escHtml(pf.id) + '">' + a + '</button>').join('') + '</div>' +
+      '<button class="mini-btn' + (cur ? ' using' : '') + '" data-use="' + escHtml(pf.id) + '" aria-label="' + escHtml((cur ? t('in_use') : t('equip')) + ' — ' + pName(pf)) + '">' + (cur ? t('in_use') : t('equip')) + '</button>' +
+      '<button class="mini-btn" data-pp="' + escHtml(pf.id) + '" title="' + escHtml(t('pp_voice')) + '" aria-label="' + escHtml(t('pp_voice') + ' — ' + pName(pf)) + '" aria-expanded="' + (pf.id === ppOpen) + '">🎙️</button>' +
+      (DB.profiles.length > 1 ? '<button class="mini-btn danger-btn" data-del="' + escHtml(pf.id) + '" title="' + escHtml(t('del_prof') + ' — ' + pName(pf)) + '" aria-label="' + escHtml(t('del_prof') + ' — ' + pName(pf)) + '">✕</button>' : '') +
       pp +
       '</div>';
   }).join('');
@@ -410,7 +430,7 @@ function doImport(text) {
   const d = parseDB(text);
   if (!d) { toastOpt('⚠️ ' + t('imp_bad')); return; }
   replaceDB(keepLocalSecrets(d, DB)); // a senha deste aparelho continua valendo; o backup vale inteiro
-  if (!DB.profiles.length) DB.profiles = [newProfile('p1', 'Jogador', '🦊')];
+  if (!DB.profiles.length) DB.profiles = [newProfile('p1', DEFAULT_NAME, '🦊')];
   if (!DB.profiles.find((x) => x.id === DB.activeId)) DB.activeId = DB.profiles[0].id;
   DB.settings = Object.assign({}, DEFAULT_SETTINGS, DB.settings || {});
   saveState(true);
@@ -431,6 +451,8 @@ function bindOptions() {
   $('#ge-reset-show').addEventListener('click', () => { $('#ge-reset-form').classList.remove('hidden'); });
   $('#ge-reset-go').addEventListener('click', tryResetGate);
   $('#gc-go').addEventListener('click', tryCreateGate);
+  $('#gc-adult-go').addEventListener('click', gateAdultCheck);
+  $('#gc-adult-in').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); gateAdultCheck(); } });
   [['#gc-pwd', '#gc-go'], ['#gc-pwd2', '#gc-go'], ['#gc-hint', '#gc-go']].forEach(([inp, btn]) => {
     $(inp).addEventListener('keydown', (e) => { if (e.key === 'Enter') $(btn).click(); });
   });
@@ -443,7 +465,7 @@ function bindOptions() {
   $('#dash-prof').addEventListener('change', renderDash);
   $('#btn-new-prof').addEventListener('click', () => {
     if (DB.profiles.length >= 4) { toastOpt(t('max4')); return; }
-    DB.profiles.push(newProfile(null, 'Jogador ' + (DB.profiles.length + 1), pick(AVATARS)));
+    DB.profiles.push(newProfile(null, t('default_player') + ' ' + (DB.profiles.length + 1), pick(AVATARS)));
     saveState(true); renderOptions();
   });
 

@@ -41,13 +41,29 @@ const QUESTIONS_PER_ROUND = 5;
 const BOSS_QUESTIONS = 10;
 const REVIEW_INTERVALS = [1, 2, 4, 8, 16]; // dias (S08 — caixas de Leitner)
 
+/* name/plural/f = português; en e es = [singular, plural, feminino?] (v2.7.1: antes histórias e
+   dicas em inglês e espanhol saíam com o nome em português, "Ana had 3 maçãs") */
 const ITEMS = [
-  { emoji: '🍎', name: 'maçã', plural: 'maçãs', f: true }, { emoji: '🍓', name: 'morango', plural: 'morangos', f: false },
-  { emoji: '⭐', name: 'estrela', plural: 'estrelas', f: true }, { emoji: '🎈', name: 'balão', plural: 'balões', f: false },
-  { emoji: '🐟', name: 'peixe', plural: 'peixes', f: false }, { emoji: '🦋', name: 'borboleta', plural: 'borboletas', f: true },
-  { emoji: '🍪', name: 'biscoito', plural: 'biscoitos', f: false }, { emoji: '🌸', name: 'flor', plural: 'flores', f: true },
-  { emoji: '🍇', name: 'uva', plural: 'uvas', f: true }, { emoji: '🐤', name: 'pintinho', plural: 'pintinhos', f: false },
+  { emoji: '🍎', name: 'maçã', plural: 'maçãs', f: true, en: ['apple', 'apples'], es: ['manzana', 'manzanas', true] },
+  { emoji: '🍓', name: 'morango', plural: 'morangos', f: false, en: ['strawberry', 'strawberries'], es: ['fresa', 'fresas', true] },
+  { emoji: '⭐', name: 'estrela', plural: 'estrelas', f: true, en: ['star', 'stars'], es: ['estrella', 'estrellas', true] },
+  { emoji: '🎈', name: 'balão', plural: 'balões', f: false, en: ['balloon', 'balloons'], es: ['globo', 'globos', false] },
+  { emoji: '🐟', name: 'peixe', plural: 'peixes', f: false, en: ['fish', 'fish'], es: ['pez', 'peces', false] },
+  { emoji: '🦋', name: 'borboleta', plural: 'borboletas', f: true, en: ['butterfly', 'butterflies'], es: ['mariposa', 'mariposas', true] },
+  { emoji: '🍪', name: 'biscoito', plural: 'biscoitos', f: false, en: ['cookie', 'cookies'], es: ['galleta', 'galletas', true] },
+  { emoji: '🌸', name: 'flor', plural: 'flores', f: true, en: ['flower', 'flowers'], es: ['flor', 'flores', true] },
+  { emoji: '🍇', name: 'uva', plural: 'uvas', f: true, en: ['grape', 'grapes'], es: ['uva', 'uvas', true] },
+  { emoji: '🐤', name: 'pintinho', plural: 'pintinhos', f: false, en: ['chick', 'chicks'], es: ['pollito', 'pollitos', false] },
 ];
+/* nome do objeto no idioma do jogo (n = quantidade: 1 pede o singular) e o gênero para o artigo */
+function itemWord(it, n) {
+  const l = it[LANG];
+  return l ? (n === 1 ? l[0] : l[1]) : (n === 1 ? it.name : it.plural);
+}
+function itemFem(it) {
+  const l = it[LANG];
+  return l && l.length > 2 ? !!l[2] : !!it.f;
+}
 const NAMES = { pt: ['Ana', 'Bia', 'João', 'Lia'], en: ['Ana', 'Sam', 'Joe', 'May'], es: ['Ana', 'Lu', 'Juan', 'Mía'] };
 const AVATARS = ['🦊', '🐼', '🐨', '🐸', '🐵', '🦁', '🐰', '🐯', '🐧', '🦄'];
 const STICKERS = ['🦁','🐸','🐬','🦋','🐢','🦉','🐝','🐧','🦄','🐙','🦕','🐨','🦊','🐼','🐷','🐵','🦒','🐘','🦜','🐳','🐿️','🦩','🐊','🦔',
@@ -85,7 +101,7 @@ const MODES = {
 /* ---------- estado global (perfis S27 + configurações S31) ---------- */
 function newProfile(id, name, avatar) {
   return {
-    id: id || ('p' + Date.now() + rand(100, 999)), name: name || 'Jogador', avatar: avatar || '🦊',
+    id: id || ('p' + Date.now() + rand(100, 999)), name: name || DEFAULT_NAME, avatar: avatar || '🦊',
     stars: 0, points: 0, bestPts: {}, levels: {}, recent: {}, review: [],
     streak: 0, lastPlay: '', rounds: 0, firsts: 0, rights: 0, wrongs: 0, playSec: 0,
     bestCombo: 0, fatigue: 0, ach: {}, missions: { d: '', list: [] }, missionsDone: 0,
@@ -230,7 +246,7 @@ function G() { return DB.settings; }
 
 /* ---------- armazenamento: local + sync opcional (S32) ---------- */
 function migrateV1(old) {
-  const p = newProfile(null, 'Jogador', '🦊');
+  const p = newProfile(null, DEFAULT_NAME, '🦊');
   p.stars = Number(old && old.totalStars) || 0;
   if (old && old.levels && typeof old.levels === 'object') {
     for (const k in old.levels) p.levels[k] = clamp(Number(old.levels[k]) || 1, 1, 3);
@@ -260,9 +276,15 @@ function parseDB(raw) {
    tipo do molde (newProfile/DEFAULT_SETTINGS); id, nome e avatar são validados */
 const MAX_PROFILES = 4;
 const NAME_MAX = 24;
+/* v2.7.1: "Jogador" é o marcador do nome ainda não escolhido; na tela e na voz ele sai no idioma do jogo */
+const DEFAULT_NAME = 'Jogador';
+function pName(p) {
+  const n = p && p.name;
+  return (!n || n === DEFAULT_NAME) ? t('default_player') : n;
+}
 function cleanName(v) {
   const n = typeof v === 'string' ? v.replace(/[\u0000-\u001f\u007f<>]/g, '').trim().slice(0, NAME_MAX) : '';
-  return n || 'Jogador';
+  return n || DEFAULT_NAME;
 }
 function coerceLike(tpl, obj) {
   Object.keys(tpl).forEach((k) => {
@@ -443,7 +465,7 @@ async function initDB() {
     if (parsed) d = keepLocalSecrets(parsed, d);
   }
   if (!d) d = { v: 2, updatedAt: Date.now(), activeId: '', profiles: [], settings: Object.assign({}, DEFAULT_SETTINGS) };
-  if (!d.profiles.length) d.profiles.push(newProfile('p1', 'Jogador', '🦊'));
+  if (!d.profiles.length) d.profiles.push(newProfile('p1', DEFAULT_NAME, '🦊'));
   if (!d.profiles.find((p) => p.id === d.activeId)) d.activeId = d.profiles[0].id;
   d.settings = Object.assign({}, DEFAULT_SETTINGS, d.settings || {});
   normalizeDB(d);
@@ -1399,26 +1421,26 @@ function genHistoria(level, f) {
     const cap = [10, 12, 20, 30, 50][level - 1] || 10;
     a = f ? f.a : rand(1, cap - 2); b = f ? f.b : rand(1, cap - a);
     answer = a + b; display = a + ' + ' + b + ' = ?';
-    tts = t('st_1', { name, a: numWord(LANG, a), b: numWord(LANG, b), item: a === 1 ? it.name : it.plural }) + ' ' + display;
+    tts = t('st_1', { name, a: numWord(LANG, a), b: numWord(LANG, b), item: itemWord(it, a) }) + ' ' + display;
   } else if (op === 'sub') {
     const cap = [5, 10, 12, 20, 30][level - 1] || 10;
     a = f ? f.a : rand(2, cap); b = f ? f.b : rand(1, a - 1);
     answer = a - b; display = a + ' − ' + b + ' = ?';
-    tts = t('st_2', { name, a: numWord(LANG, a), b: numWord(LANG, b), item: a === 1 ? it.name : it.plural }) + ' ' + display;
+    tts = t('st_2', { name, a: numWord(LANG, a), b: numWord(LANG, b), item: itemWord(it, a) }) + ' ' + display;
   } else if (op === 'mul') {
     g = f ? f.g : rand(2, 5); k = f ? f.k : rand(2, 5);
     answer = g * k; display = g + ' × ' + k + ' = ?';
-    tts = t('st_3', { g: numWord(LANG, g), k: numWord(LANG, k), item: k === 1 ? it.name : it.plural }) + ' ' + display;
+    tts = t('st_3', { g: numWord(LANG, g), k: numWord(LANG, k), item: itemWord(it, k) }) + ' ' + display;
   } else {
     g = f ? f.g : rand(2, 6); k = f ? f.k : rand(2, 6);
     a = g * k; answer = k; display = a + ' ÷ ' + g + ' = ?';
-    tts = t('st_4', { name, a: numWord(LANG, a), g: numWord(LANG, g), item: a === 1 ? it.name : it.plural }) + ' ' + display;
+    tts = t('st_4', { name, a: numWord(LANG, a), g: numWord(LANG, g), item: itemWord(it, a) }) + ' ' + display;
   }
-  const itemWord = (op === 'mul') ? (k === 1 ? it.name : it.plural) : (a === 1 ? it.name : it.plural);
-  const storyText = op === 'add' ? t('st_1', { name, a, b, item: itemWord })
-    : op === 'sub' ? t('st_2', { name, a, b, item: itemWord })
-    : op === 'mul' ? t('st_3', { g, k, item: itemWord })
-    : t('st_4', { name, a, g, item: itemWord });
+  const storyItem = itemWord(it, op === 'mul' ? k : a);
+  const storyText = op === 'add' ? t('st_1', { name, a, b, item: storyItem })
+    : op === 'sub' ? t('st_2', { name, a, b, item: storyItem })
+    : op === 'mul' ? t('st_3', { g, k, item: storyItem })
+    : t('st_4', { name, a, g, item: storyItem });
   extra = '<div class="story">📖 ' + storyText + '</div>';
   return {
     visual: extra, display, tts,

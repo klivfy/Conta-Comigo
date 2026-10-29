@@ -4,7 +4,7 @@
 # A chave vem de scripts/fase1_keystore.sh. A senha é pedida aqui e não é gravada em lugar nenhum.
 # Precisa do JDK (keytool e jarsigner). Gera <app-release>-assinado.aab ao lado do original.
 set -euo pipefail
-AAB=${1:?informe o .aab, ex.: conta-comigo-2.7.0-270-sem-assinatura.aab}
+AAB=${1:?informe o .aab, ex.: conta-comigo-2.7.1-271-sem-assinatura.aab}
 KS=${2:?informe o keystore, ex.: ~/conta-comigo-keys/upload.jks}
 ALIAS=${3:-contacomigo-upload}
 [ -f "$AAB" ] || { echo "[ERRO] $AAB não existe"; exit 1; }

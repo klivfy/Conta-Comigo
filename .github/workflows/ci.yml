@@ -65,6 +65,9 @@ jobs:
       - name: Acessibilidade (falha em violação nova)
         run: node scripts/a11y_check.cjs
 
+      - name: Nova aba, versão web e portão do painel (fora da PWA)
+        run: node scripts/pages_check.cjs
+
       - name: Responsividade (celulares e tablets, retrato e paisagem)
         run: node scripts/resp_check.cjs
 

@@ -98,6 +98,14 @@
 
         <!-- modo criar (quando ainda não existe senha) -->
         <div id="gate-create" class="hidden">
+          <!-- v2.7.1: conferência de adulto antes de criar a senha (antes, a criança que tocasse na engrenagem criava a senha) -->
+          <div id="gc-adult">
+            <p id="gc-adult-q"></p>
+            <input id="gc-adult-in" class="ad-input" type="text" inputmode="numeric" autocomplete="off" aria-labelledby="gc-adult-q">
+            <div class="gate-err" id="gc-adult-err" role="alert"></div>
+            <button id="gc-adult-go" class="big-btn" type="button" data-i18n="ok">OK</button>
+          </div>
+          <div id="gc-form" class="hidden">
           <p data-i18n="gate_create_msg">Ainda não existe senha nesta área.</p>
           <label class="pwd-lbl" for="gc-pwd" data-i18n="ob_pwd">Crie uma senha</label>
           <div class="pwd-box"><input id="gc-pwd" type="password" autocomplete="new-password">
@@ -109,6 +117,7 @@
           <input id="gc-hint" type="text" maxlength="80">
           <div class="gate-err" id="gc-err" role="alert"></div>
           <button id="gc-go" class="big-btn" data-i18n="ob_create">Salvar senha</button>
+          </div>
         </div>
 
         <!-- modo entrar -->
@@ -285,7 +294,6 @@
             <button class="mini-btn danger-btn" id="btn-reset-all" data-i18n="reset_all">Apagar tudo</button>
           </div>
           <p class="opt-note" id="opt-version"></p>
-          <p class="opt-note" data-i18n="store_note"></p>
         </div>
 
       </div>

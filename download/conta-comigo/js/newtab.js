@@ -33,7 +33,8 @@ function ntQuestion() {
         const d = $('#nt-done');
         d.textContent = '🎉 +1 ⭐ ' + pick(I18N[LANG].praise);
         d.classList.remove('hidden');
-        confetti(18);
+        // a nova aba não carrega ui.js: sem a guarda, o erro parava a rodada e a ofensiva nunca contava
+        if (typeof confetti === 'function') confetti(18);
         if (p.lastPlay !== fmtDate()) {
           p.streak = (p.lastPlay === yesterdayStr()) ? (p.streak || 0) + 1 : 1;
           p.lastPlay = fmtDate(); saveState();
@@ -59,13 +60,21 @@ function ntShowOff() {
   $('#nt-done').classList.add('hidden');
   $('#nt-sub').textContent = t('off');
   $('#nt-note').textContent = t('s_newtab_note');
-  $('#nt-toggle').textContent = '⏻';
+  ntPaintToggle();
+}
+/* botão liga/desliga com nome e estado para leitor de tela (antes era só o glifo ⏻) */
+function ntPaintToggle() {
+  const on = !!G().newtabOn, b = $('#nt-toggle');
+  b.textContent = '⏻';
+  b.setAttribute('aria-pressed', String(on));
+  b.setAttribute('aria-label', t(on ? 'nt_turn_off' : 'nt_turn_on'));
+  b.title = b.getAttribute('aria-label');
 }
 async function bootNewtab() {
   await initDB();
   applyLang();
   applyTheme(G()); // a nova aba também segue o tema do jogo (e o modo escuro no 'auto')
-  $('#nt-toggle').textContent = G().newtabOn ? '⏻' : '⏻';
+  ntPaintToggle();
   if (G().newtabOn) ntShowGame(); else ntShowOff();
   $('#nt-open').addEventListener('click', () => {
     const url = (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) ? chrome.runtime.getURL('game.html') : 'game.html';
@@ -81,6 +90,7 @@ async function bootNewtab() {
   $('#nt-toggle').addEventListener('click', () => {
     G().newtabOn = !G().newtabOn;
     saveState(true);
+    ntPaintToggle();
     if (G().newtabOn) { $('#nt-note').textContent = ''; ntShowGame(); } else ntShowOff();
   });
 }

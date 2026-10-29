@@ -39,6 +39,11 @@ function show(name) {
   // teclado/leitor de tela: se o foco ficou numa tela que sumiu, ele vai para a nova
   if (el && prev && prev.closest && prev.closest('.screen') && !el.contains(prev)) focusScreen(el);
   if (name === 'home') adoptIfSafe();
+  if (name !== 'game') setTimeout(flushToasts, 600);
+  else { // aviso disparado logo antes da rodada (ex.: missão "modo novo") volta para a fila
+    const tEl = $('#toast');
+    if (tEl && tEl.classList.contains('show')) { toastQueue.push(tEl.textContent); tEl.classList.remove('show'); clearTimeout(toastTimer); }
+  }
   syncConsentBanner();
 }
 function focusScreen(el) {
@@ -100,17 +105,39 @@ function showBubble(emoji, text) {
   $('#bubble-emoji').textContent = emoji;
   $('#bubble-text').textContent = text;
   announce(text);
-  b.classList.remove('hidden', 'pop'); void b.offsetWidth; b.classList.add('pop');
+  b.classList.remove('hidden', 'pop');
+  // no jogo, o balão fica abaixo da linha de progresso (antes cobria "Questão 1 de 5" e os pontos)
+  b.style.top = '';
+  if (scr && scr.id === 'screen-game' && b.offsetParent) {
+    const tw = $('#timer-wrap'), anchor = (tw && !tw.classList.contains('hidden')) ? tw : $('#progress');
+    if (anchor) b.style.top = Math.round(anchor.getBoundingClientRect().bottom - b.offsetParent.getBoundingClientRect().top + b.offsetParent.scrollTop + 8) + 'px';
+  }
+  void b.offsetWidth; b.classList.add('pop');
   clearTimeout(bubbleTimer);
   bubbleTimer = setTimeout(hideBubble, bubbleMs(G()));
 }
 function hideBubble() { const b = $('#bubble'); if (b) b.classList.add('hidden'); }
+/* v2.7.1: durante a rodada o toast cobria "Ouvir de novo" e tirava o foco da conta.
+   Ali ele só vai para o leitor de tela e aparece na tela quando a criança sai do jogo. */
+const toastQueue = [];
 function toast(msg) {
   const el = $('#toast'); if (!el) return;
+  const game = $('#screen-game');
+  if (game && game.classList.contains('active')) { announce(msg); toastQueue.push(msg); return; }
+  showToastNow(msg, true);
+}
+function showToastNow(msg, speak) {
+  const el = $('#toast'); if (!el) return;
   el.textContent = msg; el.classList.remove('hidden', 'show'); void el.offsetWidth; el.classList.add('show');
-  announce(msg);
+  if (speak) announce(msg);
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+}
+function flushToasts() {
+  if (!toastQueue.length) return;
+  const next = toastQueue.shift();
+  showToastNow(next, false); // já foi anunciado no leitor de tela durante a rodada
+  if (toastQueue.length) setTimeout(flushToasts, 2900);
 }
 /* Região viva (#sr-live): frases ditas no mesmo instante saem juntas, numa
    única leitura — p.ex. "vez do jogador 2" + a pergunta no duelo */
@@ -210,7 +237,7 @@ function renderMascot() {
   const ms = $('#mascot-side');
   if (ms) ms.textContent = st.emoji;
   const lbl = $('#mascot-stage');
-  if (lbl) lbl.textContent = t(st.key) + ' · ' + p.name;
+  if (lbl) lbl.textContent = t(st.key) + ' · ' + pName(p);
   const nx = $('#mascot-next');
   if (nx) nx.textContent = st.next != null ? t('to_next', { n: st.next }) : '⭐ ' + p.stars;
 }
@@ -412,7 +439,7 @@ function startRound(mode) {
   /* v2.5: Contra o Tempo — 60 s globais de fôlego; responde o máximo que der */
   if (mode === 'tempo') { R.kind = 'tempo'; R.total = 9999; }
   show('game');
-  if (mode === 'tempo') { Timer.startGlobal(60); showBubble('⏱️', t('pr_tempo', { name: p.name })); }
+  if (mode === 'tempo') { Timer.startGlobal(60); showBubble('⏱️', t('pr_tempo', { name: pName(p) })); }
   nextQuestion(); saveState();
 }
 function startReview() {
@@ -532,7 +559,7 @@ function nextQuestion() {
   if (hadFocus && $('#screen-game').classList.contains('active')) focusScreen($('#screen-game'));
   if (R.kind !== 'tempo') Timer.start(timeBudget(level, currentMode()));
   // v2.4: incentivo do chefe falado na 1ª questão (fila prosódica junta as duas frases)
-  const intro = R.bossIntro ? tpick('pr_boss', { name: p.name }) + ' ' + q.tts : q.tts;
+  const intro = R.bossIntro ? tpick('pr_boss', { name: pName(p) }) + ' ' + q.tts : q.tts;
   R.bossIntro = false;
   setTimeout(() => TTS.speak(intro), 260);
 }
@@ -686,7 +713,7 @@ function bindCounting(q) {
 /* v2.4 (A-178): biblioteca cordial contextual — o elogio cita o nome, reconhece
    rapidez, valoriza a persistência e comemora combos, sem spam de festa */
 function cordialPraise(firstTry, speedRatio) {
-  const name = P() ? P().name : '';
+  const name = P() ? pName(P()) : '';
   if (firstTry && speedRatio >= 0.55 && Math.random() < 0.65) return tpick('pr_fast', { name });
   if (R.combo >= 3 && R.combo % 2 === 1) return tpick('pr_combo', { name, n: R.combo });
   if (!firstTry) return tpick('pr_persist', { name });
@@ -765,10 +792,10 @@ function onWrong(btn) {
       // v2.4 (A-178): acolhimento sem julgamento, citando os objetos da questão
       // com artigo concordado (as maçãs / os morangos · pt/es; "the" no en)
       const f = R.current && R.current.f;
-      const itPl = (f && ITEMS[f.it]) ? ITEMS[f.it].plural : '';
-      const fem = !!(f && ITEMS[f.it] && ITEMS[f.it].f);
+      const itPl = (f && ITEMS[f.it]) ? itemWord(ITEMS[f.it], 2) : '';
+      const fem = !!(f && ITEMS[f.it] && itemFem(ITEMS[f.it]));
       const art = fem ? (LANG === 'es' ? 'las' : 'as') : (LANG === 'es' ? 'los' : 'os');
-      const r = itPl ? tpick('cm_err_item', { name: P().name, item: itPl, art }) : tpick('cm_err_plain', { name: P().name });
+      const r = itPl ? tpick('cm_err_item', { name: pName(P()), item: itPl, art }) : tpick('cm_err_plain', { name: pName(P()) });
       showBubble('🙈', r); TTS.speak(r);
     }
   }
@@ -842,11 +869,12 @@ function renderEndScreen(res) {
     } else endPts.classList.add('hidden');
   }
   const hist = $('#end-history');
-  hist.innerHTML = '<b>' + t('history') + '</b><div class="hist-list">' +
-    R.history.map((h) => '<span class="hrow' + (h.ok ? ' ok' : ' no') + '">' + (h.ok ? '✅' : '🔁') + ' ' + escHtml(h.txt) + '</span>').join('') + '</div>';
+  // sem respostas (ex.: tempo esgotado antes da 1ª), nada de rótulo órfão
+  hist.innerHTML = R.history.length ? '<b>' + t('history') + '</b><div class="hist-list">' +
+    R.history.map((h) => '<span class="hrow' + (h.ok ? ' ok' : ' no') + '">' + (h.ok ? '✅' : '🔁') + ' ' + escHtml(h.txt) + '</span>').join('') + '</div>' : '';
   // v2.4 (A-144): parabéns personalizado falado — recorde tem fala própria
   if (R.kind === 'normal' || R.kind === 'review') {
-    const spoken = R.newRecord ? tpick('pr_record', { name: p.name, n: R.points }) : tpick('pr_end', { name: p.name });
+    const spoken = R.newRecord ? tpick('pr_record', { name: pName(p), n: R.points }) : tpick('pr_end', { name: pName(p) });
     setTimeout(() => TTS.speak(spoken), 1100); // após a fanfarra
   }
 }
@@ -936,7 +964,7 @@ function renderShop() {
   $$('#shop-themes [data-buyth]').forEach((b) => b.addEventListener('click', () => buyTheme(b.dataset.buyth)));
   $$('#shop-hats [data-hat]').forEach((b) => b.addEventListener('click', () => { P().hat = b.dataset.hat; saveState(); renderShop(); renderMascot(); SFX.tap(); }));
   $$('#shop-hats [data-buyhat]').forEach((b) => b.addEventListener('click', () => buyHat(b.dataset.buyhat)));
-  $$('#shop-pets [data-pet]').forEach((b) => b.addEventListener('click', () => { P().pet = b.dataset.pet; saveState(); renderShop(); renderMascot(); SFX.tap(); showBubble(PETS.find((x) => x.id === b.dataset.pet).emoji, tpick('greet', { name: P().name })); }));
+  $$('#shop-pets [data-pet]').forEach((b) => b.addEventListener('click', () => { P().pet = b.dataset.pet; saveState(); renderShop(); renderMascot(); SFX.tap(); showBubble(PETS.find((x) => x.id === b.dataset.pet).emoji, tpick('greet', { name: pName(P()) })); }));
   $$('#shop-pets [data-buypet]').forEach((b) => b.addEventListener('click', () => buyPet(b.dataset.buypet)));
 }
 function buyTheme(id) {
@@ -1036,7 +1064,7 @@ function renderProfilePop() {
   wrap.innerHTML = '<b id="pop-who">' + t('who') + '</b>' + DB.profiles.map((pf) => {
     const cur = pf.id === DB.activeId;
     return '<button class="prof-row' + (cur ? ' cur' : '') + '" data-pid="' + escHtml(pf.id) + '"' + (cur ? ' aria-current="true"' : '') + '>' +
-      '<span class="pf-av">' + escHtml(pf.avatar) + '</span><span class="pf-name">' + escHtml(pf.name) + '</span>' +
+      '<span class="pf-av">' + escHtml(pf.avatar) + '</span><span class="pf-name">' + escHtml(pName(pf)) + '</span>' +
       (cur ? '<span class="pf-cur" aria-hidden="true">✓</span>' : '') +
       '<span class="pf-st">⭐ ' + pf.stars + ' · ⚡ ' + (pf.points || 0) + '</span></button>';
   }).join('') +
@@ -1047,7 +1075,7 @@ function renderProfilePop() {
       : '<small class="max-note">' + t('max4') + '</small>');
   $$('#pop-profile .prof-row').forEach((b) => b.addEventListener('click', () => {
     DB.activeId = b.dataset.pid; saveState(true);
-    closePopovers(); renderHome(); applyLang(); toast(t('switch_to', { n: P().name })); SFX.tap();
+    closePopovers(); renderHome(); applyLang(); toast(t('switch_to', { n: pName(P()) })); SFX.tap();
   }));
   $$('#pop-profile .av').forEach((b) => b.addEventListener('click', () => { markPicked($$('#pop-profile .av'), b); SFX.tap(); }));
   const add = $('#btn-add-prof');
@@ -1298,14 +1326,14 @@ async function boot() {
     let vv = '';
     try { if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getManifest) vv = chrome.runtime.getManifest().version; } catch (e) { /* sem extensão */ }
     if (!vv) { const mt = document.querySelector('meta[name="cc-version"]'); if (mt) vv = mt.content; }
-    vb.textContent = 'v' + (vv || (window.ccVersion ? window.ccVersion() : '2.7.0'));
+    vb.textContent = 'v' + (vv || (window.ccVersion ? window.ccVersion() : '2.7.1'));
   }
   // v2.4 (A-198): saudação cordial com o nome — o 1º toque libera o áudio no navegador
   const greet = () => {
     const home = $('#screen-home');
     // não atropela um balão que o próprio toque abriu (ex.: próximo prêmio)
     if (!home || !home.classList.contains('active') || overlayOpen() || !$('#bubble').classList.contains('hidden')) return;
-    const line = tpick('greet', { name: P().name });
+    const line = tpick('greet', { name: pName(P()) });
     showBubble(mascotStage().emoji, line);
     TTS.speak(line);
   };
