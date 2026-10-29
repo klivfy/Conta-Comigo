@@ -316,3 +316,12 @@ test('modesPlayed: conta só modos que existem e usa o total de MODES (nunca pas
   assert.deepEqual(j('modesPlayed({ played: ' + p + ' })'), { n: 2, total });
   assert.deepEqual(j('modesPlayed({ played: {} })'), { n: 0, total });
 });
+
+test('balão: fica mais tempo sem voz e respeita o tempo extra dos responsáveis', () => {
+  const ms = (g) => E.ev('bubbleMs(' + E.put('g', g) + ')');
+  assert.equal(ms({}), 2400, 'com voz: o padrão de sempre');
+  assert.equal(ms({ mute: true }), 6000, 'mudo: o balão é a única legenda');
+  assert.equal(ms({ voiceOn: false }), 6000);
+  assert.equal(ms({ timeScale: 2 }), 4800);
+  assert.equal(ms({ mute: true, timeScale: 9 }), 18000, 'o fator para em 3');
+});

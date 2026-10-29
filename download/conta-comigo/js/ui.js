@@ -69,6 +69,10 @@ function refreshChrome() {
   $('#star-total').textContent = String(p ? p.stars : 0);
   const chip = $('#star-chip'); if (chip) { chip.classList.remove('bump'); void chip.offsetWidth; chip.classList.add('bump'); }
   const st = $('#chip-streak'); if (st) st.querySelector('b').textContent = String(p ? p.streak : 0);
+  /* leitor de tela: "135 estrelas" e "5 dias seguidos", em vez de emoji + número soltos */
+  const ns = p ? p.stars : 0, nd = p ? p.streak : 0;
+  if (chip) { chip.setAttribute('role', 'img'); chip.setAttribute('aria-label', t(ns === 1 ? 'chip_star1' : 'chip_stars', { n: ns })); }
+  if (st) { st.setAttribute('role', 'img'); st.setAttribute('aria-label', t(nd === 1 ? 'chip_streak1' : 'chip_streak', { n: nd })); }
   /* v2.5: moldura do perfil pela quantidade de conquistas — orgulho à vista */
   const bp = $('#btn-profile');
   if (bp && p) {
@@ -97,7 +101,7 @@ function showBubble(emoji, text) {
   announce(text);
   b.classList.remove('hidden', 'pop'); void b.offsetWidth; b.classList.add('pop');
   clearTimeout(bubbleTimer);
-  bubbleTimer = setTimeout(hideBubble, 2400);
+  bubbleTimer = setTimeout(hideBubble, bubbleMs(G()));
 }
 function hideBubble() { const b = $('#bubble'); if (b) b.classList.add('hidden'); }
 function toast(msg) {

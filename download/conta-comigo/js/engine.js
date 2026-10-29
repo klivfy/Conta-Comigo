@@ -1038,6 +1038,12 @@ function distractors(answer, extras, maxCap) {
 }
 
 /* ==================== geradores (cada um aceita dados "forced" p/ revisão S08) ==================== */
+/* quanto o balão de fala fica na tela: sem voz (mudo ou voz desligada) ele é a única legenda da
+   narração, então fica bem mais; o tempo extra configurado pelos responsáveis também vale aqui */
+function bubbleMs(g) {
+  const ts = clamp(Number(g.timeScale) || 1, 1, 3);
+  return Math.round((g.mute || g.voiceOn === false ? 6000 : 2400) * ts);
+}
 /* quantos dos modos do jogo o perfil já jogou (para o painel); chaves antigas ou de backup não contam */
 function modesPlayed(p) {
   const all = Object.keys(MODES);
