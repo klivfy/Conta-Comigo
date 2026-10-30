@@ -1067,6 +1067,14 @@ a.mini-btn { display: inline-flex; align-items: center; text-decoration: none; }
 /* v2.7.2: loja sem frustração. Item ainda caro mostra o caminho (quanto falta), não um botão que nega. */
 .mini-btn.far { background: transparent; color: var(--ink-soft); border: 2px dashed var(--line); box-shadow: none; font-weight: 700; }
 .mini-btn.far:active { transform: none; }
+/* v2.8.0 (lote B): prévia do tema, missão e conquista que falam ao toque */
+.mini-btn.prev { background: transparent; color: var(--ink); border: 2px solid var(--line); box-shadow: none; }
+button.mission, button.ach-card { font-family: inherit; color: var(--ink); cursor: pointer; border: 2px solid transparent; }
+button.mission { min-height: 44px; display: inline-flex; align-items: center; gap: var(--sp-2); text-align: left; }
+button.ach-card { width: 100%; }
+button.ach-card.got { border-color: var(--yellow); }
+button.ach-card.secret { border-style: dashed; border-color: var(--line); }
+button.mission.done { color: var(--success-text); }
 .far-bar { display: block; width: 100%; height: 6px; border-radius: var(--r-pill); background: rgba(var(--sh), .12); overflow: hidden; }
 .far-bar > i { display: block; height: 100%; background: var(--accent-text); border-radius: var(--r-pill); }
 #undo-buy { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 71; display: flex; align-items: center; gap: var(--sp-3); background: var(--ink); color: var(--card); border-radius: var(--r-pill); padding: var(--sp-3) var(--sp-4) var(--sp-3) var(--sp-6); font-weight: 800; font-size: var(--fs-md); max-width: calc(100vw - 32px); }

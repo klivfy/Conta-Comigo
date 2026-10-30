@@ -570,3 +570,10 @@ test('mascotProgress: ovo até 30, filhote até 100, adulto cheio', () => {
   assert.deepEqual(j('mascotProgress(65)'), { pct: 50, need: 35, to: 'big' });
   assert.deepEqual(j('mascotProgress(150)'), { pct: 100, need: 0, to: null });
 });
+
+test('shopSort: o que é da criança vem primeiro, depois o mais perto de comprar', () => {
+  const code = (stars) => 'shopSort([{id:"a",price:60},{id:"b",price:30},{id:"c",price:0},{id:"d",price:45},{id:"e",price:30}], (x) => x.id === "c", ' + stars + ').map((x) => x.id).join("")';
+  assert.equal(j(code(0)), 'cbeda');    // dela primeiro, depois preço crescente; empate mantém a ordem
+  assert.equal(j(code(40)), 'cbeda');   // b e e compráveis, d falta 5, a falta 20
+  assert.equal(j(code(100)), 'cabde');  // tudo comprável: ordem original
+});

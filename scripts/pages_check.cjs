@@ -148,6 +148,28 @@ function serve() {
     await page.click('[data-wav="🐼"]'); await page.fill('#wl-name', 'Bia'); await page.click('#wl-go'); await page.waitForTimeout(600);
     const w = await page.evaluate(() => ({ name: P().name, av: P().avatar, game: document.getElementById('screen-game').classList.contains('active') }));
     ok(w.name === 'Bia' && w.av === '🐼' && w.game, 'boas-vindas: avatar e nome salvos e a primeira conta começa (' + w.name + ' ' + w.av + ')');
+    // lote B (N6, N7): loja por proximidade, voz do que falta, prévia do tema, missão e conquista narradas
+    await page.evaluate(() => { window.__said = []; TTS.speak = (x) => { window.__said.push(x); }; P().stars = 40; saveState(); hideOverlay(); renderShop(); show('shop'); });
+    const hats = await page.$$eval('#shop-hats .shop-item b', (els) => els.map((e) => e.textContent));
+    const fares = await page.$$eval('#shop-hats [data-far]', (els) => els.map((e) => Number(e.dataset.far)));
+    ok(fares.length > 0 && fares.every((v, i) => i === 0 || v >= fares[i - 1]), 'loja: o que falta menos vem primeiro (' + fares.join(',') + ')');
+    await page.click('#shop-hats [data-far]', { force: true });
+    ok(await page.evaluate(() => /\d/.test(window.__said.slice(-1)[0] || '') && window.__said.length > 0), 'loja: o que falta é dito em voz com o nome do item');
+    const th0 = await page.evaluate(() => document.body.dataset.theme);
+    await page.click('#shop-themes [data-prev="oceano"]');
+    ok(await page.evaluate(() => document.body.dataset.theme) === 'oceano' && await page.evaluate(() => G().theme !== 'oceano'), 'loja: prévia aplica o tema sem salvar');
+    await page.evaluate(() => show('home'));
+    ok(await page.evaluate(() => document.body.dataset.theme) === th0, 'loja: a prévia termina ao sair');
+    await page.evaluate(() => { renderHome(); show('home'); });
+    const mh = await page.$eval('#mission-row .mission', (e) => e.getBoundingClientRect().height);
+    ok(mh >= 44, 'missão: alvo de toque >= 44px (' + Math.round(mh) + ')');
+    await page.click('#mission-row .mission');
+    ok(await page.evaluate(() => /\d/.test(window.__said.slice(-1)[0] || '')), 'missão: o toque narra o objetivo e o progresso');
+    await page.evaluate(() => { celebrateMissions(advanceMissions(P(), 'round', 2)); });
+    ok(await page.evaluate(() => /:\s.+!/.test(document.getElementById('toast').textContent)), 'missão: o aviso diz qual missão foi cumprida');
+    await page.evaluate(() => { renderAch(); show('ach'); });
+    await page.click('#ach-grid .ach-card');
+    ok(await page.evaluate(() => (window.__said.slice(-1)[0] || '').length > 10), 'conquista: o toque narra nome e descrição');
     ok(errors.length === 0, 'jogo: sem erro de JavaScript' + (errors.length ? ' (' + errors.join(' | ') + ')' : ''));
     await ctx.close();
   }

@@ -1624,6 +1624,15 @@ function advanceMissions(p, ev, n) {
   return done;
 }
 
+/* v2.8.0 (lote B): a loja mostra primeiro o que já é da criança, depois o que dá
+   para comprar agora e, por fim, o mais perto de ser comprado (menos estrelas
+   faltando). Empate mantém a ordem original. Não muda o preço nem o inventário. */
+function shopSort(items, isOwned, stars) {
+  return items.map((it, i) => ({ it, i, o: isOwned(it) ? 1 : 0, miss: Math.max(0, it.price - stars) }))
+    .sort((a, b) => (b.o - a.o) || (a.miss - b.miss) || (a.i - b.i))
+    .map((x) => x.it);
+}
+
 /* ---------- conquistas (S14) ---------- */
 const ACHS = [
   { id: 'a1', cond: (p) => p.stars >= 1 },

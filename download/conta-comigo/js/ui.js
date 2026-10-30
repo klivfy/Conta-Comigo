@@ -32,7 +32,7 @@ function adoptIfSafe() {
   if (ok) { applyLang(); applySettings(); ensureMissions(); renderHome(); }
 }
 function show(name) {
-  if (name !== 'shop') closeUndo();
+  if (name !== 'shop') { closeUndo(); if (previewTimer) endPreview(); }
   const prev = document.activeElement;
   $$('.screen').forEach((s) => s.classList.remove('active'));
   const el = $('#screen-' + name);
@@ -291,7 +291,7 @@ function missionEvent(ev, n) {
   if (done.length) saveState();
 }
 function celebrateMissions(done) {
-  done.forEach(() => { toast('🎉 ' + t('mission_done')); SFX.star(); });
+  done.forEach((def) => { toast('🎉 ' + t('mission_done_n', { m: t(def.key) })); SFX.star(); });
   if (done.length) refreshChrome();
 }
 function renderMissions() {
@@ -301,8 +301,10 @@ function renderMissions() {
   el.innerHTML = p.missions.list.map((m) => {
     const def = MISSION_DEFS.find((d) => d.id === m.id);
     if (!def) return '';
-    return '<span class="mission' + (m.done ? ' done' : '') + '">' + (m.done ? '✅ ' : '🔸 ') + t(def.key) + ' ' + m.p + '/' + def.goal + '</span>';
+    const say = m.done ? t('mi_say_done', { m: t(def.key) }) : t('mi_say', { m: t(def.key), a: m.p, b: def.goal });
+    return '<button type="button" class="mission' + (m.done ? ' done' : '') + '" data-say="' + escHtml(say) + '"><span aria-hidden="true">' + (m.done ? '✅ ' : '🔸 ') + '</span>' + escHtml(t(def.key)) + ' ' + m.p + '/' + def.goal + '</button>';
   }).join('');
+  $$('#mission-row [data-say]').forEach((b) => b.addEventListener('click', () => { ensureAudio(); SFX.tap(); TTS.speak(b.dataset.say, { calm: true }); }));
 }
 
 /* ---------- meta diária (S11) ---------- */
@@ -922,9 +924,12 @@ function renderAch() {
   $('#ach-grid').innerHTML = ACHS.map((a) => {
     const got = !!p.ach[a.id];
     const hidden = !got && a.sec; // secreta: só revela depois de conquistada
-    return '<div class="ach-card' + (got ? ' got' : '') + (hidden ? ' secret' : '') + '"><span class="ach-emoji">' + (got ? '🏅' : hidden ? '❓' : '🔒') + '</span>' +
-      '<b>' + (hidden ? '???' : t(a.id)) + '</b><small>' + (hidden ? t('ach_secret') : t('ad' + a.id.slice(1))) + '</small></div>';
+    const desc = hidden ? t('ach_secret') : t('ad' + a.id.slice(1));
+    const say = hidden ? desc : t(got ? 'ach_say_on' : 'ach_say_off', { n: t(a.id), d: desc });
+    return '<button type="button" class="ach-card' + (got ? ' got' : '') + (hidden ? ' secret' : '') + '" data-say="' + escHtml(say) + '"><span class="ach-emoji" aria-hidden="true">' + (got ? '🏅' : hidden ? '❓' : '🔒') + '</span>' +
+      '<b>' + (hidden ? '???' : escHtml(t(a.id))) + '</b><small>' + escHtml(desc) + '</small></button>';
   }).join('');
+  $$('#ach-grid [data-say]').forEach((b) => b.addEventListener('click', () => { ensureAudio(); SFX.tap(); TTS.speak(b.dataset.say, { calm: true }); }));
   const bk = $('#btn-backup');
   if (bk) bk.classList.toggle('hidden', Object.keys(p.ach || {}).length === 0);
 }
@@ -957,23 +962,23 @@ function buyBtn(kind, id, price, name, stars) {
   if (stars >= price) return '<button class="mini-btn" data-buy' + kind + '="' + id + '"' + itemLbl(t('buy') + ' ' + price + '⭐', name) + '>' + t('buy') + ' ' + price + '⭐</button>';
   const miss = price - stars, txt = stars + '/' + price + '⭐';
   return '<span class="far-bar" aria-hidden="true"><i style="width:' + Math.round(100 * stars / price) + '%"></i></span>' +
-    '<button class="mini-btn far" data-far="' + miss + '" aria-disabled="true"' + itemLbl(t('far', { n: miss }), name) + '>' + txt + '</button>';
+    '<button class="mini-btn far" data-far="' + miss + '" data-name="' + escHtml(name) + '" aria-disabled="true"' + itemLbl(t('far', { n: miss }), name) + '>' + txt + '</button>';
 }
 function renderShop() {
   const p = P();
   $('#shop-stars').textContent = String(p.stars);
   const themeRow = $('#shop-themes');
-  themeRow.innerHTML = SHOP_THEMES.map((th) => {
+  themeRow.innerHTML = shopSort(SHOP_THEMES, (x) => x.price === 0 || p.owned.themes.includes(x.id), p.stars).map((th) => {
     const owned = th.price === 0 || p.owned.themes.includes(th.id);
     const inUse = (resolvedTheme(G()) === th.id);
     return '<div class="shop-item th-' + th.id + '"><span class="swatch"></span><b>' + t(th.key) + '</b>' +
       (owned
         ? '<button class="mini-btn' + (inUse ? ' using' : '') + '" data-th="' + th.id + '"' + itemLbl(inUse ? t('in_use') : t('equip'), t(th.key)) + '>' + (inUse ? t('in_use') : t('equip')) + '</button>'
-        : buyBtn('th', th.id, th.price, t(th.key), p.stars)) +
+        : '<button class="mini-btn prev" data-prev="' + th.id + '"' + itemLbl(t('preview'), t(th.key)) + '>👁️ ' + t('preview') + '</button>' + buyBtn('th', th.id, th.price, t(th.key), p.stars)) +
       '</div>';
   }).join('');
   const hatRow = $('#shop-hats');
-  hatRow.innerHTML = SHOP_HATS.map((h) => {
+  hatRow.innerHTML = shopSort(SHOP_HATS, (x) => x.price === 0 || p.owned.hats.includes(x.id), p.stars).map((h) => {
     const owned = h.price === 0 || p.owned.hats.includes(h.id);
     const inUse = (p.hat || '') === h.id;
     return '<div class="shop-item"><span class="shop-emoji">' + (h.emoji || '🦊') + '</span><b>' + t(h.key) + '</b>' +
@@ -985,7 +990,7 @@ function renderShop() {
   /* v2.5: mascotes adultas escolhíveis */
   const petRow = $('#shop-pets');
   if (petRow) {
-    petRow.innerHTML = PETS.map((pt) => {
+    petRow.innerHTML = shopSort(PETS, (x) => x.price === 0 || p.owned.pets.includes(x.id), p.stars).map((pt) => {
       const owned = pt.price === 0 || p.owned.pets.includes(pt.id);
       const inUse = (p.pet || 'fox') === pt.id;
       const ready = p.stars >= 100;
@@ -1001,13 +1006,29 @@ function renderShop() {
   alb.innerHTML = STICKERS.map((s, i) => '<span class="stk' + (p.stickers.includes(i) ? ' got' : '') + '">' + (p.stickers.includes(i) ? s : '❔') + '</span>').join('');
   $('#album-count').textContent = t('album', { a: p.stickers.length });
   $$('#shop-themes [data-th]').forEach((b) => b.addEventListener('click', () => { G().theme = b.dataset.th; saveState(); applySettings(); renderShop(); SFX.tap(); }));
-  $$('#shop-themes [data-far], #shop-hats [data-far], #shop-pets [data-far]').forEach((b) => b.addEventListener('click', () => { SFX.tap(); showBubble('🦊', t('far', { n: b.dataset.far })); }));
+  $$('#shop-themes [data-far], #shop-hats [data-far], #shop-pets [data-far]').forEach((b) => b.addEventListener('click', () => { ensureAudio(); SFX.tap(); sayFar(Number(b.dataset.far), b.dataset.name); }));
+  $$('#shop-themes [data-prev]').forEach((b) => b.addEventListener('click', () => previewTheme(b.dataset.prev)));
   $$('#shop-themes [data-buyth]').forEach((b) => b.addEventListener('click', () => buyTheme(b.dataset.buyth)));
   $$('#shop-hats [data-hat]').forEach((b) => b.addEventListener('click', () => { P().hat = b.dataset.hat; saveState(); renderShop(); renderMascot(); SFX.tap(); }));
   $$('#shop-hats [data-buyhat]').forEach((b) => b.addEventListener('click', () => buyHat(b.dataset.buyhat)));
   $$('#shop-pets [data-pet]').forEach((b) => b.addEventListener('click', () => { P().pet = b.dataset.pet; saveState(); renderShop(); renderMascot(); SFX.tap(); showBubble(PETS.find((x) => x.id === b.dataset.pet).emoji, tpick('greet', { name: pName(P()) })); }));
   $$('#shop-pets [data-buypet]').forEach((b) => b.addEventListener('click', () => buyPet(b.dataset.buypet)));
 }
+/* "faltam 12 ⭐ para comprar: Boné": no balão e em voz, para quem ainda não lê */
+function sayFar(miss, name) {
+  const msg = name ? t('far_item', { n: miss, item: name }) : t('far', { n: miss });
+  showBubble('🦊', msg); TTS.speak(msg, { calm: true });
+}
+/* Prévia do tema antes de comprar: vale por 4 s ou até sair da loja; nada é salvo */
+let previewTimer = null;
+function previewTheme(id) {
+  const th = SHOP_THEMES.find((x) => x.id === id); if (!th) return;
+  SFX.tap(); clearTimeout(previewTimer);
+  applyTheme(Object.assign({}, G(), { theme: id }));
+  showBubble('🎨', t('preview_msg', { n: t(th.key) }));
+  previewTimer = setTimeout(endPreview, 4000);
+}
+function endPreview() { clearTimeout(previewTimer); previewTimer = null; applyTheme(G()); }
 /* v2.8.0: "Comprado! Desfazer" por 5 s. Devolve as estrelas e o que estava em uso. */
 let undoTimer = null;
 function offerUndo(fn) {
@@ -1024,7 +1045,8 @@ function closeUndo() { clearTimeout(undoTimer); const b = document.getElementByI
 function buyTheme(id) {
   const th = SHOP_THEMES.find((x) => x.id === id); const p = P();
   if (!th || p.owned.themes.includes(id)) return;
-  if (p.stars < th.price) { showBubble('🦊', t('far', { n: th.price - p.stars })); return; }
+  if (p.stars < th.price) { sayFar(th.price - p.stars, t(th.key)); return; }
+  endPreview();
   const prevTheme = G().theme, firstBuy = !!p.firstBuy;
   p.stars -= th.price; p.owned.themes.push(id); p.firstBuy = true;
   G().theme = id;
@@ -1034,7 +1056,7 @@ function buyTheme(id) {
 function buyHat(id) {
   const h = SHOP_HATS.find((x) => x.id === id); const p = P();
   if (!h || p.owned.hats.includes(id)) return;
-  if (p.stars < h.price) { showBubble('🦊', t('far', { n: h.price - p.stars })); return; }
+  if (p.stars < h.price) { sayFar(h.price - p.stars, t(h.key)); return; }
   const prevHat = p.hat, firstBuy = !!p.firstBuy;
   p.stars -= h.price; p.owned.hats.push(id); p.firstBuy = true; p.hat = id;
   checkAch(); saveState(); renderShop(); renderMascot(); refreshChrome(); SFX.cash(); confetti(20);
@@ -1044,7 +1066,7 @@ function buyHat(id) {
 function buyPet(id) {
   const pt = PETS.find((x) => x.id === id); const p = P();
   if (!pt || p.owned.pets.includes(id)) return;
-  if (p.stars < pt.price) { showBubble('🦊', t('far', { n: pt.price - p.stars })); return; }
+  if (p.stars < pt.price) { sayFar(pt.price - p.stars, t(pt.key)); return; }
   p.stars -= pt.price; p.owned.pets.push(id); p.firstBuy = true; p.firstPet = true; p.pet = id;
   checkAch(); saveState(); renderShop(); renderMascot(); refreshChrome();
   showOverlay('<div class="ov-emoji">' + pt.emoji + '</div><h3>' + t('pet_new', { n: t(pt.key) }) + '</h3><button class="big-btn" data-close="1">' + t('ok') + '</button>');
