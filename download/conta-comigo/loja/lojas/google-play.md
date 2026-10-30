@@ -6,7 +6,8 @@ Painel: <https://play.google.com/console> · Pacote: o **AAB** gerado por *Actio
 
 1. Gere a chave de upload nova e guarde-a fora do Git (veja `PLANO-DE-ACAO.md`, fase A) e configure os 4 *secrets* do workflow.
 2. Depois do primeiro envio, confira em *Integridade do app → Assinatura de apps* que o SHA-256 da **chave de upload** é o que o script de assinatura imprimiu. Não há `assetlinks.json` a atualizar: o jogo não é carregado de um site.
-3. Conta de desenvolvedor (taxa única de US$ 25). Contas pessoais criadas depois de nov/2023 precisam de teste fechado com pelo menos 12 testadores por 14 dias antes da produção.
+3. Antes de enviar o AAB, confirme no manifesto mesclado (Android Studio, *Merged Manifest*) que `VIBRATE` aparece, e teste num celular real a vibração, a folha de compartilhar do backup e os três links do rodapé.
+4. Conta de desenvolvedor (taxa única de US$ 25). Contas pessoais criadas depois de nov/2023 precisam de teste fechado com pelo menos 12 testadores por 14 dias antes da produção.
 
 ## Dados gerais
 
@@ -27,12 +28,12 @@ Painel: <https://play.google.com/console> · Pacote: o **AAB** gerado por *Actio
 | Declaração | Resposta |
 |---|---|
 | Anúncios | **Não contém anúncios** |
-| Acesso ao app | Todas as funções disponíveis sem login nem credenciais |
+| Acesso ao app | Todas as funções disponíveis sem login nem credenciais. Para o revisor: a área dos responsáveis (engrenagem) pede antes uma conta de adulto e depois a criação de uma senha no primeiro uso; qualquer senha serve para testar |
 | Público-alvo | Faixas **5 anos ou menos** e **6 a 8 anos** (atende à política *Para a família*). Não marcar 9+ |
-| Apelo a crianças | Sim — o app é voltado a crianças; não tem anúncios, links externos, compras nem rede social |
+| Apelo a crianças | Sim: o app é voltado a crianças; não tem anúncios, compras nem rede social. Os únicos links externos são Privacidade, Termos e Suporte (klivfy.com), e só abrem o navegador depois de uma conferência para adultos |
 | Classificação de conteúdo (IARC) | Questionário: categoria *Referência, notícias ou educação*; responder **Não** a violência, sexo, linguagem, drogas, jogos de azar, interação entre usuários e compartilhamento de localização. Resultado esperado: **Livre** |
 | Apps de notícias / saúde / finanças / governo / COVID-19 | Não |
-| Permissões sensíveis | Nenhuma |
+| Permissões sensíveis | Nenhuma. O manifesto declara só permissões comuns, sem formulário: `INTERNET` (incluída pelo Capacitor; o app não faz requisições de rede) e `VIBRATE` (vibração leve, desligável no painel) |
 | ID de publicidade | Não usa |
 | Exclusão de dados | Não há conta nem dados em servidor; os dados ficam no aparelho (desinstalar ou limpar os dados do app apaga tudo) |
 
