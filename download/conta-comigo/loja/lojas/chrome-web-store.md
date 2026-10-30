@@ -1,6 +1,6 @@
-# Chrome Web Store — Conta Comigo 2.6.3
+# Chrome Web Store — Conta Comigo 2.8.0
 
-Painel: <https://chrome.google.com/webstore/devconsole> · Pacote: `download/conta-comigo-chrome-2.6.3.zip` (envie o zip **sem** descompactar).
+Painel: <https://chrome.google.com/webstore/devconsole> · Pacote: `download/conta-comigo-chrome-2.8.0.zip` (envie o zip **sem** descompactar).
 
 ## Dados gerais (iguais nos 3 idiomas)
 
@@ -94,7 +94,7 @@ A permissão "storage" é usada somente para salvar, no próprio navegador, o pr
 A extensão substitui a nova aba (chrome_url_overrides) por um desafio rápido de matemática que também funciona como atalho para o jogo completo. É uma função declarada na descrição e pode ser desligada na própria página.
 ```
 
-**Notas da versão:** Novidades da 2.6.3: ao tocar nos objetos para contar, a narração fala os números no idioma do jogo (antes falava sempre em português) e a política de privacidade foi atualizada para todas as plataformas.
+**Notas da versão:** Novidades da 2.8.0: botão Jogar agora na tela inicial, com a sugestão do dia; boas-vindas com o nome da criança falado na primeira abertura; no fim da rodada, quantas estrelas faltam para o mascote mudar; a loja mostra primeiro o que já é da criança; missões e conquistas dizem o objetivo ao toque; no modo Contar, arraste o objeto para a cesta; no painel dos responsáveis, resumo da semana e backup que mostra o que será restaurado, com desfazer por 7 dias; a nova aba não trava mais depois do acerto.
 
 
 ## English
@@ -156,7 +156,7 @@ The "storage" permission is used only to save the game's progress, profiles and 
 The extension replaces the new tab page (chrome_url_overrides) with a quick math challenge that doubles as a shortcut to the full game. This is declared in the description and can be turned off on the page itself.
 ```
 
-**Notas da versão:** What's new in 2.6.3: when tapping objects to count, the narration now says the numbers in the game's language (it used to always speak Portuguese), and the privacy policy was updated for every platform.
+**Notas da versão:** What's new in 2.8.0: a Play now button on the home screen, with today's suggestion; a spoken welcome with the child's name on first launch; at the end of a round, how many stars are left before the mascot changes; the shop shows first what the child already owns; missions and achievements say their goal when tapped; in Count mode, drag the object into the basket; in the parents' panel, a weekly summary and a backup that shows what will be restored, with undo for 7 days; the new tab no longer freezes after a correct answer.
 
 
 ## Español
@@ -218,7 +218,7 @@ El permiso "storage" se usa solo para guardar en el propio navegador el progreso
 La extensión reemplaza la nueva pestaña (chrome_url_overrides) por un desafío rápido de matemática que también sirve de atajo al juego completo. Está declarado en la descripción y se puede apagar en la propia página.
 ```
 
-**Notas da versão:** Novedades de la 2.6.3: al tocar los objetos para contar, la narración dice los números en el idioma del juego (antes siempre hablaba en portugués) y la política de privacidad se actualizó para todas las plataformas.
+**Notas da versão:** Novedades de la 2.8.0: botón Jugar ya en la pantalla de inicio, con la sugerencia del día; bienvenida con el nombre de la niña o niño dicho en voz alta en la primera apertura; al final de la ronda, cuántas estrellas faltan para que cambie la mascota; la tienda muestra primero lo que ya tiene; las misiones y los logros dicen su objetivo al tocarlos; en el modo Contar, arrastra el objeto a la cesta; en el panel de familiares, resumen de la semana y copia de seguridad que muestra lo que se restaurará, con deshacer durante 7 días; la pestaña nueva ya no se traba después de acertar.
 
 
 ## Checklist de envio

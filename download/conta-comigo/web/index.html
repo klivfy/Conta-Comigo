@@ -22,7 +22,7 @@
       <div class="btn-group">
         <div id="star-chip" title="⭐">⭐ <span id="star-total">0</span></div>
         <div id="chip-streak">🔥 <b>0</b></div>
-        <div id="cc-ver" class="cc-ver" title="Conta Comigo">v2.6.3</div>
+        <div id="cc-ver" class="cc-ver" title="Conta Comigo" aria-hidden="true">v2.8.0</div>
       </div>
       <div class="btn-group">
         <button id="btn-mute" class="icon-btn" data-i18n-label="s_mute" aria-label="Silenciar" aria-pressed="false">🔊</button>
@@ -70,21 +70,21 @@
             <button id="sp-duel"><b>👥</b><span data-i18n="sp_duel">Duelo</span></button>
             <button id="sp-diag"><b>🎯</b><span data-i18n="sp_diag">Meu nível</span></button>
           </div>
-          <div class="diff-row" role="group" aria-labelledby="diff-label">
-            <span class="diff-label" id="diff-label" data-i18n="difficulty">Dificuldade:</span>
-            <button class="diff-chip" data-d="auto">🤖 Auto</button>
-            <button class="diff-chip" data-d="1">🌱 1</button>
-            <button class="diff-chip" data-d="2">🌿 2</button>
-            <button class="diff-chip" data-d="3">🌳 3</button>
-            <button class="diff-chip" data-d="4">⛰️ 4</button>
-            <button class="diff-chip" data-d="5">🚀 5</button>
-          </div>
         </div>
         <div class="link-row">
           <button id="btn-shop">🛒 <span data-i18n="shop">Loja</span></button>
           <button id="btn-ach">🏅 <span data-i18n="ach">Conquistas</span></button>
         </div>
         <p class="tip" data-i18n="tip">Toque em um modo para começar! 👆</p>
+        <footer class="legal-foot">
+          <div class="legal-links" role="group" data-i18n-label="lg_group" aria-label="Informações legais">
+            <button type="button" class="legal-link" data-legal="privacy" data-i18n="lg_privacy">Privacidade</button>
+            <button type="button" class="legal-link" data-legal="terms" data-i18n="lg_terms">Termos de Uso</button>
+            <button type="button" class="legal-link" data-legal="support" data-i18n="lg_support">Suporte</button>
+            <button type="button" class="legal-link" id="btn-consent" data-i18n="ck_custom_link">Personalizar aceites</button>
+          </div>
+          <p class="legal-owner" data-i18n="lg_owner">© 2026 Klivfy Tecnologia e Consultoria em TI LTDA. Todos os direitos reservados.</p>
+        </footer>
       </section>
 
       <!-- TELA DO JOGO -->
@@ -134,7 +134,6 @@
       <!-- TELA DA LOJA -->
       <section id="screen-shop" class="screen">
         <div class="shop-head">
-          <button id="shop-back" class="icon-btn" data-i18n-label="a_back" aria-label="Voltar ao início">🏠</button>
           <h2 data-i18n="shop">Loja</h2>
           <div id="shop-stars">⭐ 0</div>
         </div>
@@ -152,7 +151,6 @@
       <!-- TELA DE CONQUISTAS -->
       <section id="screen-ach" class="screen">
         <div class="shop-head">
-          <button id="ach-back" class="icon-btn" data-i18n-label="a_back" aria-label="Voltar ao início">🏠</button>
           <h2 data-i18n="ach">Conquistas</h2>
           <button id="btn-backup" class="icon-btn hidden" data-i18n-label="a_backup" aria-label="Baixar backup">💾</button>
         </div>
@@ -166,7 +164,7 @@
     <div id="toast" class="hidden" aria-hidden="true"></div>
     <div id="sr-live" class="sr-only" role="status" aria-live="polite"></div>
     <div id="fx" aria-hidden="true"></div>
-  <div class="web-stamp">Conta Comigo Web · versão para escolas · v2.6.3</div>
+  <div class="web-stamp">Conta Comigo Web · versão para escolas · v2.8.0</div>
   </div>
 
   <script src="../js/i18n.js"></script>

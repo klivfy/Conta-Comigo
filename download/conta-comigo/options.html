@@ -7,7 +7,7 @@
   <title>Conta Comigo — Responsáveis</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    .opt-wrap { max-width: 980px; margin: 0 auto; padding: 20px 22px 60px; }
+    .opt-wrap { width: 100%; box-sizing: border-box; max-width: 980px; margin: 0 auto; padding: 20px 22px 60px; }
     .opt-head { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
     .opt-head h1 { font-size: var(--fs-2xl); font-weight: 900; }
     .opt-card { background: var(--card); border-radius: var(--r-lg); box-shadow: var(--lift-3); padding: 18px 20px; margin-bottom: 16px; }
@@ -80,6 +80,25 @@
     .opt-row input[type="text"], .opt-row input[type="password"] { min-height: 44px; font-family: inherit; font-size: var(--fs-md); padding: 8px 10px; border-radius: var(--r-sm); border: 2px solid var(--line); background: var(--card); color: var(--ink); width: 220px; max-width: 100%; box-sizing: border-box; }
     textarea#imp-area { width: 100%; min-height: 90px; font-family: monospace; font-size: var(--fs-sm); padding: 10px; border-radius: var(--r-sm); border: 2px solid var(--line); background: var(--card); color: var(--ink); margin: 8px 0; }
     .btn-line { display: flex; gap: 10px; flex-wrap: wrap; }
+    /* v2.8.0 (10.4.2 a 10.4.5): resumo, navegação por seções, um primário por seção, zona de perigo */
+    .opt-summary { font-size: var(--fs-lg); font-weight: 800; line-height: 1.4; background: var(--card); border-radius: var(--r-lg); box-shadow: var(--lift-2); padding: var(--sp-5) var(--sp-6); margin-bottom: var(--sp-5); }
+    .opt-nav { position: sticky; top: 0; z-index: 5; display: flex; gap: var(--sp-3); overflow-x: auto; padding: var(--sp-3) 0; margin-bottom: var(--sp-5); background: var(--bg-a); }
+    .opt-nav a { flex: 0 0 auto; min-height: 44px; display: inline-flex; align-items: center; padding: 0 var(--sp-6); border-radius: var(--r-pill); background: var(--card); color: var(--link); font-weight: 800; font-size: var(--fs-sm); text-decoration: none; box-shadow: var(--lift-2); }
+    .opt-nav a:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+    .opt-card { scroll-margin-top: 70px; }
+    .mini-btn.ghost { background: transparent; color: var(--link); box-shadow: inset 0 0 0 2px currentColor; }
+    .text-link { color: var(--link); font-weight: 800; font-size: var(--fs-md); text-decoration: underline; min-height: 44px; display: inline-flex; align-items: center; }
+    .link-line { display: flex; gap: var(--sp-6); flex-wrap: wrap; }
+    .danger-zone { border: 2px solid var(--danger); }
+    .danger-zone > h2 { color: var(--danger-text); }
+    .opt-row label { max-width: 340px; }
+    .restore-box { background: rgba(var(--sh), .06); border-radius: var(--r-md); padding: var(--sp-5) var(--sp-6); margin-top: var(--sp-4); }
+    .restore-box p { font-size: var(--fs-md); margin: var(--sp-3) 0; }
+    .map-lbl { flex: 0 0 auto; font-size: var(--fs-xs); font-weight: 800; color: var(--ink-soft); min-width: 120px; }
+    .map-lbl.high { color: var(--success-text, var(--ink)); }
+    .map-bar.few i { width: 0; }
+    .week-bars { height: auto; min-height: 90px; }
+    .week-bar .wk-name { text-align: center; max-width: 84px; line-height: 1.25; }
   </style>
   <script src="js/boot.js"></script>
 </head>
@@ -88,16 +107,23 @@
     <div class="opt-wrap">
       <header class="opt-head">
         <button id="opt-back" class="icon-btn" data-i18n-label="a_back_game" aria-label="Voltar ao jogo">🏠</button>
-        <h1>🛠️ <span data-i18n="gate_title">Área dos responsáveis</span></h1>
+        <h1><span aria-hidden="true">🛠️</span> <span data-i18n="gate_title">Área dos responsáveis</span></h1>
       </header>
 
       <!-- PORTÃO PARENTAL (S25 · v2.3: senha criada pelos responsáveis) -->
       <div id="gate" class="gate-card">
         <div class="mascot"><span class="mascot-main">🦊</span></div>
-        <h2 data-i18n="gate_title">Área dos responsáveis</h2>
 
         <!-- modo criar (quando ainda não existe senha) -->
         <div id="gate-create" class="hidden">
+          <!-- v2.7.1: conferência de adulto antes de criar a senha (antes, a criança que tocasse na engrenagem criava a senha) -->
+          <div id="gc-adult">
+            <p id="gc-adult-q"></p>
+            <input id="gc-adult-in" class="ad-input" type="text" inputmode="numeric" autocomplete="off" aria-labelledby="gc-adult-q">
+            <div class="gate-err" id="gc-adult-err" role="alert"></div>
+            <button id="gc-adult-go" class="big-btn" type="button" data-i18n="ok">OK</button>
+          </div>
+          <div id="gc-form" class="hidden">
           <p data-i18n="gate_create_msg">Ainda não existe senha nesta área.</p>
           <label class="pwd-lbl" for="gc-pwd" data-i18n="ob_pwd">Crie uma senha</label>
           <div class="pwd-box"><input id="gc-pwd" type="password" autocomplete="new-password">
@@ -109,6 +135,7 @@
           <input id="gc-hint" type="text" maxlength="80">
           <div class="gate-err" id="gc-err" role="alert"></div>
           <button id="gc-go" class="big-btn" data-i18n="ob_create">Salvar senha</button>
+          </div>
         </div>
 
         <!-- modo entrar -->
@@ -137,27 +164,40 @@
       <!-- CONTEÚDO -->
       <div id="opt-content" class="hidden">
 
-        <div class="opt-card">
-          <h2>📊 <span data-i18n="dash">Painel de progresso</span></h2>
+        <p id="opt-summary" class="opt-summary" role="status"></p>
+        <nav class="opt-nav" id="opt-nav" data-i18n-label="nav_label" aria-label="Seções do painel">
+          <a href="#sec-progress" data-i18n="nav_progress">Progresso</a>
+          <a href="#sec-profiles" data-i18n="profiles">Jogadores</a>
+          <a href="#sec-game" data-i18n="game_set">Jogo</a>
+          <a href="#sec-sound" data-i18n="sound_set">Som e voz</a>
+          <a href="#sec-look" data-i18n="nav_look">Aparência</a>
+          <a href="#sec-time" data-i18n="time_set">Tempo e metas</a>
+          <a href="#sec-security" data-i18n="sec_title">Segurança</a>
+          <a href="#sec-privacy" data-i18n="nav_privacy">Privacidade</a>
+          <a href="#sec-data" data-i18n="data_set">Dados</a>
+        </nav>
+
+        <div class="opt-card" id="sec-progress">
+          <h2><span aria-hidden="true">📊</span> <span data-i18n="dash">Painel de progresso</span></h2>
           <div class="opt-row">
             <label for="dash-prof" data-i18n="profiles">Jogadores</label>
             <select id="dash-prof"></select>
           </div>
           <div class="stat-grid" id="stat-grid"></div>
-          <h2 style="margin-top:16px">🗺️ <span data-i18n="d_map">Mapa de domínio</span></h2>
+          <h2 style="margin-top:16px"><span aria-hidden="true">🗺️</span> <span data-i18n="d_map">Mapa de domínio</span></h2>
           <div id="map-rows"></div>
-          <h2 style="margin-top:16px">📈 <span data-i18n="d_weeks">Evolução semanal</span></h2>
+          <h2 style="margin-top:16px"><span aria-hidden="true">📈</span> <span data-i18n="d_weeks">Evolução semanal</span></h2>
           <div class="week-bars" id="week-bars"></div>
         </div>
 
-        <div class="opt-card">
-          <h2>🧑‍🤝‍🧑 <span data-i18n="profiles">Jogadores</span></h2>
+        <div class="opt-card" id="sec-profiles">
+          <h2><span aria-hidden="true">🧑‍🤝‍🧑</span> <span data-i18n="profiles">Jogadores</span></h2>
           <div id="prof-list"></div>
           <button class="mini-btn" id="btn-new-prof" style="margin-top:10px" data-i18n="add_profile">Adicionar jogador</button>
         </div>
 
-        <div class="opt-card">
-          <h2>🎮 <span data-i18n="game_set">Jogo</span></h2>
+        <div class="opt-card" id="sec-game">
+          <h2><span aria-hidden="true">🎮</span> <span data-i18n="game_set">Jogo</span></h2>
           <div class="opt-row"><label for="set-diff" data-i18n="s_diff">Dificuldade</label>
             <select id="set-diff">
               <option value="auto">🤖 Auto</option><option value="1">🌱 1</option><option value="2">🌿 2</option>
@@ -170,19 +210,21 @@
           <div class="opt-row"><label for="set-noshop" data-i18n="s_noshop">Esconder a loja</label><input type="checkbox" id="set-noshop"></div>
         </div>
 
-        <div class="opt-card">
-          <h2>🔊 <span data-i18n="sound_set">Som e voz</span></h2>
+        <div class="opt-card" id="sec-sound">
+          <h2><span aria-hidden="true">🔊</span> <span data-i18n="sound_set">Som e voz</span></h2>
           <div class="opt-row"><label for="set-lang" data-i18n="s_lang">Idioma</label>
             <select id="set-lang"><option value="pt">Português (BR)</option><option value="en">English</option><option value="es">Español</option></select>
           </div>
           <div class="opt-row"><label for="set-mute" data-i18n="s_mute">Silenciar</label><input type="checkbox" id="set-mute"></div>
           <div class="opt-row"><label for="set-voice-on" data-i18n="s_voice_on">Narração (voz)</label><input type="checkbox" id="set-voice-on"></div>
           <div class="opt-row"><label for="set-sfx-on" data-i18n="s_sfx_on">Efeitos sonoros</label><input type="checkbox" id="set-sfx-on"></div>
+          <div class="opt-row hidden" id="row-haptics"><label for="set-haptics" data-i18n="s_haptics">Vibração leve</label><input type="checkbox" id="set-haptics"></div>
+          <p class="opt-note hidden" id="note-haptics" data-i18n="s_haptics_note"></p>
           <div class="opt-row"><label for="set-vol" data-i18n="s_vol">Volume</label><input type="range" id="set-vol" min="0" max="100" step="5"></div>
           <div class="opt-row"><label for="set-rate" data-i18n="s_rate">Velocidade da voz</label><input type="range" id="set-rate" min="60" max="140" step="5"></div>
           <div class="opt-row"><label for="set-pitch" data-i18n="s_pitch">Tom da voz</label><input type="range" id="set-pitch" min="50" max="200" step="5"></div>
           <div class="opt-row"><label for="set-voice" data-i18n="s_voice">Voz da narração</label><select id="set-voice"></select></div>
-          <div class="opt-row"><label for="btn-voice-sample" data-i18n="s_sample">Ouvir amostra</label><button class="mini-btn" id="btn-voice-sample">🔊</button></div>
+          <div class="opt-row"><label for="btn-voice-sample" data-i18n="s_sample">Ouvir amostra</label><button class="mini-btn ghost" id="btn-voice-sample">🔊</button></div>
           <p class="opt-note" data-i18n="s_natural_note"></p>
           <p id="voice-tier-note" class="opt-note">·</p>
           <details class="voice-guide">
@@ -198,8 +240,8 @@
           </details>
         </div>
 
-        <div class="opt-card">
-          <h2>🎨 <span data-i18n="a11y_set">Aparência e acessibilidade</span></h2>
+        <div class="opt-card" id="sec-look">
+          <h2><span aria-hidden="true">🎨</span> <span data-i18n="a11y_set">Aparência e acessibilidade</span></h2>
           <div class="opt-row"><label for="set-theme" data-i18n="s_theme">Tema</label>
             <select id="set-theme">
               <option value="auto"></option><option value="classico"></option><option value="espaco"></option>
@@ -215,10 +257,11 @@
           </div>
         </div>
 
-        <div class="opt-card">
-          <h2>⏱️ <span data-i18n="time_set">Tempo e metas</span></h2>
+        <div class="opt-card" id="sec-time">
+          <h2><span aria-hidden="true">⏱️</span> <span data-i18n="time_set">Tempo e metas</span></h2>
           <div class="opt-row"><label for="set-timer" data-i18n="s_timer">Cronômetro de pontos</label><input type="checkbox" id="set-timer"></div>
           <p class="opt-note" data-i18n="s_timer_note"></p>
+          <div class="opt-row"><label for="set-cur" data-i18n="s_cur">Moeda do modo Dinheiro</label><select id="set-cur"></select></div>
           <div class="opt-row"><label for="set-tscale" data-i18n="s_tscale">Tempo por questão</label>
             <select id="set-tscale"><option value="1"></option><option value="1.5"></option><option value="2"></option></select>
           </div>
@@ -230,12 +273,13 @@
           </div>
           <div class="opt-row"><label for="set-sync" data-i18n="s_sync">Sincronizar entre computadores</label><input type="checkbox" id="set-sync"></div>
           <p class="opt-note" data-i18n="s_sync_note"></p>
+          <p class="opt-note" id="sync-status" role="status" aria-live="polite"></p>
         </div>
 
-        <div class="opt-card">
-          <h2>🔒 <span data-i18n="sec_title">Segurança</span></h2>
+        <div class="opt-card" id="sec-security">
+          <h2><span aria-hidden="true">🔒</span> <span data-i18n="sec_title">Segurança</span></h2>
           <p class="opt-note" id="sec-status"></p>
-          <button class="mini-btn" id="btn-sec-change" data-i18n="sec_change">Alterar senha</button>
+          <button class="mini-btn ghost" id="btn-sec-change" data-i18n="sec_change">Alterar senha</button>
           <div id="sec-form" class="hidden" style="margin-top:12px">
             <div class="opt-row"><label for="sec-cur" data-i18n="sec_cur">Senha atual</label><input type="password" id="sec-cur" autocomplete="current-password"></div>
             <div class="opt-row"><label for="sec-new" data-i18n="sec_new">Nova senha</label><input type="password" id="sec-new" autocomplete="new-password"></div>
@@ -246,25 +290,77 @@
           </div>
         </div>
 
-        <div class="opt-card">
-          <h2>💾 <span data-i18n="data_set">Dados</span></h2>
-          <div class="btn-line">
-            <button class="mini-btn" id="btn-backup-dl" data-i18n="backup_btn">Baixar backup datado</button>
-            <button class="mini-btn" id="btn-export" data-i18n="exp_btn">Exportar (arquivo)</button>
-            <button class="mini-btn" id="btn-copy" data-i18n="exp_copy">Copiar</button>
-            <button class="mini-btn" id="btn-import" data-i18n="imp_btn">Importar do texto</button>
-            <label class="mini-btn" for="imp-file" style="display:inline-flex;align-items:center" data-i18n="imp_file">Importar arquivo</label>
-            <input type="file" id="imp-file" class="file-in" accept=".json,application/json">
+        <div class="opt-card" id="sec-privacy">
+          <h2><span aria-hidden="true">ℹ️</span> <span data-i18n="ab_title">Sobre e privacidade</span></h2>
+          <div class="link-line">
+            <a class="text-link" id="lnk-privacy" target="_blank" rel="noopener noreferrer" data-i18n="lg_privacy">Privacidade</a>
+            <a class="text-link" id="lnk-terms" target="_blank" rel="noopener noreferrer" data-i18n="lg_terms">Termos de Uso</a>
+            <a class="text-link" id="lnk-support" target="_blank" rel="noopener noreferrer" data-i18n="lg_support">Suporte</a>
           </div>
-          <textarea id="imp-area" placeholder="…" data-i18n-label="a_imp_text" aria-label="Texto do backup"></textarea>
+          <h3 class="opt-sub" data-i18n="ab_ck">Cookies e rastreamento</h3>
+          <p class="opt-note" data-i18n="ck_note"></p>
+          <div class="opt-row"><label for="set-ck-stats" data-i18n="ck_stats">Estatísticas de uso</label><input type="checkbox" id="set-ck-stats"></div>
+          <div class="opt-row"><label for="set-ck-track" data-i18n="ck_track">Rastreamento e publicidade</label><input type="checkbox" id="set-ck-track"></div>
+          <div class="btn-line">
+            <button class="mini-btn ghost" id="btn-ck-accept" data-i18n="ck_accept">Aceitar tudo</button>
+            <button class="mini-btn ghost" id="btn-ck-reject" data-i18n="ck_reject">Recusar tudo</button>
+          </div>
+          <p class="opt-note" data-i18n="ab_dev">Desenvolvido por Klivfy</p>
+          <p class="opt-note" data-i18n="lg_owner"></p>
+        </div>
+
+        <div class="opt-card" id="sec-data">
+          <h2><span aria-hidden="true">💾</span> <span data-i18n="data_set">Dados</span></h2>
           <p class="opt-note" id="bk-hint"></p>
+
+          <h3 class="opt-sub" data-i18n="bk_save_h">Salvar o progresso</h3>
+          <p class="opt-note" id="bk-where"></p>
+          <div class="btn-line">
+            <button class="mini-btn" id="btn-backup-dl" data-i18n="bk_save">Salvar backup</button>
+            <button class="mini-btn ghost" id="btn-copy" data-i18n="exp_copy">Copiar como texto</button>
+          </div>
+
+          <h3 class="opt-sub" data-i18n="bk_restore_h">Restaurar em outro aparelho</h3>
+          <div class="btn-line">
+            <label class="mini-btn ghost" for="imp-file" style="display:inline-flex;align-items:center" data-i18n="bk_restore_file">Restaurar de um arquivo</label>
+            <input type="file" id="imp-file" class="file-in" accept=".json,application/json">
+            <button class="mini-btn ghost hidden" id="btn-undo-restore" data-i18n="bk_undo">Desfazer a última restauração</button>
+          </div>
+          <div id="restore-box" class="restore-box hidden" role="group" aria-labelledby="restore-title">
+            <b id="restore-title" data-i18n="bk_pv_title">Confira antes de restaurar</b>
+            <p id="restore-body"></p>
+            <p id="restore-warn" class="reset-warn hidden"></p>
+            <div class="btn-line">
+              <button class="mini-btn ghost" id="btn-restore-ok" data-i18n="bk_pv_ok">Restaurar agora</button>
+              <button class="mini-btn ghost" id="btn-restore-no" data-i18n="bk_pv_no">Cancelar</button>
+            </div>
+          </div>
+          <details class="voice-guide">
+            <summary data-i18n="bk_restore_text">Restaurar de um texto copiado</summary>
+            <div class="vg-body">
+              <textarea id="imp-area" placeholder="…" data-i18n-label="a_imp_text" aria-label="Texto do backup"></textarea>
+              <div class="btn-line"><button class="mini-btn ghost" id="btn-import" data-i18n="bk_restore_go">Restaurar do texto</button></div>
+            </div>
+          </details>
+          <details class="voice-guide">
+            <summary data-i18n="bk_steps_t">Como levar o progresso para outro aparelho</summary>
+            <div class="vg-body">
+              <p data-i18n="bk_s1"></p>
+              <p data-i18n="bk_s2"></p>
+              <p data-i18n="bk_s3"></p>
+            </div>
+          </details>
           <p class="opt-note" data-i18n="bk_pwd_note">🔒 O backup não leva a senha dos responsáveis: ao importar, continua valendo a senha deste aparelho.</p>
-          <div class="btn-line" style="margin-top:10px">
+          <p class="opt-note" id="opt-version"></p>
+        </div>
+
+        <div class="opt-card danger-zone" id="sec-danger">
+          <h2><span aria-hidden="true">⚠️</span> <span data-i18n="danger_title">Zona de perigo</span></h2>
+          <p class="opt-note" data-i18n="danger_note"></p>
+          <div class="btn-line">
             <button class="mini-btn danger-btn" id="btn-reset-p" data-i18n="reset_p">Apagar progresso deste jogador</button>
             <button class="mini-btn danger-btn" id="btn-reset-all" data-i18n="reset_all">Apagar tudo</button>
           </div>
-          <p class="opt-note" id="opt-version"></p>
-          <p class="opt-note" data-i18n="store_note"></p>
         </div>
 
       </div>

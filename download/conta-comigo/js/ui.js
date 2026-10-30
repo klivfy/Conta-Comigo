@@ -20,13 +20,31 @@ let sessionSec = 0;
 let bubbleTimer = null, toastTimer = null;
 
 /* ---------- navegação de telas ---------- */
+/* ADR-001: outra página gravou (evento storage) ou outro computador sincronizou. O banco só é
+   trocado com a tela inicial aberta, nunca no meio de uma rodada. */
+let externalPending = false, remotePending = null;
+function adoptIfSafe() {
+  const home = $('#screen-home');
+  if ((!externalPending && !remotePending) || !home || !home.classList.contains('active') || overlayOpen()) return;
+  const remote = remotePending;
+  externalPending = false; remotePending = null;
+  const ok = remote ? adoptRemote(remote) : adoptLatest();
+  if (ok) { applyLang(); applySettings(); ensureMissions(); renderHome(); }
+}
 function show(name) {
+  if (name !== 'shop') { closeUndo(); if (previewTimer) endPreview(); }
   const prev = document.activeElement;
   $$('.screen').forEach((s) => s.classList.remove('active'));
   const el = $('#screen-' + name);
   if (el) el.classList.add('active');
   // teclado/leitor de tela: se o foco ficou numa tela que sumiu, ele vai para a nova
   if (el && prev && prev.closest && prev.closest('.screen') && !el.contains(prev)) focusScreen(el);
+  if (name === 'home') adoptIfSafe();
+  if (name !== 'game') setTimeout(flushToasts, 600);
+  else { // aviso disparado logo antes da rodada (ex.: missão "modo novo") volta para a fila
+    const tEl = $('#toast');
+    if (tEl && tEl.classList.contains('show')) { toastQueue.push(tEl.textContent); tEl.classList.remove('show'); clearTimeout(toastTimer); }
+  }
 }
 function focusScreen(el) {
   if (overlayOpen()) return;
@@ -57,6 +75,10 @@ function refreshChrome() {
   $('#star-total').textContent = String(p ? p.stars : 0);
   const chip = $('#star-chip'); if (chip) { chip.classList.remove('bump'); void chip.offsetWidth; chip.classList.add('bump'); }
   const st = $('#chip-streak'); if (st) st.querySelector('b').textContent = String(p ? p.streak : 0);
+  /* leitor de tela: "135 estrelas" e "5 dias seguidos", em vez de emoji + número soltos */
+  const ns = p ? p.stars : 0, nd = p ? p.streak : 0;
+  if (chip) { chip.setAttribute('role', 'img'); chip.setAttribute('aria-label', t(ns === 1 ? 'chip_star1' : 'chip_stars', { n: ns })); }
+  if (st) { st.setAttribute('role', 'img'); st.setAttribute('aria-label', t(nd === 1 ? 'chip_streak1' : 'chip_streak', { n: nd })); }
   /* v2.5: moldura do perfil pela quantidade de conquistas — orgulho à vista */
   const bp = $('#btn-profile');
   if (bp && p) {
@@ -83,17 +105,39 @@ function showBubble(emoji, text) {
   $('#bubble-emoji').textContent = emoji;
   $('#bubble-text').textContent = text;
   announce(text);
-  b.classList.remove('hidden', 'pop'); void b.offsetWidth; b.classList.add('pop');
+  b.classList.remove('hidden', 'pop');
+  // no jogo, o balão fica abaixo da linha de progresso (antes cobria "Questão 1 de 5" e os pontos)
+  b.style.top = '';
+  if (scr && scr.id === 'screen-game' && b.offsetParent) {
+    const tw = $('#timer-wrap'), anchor = (tw && !tw.classList.contains('hidden')) ? tw : $('#progress');
+    if (anchor) b.style.top = Math.round(anchor.getBoundingClientRect().bottom - b.offsetParent.getBoundingClientRect().top + b.offsetParent.scrollTop + 8) + 'px';
+  }
+  void b.offsetWidth; b.classList.add('pop');
   clearTimeout(bubbleTimer);
-  bubbleTimer = setTimeout(hideBubble, 2400);
+  bubbleTimer = setTimeout(hideBubble, bubbleMs(G()));
 }
 function hideBubble() { const b = $('#bubble'); if (b) b.classList.add('hidden'); }
+/* v2.8.0: durante a rodada o toast cobria "Ouvir de novo" e tirava o foco da conta.
+   Ali ele só vai para o leitor de tela e aparece na tela quando a criança sai do jogo. */
+const toastQueue = [];
 function toast(msg) {
   const el = $('#toast'); if (!el) return;
+  const game = $('#screen-game');
+  if (game && game.classList.contains('active')) { announce(msg); toastQueue.push(msg); return; }
+  showToastNow(msg, true);
+}
+function showToastNow(msg, speak) {
+  const el = $('#toast'); if (!el) return;
   el.textContent = msg; el.classList.remove('hidden', 'show'); void el.offsetWidth; el.classList.add('show');
-  announce(msg);
+  if (speak) announce(msg);
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+}
+function flushToasts() {
+  if (!toastQueue.length) return;
+  const next = toastQueue.shift();
+  showToastNow(next, false); // já foi anunciado no leitor de tela durante a rodada
+  if (toastQueue.length) setTimeout(flushToasts, 2900);
 }
 /* Região viva (#sr-live): frases ditas no mesmo instante saem juntas, numa
    única leitura — p.ex. "vez do jogador 2" + a pergunta no duelo */
@@ -193,7 +237,7 @@ function renderMascot() {
   const ms = $('#mascot-side');
   if (ms) ms.textContent = st.emoji;
   const lbl = $('#mascot-stage');
-  if (lbl) lbl.textContent = t(st.key) + ' · ' + p.name;
+  if (lbl) lbl.textContent = t(st.key) + ' · ' + pName(p);
   const nx = $('#mascot-next');
   if (nx) nx.textContent = st.next != null ? t('to_next', { n: st.next }) : '⭐ ' + p.stars;
 }
@@ -247,7 +291,7 @@ function missionEvent(ev, n) {
   if (done.length) saveState();
 }
 function celebrateMissions(done) {
-  done.forEach(() => { toast('🎉 ' + t('mission_done')); SFX.star(); });
+  done.forEach((def) => { toast('🎉 ' + t('mission_done_n', { m: t(def.key) })); SFX.star(); });
   if (done.length) refreshChrome();
 }
 function renderMissions() {
@@ -257,8 +301,10 @@ function renderMissions() {
   el.innerHTML = p.missions.list.map((m) => {
     const def = MISSION_DEFS.find((d) => d.id === m.id);
     if (!def) return '';
-    return '<span class="mission' + (m.done ? ' done' : '') + '">' + (m.done ? '✅ ' : '🔸 ') + t(def.key) + ' ' + m.p + '/' + def.goal + '</span>';
+    const say = m.done ? t('mi_say_done', { m: t(def.key) }) : t('mi_say', { m: t(def.key), a: m.p, b: def.goal });
+    return '<button type="button" class="mission' + (m.done ? ' done' : '') + '" data-say="' + escHtml(say) + '"><span aria-hidden="true">' + (m.done ? '✅ ' : '🔸 ') + '</span>' + escHtml(t(def.key)) + ' ' + m.p + '/' + def.goal + '</button>';
   }).join('');
+  $$('#mission-row [data-say]').forEach((b) => b.addEventListener('click', () => { ensureAudio(); SFX.tap(); TTS.speak(b.dataset.say, { calm: true }); }));
 }
 
 /* ---------- meta diária (S11) ---------- */
@@ -312,7 +358,18 @@ function renderModes() {
       startRound(card.dataset.mode);
     });
   });
+  fixModesOrphan();
 }
+/* v2.8.0 (10.3.2): carta sozinha na última linha vira faixa de largura total (13 modos em 6 colunas deixavam
+   "Contra o Tempo" com cinco buracos ao lado). Recalcula quando a largura muda. */
+function fixModesOrphan() {
+  const grid = $('#modes-grid'); if (!grid) return;
+  const cards = [...grid.children]; if (!cards.length) return;
+  cards.forEach((c) => c.classList.remove('wide'));
+  const cols = getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length;
+  if (cols > 1 && cards.length % cols === 1) cards[cards.length - 1].classList.add('wide');
+}
+if (typeof window !== 'undefined') window.addEventListener('resize', () => { clearTimeout(fixModesOrphan.t); fixModesOrphan.t = setTimeout(fixModesOrphan, 120); });
 
 /* ---------- tela inicial completa ---------- */
 function renderHome() {
@@ -329,21 +386,32 @@ function renderHome() {
   if (btnBoss) btnBoss.classList.toggle('hidden', !p.bossReady);
   const btnDiag = $('#sp-diag');
   if (btnDiag) btnDiag.classList.toggle('attention', !p.assessed);
-  renderDiffChips(); refreshChrome();
+  renderPlayNow(); refreshChrome();
 }
-
-/* ---------- dificuldade manual (chips auto + 1..5) ---------- */
-function renderDiffChips() {
-  $$('.diff-chip').forEach((c) => {
-    const on = String(G().diffMode) === c.dataset.d;
-    c.classList.toggle('active', on); c.setAttribute('aria-pressed', String(on));
-  });
+/* v2.8.0 (N3): um toque grande com a sugestão do dia; os outros modos ficam logo abaixo */
+function renderPlayNow() {
+  const host = $('#screen-home'); if (!host) return;
+  let b = $('#play-now');
+  if (!b) {
+    b = document.createElement('button'); b.id = 'play-now'; b.type = 'button'; b.className = 'play-now';
+    const anchor = host.querySelector('.sec-title'); host.insertBefore(b, anchor || host.firstChild);
+    b.addEventListener('click', () => {
+      ensureAudio(); SFX.tap();
+      const r = recommendNext();
+      if (r.kind === 'boss') startBoss(); else if (r.kind === 'review') startReview(); else startRound(r.mode);
+    });
+  }
+  const r = recommendNext();
+  const emoji = r.kind === 'boss' ? '⚔️' : r.kind === 'review' ? '📚' : MODES[r.mode].emoji;
+  const what = r.kind === 'boss' ? t('sp_boss') : r.kind === 'review' ? t('review_btn', { n: r.n }) : t('m_' + r.mode);
+  b.innerHTML = '<span class="pn-emoji" aria-hidden="true">' + emoji + '</span><span class="pn-txt"><b>' + t('play_now') + '</b><small>' + escHtml(what) + '</small></span>';
+  b.setAttribute('aria-label', t('play_now') + ': ' + what);
 }
 
 /* ==================== rodadas ==================== */
 /* Nome acessível da cena: conta os objetos em sequência (🍎🍎🍎 → "3 🍎") e
    mantém textos como sinais, letras A/B e números da sequência */
-function describeVisual(root) {
+function describeVisual(root, hideTotal) {
   const out = []; let run = null;
   const flush = () => {
     if (run) out.push(run.n + ' ' + run.e + (run.x ? ' (' + t('sc_crossed', { n: run.x }) + ')' : ''));
@@ -360,6 +428,12 @@ function describeVisual(root) {
     });
   })(root);
   flush();
+  /* quando a quantidade é a pergunta (Contar), o leitor de tela não ganha o total:
+     ouve só que há um grupo e que cada objeto se conta pelo toque ou pelo teclado */
+  if (hideTotal) {
+    const e = root.querySelector('.obj');
+    return t('sc_count', { e: e ? e.textContent.trim() : '' });
+  }
   return out.join(' ');
 }
 /* botões de escolha única (avatares): classe .sel + aria-pressed */
@@ -389,7 +463,7 @@ function startRound(mode) {
   /* v2.5: Contra o Tempo — 60 s globais de fôlego; responde o máximo que der */
   if (mode === 'tempo') { R.kind = 'tempo'; R.total = 9999; }
   show('game');
-  if (mode === 'tempo') { Timer.startGlobal(60); showBubble('⏱️', t('pr_tempo', { name: p.name })); }
+  if (mode === 'tempo') { Timer.startGlobal(60); showBubble('⏱️', t('pr_tempo', { name: pName(p) })); }
   nextQuestion(); saveState();
 }
 function startReview() {
@@ -470,8 +544,9 @@ function nextQuestion() {
   const vis = $('#visual');
   vis.innerHTML = q.visual || '';
   vis.classList.toggle('naked', !q.visual);
-  const scene = q.visual ? describeVisual(vis) : '';
-  if (scene) { vis.setAttribute('role', 'img'); vis.setAttribute('aria-label', scene); vis.removeAttribute('aria-hidden'); }
+  const scene = q.visual ? describeVisual(vis, q.countQuest) : '';
+  /* com objetos tocáveis o contêiner é grupo (role=img esconderia os botões dos filhos) */
+  if (scene) { vis.setAttribute('role', vis.querySelector('.tappable') ? 'group' : 'img'); vis.setAttribute('aria-label', scene); vis.removeAttribute('aria-hidden'); }
   else { vis.removeAttribute('role'); vis.removeAttribute('aria-label'); vis.setAttribute('aria-hidden', 'true'); }
   $('#equation').textContent = q.display;
   $('#equation').classList.toggle('small-text', String(q.display).length > 16);
@@ -480,15 +555,17 @@ function nextQuestion() {
   box.innerHTML = '';
   box.classList.remove('locked');
   box.classList.toggle('n3', q.options.length === 3 && q.kind === 'cmp');
-  let opts = shuffle(q.options);
+  /* Comparar: a ordem A, B, = fica sempre igual, como as caixas na tela (embaralhar trocava os botões) */
+  let opts = q.kind === 'cmp' ? q.options.slice() : shuffle(q.options);
   // v2.4 (A-163): a resposta certa não cai na mesma posição 2× seguidas
   const ansStr = String(q.answer);
-  if (opts.length > 1) {
+  if (opts.length > 1 && q.kind !== 'cmp') {
     for (let tries = 0; tries < 7 && opts.findIndex((o) => String(o) === ansStr) === R.lastAnsPos; tries++) {
       opts = shuffle(q.options);
     }
     R.lastAnsPos = opts.findIndex((o) => String(o) === ansStr);
   }
+  if (q.kind === 'cmp') R.lastAnsPos = -1;
   opts.forEach((opt, i) => {
     const b = document.createElement('button');
     b.className = 'ans';
@@ -506,7 +583,7 @@ function nextQuestion() {
   if (hadFocus && $('#screen-game').classList.contains('active')) focusScreen($('#screen-game'));
   if (R.kind !== 'tempo') Timer.start(timeBudget(level, currentMode()));
   // v2.4: incentivo do chefe falado na 1ª questão (fila prosódica junta as duas frases)
-  const intro = R.bossIntro ? tpick('pr_boss', { name: p.name }) + ' ' + q.tts : q.tts;
+  const intro = R.bossIntro ? tpick('pr_boss', { name: pName(p) }) + ' ' + q.tts : q.tts;
   R.bossIntro = false;
   setTimeout(() => TTS.speak(intro), 260);
 }
@@ -533,8 +610,8 @@ function renderProgress() {
     else if (R.kind === 'duel') {
       const d = R.duel;
       txt = d.a1 + ' ' + d.s1 + ' × ' + d.s2 + ' ' + d.a2 + ' · ' + (R.qIndex + 1) + '/' + R.total;
-    } else txt = t('q_of', { a: Math.min(R.qIndex + 1, R.total), b: R.total }) + ' · ' + t('level') + ' ' + R.level + (G().diffMode === 'auto' ? '' : ' · ' + t('fixed_lbl'));
-    chip.textContent = txt;
+    } else { chip.innerHTML = escHtml(t('q_of', { a: Math.min(R.qIndex + 1, R.total), b: R.total })) + '<span class="lv-part"> · ' + escHtml(t('level') + ' ' + R.level + (G().diffMode === 'auto' ? '' : ' · ' + t('fixed_lbl'))) + '</span>'; txt = null; }
+    if (txt != null) chip.textContent = txt;
   }
   const combo = $('#combo-chip');
   if (combo) {
@@ -601,10 +678,8 @@ const Timer = {
     const w = $('#timer-wrap'); if (!w) return;
     const pct = this.totalMs ? Math.round(100 * this.leftMs / this.totalMs) : 0;
     const bar = $('#timer-bar');
-    if (bar) bar.style.width = pct + '%';
+    if (bar) bar.style.transform = 'scaleX(' + (pct / 100) + ')';
     w.setAttribute('aria-valuenow', String(pct));
-    w.classList.toggle('warn', pct < 50 && pct >= 25);
-    w.classList.toggle('low', pct < 25 && pct > 0);
   },
   stop() { if (this.global) return; this.active = false; if (this.iv) { clearInterval(this.iv); this.iv = null; } },
   hide() { this.global = false; this.stop(); const w = $('#timer-wrap'); if (w) w.classList.add('hidden'); },
@@ -635,24 +710,98 @@ function ptsPop(pts) {
 
 /* ---------- contagem tocável ---------- */
 function bindCounting(q) {
+  const count = (el) => {
+    ensureAudio();
+    const i = Number(el.dataset.i);
+    el.classList.add('counted');
+    el.style.setProperty('--cnt', '"' + (i + 1) + '"');
+    SFX.tap();
+    // no idioma do jogo (antes falava "um, dois, três" também em inglês e espanhol)
+    TTS.speak(numWord(LANG, i + 1), { force: true }); // repetir o mesmo número é intencional
+  };
   $$('#visual .obj.tappable').forEach((el) => {
-    el.addEventListener('click', () => {
-      ensureAudio();
-      const i = Number(el.dataset.i);
-      el.classList.add('counted');
-      el.style.setProperty('--cnt', '"' + (i + 1) + '"');
-      SFX.tap();
-      // no idioma do jogo (antes falava "um, dois, três" também em inglês e espanhol)
-      TTS.speak(numWord(LANG, i + 1), { force: true }); // repetir o mesmo número é intencional
+    /* teclado e leitor de tela: cada objeto é um botão ("🍎 3"); Enter e Espaço contam */
+    el.setAttribute('role', 'button');
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('aria-label', el.textContent.trim() + ' ' + (Number(el.dataset.i) + 1));
+    el.addEventListener('click', () => { if (el._dragged) return; count(el); });
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); count(el); }
     });
   });
+  setupBasket();
+}
+
+/* v2.8.0 (N4, protótipo só em Contar): arrastar o objeto para a cesta conta em voz alta.
+   Alternativas sem arrastar (WCAG 2.5.7): tocar no objeto (ou Enter/Espaço) conta como antes, e a
+   própria cesta é um botão que põe o próximo objeto dentro. A cesta não muda a resposta nem a pontuação. */
+function setupBasket() {
+  const vis = $('#visual');
+  vis.classList.remove('has-basket');
+  const objs = $$('#visual .obj.tappable');
+  if (!objs.length) return;
+  const basket = document.createElement('button');
+  basket.type = 'button'; basket.className = 'basket';
+  basket.innerHTML = '<span class="basket-in" aria-hidden="true"></span><span class="basket-ic" aria-hidden="true">🧺</span><b class="basket-n" aria-hidden="true">0</b>';
+  vis.classList.add('has-basket'); vis.appendChild(basket);
+  const inB = basket.querySelector('.basket-in'), nEl = basket.querySelector('.basket-n');
+  const refresh = () => {
+    const n = inB.children.length;
+    nEl.textContent = String(n);
+    basket.setAttribute('aria-label', vis.querySelector('.grp .obj.tappable') ? t('bk_label', { n }) : t('bk_full', { n }));
+  };
+  const put = (el) => {
+    if (el.parentNode === inB) return;
+    ensureAudio();
+    inB.appendChild(el);
+    el.style.transform = '';
+    el.classList.remove('tappable', 'dragging', 'counted', 'snap');
+    ['role', 'tabindex', 'aria-label'].forEach((a) => el.removeAttribute(a));
+    refresh();
+    basket.classList.remove('bump'); void basket.offsetWidth; basket.classList.add('bump');
+    SFX.tap();
+    TTS.speak(numWord(LANG, inB.children.length), { force: true });
+  };
+  refresh();
+  basket.addEventListener('click', () => { const next = vis.querySelector('.grp .obj.tappable'); if (next) put(next); });
+  objs.forEach((el) => el.addEventListener('pointerdown', (e) => {
+    if (e.button != null && e.button !== 0) return;
+    const sx = e.clientX, sy = e.clientY;
+    const vr = vis.getBoundingClientRect(), er = el.getBoundingClientRect();
+    const cx0 = er.left + er.width / 2, cy0 = er.top + er.height / 2;
+    let dragging = false;
+    try { el.setPointerCapture(e.pointerId); } catch (_) { /* sem captura (mouse): o arrasto só segue enquanto o ponteiro passa pelo objeto */ }
+    const move = (ev) => {
+      const dx = ev.clientX - sx, dy = ev.clientY - sy;
+      if (!dragging) {
+        if (Math.hypot(dx, dy) < 8) return;
+        dragging = true; el.classList.add('dragging');
+      }
+      el.style.transform = 'translate(' + (dragResist(cx0 + dx, vr.left, vr.right) - cx0) + 'px,' + (dragResist(cy0 + dy, vr.top, vr.bottom) - cy0) + 'px)';
+      basket.classList.toggle('over', dropHit(ev.clientX, ev.clientY, basket.getBoundingClientRect(), 16));
+    };
+    const end = (ev) => {
+      el.removeEventListener('pointermove', move);
+      el.removeEventListener('pointerup', end);
+      el.removeEventListener('pointercancel', end);
+      basket.classList.remove('over');
+      if (!dragging) return;
+      el._dragged = true; setTimeout(() => { el._dragged = false; }, 60); // o click que vem logo depois do arrasto não conta
+      el.classList.remove('dragging');
+      if (ev.type === 'pointerup' && dropHit(ev.clientX, ev.clientY, basket.getBoundingClientRect(), 16)) put(el);
+      else { el.classList.add('snap'); el.style.transform = ''; setTimeout(() => el.classList.remove('snap'), 320); }
+    };
+    el.addEventListener('pointermove', move);
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', end);
+  }));
 }
 
 /* ---------- resposta ---------- */
 /* v2.4 (A-178): biblioteca cordial contextual — o elogio cita o nome, reconhece
    rapidez, valoriza a persistência e comemora combos, sem spam de festa */
 function cordialPraise(firstTry, speedRatio) {
-  const name = P() ? P().name : '';
+  const name = P() ? pName(P()) : '';
   if (firstTry && speedRatio >= 0.55 && Math.random() < 0.65) return tpick('pr_fast', { name });
   if (R.combo >= 3 && R.combo % 2 === 1) return tpick('pr_combo', { name, n: R.combo });
   if (!firstTry) return tpick('pr_persist', { name });
@@ -703,7 +852,8 @@ function onCorrect(btn, firstTry) {
   }
   if (R.kind === 'duel' && firstTry) { if (R.duel.turn === 1) R.duel.s1++; else R.duel.s2++; }
 
-  R.history.push({ txt: R.current.display, ok: firstTry });
+  const eM = /class="obj[^"]*"[^>]*>([^<]+)</.exec(R.current.visual || '');
+  R.history.push({ txt: R.current.display, ok: firstTry, emo: eM ? eM[1].trim() : '', say: R.current.tts || '' });
   R.qIndex++;
   setTimeout(() => {
     if (R.qIndex >= R.total) endRound();
@@ -731,10 +881,10 @@ function onWrong(btn) {
       // v2.4 (A-178): acolhimento sem julgamento, citando os objetos da questão
       // com artigo concordado (as maçãs / os morangos · pt/es; "the" no en)
       const f = R.current && R.current.f;
-      const itPl = (f && ITEMS[f.it]) ? ITEMS[f.it].plural : '';
-      const fem = !!(f && ITEMS[f.it] && ITEMS[f.it].f);
+      const itPl = (f && ITEMS[f.it]) ? itemWord(ITEMS[f.it], 2) : '';
+      const fem = !!(f && ITEMS[f.it] && itemFem(ITEMS[f.it]));
       const art = fem ? (LANG === 'es' ? 'las' : 'as') : (LANG === 'es' ? 'los' : 'os');
-      const r = itPl ? tpick('cm_err_item', { name: P().name, item: itPl, art }) : tpick('cm_err_plain', { name: P().name });
+      const r = itPl ? tpick('cm_err_item', { name: pName(P()), item: itPl, art }) : tpick('cm_err_plain', { name: pName(P()) });
       showBubble('🙈', r); TTS.speak(r);
     }
   }
@@ -808,11 +958,24 @@ function renderEndScreen(res) {
     } else endPts.classList.add('hidden');
   }
   const hist = $('#end-history');
-  hist.innerHTML = '<b>' + t('history') + '</b><div class="hist-list">' +
-    R.history.map((h) => '<span class="hrow' + (h.ok ? ' ok' : ' no') + '">' + (h.ok ? '✅' : '🔁') + ' ' + escHtml(h.txt) + '</span>').join('') + '</div>';
+  // sem respostas (ex.: tempo esgotado antes da 1ª), nada de rótulo órfão
+  hist.innerHTML = R.history.length ? '<b>' + t('history') + '</b><div class="hist-list">' +
+    R.history.map((h, i) => {
+      const body = (h.ok ? '✅' : '🔁') + ' ' + (h.emo ? '<span class="hemo" aria-hidden="true">' + escHtml(h.emo) + '</span> ' : '') + escHtml(h.txt);
+      /* v2.8.0 (N2): a conta que ficou difícil volta por voz, sem a criança precisar ler */
+      return h.ok || !h.say ? '<span class="hrow ok">' + body + '</span>'
+        : '<button type="button" class="hrow no" data-say="' + i + '" aria-label="' + escHtml(t('repeat') + ': ' + h.txt) + '">' + body + ' 🔊</button>';
+    }).join('') + '</div>' : '';
+  $$('#end-history [data-say]').forEach((b) => b.addEventListener('click', () => { ensureAudio(); TTS.speak(R.history[Number(b.dataset.say)].say, { calm: true }); }));
+  // v2.8.0 (N2): quanto falta para o mascote mudar de fase
+  let nx = $('#end-next');
+  if (!nx) { nx = document.createElement('div'); nx.id = 'end-next'; const anchor = $('#end-msg'); anchor.parentNode.insertBefore(nx, anchor.nextSibling); }
+  const mp = mascotProgress(p.stars);
+  nx.classList.toggle('hidden', mp.to == null);
+  if (mp.to != null) nx.innerHTML = '<span class="np-bar" aria-hidden="true"><i style="width:' + Math.max(4, mp.pct) + '%"></i></span><span>' + (mp.to === 'baby' ? t('end_hatch', { n: mp.need }) : t('to_next', { n: mp.need })) + '</span>';
   // v2.4 (A-144): parabéns personalizado falado — recorde tem fala própria
   if (R.kind === 'normal' || R.kind === 'review') {
-    const spoken = R.newRecord ? tpick('pr_record', { name: p.name, n: R.points }) : tpick('pr_end', { name: p.name });
+    const spoken = R.newRecord ? tpick('pr_record', { name: pName(p), n: R.points }) : tpick('pr_end', { name: pName(p) });
     setTimeout(() => TTS.speak(spoken), 1100); // após a fanfarra
   }
 }
@@ -827,9 +990,12 @@ function renderAch() {
   $('#ach-grid').innerHTML = ACHS.map((a) => {
     const got = !!p.ach[a.id];
     const hidden = !got && a.sec; // secreta: só revela depois de conquistada
-    return '<div class="ach-card' + (got ? ' got' : '') + (hidden ? ' secret' : '') + '"><span class="ach-emoji">' + (got ? '🏅' : hidden ? '❓' : '🔒') + '</span>' +
-      '<b>' + (hidden ? '???' : t(a.id)) + '</b><small>' + (hidden ? t('ach_secret') : t('ad' + a.id.slice(1))) + '</small></div>';
+    const desc = hidden ? t('ach_secret') : t('ad' + a.id.slice(1));
+    const say = hidden ? desc : t(got ? 'ach_say_on' : 'ach_say_off', { n: t(a.id), d: desc });
+    return '<button type="button" class="ach-card' + (got ? ' got' : '') + (hidden ? ' secret' : '') + '" data-say="' + escHtml(say) + '"><span class="ach-emoji" aria-hidden="true">' + (got ? '🏅' : hidden ? '❓' : '🔒') + '</span>' +
+      '<b>' + (hidden ? '???' : escHtml(t(a.id))) + '</b><small>' + escHtml(desc) + '</small></button>';
   }).join('');
+  $$('#ach-grid [data-say]').forEach((b) => b.addEventListener('click', () => { ensureAudio(); SFX.tap(); TTS.speak(b.dataset.say, { calm: true }); }));
   const bk = $('#btn-backup');
   if (bk) bk.classList.toggle('hidden', Object.keys(p.ach || {}).length === 0);
 }
@@ -857,40 +1023,47 @@ const SHOP_HATS = [
 ];
 /* "Usar", "Comprar 60⭐"... repetem em todo cartão: o leitor de tela ouve também o item */
 function itemLbl(action, item) { return ' aria-label="' + escHtml(action + ' — ' + item) + '"'; }
+/* v2.8.0: item que ainda não dá para comprar vira um caminho (tem/preço + barra), não um botão que nega */
+function buyBtn(kind, id, price, name, stars) {
+  if (stars >= price) return '<button class="mini-btn" data-buy' + kind + '="' + id + '"' + itemLbl(t('buy') + ' ' + price + '⭐', name) + '>' + t('buy') + ' ' + price + '⭐</button>';
+  const miss = price - stars, txt = stars + '/' + price + '⭐';
+  return '<span class="far-bar" aria-hidden="true"><i style="width:' + Math.round(100 * stars / price) + '%"></i></span>' +
+    '<button class="mini-btn far" data-far="' + miss + '" data-name="' + escHtml(name) + '" aria-disabled="true"' + itemLbl(t('far', { n: miss }), name) + '>' + txt + '</button>';
+}
 function renderShop() {
   const p = P();
   $('#shop-stars').textContent = String(p.stars);
   const themeRow = $('#shop-themes');
-  themeRow.innerHTML = SHOP_THEMES.map((th) => {
+  themeRow.innerHTML = shopSort(SHOP_THEMES, (x) => x.price === 0 || p.owned.themes.includes(x.id), p.stars).map((th) => {
     const owned = th.price === 0 || p.owned.themes.includes(th.id);
     const inUse = (resolvedTheme(G()) === th.id);
     return '<div class="shop-item th-' + th.id + '"><span class="swatch"></span><b>' + t(th.key) + '</b>' +
       (owned
         ? '<button class="mini-btn' + (inUse ? ' using' : '') + '" data-th="' + th.id + '"' + itemLbl(inUse ? t('in_use') : t('equip'), t(th.key)) + '>' + (inUse ? t('in_use') : t('equip')) + '</button>'
-        : '<button class="mini-btn" data-buyth="' + th.id + '"' + itemLbl(t('buy') + ' ' + th.price + '⭐', t(th.key)) + '>' + t('buy') + ' ' + th.price + '⭐</button>') +
+        : '<button class="mini-btn prev" data-prev="' + th.id + '"' + itemLbl(t('preview'), t(th.key)) + '>👁️ ' + t('preview') + '</button>' + buyBtn('th', th.id, th.price, t(th.key), p.stars)) +
       '</div>';
   }).join('');
   const hatRow = $('#shop-hats');
-  hatRow.innerHTML = SHOP_HATS.map((h) => {
+  hatRow.innerHTML = shopSort(SHOP_HATS, (x) => x.price === 0 || p.owned.hats.includes(x.id), p.stars).map((h) => {
     const owned = h.price === 0 || p.owned.hats.includes(h.id);
     const inUse = (p.hat || '') === h.id;
     return '<div class="shop-item"><span class="shop-emoji">' + (h.emoji || '🦊') + '</span><b>' + t(h.key) + '</b>' +
       (owned
         ? '<button class="mini-btn' + (inUse ? ' using' : '') + '" data-hat="' + h.id + '"' + itemLbl(inUse ? t('in_use') : t('equip'), t(h.key)) + '>' + (inUse ? t('in_use') : t('equip')) + '</button>'
-        : '<button class="mini-btn" data-buyhat="' + h.id + '"' + itemLbl(t('buy') + ' ' + h.price + '⭐', t(h.key)) + '>' + t('buy') + ' ' + h.price + '⭐</button>') +
+        : buyBtn('hat', h.id, h.price, t(h.key), p.stars)) +
       '</div>';
   }).join('');
   /* v2.5: mascotes adultas escolhíveis */
   const petRow = $('#shop-pets');
   if (petRow) {
-    petRow.innerHTML = PETS.map((pt) => {
+    petRow.innerHTML = shopSort(PETS, (x) => x.price === 0 || p.owned.pets.includes(x.id), p.stars).map((pt) => {
       const owned = pt.price === 0 || p.owned.pets.includes(pt.id);
       const inUse = (p.pet || 'fox') === pt.id;
       const ready = p.stars >= 100;
       return '<div class="shop-item"><span class="shop-emoji">' + pt.emoji + '</span><b>' + t(pt.key) + '</b>' +
         (owned
           ? '<button class="mini-btn' + (inUse ? ' using' : '') + '" data-pet="' + pt.id + '"' + itemLbl(inUse ? t('in_use') : t('equip'), t(pt.key)) + '>' + (inUse ? t('in_use') : t('equip')) + '</button>'
-          : '<button class="mini-btn" data-buypet="' + pt.id + '"' + itemLbl(t('buy') + ' ' + pt.price + '⭐', t(pt.key)) + '>' + t('buy') + ' ' + pt.price + '⭐</button>') +
+          : buyBtn('pet', pt.id, pt.price, t(pt.key), p.stars)) +
         (!ready && !owned ? '<small class="pet-note">' + t('pet_note') + '</small>' : '') +
         '</div>';
     }).join('');
@@ -899,32 +1072,67 @@ function renderShop() {
   alb.innerHTML = STICKERS.map((s, i) => '<span class="stk' + (p.stickers.includes(i) ? ' got' : '') + '">' + (p.stickers.includes(i) ? s : '❔') + '</span>').join('');
   $('#album-count').textContent = t('album', { a: p.stickers.length });
   $$('#shop-themes [data-th]').forEach((b) => b.addEventListener('click', () => { G().theme = b.dataset.th; saveState(); applySettings(); renderShop(); SFX.tap(); }));
+  $$('#shop-themes [data-far], #shop-hats [data-far], #shop-pets [data-far]').forEach((b) => b.addEventListener('click', () => { ensureAudio(); SFX.tap(); sayFar(Number(b.dataset.far), b.dataset.name); }));
+  $$('#shop-themes [data-prev]').forEach((b) => b.addEventListener('click', () => previewTheme(b.dataset.prev)));
   $$('#shop-themes [data-buyth]').forEach((b) => b.addEventListener('click', () => buyTheme(b.dataset.buyth)));
   $$('#shop-hats [data-hat]').forEach((b) => b.addEventListener('click', () => { P().hat = b.dataset.hat; saveState(); renderShop(); renderMascot(); SFX.tap(); }));
   $$('#shop-hats [data-buyhat]').forEach((b) => b.addEventListener('click', () => buyHat(b.dataset.buyhat)));
-  $$('#shop-pets [data-pet]').forEach((b) => b.addEventListener('click', () => { P().pet = b.dataset.pet; saveState(); renderShop(); renderMascot(); SFX.tap(); showBubble(PETS.find((x) => x.id === b.dataset.pet).emoji, tpick('greet', { name: P().name })); }));
+  $$('#shop-pets [data-pet]').forEach((b) => b.addEventListener('click', () => { P().pet = b.dataset.pet; saveState(); renderShop(); renderMascot(); SFX.tap(); showBubble(PETS.find((x) => x.id === b.dataset.pet).emoji, tpick('greet', { name: pName(P()) })); }));
   $$('#shop-pets [data-buypet]').forEach((b) => b.addEventListener('click', () => buyPet(b.dataset.buypet)));
 }
+/* "faltam 12 ⭐ para comprar: Boné": no balão e em voz, para quem ainda não lê */
+function sayFar(miss, name) {
+  const msg = name ? t('far_item', { n: miss, item: name }) : t('far', { n: miss });
+  showBubble('🦊', msg); TTS.speak(msg, { calm: true });
+}
+/* Prévia do tema antes de comprar: vale por 4 s ou até sair da loja; nada é salvo */
+let previewTimer = null;
+function previewTheme(id) {
+  const th = SHOP_THEMES.find((x) => x.id === id); if (!th) return;
+  SFX.tap(); clearTimeout(previewTimer);
+  applyTheme(Object.assign({}, G(), { theme: id }));
+  showBubble('🎨', t('preview_msg', { n: t(th.key) }));
+  previewTimer = setTimeout(endPreview, 4000);
+}
+function endPreview() { clearTimeout(previewTimer); previewTimer = null; applyTheme(G()); }
+/* v2.8.0: "Comprado! Desfazer" por 5 s. Devolve as estrelas e o que estava em uso. */
+let undoTimer = null;
+function offerUndo(fn) {
+  closeUndo();
+  const box = document.createElement('div'); box.id = 'undo-buy'; box.setAttribute('role', 'group');
+  const msg = document.createElement('span'); msg.textContent = t('bought');
+  const btn = document.createElement('button'); btn.type = 'button'; btn.textContent = t('undo');
+  btn.addEventListener('click', () => { closeUndo(); fn(); SFX.tap(); });
+  box.append(msg, btn); document.body.appendChild(box);
+  announce(t('bought'));
+  undoTimer = setTimeout(closeUndo, 5000);
+}
+function closeUndo() { clearTimeout(undoTimer); const b = document.getElementById('undo-buy'); if (b) b.remove(); }
 function buyTheme(id) {
   const th = SHOP_THEMES.find((x) => x.id === id); const p = P();
   if (!th || p.owned.themes.includes(id)) return;
-  if (p.stars < th.price) { showBubble('😢', t('locked', { n: th.price - p.stars })); return; }
+  if (p.stars < th.price) { sayFar(th.price - p.stars, t(th.key)); return; }
+  endPreview();
+  const prevTheme = G().theme, firstBuy = !!p.firstBuy;
   p.stars -= th.price; p.owned.themes.push(id); p.firstBuy = true;
   G().theme = id;
   checkAch(); saveState(); applySettings(); renderShop(); renderMascot(); refreshChrome(); SFX.cash(); confetti(20);
+  offerUndo(() => { p.stars += th.price; p.owned.themes = p.owned.themes.filter((x) => x !== id); p.firstBuy = firstBuy; G().theme = prevTheme; saveState(); applySettings(); renderShop(); renderMascot(); refreshChrome(); });
 }
 function buyHat(id) {
   const h = SHOP_HATS.find((x) => x.id === id); const p = P();
   if (!h || p.owned.hats.includes(id)) return;
-  if (p.stars < h.price) { showBubble('😢', t('locked', { n: h.price - p.stars })); return; }
+  if (p.stars < h.price) { sayFar(h.price - p.stars, t(h.key)); return; }
+  const prevHat = p.hat, firstBuy = !!p.firstBuy;
   p.stars -= h.price; p.owned.hats.push(id); p.firstBuy = true; p.hat = id;
   checkAch(); saveState(); renderShop(); renderMascot(); refreshChrome(); SFX.cash(); confetti(20);
+  offerUndo(() => { p.stars += h.price; p.owned.hats = p.owned.hats.filter((x) => x !== id); p.firstBuy = firstBuy; p.hat = prevHat; saveState(); renderShop(); renderMascot(); refreshChrome(); });
 }
 /* v2.5: compra de mascote adulta */
 function buyPet(id) {
   const pt = PETS.find((x) => x.id === id); const p = P();
   if (!pt || p.owned.pets.includes(id)) return;
-  if (p.stars < pt.price) { showBubble('😢', t('locked', { n: pt.price - p.stars })); return; }
+  if (p.stars < pt.price) { sayFar(pt.price - p.stars, t(pt.key)); return; }
   p.stars -= pt.price; p.owned.pets.push(id); p.firstBuy = true; p.firstPet = true; p.pet = id;
   checkAch(); saveState(); renderShop(); renderMascot(); refreshChrome();
   showOverlay('<div class="ov-emoji">' + pt.emoji + '</div><h3>' + t('pet_new', { n: t(pt.key) }) + '</h3><button class="big-btn" data-close="1">' + t('ok') + '</button>');
@@ -932,7 +1140,7 @@ function buyPet(id) {
 }
 function buySticker() {
   const p = P();
-  if (p.stars < 5) { showBubble('😢', t('locked', { n: 5 - p.stars })); return; }
+  if (p.stars < 5) { showBubble('🦊', t('far', { n: 5 - p.stars })); return; }
   p.stars -= 5;
   const i = rand(0, STICKERS.length - 1);
   let msg;
@@ -1002,7 +1210,7 @@ function renderProfilePop() {
   wrap.innerHTML = '<b id="pop-who">' + t('who') + '</b>' + DB.profiles.map((pf) => {
     const cur = pf.id === DB.activeId;
     return '<button class="prof-row' + (cur ? ' cur' : '') + '" data-pid="' + escHtml(pf.id) + '"' + (cur ? ' aria-current="true"' : '') + '>' +
-      '<span class="pf-av">' + escHtml(pf.avatar) + '</span><span class="pf-name">' + escHtml(pf.name) + '</span>' +
+      '<span class="pf-av">' + escHtml(pf.avatar) + '</span><span class="pf-name">' + escHtml(pName(pf)) + '</span>' +
       (cur ? '<span class="pf-cur" aria-hidden="true">✓</span>' : '') +
       '<span class="pf-st">⭐ ' + pf.stars + ' · ⚡ ' + (pf.points || 0) + '</span></button>';
   }).join('') +
@@ -1013,7 +1221,7 @@ function renderProfilePop() {
       : '<small class="max-note">' + t('max4') + '</small>');
   $$('#pop-profile .prof-row').forEach((b) => b.addEventListener('click', () => {
     DB.activeId = b.dataset.pid; saveState(true);
-    closePopovers(); renderHome(); applyLang(); toast(t('switch_to', { n: P().name })); SFX.tap();
+    closePopovers(); renderHome(); applyLang(); toast(t('switch_to', { n: pName(P()) })); SFX.tap();
   }));
   $$('#pop-profile .av').forEach((b) => b.addEventListener('click', () => { markPicked($$('#pop-profile .av'), b); SFX.tap(); }));
   const add = $('#btn-add-prof');
@@ -1080,8 +1288,6 @@ function bindStatic() {
   $('#btn-repeat').addEventListener('click', () => { ensureAudio(); SFX.tap(); if (R.current) TTS.speak(R.current.tts, { calm: true }); });
   $('#btn-shop').addEventListener('click', () => { SFX.tap(); renderShop(); show('shop'); });
   $('#btn-ach').addEventListener('click', () => { SFX.tap(); renderAch(); show('ach'); });
-  $('#shop-back').addEventListener('click', () => { SFX.tap(); renderHome(); show('home'); });
-  $('#ach-back').addEventListener('click', () => { SFX.tap(); renderHome(); show('home'); });
   $('#btn-sticker').addEventListener('click', () => { ensureAudio(); buySticker(); });
   $('#sp-review').addEventListener('click', () => { ensureAudio(); SFX.tap(); startReview(); });
   $('#sp-boss').addEventListener('click', () => { ensureAudio(); SFX.tap(); startBoss(); });
@@ -1094,11 +1300,6 @@ function bindStatic() {
     startDuel(a1, a2);
   });
   $('#duel-back').addEventListener('click', () => { SFX.tap(); renderHome(); show('home'); });
-  $$('.diff-chip').forEach((chip) => chip.addEventListener('click', () => {
-    ensureAudio(); SFX.tap();
-    G().diffMode = chip.dataset.d === 'auto' ? 'auto' : Number(chip.dataset.d);
-    saveState(); renderDiffChips();
-  }));
   // CSP: overlays usam data-close em vez de onclick inline
   document.addEventListener('click', (e) => {
     const b = e.target && e.target.closest ? e.target.closest('[data-close]') : null;
@@ -1127,7 +1328,7 @@ function bindStatic() {
    Fecha o balão aberto ou volta da tela para o início, como o botão da própria
    tela; no início, o engine minimiza o app. Com um aviso aberto não faz nada:
    o aviso tem os próprios botões, e a pausa de descanso não pode ser pulada. */
-const BACK_BUTTONS = { game: '#btn-home', end: '#btn-menu', shop: '#shop-back', ach: '#ach-back', duel: '#duel-back' };
+const BACK_BUTTONS = { game: '#btn-home', end: '#btn-menu', shop: '#btn-home', ach: '#btn-home', duel: '#duel-back' };
 function onBackButton() {
   if (overlayOpen()) return true;
   if ($$('.popover').some((p) => !p.classList.contains('hidden'))) { closePopovers(); return true; }
@@ -1146,6 +1347,8 @@ function onKey(e) {
     // depois" clicava também no primeiro botão do modal
     const tag = e.target && e.target.tagName;
     if (e.key === 'Enter' && tag !== 'BUTTON' && tag !== 'INPUT') { const b = $('#overlay-card .big-btn:not([disabled])'); if (b) b.click(); }
+    /* Esc fecha os avisos de um botão só (nível novo, figurinha, mascote); senha e apagar ficam como estão */
+    if (e.key === 'Escape') { const cl = $$('#overlay-card [data-close]'); if (cl.length === 1 && $$('#overlay-card button').length === 1) cl[0].click(); }
     return;
   }
   if ($('#screen-game').classList.contains('active')) {
@@ -1168,6 +1371,99 @@ setInterval(() => {
   if (lim > 0 && sessionSec >= lim * 60) breakOverlay();
 }, 1000);
 
+/* ==================== canais oficiais, rodapé e cookies (v2.7) ====================
+   Criança não sai do jogo sozinha: todo link externo e toda escolha que LIGA algo
+   passam antes por uma conferência para adultos. Recusar é sempre imediato. */
+function openExternal(url) {
+  const a = document.createElement('a');
+  a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+function adultCheck(onOk) {
+  const a = rand(12, 19), b = rand(13, 19), want = String(a * b);
+  showOverlay('<div class="ov-emoji">🔒</div><h3>' + t('ad_title') + '</h3><p>' + t('ad_q', { q: a + ' × ' + b }) + '</p>' +
+    '<input id="ad-in" class="ad-input" type="text" inputmode="numeric" autocomplete="off" aria-label="' + t('ad_label') + '">' +
+    '<div class="gate-err" id="ad-err" role="alert"></div>' +
+    '<div class="ov-actions"><button class="big-btn" id="ad-ok">' + t('ok') + '</button>' +
+    '<button class="big-btn alt" data-close="1">' + t('ck_cancel') + '</button></div>');
+  const go = () => {
+    if ($('#ad-in').value.trim() === want) { hideOverlay(); onOk(); }
+    else { $('#ad-err').textContent = t('ad_wrong'); $('#ad-in').select(); }
+  };
+  $('#ad-ok').addEventListener('click', go);
+  $('#ad-in').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+}
+function ckSaved(stats, track) {
+  Consent.set(stats, track); saveState(true);
+  toast(t('ck_saved'));
+}
+function openConsentPrefs() {
+  const row = (id, title, desc, on, locked) =>
+    '<div class="ck-row"><div class="ck-txt"><b>' + title + '</b><span>' + desc + '</span></div>' +
+    '<input type="checkbox" class="ck-switch" id="' + id + '" aria-label="' + title + '"' + (on ? ' checked' : '') + (locked ? ' disabled' : '') + '></div>';
+  showOverlay('<h3>' + t('ck_title') + '</h3><p class="ck-note">' + t('ck_note') + '</p>' +
+    row('ck-ess', t('ck_ess'), t('ck_ess_d'), true, true) +
+    row('ck-stats', t('ck_stats'), t('ck_stats_d'), Consent.allows('stats'), false) +
+    row('ck-track', t('ck_track'), t('ck_track_d'), Consent.allows('track'), false) +
+    '<div class="ov-actions"><button class="big-btn" id="ck-save">' + t('ck_save') + '</button>' +
+    '<button class="big-btn alt" data-close="1">' + t('ck_cancel') + '</button></div>');
+  $('#ck-save').addEventListener('click', () => {
+    const st = $('#ck-stats').checked, tr = $('#ck-track').checked;
+    if (!st && !tr) { hideOverlay(); ckSaved(false, false); return; }
+    hideOverlay(); adultCheck(() => ckSaved(st, tr));
+  });
+}
+function bindLegal() {
+  $$('.legal-link[data-legal]').forEach((btn) => btn.addEventListener('click', () => {
+    SFX.tap(); adultCheck(() => openExternal(LEGAL[btn.dataset.legal]));
+  }));
+  const c = $('#btn-consent');
+  if (c) c.addEventListener('click', () => { SFX.tap(); openConsentPrefs(); });
+}
+
+/* v2.8.0: som e imagem no mesmo instante. O toque soa quando o dedo desce (o botão afunda nesse frame);
+   o SFX.tap() do click, logo depois, é descartado para não soar duas vezes. As respostas têm som próprio. */
+let tapDownAt = 0;
+(function () {
+  const raw = SFX.tap;
+  SFX.tap = function () { if (tapDownAt && Date.now() - tapDownAt < 1000) { tapDownAt = 0; return; } return raw.apply(this, arguments); };
+  document.addEventListener('pointerdown', (e) => {
+    const b = e.target && e.target.closest ? e.target.closest('button, .mode-card, a.mini-btn') : null;
+    if (!b || b.disabled || b.getAttribute('aria-disabled') === 'true' || b.closest('#answers') || b.classList.contains('ans')) return;
+    ensureAudio(); tapDownAt = 0; raw.call(SFX); tapDownAt = Date.now();
+  }, true);
+})();
+
+/* ---------- boas-vindas (N1, v2.8.0) ----------
+   Primeira abertura: avatar, nome falado e a primeira conta, num cartão só. "Agora não" fecha até a próxima abertura;
+   some de vez quando a criança joga uma rodada ou o nome deixa de ser o padrão. */
+function needsWelcome() {
+  const p = P();
+  return !!p && DB.profiles.length === 1 && p.rounds === 0 && p.name === DEFAULT_NAME;
+}
+function showWelcome() {
+  const p = P(); if (!p) return;
+  let av = p.avatar || AVATARS[0];
+  showOverlay('<div class="ov-emoji" aria-hidden="true">👋</div><h3>' + t('wl_title') + '</h3>' +
+    '<div class="av-row" role="group" aria-label="' + escHtml(t('a_avatar')) + '">' + AVATARS.map((a) => '<button type="button" class="av' + (a === av ? ' sel' : '') + '" aria-pressed="' + (a === av) + '" data-wav="' + a + '">' + a + '</button>').join('') + '</div>' +
+    '<label class="wl-lbl" for="wl-name">' + t('wl_name') + '</label>' +
+    '<input id="wl-name" class="ad-input" type="text" maxlength="20" autocomplete="off">' +
+    '<div class="ov-actions"><button type="button" class="big-btn" id="wl-go">' + t('wl_go') + '</button>' +
+    '<button type="button" class="big-btn alt" id="wl-hear">🔊 ' + t('wl_hear') + '</button>' +
+    '<button type="button" class="ck-btn ck-link" id="wl-skip">' + t('wl_skip') + '</button></div>');
+  const nm = () => cleanName(($('#wl-name').value || '').trim());
+  $$('#overlay-card [data-wav]').forEach((b) => b.addEventListener('click', () => { av = b.dataset.wav; markPicked($$('#overlay-card [data-wav]'), b); }));
+  $('#wl-hear').addEventListener('click', () => { ensureAudio(); const n = nm(); TTS.speak(t('wl_hello', { name: n || pName(P()) })); });
+  $('#wl-skip').addEventListener('click', () => { hideOverlay(); });
+  $('#wl-go').addEventListener('click', () => {
+    ensureAudio(); const n = nm(); const pr = P();
+    pr.avatar = av; if (n) pr.name = n;
+    saveState(true); hideOverlay(); renderHome(); refreshChrome();
+    if (n) TTS.speak(t('wl_hello', { name: n }));
+    startRound('contar');
+  });
+}
+
 /* ---------- boot ---------- */
 async function boot() {
   await initDB();
@@ -1175,23 +1471,25 @@ async function boot() {
   applyLang();
   applySettings();
   bindStatic();
+  bindLegal();
   ensureMissions();
   renderHome();
   show('home');
+  // v2.8.0: o aviso de cookies não aparece mais para a criança; ele fica no painel (options.js)
   // v2.4.1: selo de versão visível no topo — confirmação instantânea da build
   const vb = $('#cc-ver');
   if (vb) {
     let vv = '';
     try { if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getManifest) vv = chrome.runtime.getManifest().version; } catch (e) { /* sem extensão */ }
     if (!vv) { const mt = document.querySelector('meta[name="cc-version"]'); if (mt) vv = mt.content; }
-    vb.textContent = 'v' + (vv || (window.ccVersion ? window.ccVersion() : '2.6.3'));
+    vb.textContent = 'v' + (vv || (window.ccVersion ? window.ccVersion() : '2.8.0'));
   }
   // v2.4 (A-198): saudação cordial com o nome — o 1º toque libera o áudio no navegador
   const greet = () => {
     const home = $('#screen-home');
     // não atropela um balão que o próprio toque abriu (ex.: próximo prêmio)
     if (!home || !home.classList.contains('active') || overlayOpen() || !$('#bubble').classList.contains('hidden')) return;
-    const line = tpick('greet', { name: P().name });
+    const line = tpick('greet', { name: pName(P()) });
     showBubble(mascotStage().emoji, line);
     TTS.speak(line);
   };
@@ -1199,14 +1497,16 @@ async function boot() {
   if (HAS_EXT && typeof chrome !== 'undefined' && chrome.tabs) {
     try { chrome.runtime.sendMessage('cc-page-ready', () => void chrome.runtime.lastError); } catch (e) { /* ignora */ }
   }
+  // ADR-001: outra página gravou o progresso (painel, nova aba, outra aba da PWA)
+  onExternalSave(() => { externalPending = true; adoptIfSafe(); });
   // S32: adotar mudanças remotas
   try {
-    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged && G().sync) {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged) {
       chrome.storage.onChanged.addListener((ch, area) => {
-        if (area === 'sync' && ch.cc_state_sync) {
-          const remote = parseDB(JSON.stringify(ch.cc_state_sync.newValue));
-          if (remote && remote.updatedAt > DB.updatedAt + 500) { DB = keepLocalSecrets(remote, DB); renderHome(); }
-        }
+        if (area !== 'sync' || !G().sync || !Object.keys(ch).some((k) => k === 'cc_state_sync' || k.indexOf('cc_sync_') === 0)) return;
+        loadSyncDB().then((remote) => {
+          if (remote && remote.updatedAt > DB.updatedAt + 500) { remotePending = remote; adoptIfSafe(); }
+        });
       });
     }
   } catch (e) { /* ignora */ }

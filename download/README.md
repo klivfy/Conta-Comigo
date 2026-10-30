@@ -1,16 +1,31 @@
 # Conta Comigo — Arquivos gerados
 
 Extensão de navegador (Chrome + Firefox) de matemática lúdica para crianças a partir de 4 anos.
-Versão atual: **v2.6.3**
+Versão atual: **v2.8.0**
 
 ## ⚠️ A extensão parece igual? Como atualizar e confirmar
 
-Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo parece o de antes, o navegador provavelmente ainda está com a build antiga. Para confirmar em 1 segundo: abra o jogo e olhe o **topo da tela** — desde a v2.4.1 há um **selo de versão** (ex.: `v2.6.3`) ao lado de 🔥. Sem selo = build anterior à 2.4.1.
+Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo parece o de antes, o navegador provavelmente ainda está com a build antiga. Para confirmar em 1 segundo: abra o jogo e olhe o **topo da tela** — desde a v2.4.1 há um **selo de versão** (ex.: `v2.8.0`) ao lado de 🔥. Sem selo = build anterior à 2.4.1.
 
-**Importante sobre o progresso:** recarregar a extensão (botão ↻ em `chrome://extensions`) **preserva** estrelas, conquistas e perfis; **remover e reinstalar apaga**. Antes de remover, baixe o **backup datado** no botão 💾 da tela de Conquistas ou no painel dos responsáveis — depois reimporte no mesmo painel.
+**Importante sobre o progresso:** recarregar a extensão (botão ↻ em `chrome://extensions`) **preserva** estrelas, conquistas e perfis; **remover e reinstalar apaga**. Antes de remover, salve um **backup datado** pelo 💾 da tela de Conquistas ou pelo painel dos responsáveis; depois restaure em *Dados → Restaurar em outro aparelho*.
 
-**Atualizar (Chrome/Edge/Brave):** com a extensão ainda instalada, clique em ↻ Recarregar no cartão da extensão e escolha a pasta nova descompactada (preserva tudo). Ou: backup → remover → carregar o zip novo → importar o backup.
+**Atualizar (Chrome/Edge/Brave):** com a extensão ainda instalada, clique em ↻ Recarregar no cartão da extensão e escolha a pasta nova descompactada (preserva tudo). Ou: salvar o backup → remover → carregar o zip novo → restaurar o backup.
 **Atualizar (Firefox):** `about:debugging#/runtime/this-firefox` → *Recarregar*.
+
+## Novidades da v2.8.0
+
+- **Jogar agora**: um toque grande na tela inicial com a sugestão do dia; boas-vindas com o nome da criança falado.
+- **Fim de rodada e loja**: quantas estrelas faltam para o mascote mudar; a loja mostra primeiro o que já é da criança; missões e conquistas dizem o objetivo ao toque.
+- **Contar arrastando** (protótipo, só em Contar): o objeto vai para a cesta e o jogo fala o número. Tocar ou Enter continua funcionando.
+- **Painel dos responsáveis**: resumo da semana em uma frase; mapa de domínio só com 20 questões; semanas com datas.
+- **Backup**: salvar e restaurar. Restaurar mostra quem, quantas estrelas e a data antes de trocar, avisa se o backup é mais antigo, e dá para desfazer por 7 dias.
+- **Vibração leve** (só nos apps Android e iPhone): pode ser desligada no painel.
+
+- **Progresso protegido**: o jogo, o painel dos responsáveis e a nova aba não se sobrescrevem mais (antes, um painel aberto podia devolver as estrelas ao valor antigo).
+- **Sincronização por perfil**: funciona com vários perfis (antes falhava em silêncio acima de 8 KB) e o painel mostra se deu certo.
+- **Acessibilidade**: o leitor de tela não diz a resposta ao contar; contar funciona pelo teclado; Comparar mantém A, B e = na ordem das caixas; contadores da barra com nome; Esc fecha avisos; balão de fala fica mais tempo sem voz.
+- **Por região**: moeda do modo Dinheiro (real, euro, dólar, libra, peso ou só moedas) e voz e palavra do troco em espanhol.
+- **Painel**: tom de voz por perfil mostra o valor certo; "Modos jogados" no lugar do "Mistão x/12".
 
 ## Novidades da v2.6.3
 
@@ -25,7 +40,7 @@ Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo par
 - **Responsividade total** — o mesmo jogo se adapta de **320px** (celular pequeno) a **1920px+** (monitor): herói empilha em telas estreitas, tipografia fluida (`clamp`), grades que se reorganizam e nada transborda (testado em 320/360/768/844×390/1440/1920).
 - **Modo paisagem (celular deitado)** — quando a altura é curta, topbar compacta, herói em linha única e jogo encaixa sem rolagem.
 - **Toque aprimorado** — alvos ≥44px, `touch-action: manipulation` (sem atraso de 300ms/zoom duplo) e feedback por pressão em telas sem hover.
-- **Android/PWA** — `dvh` + `safe-area` (notch/barra de gestos) e `viewport-fit=cover` no jogo.
+- **Apps e PWA** — `dvh` + `safe-area` (notch/barra de gestos) e `viewport-fit=cover` no jogo.
 - **Vozes humanizadas (Fase 2 do estudo de voz)** — lista de vozes **agrupada por qualidade** (🌟 naturais → ⚡ neurais/rede → padrão → básicas), detector que prioriza "Online (Natural)" do Edge, Premium/Enhanced da Apple e Google de rede e afasta motores robóticos (eSpeak, Pico…), **nota "Voz ativa"** nas opções e **guia gratuito** para obter vozes mais humanas por plataforma (Edge, Windows, Android, iPhone/Mac, Linux/Piper) — tudo em PT/EN/ES.
 - Estudo completo: `Conta-Comigo-Estudo-Vozes-Humanizadas-v2.pdf` (comparativo e roteiro).
 
@@ -43,9 +58,9 @@ Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo par
 
 | Arquivo | Uso |
 |---|---|
-| `conta-comigo-chrome-2.6.3.zip` | Pacote para Chrome/Edge/Brave (Manifest V3, service worker) |
-| `conta-comigo-firefox-2.6.3.zip` | Pacote para Firefox computador **e Android** (event page + `gecko_android` 128+) |
-| `conta-comigo-pwa-android-2.6.3.zip` | **Android/PWA**: jogo instalável e offline (manifest + service worker + ícones maskable) — hospedar em https e "Adicionar à tela inicial" |
+| `conta-comigo-chrome-2.8.0.zip` | Pacote para Chrome/Edge/Brave (Manifest V3, service worker) |
+| `conta-comigo-firefox-2.8.0.zip` | Pacote para Firefox computador **e Android** (event page + `gecko_android` 128+) |
+| `conta-comigo-pwa-2.8.0.zip` | **Web/PWA** (computador e iPhone): instalável e offline. O Android não usa a PWA: lá o jogo é o app local da Play Store |
 
 - Instalação e novidades: abra `conta-comigo/demo.html` no navegador.
 - Pasta `conta-comigo/` = fonte única (build Chromium). As pastas `conta-comigo-firefox/` e `conta-comigo-pwa/` são geradas por `python scripts/build_packages.py` e `python scripts/build_pwa.py` e não ficam no Git.

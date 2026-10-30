@@ -2,7 +2,9 @@
 /* Carrega i18n.js + engine.js num contexto isolado, com stubs mínimos de
    navegador, do mesmo jeito que as páginas fazem (scripts globais, sem bundler).
    opts.subtle: false simula contexto sem WebCrypto (fallback em JS puro).
-   opts.capacitor: ponte simulada do app (window.Capacitor) para os caminhos nativos. */
+   opts.capacitor: ponte simulada do app (window.Capacitor) para os caminhos nativos.
+   opts.store: objeto que faz de localStorage, para duas "páginas" dividirem o mesmo armazenamento.
+   opts.chrome: stub de chrome.* (extensão), para testar chrome.storage. */
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
@@ -13,12 +15,13 @@ const JS = path.join(__dirname, '..', 'download', 'conta-comigo', 'js');
 function loadEngine(opts) {
   const o = opts || {};
   const media = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
-  const store = {};
+  const store = o.store || {};
   const ctx = {
     console, setTimeout, clearTimeout, TextEncoder, Uint8Array, Int32Array,
     crypto: o.subtle === false
       ? { getRandomValues: (a) => nodeCrypto.getRandomValues(a) }
       : nodeCrypto.webcrypto,
+    chrome: o.chrome,
     window: { matchMedia: media, Capacitor: o.capacitor || null, addEventListener() {}, removeEventListener() {} },
     history: { back() { ctx.__backs = (ctx.__backs || 0) + 1; } },
     document: {

@@ -5,7 +5,7 @@ Parte da PWA gerada por build_pwa.py (mesmo motor, mesmo index.html) e grava em
 native/ios/www/ uma cópia sem o que não serve dentro do app (capacitor_www em
 cc_build.py, o mesmo do Android):
   - sem service worker (o WKWebView do Capacitor já serve tudo do pacote, offline);
-  - sem manifest e sem o leia-me do Android.
+  - sem manifest e sem o leia-me.
 Também grava native/ios/resources/icon-1024.png (ícone da App Store, sem alfa).
 
 Uso: python3 scripts/build_ios_www.py   (roda o build_pwa.py antes, se preciso)

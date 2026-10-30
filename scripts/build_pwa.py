@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""v2.5 — gera o pacote Android/PWA do Conta Comigo.
+"""v2.7 — gera a PWA do Conta Comigo (web, escolas, base do Windows e do iPhone).
+
+O Android NÃO é plataforma da PWA: lá o jogo roda como app local (Capacitor, dentro do
+AAB), sem depender de site, de rede ou de service worker.
 
 Cria download/conta-comigo-pwa/ autocontido (sem paths ../), com:
   - index.html (jogo completo, meta tags PWA, registro de service worker)
@@ -7,9 +10,9 @@ Cria download/conta-comigo-pwa/ autocontido (sem paths ../), com:
   - icons/ (192/512 + maskable 192/512 gerados por PIL)
   - manifest.webmanifest (instalável: standalone, ícones, theme-color)
   - sw.js (cache-first do app shell — funciona offline)
-  - leia-me-android.md (3 caminhos de instalação no Android)
+  - leia-me.md (onde usar a PWA e por que o Android ficou de fora)
 
-Saída: download/conta-comigo-pwa/ e conta-comigo-pwa-android-<VERSAO>.zip
+Saída: download/conta-comigo-pwa/ e conta-comigo-pwa-<VERSAO>.zip
 """
 import glob, hashlib, json, os, math, shutil, sys, zipfile
 
@@ -42,7 +45,16 @@ with open(os.path.join(OUT, "js", "boot.js"), "w", encoding="utf-8") as f:
     f.write(boot_src + """
 /* PWA: o jogo é index.html (o “voltar” das opções usa esta rota) */
 window.CC_GAME_URL = 'index.html';
-if ('serviceWorker' in navigator) {
+/* Android não é plataforma da PWA: lá o jogo é o app local da Google Play. Em navegador
+   Android a página não oferece instalação e remove o service worker de quem já instalou. */
+const ANDROID_WEB = /Android/i.test(navigator.userAgent || '');
+if (ANDROID_WEB) {
+  document.querySelectorAll('link[rel="manifest"], meta[name="mobile-web-app-capable"]').forEach((el) => el.remove());
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then((rs) => rs.forEach((r) => r.unregister())).catch(() => { /* ignora */ });
+  }
+}
+if ('serviceWorker' in navigator && !ANDROID_WEB) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => { /* offline opcional */ });
   });
@@ -131,46 +143,39 @@ self.addEventListener('fetch', (e) => {
 """.replace('__VER__', CACHE_KEY).replace('__ASSETS__', json.dumps(ASSETS))
 open(os.path.join(OUT, "sw.js"), "w", encoding="utf-8").write(sw)
 
-# ---------- 5) leia-me-android.md ----------
-readme = f"""# Conta Comigo {VERSION} — Android
+# ---------- 5) leia-me.md ----------
+readme = f"""# Conta Comigo {VERSION} — PWA
 
-Três caminhos para usar no Android (do mais simples ao mais completo):
+Versão web instalável e offline do jogo, para navegadores de **computador** e para o
+**iPhone/iPad** (Safari: Compartilhar, Adicionar à Tela de Início).
 
-## 1) PWA instalável (recomendado — Chrome ou Firefox no Android)
-1. Hospede esta pasta em qualquer endereço **https** (GitHub Pages, Netlify, Vercel, servidor da escola…).
-2. Abra o endereço no Chrome do Android.
-3. Toque em **⋮ → Adicionar à tela inicial** (ou o aviso "Instalar app" do próprio Chrome).
-4. O Conta Comigo abre em tela cheia, como um app nativo, e **funciona offline**
-   (o service worker `sw.js` guarda todo o app no cache).
+## E no Android?
+O Android **não usa a PWA**. Lá o Conta Comigo é um app local da Google Play: o jogo vai
+**dentro do pacote**, abre sem internet desde o primeiro toque e não depende deste site.
+Em navegador Android esta página não oferece instalação e não guarda cache offline.
 
-## 2) Extensão no Firefox para Android
-- Use o pacote `conta-comigo-firefox-{VERSION}.zip` publicado no **addons.mozilla.org (AMO)**.
-- O manifest já declara `gecko_android` (Firefox 113+) e o jogo abre em aba normal no celular.
-- Instale pelo Firefox do Android pesquisando "Conta Comigo" no AMO.
-
-## 3) App da Google Play
-- O app da Play Store (`native/android/` no repositório, Capacitor) leva este mesmo jogo
-  **dentro do pacote**: não depende desta pasta estar hospedada e funciona sem internet
-  desde a primeira abertura.
-- O app usa o mesmo código — atualizações do jogo valem para os 3 caminhos.
+## Como hospedar
+1. Publique esta pasta em um endereço **https** (GitHub Pages, Netlify, servidor da escola…).
+2. Abra o endereço no navegador e use **Instalar** (Chrome/Edge) ou **Adicionar à Tela de Início** (Safari).
+3. O service worker `sw.js` guarda o app no cache e ele passa a funcionar offline.
 
 ## Privacidade
 Tudo roda **local no dispositivo** (sem servidores, sem contas, sem anúncios).
-O progresso fica no armazenamento do app; em PWA, "Limpar dados do site" apaga —
+O progresso fica no armazenamento do navegador; "Limpar dados do site" apaga —
 use o backup nas opções do painel dos responsáveis.
 
 ## Conteúdo desta pasta
 - `index.html` — o jogo (o mesmo motor das builds de extensão)
 - `manifest.webmanifest` — identidade do app instalável
 - `sw.js` — cache offline
-- `icons/` — ícones 192/512 e maskable (Android adaptive)
+- `icons/` — ícones 192/512 e maskable
 - `css/`, `js/` — estilos e motor compartilhados
 """
-open(os.path.join(OUT, "leia-me-android.md"), "w", encoding="utf-8").write(readme)
+open(os.path.join(OUT, "leia-me.md"), "w", encoding="utf-8").write(readme)
 
 # ---------- 6) zip ----------
-zip_path = os.path.join(DL, f"conta-comigo-pwa-android-{VERSION}.zip")
-for old in glob.glob(os.path.join(DL, "conta-comigo-pwa-android-*.zip")):
+zip_path = os.path.join(DL, f"conta-comigo-pwa-{VERSION}.zip")
+for old in glob.glob(os.path.join(DL, "conta-comigo-pwa-*.zip")) + glob.glob(os.path.join(DL, "conta-comigo-pwa-android-*.zip")):
     os.remove(old)  # mantém só o pacote da versão atual (como build_packages.py)
 with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
     for root, _, files in os.walk(OUT):

@@ -1,6 +1,6 @@
 # Conta Comigo — plataformas e mercados
 
-Relatório de presença futura · 28/10/2026 · versão do jogo 2.6.3
+Relatório de presença futura · 28/10/2026 · versão do jogo 2.8.0
 
 ## 1. Resumo
 
@@ -34,15 +34,15 @@ Detalhes em [`IDENTIFICADORES.md`](IDENTIFICADORES.md). Em resumo:
   - Chrome e Edge geram o próprio ID.
   - A identidade MSIX vem da Partner Center.
   - A PWA é identificada pela URL.
-- **Arquivos:** `conta-comigo-<plataforma>-<versão>[-<arquitetura>][-<variante>].<ext>`. Os do Windows foram renomeados nesta versão, de `Conta-Comigo-2.6.2-x64.exe` para `conta-comigo-windows-2.6.3-x64-instalador.exe`.
+- **Arquivos:** `conta-comigo-<plataforma>-<versão>[-<arquitetura>][-<variante>].<ext>`. Os do Windows foram renomeados nesta versão, de `Conta-Comigo-2.6.2-x64.exe` para `conta-comigo-windows-2.6.4-x64-instalador.exe`.
 
 ## 3. Estado atual por plataforma
 
 | Plataforma | Pacote | Identificador | Nome exibido | Idiomas da listagem | Estado |
 |---|---|---|---|---|---|
-| **Chrome / Chromium** | `conta-comigo-chrome-2.6.3.zip` (MV3, service worker) | gerado pela loja | `_locales`: pt-BR (padrão), en, es | textos e imagens prontos nos 3 | Pronto para enviar |
+| **Chrome / Chromium** | `conta-comigo-chrome-2.8.0.zip` (MV3, service worker) | gerado pela loja | `_locales`: pt-BR (padrão), en, es | textos e imagens prontos nos 3 | Pronto para enviar |
 | **Edge** | o mesmo zip | gerado pela Microsoft | igual ao Chrome | prontos nos 3 | Pronto para enviar |
-| **Firefox computador e Android** | `conta-comigo-firefox-2.6.3.zip` (event page, Firefox 128+) | `conta-comigo@klivfy.com` (fixo) | `_locales` nos 3 | prontos nos 3 | 2.6.1 já enviada; 2.6.3 pronta |
+| **Firefox computador e Android** | `conta-comigo-firefox-2.8.0.zip` (event page, Firefox 128+) | `conta-comigo@klivfy.com` (fixo) | `_locales` nos 3 | prontos nos 3 | 2.6.1 já enviada; 2.8.0 pronta |
 | **Windows 10/11** | Electron 44: instalador NSIS, portátil e MSIX/APPX (x64) | `appId` = `com.klivfy.conta.comigo.matematica`; MSIX pela Partner Center | "Conta Comigo" (o pacote não traduz o nome; a listagem da loja traduz) | prontos nos 3 | Build verde; falta a identidade da Partner Center |
 | **Android (Google Play)** | Capacitor 8 com o jogo dentro do app, `.aab` minSdk 24 / target 36 | `com.klivfy.conta.comigo.matematica` | "Conta Comigo", "Count With Me" e "Cuenta Conmigo" (segue o idioma do aparelho) | prontos nos 3 | `.aab` gerado sem assinatura; falta a chave e o app novo no Console |
 | **iPhone e iPad** | Capacitor 8, iOS 15+, família 1,2 | `com.klivfy.conta.comigo.matematica` | "Conta Comigo" | não preparados | Compila no CI; falta conta Apple |
@@ -95,9 +95,9 @@ O jogo já tem os 3 idiomas e escolhe sozinho pelo idioma do navegador ou do sis
 
 | # | Lacuna | Onde | Impacto | Correção sugerida |
 |---|---|---|---|---|
-| L1 | **Modo Dinheiro sempre em reais** ("How many reais…", "¿Cuántos reales…", `R$ ?`) | `engine.js` (`R$`), `i18n.js` (`t_m_coins`, `t_2x2`, `t_change`) | Conteúdo errado para crianças fora do Brasil; revisores de loja e professores percebem | Moeda por região (BRL, EUR, USD, GBP, MXN…) a partir do idioma do sistema, com escolha no painel dos responsáveis; ou moeda genérica ("moedas") como padrão em en e es |
+| L1 ✅ | **Modo Dinheiro sempre em reais** (resolvido na 2.6.4: moeda pela região do aparelho, com escolha no painel) ("How many reais…", "¿Cuántos reales…", `R$ ?`) | `engine.js` (`R$`), `i18n.js` (`t_m_coins`, `t_2x2`, `t_change`) | Conteúdo errado para crianças fora do Brasil; revisores de loja e professores percebem | Moeda por região (BRL, EUR, USD, GBP, MXN…) a partir do idioma do sistema, com escolha no painel dos responsáveis; ou moeda genérica ("moedas") como padrão em en e es |
 | L2 | Só existe **pt-BR** | `i18n.js` | Portugal e África lusófona | Variante pt-PT (vocabulário, "tu", voz pt-PT) |
-| L3 | Voz **es-ES fixa** e vocabulário misto | `TTS_LANG` em `i18n.js` | Fala com sotaque da Espanha para a América Latina | Escolher es-MX/es-US/es-419 pela localidade do sistema; "cambio" ou "vuelto" por região |
+| L3 ✅ | Voz **es-ES fixa** e vocabulário misto (resolvido na 2.6.4: voz e "cambio"/"vuelto" pela região do aparelho; o resto do vocabulário misto, como "computadoras", ficou) | `TTS_LANG` em `i18n.js` | Fala com sotaque da Espanha para a América Latina | Escolher es-MX/es-US/es-419 pela localidade do sistema; "cambio" ou "vuelto" por região |
 | L4 | Voz **en-US fixa** | `TTS_LANG` | Pequeno no Reino Unido e na Austrália | Usar en-GB/en-AU quando o sistema estiver nessa localidade |
 | L5 | Nome no Windows não traduzido ("Conta Comigo"). **No Android já resolvido** (`values-en`/`values-es`, 28/10/2026) | `native/windows/package.json` | Ícone em português para quem usa o Windows em inglês ou espanhol | O MSIX aceita `DisplayName` por idioma |
 | L6 | Listagens das lojas sem pt-PT, en-GB e es-ES separados | `loja/lojas/*.md` | Menor conversão local | Duplicar com ajustes de vocabulário depois de L1 a L3 |
@@ -201,7 +201,7 @@ Desde 28/10/2026 o app Android é um **build com WebView local** (Capacitor), co
 
 | Fase | O que | Depende de |
 |---|---|---|
-| **0 — destravar (dias)** | Ligar o GitHub Pages (política de privacidade e PWA); criar a chave Android e o app novo no Play Console; identidade da Partner Center; enviar Chrome, Edge e Firefox 2.6.3 | Você |
+| **0 — destravar (dias)** | Ligar o GitHub Pages (política de privacidade e PWA); criar a chave Android e o app novo no Play Console; identidade da Partner Center; enviar Chrome, Edge e Firefox 2.8.0 | Você |
 | **1 — conteúdo (1 a 2 semanas)** | L1 (moeda por região) e L3 (voz es-419); baú com figurinha em ordem (ECA Digital); nome traduzido no Windows (L5) | Código |
 | **2 — mais lojas com o mesmo código (1 a 2 semanas)** | Opera (1), Windows ARM64 (11), winget (12), AppImage, Flathub e Snap (16–18), Galaxy Store (21), guias para Google Admin, Intune e Apple School Manager (25, 13, 10) | Fase 0 |
 | **3 — Apple (2 a 3 semanas)** | App Store iPhone e iPad (5) + Mac (6) + Safari (2) | Conta Apple |

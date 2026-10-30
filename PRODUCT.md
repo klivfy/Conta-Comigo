@@ -18,7 +18,7 @@ O jogo ensina os primeiros conceitos de matemática: contagem, comparação, adi
 O jogo é trilíngue (PT/EN/ES), funciona 100% offline e não coleta dados. Cada criança tem perfil próprio, é chamada pelo nome e tem a sua voz preferida. A narração usa a síntese de voz do próprio sistema, escolhendo automaticamente a voz mais humana disponível.
 
 ## Operating Context
-- Distribuído como extensão Chrome/Edge/Firefox (popup 400×600 e página cheia), PWA Android e versão web.
+- Distribuído como extensão Chrome/Edge/Firefox (popup 400×600 e página cheia), app local no Android (sem PWA) e versão web/PWA para computador e iPhone.
 - Uma única fonte em `download/conta-comigo/`, com três variantes de página que precisam ficar sincronizadas: `game.html`, `popup.html` e `web/index.html`.
 - Sessões curtas de 5 a 10 perguntas. O modo calmo e o tempo de tela são definidos pelos responsáveis.
 

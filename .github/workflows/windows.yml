@@ -42,7 +42,7 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path native/windows/app | Out-Null
           Copy-Item download/conta-comigo-pwa/* native/windows/app -Recurse -Force
-          Remove-Item native/windows/app/leia-me-android.md -ErrorAction SilentlyContinue
+          Remove-Item native/windows/app/leia-me.md -ErrorAction SilentlyContinue
           Get-ChildItem native/windows/app | Select-Object Name
 
       - uses: actions/setup-node@v7

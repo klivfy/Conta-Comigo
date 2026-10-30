@@ -28,7 +28,26 @@ function showGate() {
   $('#ge-pwd').placeholder = t('gate_pwd_ph');
   $('#gc-hint').placeholder = t('ob_hint_ph');
   $('#ge-reset-in').placeholder = t('gate_reset_ph');
-  if (has) gateEnterIdle();
+  if (has) gateEnterIdle(); else gateAdultAsk();
+}
+/* v2.8.0: antes de criar a senha, uma conta que criança de 4 a 8 anos não resolve sozinha */
+let gcAdultAnswer = '', gcAdultOk = false;
+function gateAdultAsk() {
+  const a = rand(12, 19), b = rand(13, 19);
+  gcAdultAnswer = String(a * b); gcAdultOk = false;
+  $('#gc-adult').classList.remove('hidden');
+  $('#gc-form').classList.add('hidden');
+  $('#gc-adult-q').textContent = t('ad_title') + '. ' + t('ad_q', { q: a + ' × ' + b });
+  $('#gc-adult-in').value = ''; $('#gc-adult-err').textContent = '';
+}
+function gateAdultCheck() {
+  if ($('#gc-adult-in').value.trim() !== gcAdultAnswer) {
+    $('#gc-adult-err').textContent = t('ad_wrong'); $('#gc-adult-in').select(); return;
+  }
+  gcAdultOk = true;
+  $('#gc-adult').classList.add('hidden');
+  $('#gc-form').classList.remove('hidden');
+  $('#gc-pwd').focus();
 }
 function gateEnterIdle() {
   clearInterval(gateTriesTimer);
@@ -88,6 +107,7 @@ function showContent() {
   renderOptions();
 }
 async function tryCreateGate() {
+  if (!gcAdultOk) return; // o formulário só existe depois da conferência de adulto
   const a = $('#gc-pwd').value || '';
   const b = $('#gc-pwd2').value || '';
   const hint = ($('#gc-hint').value || '').trim();
@@ -152,25 +172,34 @@ function renderOptions() {
   $$('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
   applyI18nLabels(document);
   document.title = t('appName') + ' — ' + t('gate_title');
-  document.documentElement.lang = TTS_LANG[g.lang] || 'pt-BR';
+  document.documentElement.lang = speechLang(g.lang) || 'pt-BR';
   applyTheme(g);
   document.body.classList.toggle('dys', !!g.dys);
 
   // seletor de jogador do painel
   const dp = $('#dash-prof');
-  dp.innerHTML = DB.profiles.map((pf) => '<option value="' + escHtml(pf.id) + '"' + (pf.id === DB.activeId ? ' selected' : '') + '>' + escHtml(pf.avatar + ' ' + pf.name) + '</option>').join('');
+  dp.innerHTML = DB.profiles.map((pf) => '<option value="' + escHtml(pf.id) + '"' + (pf.id === DB.activeId ? ' selected' : '') + '>' + escHtml(pf.avatar + ' ' + pName(pf)) + '</option>').join('');
   renderDash();
   renderProfList();
   paintBackupHint(); // v2.5: estado do backup das conquistas
+  $('#bk-where').textContent = t(FILE_VIA_SHARE ? 'bk_where_app' : 'bk_where_web');
+  paintUndo();
 
   $('#set-diff').value = String(g.diffMode);
   $('#set-unlock').checked = !!g.unlockAll;
   $('#set-newtab').checked = !!g.newtabOn;
-  $('#set-timer').checked = g.timer !== false; // v2.2: ligado por padrão
+  $('#set-timer').checked = !!g.timer; // v2.8.0: desligado por padrão
   $('#set-lang').value = g.lang || 'pt';
   $('#set-mute').checked = !!g.mute;
   $('#set-voice-on').checked = g.voiceOn !== false; // v2.4 (A-186)
   $('#set-sfx-on').checked = g.sfxOn !== false; // v2.4 (A-186)
+  // v2.8.0 (N5): a vibração só existe nos apps; no navegador a opção nem aparece
+  $('#row-haptics').classList.toggle('hidden', !NATIVE_HAPTICS); $('#note-haptics').classList.toggle('hidden', !NATIVE_HAPTICS);
+  $('#set-haptics').checked = g.hapticsOn !== false;
+  paintConsent();
+  const curSel = $('#set-cur');
+  curSel.innerHTML = ['auto'].concat(Object.keys(CURRENCIES)).map((k) => '<option value="' + k + '">' + escHtml(t('cur_' + k)) + '</option>').join('');
+  curSel.value = g.currency || 'auto';
   $('#set-tscale').value = String(g.timeScale || 1); // v2.4 (A-047)
   $('#set-tscale').options[0].text = t('ts_1');
   $('#set-tscale').options[1].text = t('ts_15');
@@ -178,8 +207,8 @@ function renderOptions() {
   $('#set-rm').checked = !!g.reduceMotion; // v2.4 (A-050)
   $('#set-noshop').checked = !!g.shopOff; // v2.4 (A-101)
   $('#set-vol').value = String(Math.round((g.volume != null ? g.volume : 0.9) * 100));
-  $('#set-rate').value = String(Math.round((g.vRate || 0.95) * 100));
-  $('#set-pitch').value = String(Math.round((g.vPitch || 1.15) * 100));
+  $('#set-rate').value = String(Math.round((g.vRate || VOICE_RATE) * 100));
+  $('#set-pitch').value = String(Math.round((g.vPitch || VOICE_PITCH) * 100));
   fillVoices();
   const thSel = $('#set-theme');
   // tema comprado na loja (Oceano, Doces, Neve) aparece no seletor para não ficar em branco
@@ -203,9 +232,10 @@ function renderOptions() {
   $('#set-limit').value = String(g.sessionLimit != null ? g.sessionLimit : 15);
   $('#set-limit').options[0].text = t('no_limit');
   $('#set-sync').checked = !!g.sync;
+  paintSyncStatus();
   renderSec();
   $('#imp-area').placeholder = t('imp_ph');
-  $('#opt-version').textContent = t('version') + ': ' + (window.ccVersion ? window.ccVersion() : '2.6.3');
+  $('#opt-version').textContent = t('version') + ': ' + (window.ccVersion ? window.ccVersion() : '2.8.0');
 }
 
 /* ---------- painel (S26 + S09) ---------- */
@@ -213,35 +243,57 @@ function renderDash() {
   const p = DB.profiles.find((x) => x.id === $('#dash-prof').value) || P();
   const totalQ = p.rights + p.wrongs;
   const acc = totalQ ? Math.round((100 * p.rights) / totalQ) : 0;
-  const stage = p.stars >= 100 ? '🦊' : p.stars >= 30 ? '🐣' : '🥚';
   $('#stat-grid').innerHTML = [
     ['⭐', p.stars, t('d_stars')], ['⚡', p.points || 0, t('d_points')], ['🔥', p.streak || 0, t('d_streak')],
     ['🎮', p.rounds, t('d_rounds')], ['⏱️', Math.round(p.playSec / 60) + ' min', t('d_time')],
-    ['✅', acc + '%', t('d_acc')], [stage, Object.keys(p.played).length + '/12', t('m_mistar')],
+    ['✅', totalQ >= MASTERY_MIN ? acc + '%' : '—', t('d_acc')], ['🎲', modesPlayed(p).n + '/' + modesPlayed(p).total, t('d_modes')],
+    ['📚', p.reviewWins || 0, t('d_reviews')], // v2.8.0: par com os outros 7 (sem cartão sozinho na última linha)
   ].map((s) => '<div class="stat"><b>' + s[1] + '</b><span>' + s[0] + ' ' + s[2] + '</span></div>').join('');
 
-  // mapa de domínio S09
+  // v2.8.0 (10.4.2): resumo em uma frase com a próxima ação
+  const sm = parentSummary(p);
+  $('#opt-summary').textContent = pName(p) + ': ' + (sm.rounds
+    ? (sm.rounds === 1 ? t('sum_week1') : t('sum_week', { n: sm.rounds })) + (sm.best ? ' ' + t('sum_best', { m: t('m_' + sm.best) }) : '') + (sm.next ? ' ' + t('sum_next', { m: t('m_' + sm.next) }) : '')
+    : t('sum_idle')) + (needsBackupNudge(p) ? ' ' + t('sum_backup') : '');
+
+  // mapa de domínio S09 (v2.8.0, 10.1.5): só dá veredito com 20 questões no modo; rótulo em texto, não só cor
   $('#map-rows').innerHTML = Object.keys(MODES).map((m) => {
     const lv = p.lvl[m] || {};
     let r = 0, w = 0;
     Object.keys(lv).forEach((k) => { r += lv[k].r; w += lv[k].w; });
-    const accM = (r + w) ? Math.round(100 * r / (r + w)) : 0;
+    const lab = masteryLabel(r, w);
+    const accM = Math.round(100 * r / Math.max(1, r + w));
     const dots = [1, 2, 3, 4, 5].map((l) => {
       const b = lv[l];
-      if (!b || (b.r + b.w) === 0) return '<span class="lv-dot">' + l + '</span>';
+      if (!b || (b.r + b.w) === 0) return '<span class="lv-dot" role="img" aria-label="' + escHtml(t('lv_none', { l })) + '">' + l + '</span>';
       const a = b.r / (b.r + b.w);
-      return '<span class="lv-dot ' + (a >= 0.8 ? 'g' : a >= 0.5 ? 'y' : 'r') + '">' + l + '</span>';
+      return '<span class="lv-dot ' + (a >= 0.8 ? 'g' : a >= 0.5 ? 'y' : 'r') + '" role="img" aria-label="' + escHtml(t('lv_acc', { l, p: Math.round(100 * a) })) + '">' + l + '</span>';
     }).join('');
+    const txt = lab === 'few' ? t('mast_few', { n: r + w }) : t('mast_' + lab) + ' · ' + t('mast_acc', { p: accM });
     return '<div class="map-row"><div class="map-mode">' + MODES[m].emoji + ' ' + t('m_' + m) + '</div>' +
-      '<div class="map-bar"><i style="width:' + accM + '%"></i></div><div class="map-dots">' + dots + '</div></div>';
+      '<div class="map-bar' + (lab === 'few' ? ' few' : '') + '"><i style="width:' + (lab === 'few' ? 0 : accM) + '%"></i></div>' +
+      '<div class="map-lbl ' + lab + '">' + escHtml(txt) + '</div><div class="map-dots">' + dots + '</div></div>';
   }).join('');
 
-  // semanas
+  // semanas (v2.8.0, 10.1.6): "27/10 a 2/11" em vez de "S44"
   const weeks = p.weeks.slice(-5);
   const maxR = Math.max(1, ...weeks.map((w) => w.rounds));
+  const lc = TTS_LANG[G().lang] || 'pt-BR';
+  const dm = (d) => d.toLocaleDateString(lc, { day: 'numeric', month: 'numeric' });
+  const thisWk = weekKey();
   $('#week-bars').innerHTML = weeks.length
-    ? weeks.map((w) => '<div class="week-bar"><span>' + w.rounds + '</span><i style="height:' + Math.max(6, Math.round(70 * w.rounds / maxR)) + 'px"></i><span>' + escHtml(w.k.replace(/^\d{4}-/, '')) + '</span></div>').join('')
+    ? weeks.map((w) => {
+      const rg = weekRange(w.k);
+      const name = w.k === thisWk ? t('wk_now') : rg ? dm(rg.start) + t('wk_to') + dm(rg.end) : w.k;
+      return '<div class="week-bar" title="' + escHtml(name + ': ' + t('wk_rounds', { n: w.rounds })) + '"><span>' + w.rounds + '</span><i style="height:' + Math.max(6, Math.round(70 * w.rounds / maxR)) + 'px"></i><span class="wk-name">' + escHtml(name) + '</span></div>';
+    }).join('')
     : '<span class="opt-note">—</span>';
+}
+
+/* v2.8.0: lembrar do backup só de quem já tem o que perder (30 ⭐) e não salva há 14 dias */
+function needsBackupNudge(p) {
+  const last = Number(G().lastBackupAt) || 0;
+  return (Number(p.stars) || 0) >= 30 && (!last || Date.now() - last >= 14 * 86400000);
 }
 
 /* ---------- perfis (S27) + voz por perfil (v2.4, A-179) ---------- */
@@ -279,19 +331,19 @@ function renderProfList() {
     const pp = pf.id === ppOpen ? (
       '<div class="pp-row">' +
       '<span class="pp-t">🎙️ ' + t('pp_voice') + '</span>' +
-      '<label for="pp-rate">' + t('s_rate') + '</label><input id="pp-rate" type="range" min="60" max="160" step="5" value="' + Math.round((pf.vRate != null ? pf.vRate : (g.vRate || 0.95)) * 100) + '" data-pprate="' + escHtml(pf.id) + '">' +
-      '<label for="pp-pitch">' + t('s_pitch') + '</label><input id="pp-pitch" type="range" min="50" max="200" step="5" value="' + Math.round(pf.vPitch != null ? pf.vPitch : (g.vPitch || 1.15) * 100) + '" data-pppitch="' + escHtml(pf.id) + '">' +
+      '<label for="pp-rate">' + t('s_rate') + '</label><input id="pp-rate" type="range" min="60" max="160" step="5" value="' + Math.round((pf.vRate != null ? pf.vRate : (g.vRate || VOICE_RATE)) * 100) + '" data-pprate="' + escHtml(pf.id) + '">' +
+      '<label for="pp-pitch">' + t('s_pitch') + '</label><input id="pp-pitch" type="range" min="50" max="200" step="5" value="' + Math.round((pf.vPitch != null ? pf.vPitch : (g.vPitch || VOICE_PITCH)) * 100) + '" data-pppitch="' + escHtml(pf.id) + '">' +
       '<select aria-label="' + escHtml(t('s_voice')) + '" data-ppvoice="' + escHtml(pf.id) + '">' + voiceOptionsHtml(pf.vVoice || '') + '</select>' +
-      '<button class="mini-btn" data-ppreset="' + escHtml(pf.id) + '">' + t('pp_default') + '</button>' +
+      '<button class="mini-btn ghost" data-ppreset="' + escHtml(pf.id) + '">' + t('pp_default') + '</button>' +
       '</div>'
     ) : '';
     return '<div class="prof-line" data-pid="' + escHtml(pf.id) + '">' +
       '<span style="font-size:24px" aria-hidden="true">' + escHtml(pf.avatar) + '</span>' +
-      '<input value="' + escHtml(pf.name) + '" maxlength="' + NAME_MAX + '" aria-label="' + escHtml(t('name_ph')) + '" data-name="' + escHtml(pf.id) + '">' +
-      '<div class="av-row" role="group" aria-label="' + escHtml(t('a_avatar') + ' — ' + pf.name) + '">' + AVATARS.map((a) => '<button class="av' + (a === pf.avatar ? ' sel' : '') + '" aria-pressed="' + (a === pf.avatar) + '" data-av="' + a + '" data-setav="' + escHtml(pf.id) + '">' + a + '</button>').join('') + '</div>' +
-      '<button class="mini-btn' + (cur ? ' using' : '') + '" data-use="' + escHtml(pf.id) + '" aria-label="' + escHtml((cur ? t('in_use') : t('equip')) + ' — ' + pf.name) + '">' + (cur ? t('in_use') : t('equip')) + '</button>' +
-      '<button class="mini-btn" data-pp="' + escHtml(pf.id) + '" title="' + escHtml(t('pp_voice')) + '" aria-label="' + escHtml(t('pp_voice') + ' — ' + pf.name) + '" aria-expanded="' + (pf.id === ppOpen) + '">🎙️</button>' +
-      (DB.profiles.length > 1 ? '<button class="mini-btn danger-btn" data-del="' + escHtml(pf.id) + '" title="' + escHtml(t('del_prof') + ' — ' + pf.name) + '" aria-label="' + escHtml(t('del_prof') + ' — ' + pf.name) + '">✕</button>' : '') +
+      '<input value="' + escHtml(pName(pf)) + '" maxlength="' + NAME_MAX + '" aria-label="' + escHtml(t('name_ph')) + '" data-name="' + escHtml(pf.id) + '">' +
+      '<div class="av-row" role="group" aria-label="' + escHtml(t('a_avatar') + ' — ' + pName(pf)) + '">' + AVATARS.map((a) => '<button class="av' + (a === pf.avatar ? ' sel' : '') + '" aria-pressed="' + (a === pf.avatar) + '" data-av="' + a + '" data-setav="' + escHtml(pf.id) + '">' + a + '</button>').join('') + '</div>' +
+      '<button class="mini-btn' + (cur ? ' using' : ' ghost') + '" data-use="' + escHtml(pf.id) + '" aria-label="' + escHtml((cur ? t('in_use') : t('equip')) + ' — ' + pName(pf)) + '">' + (cur ? t('in_use') : t('equip')) + '</button>' +
+      '<button class="mini-btn ghost" data-pp="' + escHtml(pf.id) + '" title="' + escHtml(t('pp_voice')) + '" aria-label="' + escHtml(t('pp_voice') + ' — ' + pName(pf)) + '" aria-expanded="' + (pf.id === ppOpen) + '"><span aria-hidden="true">🎙️</span> ' + t('pp_voice_btn') + '</button>' +
+      (DB.profiles.length > 1 ? '<button class="mini-btn danger-btn" data-del="' + escHtml(pf.id) + '" title="' + escHtml(t('del_prof') + ' — ' + pName(pf)) + '" aria-label="' + escHtml(t('del_prof') + ' — ' + pName(pf)) + '">✕</button>' : '') +
       pp +
       '</div>';
   }).join('');
@@ -338,6 +390,41 @@ function renderProfList() {
   }));
 }
 
+/* ---------- canais oficiais e cookies (v2.7) ---------- */
+function paintConsent() {
+  $('#lnk-privacy').href = LEGAL.privacy; $('#lnk-terms').href = LEGAL.terms; $('#lnk-support').href = LEGAL.support;
+  $('#set-ck-stats').checked = Consent.allows('stats');
+  $('#set-ck-track').checked = Consent.allows('track');
+  paintConsentBanner();
+}
+/* v2.8.0: o aviso mora no painel (adulto), nunca na tela da criança. Some assim que há escolha. */
+function paintConsentBanner() {
+  let b = document.getElementById('consent');
+  if (Consent.decided() || $('#opt-content').classList.contains('hidden')) { if (b) b.remove(); return; } // atrás da senha não aparece
+  if (b) return;
+  b = document.createElement('div'); b.id = 'consent'; b.className = 'consent';
+  b.setAttribute('role', 'region'); b.setAttribute('aria-label', t('ck_title'));
+  b.innerHTML = '<p>' + t('ck_msg') + '</p><div class="consent-actions">' +
+    '<button type="button" class="ck-btn ck-link" data-ck="custom">' + t('ck_custom') + '</button>' +
+    '<button type="button" class="ck-btn" data-ck="reject">' + t('ck_reject') + '</button>' +
+    '<button type="button" class="ck-btn" data-ck="accept">' + t('ck_accept') + '</button></div>';
+  document.body.appendChild(b);
+  b.addEventListener('click', (e) => {
+    const k = e.target.closest ? e.target.closest('[data-ck]') : null;
+    if (!k) return;
+    if (k.dataset.ck === 'reject') { Consent.rejectAll(); saveState(true); paintConsent(); }
+    else if (k.dataset.ck === 'accept') { Consent.acceptAll(); saveState(true); paintConsent(); }
+    else { const c = $('#set-ck-stats'); c.scrollIntoView({ block: 'center' }); c.focus(); }
+  });
+}
+function bindConsent() {
+  const save = () => { Consent.set($('#set-ck-stats').checked, $('#set-ck-track').checked); saveState(true); paintConsent(); };
+  $('#set-ck-stats').addEventListener('change', save);
+  $('#set-ck-track').addEventListener('change', save);
+  $('#btn-ck-accept').addEventListener('click', () => { Consent.acceptAll(); saveState(true); paintConsent(); });
+  $('#btn-ck-reject').addEventListener('click', () => { Consent.rejectAll(); saveState(true); paintConsent(); });
+}
+
 /* ---------- vozes (S22 + estudo v2.6) ---------- */
 function fillVoices() {
   const g = G();
@@ -357,18 +444,11 @@ function paintVoiceTierNote() {
   if (!v) { el.textContent = t('v_none'); return; }
   const tier = TTS.voiceTier(v);
   const q = tier === 3 ? t('v_tier_natural') : tier === 2 ? t('v_tier_neural') : tier === 0 ? t('v_tier_basic') : t('v_tier_std');
-  el.textContent = t('v_current', { q: q, n: v.name || v.voiceURI || '' });
+  el.textContent = t('v_current', { q: q, n: v.name || v.voiceURI || '' }) + (tier <= 1 ? ' ' + t('v_install') : '');
 }
 
 /* ---------- exportar / importar (S29) + backup com data (v2.5) ---------- */
 /* nos apps (iOS e Android) o arquivo sai pela folha de compartilhar do sistema */
-function doExport() {
-  saveState(true);
-  saveTextFile('conta-comigo-progresso.json', JSON.stringify(shareableDB(DB), null, 2), t('backup_share')).then((ok) => {
-    if (!ok) return;
-    try { G().lastBackupAt = Date.now(); saveState(true); paintBackupHint(); } catch (e) { /* ignora */ }
-  });
-}
 /* v2.5: backup datado — rede de segurança das conquistas quando a extensão
    é removida e reinstalada (recarregar ↻ preserva; remover apaga) */
 function doBackupDownload() {
@@ -388,15 +468,57 @@ function paintBackupHint() {
     : '✅ ' + t('backup_hint_ok', { n: days });
   el.style.fontWeight = days != null && days >= 14 ? '800' : '600';
 }
+/* v2.8.0: restaurar em dois passos. 1) o backup é lido e resumido (quem, quantas estrelas, se é mais
+   antigo que este aparelho); 2) só ao confirmar o progresso é trocado. O estado de antes fica guardado
+   por 7 dias para "Desfazer", porque restaurar o arquivo errado é o erro que mais dói. */
+const UNDO_KEY = 'cc_undo_restore', UNDO_DAYS = 7;
+let pendingRestore = null;
+function undoInfo() {
+  try {
+    const u = JSON.parse(localStorage.getItem(UNDO_KEY) || 'null');
+    if (!u || !u.db || Date.now() - (u.at || 0) > UNDO_DAYS * 86400000) { localStorage.removeItem(UNDO_KEY); return null; }
+    return u;
+  } catch (e) { return null; }
+}
+function paintUndo() { $('#btn-undo-restore').classList.toggle('hidden', !undoInfo()); }
+function cancelRestore() { pendingRestore = null; $('#restore-box').classList.add('hidden'); }
 function doImport(text) {
   const d = parseDB(text);
   if (!d) { toastOpt('⚠️ ' + t('imp_bad')); return; }
-  DB = keepLocalSecrets(d, DB); // a senha deste aparelho continua valendo
-  if (!DB.profiles.length) DB.profiles = [newProfile('p1', 'Jogador', '🦊')];
+  const pv = restorePreview(DB, d);
+  pendingRestore = d;
+  const when = pv.at ? new Date(pv.at).toLocaleDateString(TTS_LANG[G().lang] || 'pt-BR') : '?';
+  $('#restore-body').textContent = t('bk_pv_body', { d: when, who: pv.profiles.map((x) => x.avatar + ' ' + x.name + ' (' + x.stars + ' ⭐)').join(', '), s: pv.stars, c: pv.curStars });
+  const w = $('#restore-warn');
+  w.textContent = pv.older ? t('bk_pv_old', { n: pv.lose }) : '';
+  w.classList.toggle('hidden', !pv.older);
+  $('#restore-box').classList.remove('hidden');
+  $('#btn-restore-no').focus();
+}
+function applyRestore() {
+  const d = pendingRestore;
+  if (!d) return;
+  try { localStorage.setItem(UNDO_KEY, JSON.stringify({ at: Date.now(), db: JSON.stringify(shareableDB(DB)) })); } catch (e) { /* sem espaço: restaura sem o desfazer */ }
+  swapDB(d);
+  cancelRestore();
+  toastOpt('✅ ' + t('bk_restored'));
+  renderOptions();
+}
+function swapDB(d) {
+  replaceDB(keepLocalSecrets(d, DB)); // a senha deste aparelho continua valendo; o backup vale inteiro
+  if (!DB.profiles.length) DB.profiles = [newProfile('p1', DEFAULT_NAME, '🦊')];
   if (!DB.profiles.find((x) => x.id === DB.activeId)) DB.activeId = DB.profiles[0].id;
   DB.settings = Object.assign({}, DEFAULT_SETTINGS, DB.settings || {});
   saveState(true);
-  toastOpt('✅ ' + t('imp_ok'));
+}
+function undoRestore() {
+  const u = undoInfo();
+  const d = u && parseDB(u.db);
+  if (!d) { paintUndo(); return; }
+  swapDB(d);
+  try { localStorage.removeItem(UNDO_KEY); } catch (e) { /* ignora */ }
+  cancelRestore();
+  toastOpt('↩️ ' + t('bk_undone'));
   renderOptions();
 }
 
@@ -413,6 +535,8 @@ function bindOptions() {
   $('#ge-reset-show').addEventListener('click', () => { $('#ge-reset-form').classList.remove('hidden'); });
   $('#ge-reset-go').addEventListener('click', tryResetGate);
   $('#gc-go').addEventListener('click', tryCreateGate);
+  $('#gc-adult-go').addEventListener('click', gateAdultCheck);
+  $('#gc-adult-in').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); gateAdultCheck(); } });
   [['#gc-pwd', '#gc-go'], ['#gc-pwd2', '#gc-go'], ['#gc-hint', '#gc-go']].forEach(([inp, btn]) => {
     $(inp).addEventListener('keydown', (e) => { if (e.key === 'Enter') $(btn).click(); });
   });
@@ -425,7 +549,7 @@ function bindOptions() {
   $('#dash-prof').addEventListener('change', renderDash);
   $('#btn-new-prof').addEventListener('click', () => {
     if (DB.profiles.length >= 4) { toastOpt(t('max4')); return; }
-    DB.profiles.push(newProfile(null, 'Jogador ' + (DB.profiles.length + 1), pick(AVATARS)));
+    DB.profiles.push(newProfile(null, t('default_player') + ' ' + (DB.profiles.length + 1), pick(AVATARS)));
     saveState(true); renderOptions();
   });
 
@@ -439,6 +563,9 @@ function bindOptions() {
   // v2.4: narração e efeitos independentes + tempo extra + menos movimento + sem loja
   $('#set-voice-on').addEventListener('change', (e) => { G().voiceOn = e.target.checked; set(); });
   $('#set-sfx-on').addEventListener('change', (e) => { G().sfxOn = e.target.checked; set(); });
+  $('#set-haptics').addEventListener('change', (e) => { G().hapticsOn = e.target.checked; set(); if (e.target.checked) HAPT.play('light'); });
+  bindConsent();
+  $('#set-cur').addEventListener('change', (e) => { G().currency = e.target.value; set(); });
   $('#set-tscale').addEventListener('change', (e) => { G().timeScale = Number(e.target.value); set(); });
   $('#set-rm').addEventListener('change', (e) => { G().reduceMotion = e.target.checked; document.body.classList.toggle('rm', !!e.target.checked); set(); });
   $('#set-noshop').addEventListener('change', (e) => { G().shopOff = e.target.checked; set(); });
@@ -454,9 +581,11 @@ function bindOptions() {
   $('#set-calmo').addEventListener('change', (e) => { G().calmo = e.target.value === 'auto' ? null : e.target.value === 'on'; set(); });
   $('#set-goal').addEventListener('change', (e) => { G().goalRounds = Number(e.target.value); set(); });
   $('#set-limit').addEventListener('change', (e) => { G().sessionLimit = Number(e.target.value); set(); });
-  $('#set-sync').addEventListener('change', (e) => { G().sync = e.target.checked; set(); if (G().sync) saveState(true); });
+  $('#set-sync').addEventListener('change', (e) => { G().sync = e.target.checked; set(); if (G().sync) saveState(true); setTimeout(paintSyncStatus, 800); });
 
-  $('#btn-export').addEventListener('click', doExport);
+  $('#btn-restore-ok').addEventListener('click', applyRestore);
+  $('#btn-restore-no').addEventListener('click', cancelRestore);
+  $('#btn-undo-restore').addEventListener('click', undoRestore);
   $('#btn-backup-dl').addEventListener('click', doBackupDownload); // v2.5: backup datado
   $('#btn-copy').addEventListener('click', async () => {
     saveState(true);
@@ -471,12 +600,14 @@ function bindOptions() {
     const rd = new FileReader();
     rd.onload = () => doImport(String(rd.result));
     rd.readAsText(f);
+    e.target.value = ''; // permite escolher o mesmo arquivo de novo
   });
   $('#btn-reset-p').addEventListener('click', () => {
     if (!confirm(t('confirm_reset'))) return;
     const cur = P();
     const fresh = newProfile(cur.id, cur.name, cur.avatar);
     DB.profiles = DB.profiles.map((x) => (x.id === cur.id ? fresh : x));
+    replaceDB(DB); // zerar vale inteiro, sem somar com o que outra página gravou
     saveState(true); renderOptions(); toastOpt('🧹');
   });
   $('#btn-reset-all').addEventListener('click', () => {
@@ -485,6 +616,20 @@ function bindOptions() {
   });
 }
 
+/* ADR-001: resultado da última sincronização, para os responsáveis saberem se ela funciona */
+function paintSyncStatus() {
+  const el = $('#sync-status');
+  if (!el) return;
+  const st = syncStatus();
+  let txt = '';
+  if (G().sync) {
+    if (!st) txt = t('sync_never');
+    else if (st.ok) txt = '✅ ' + t('sync_ok', { h: new Date(st.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }) + (st.trimmed ? ' ' + t('sync_trimmed') : '');
+    else if (st.kb) txt = '⚠️ ' + t('sync_big', { kb: st.kb, max: 7 });
+    else txt = '⚠️ ' + t('sync_err', { err: st.err || '?' });
+  }
+  el.textContent = txt;
+}
 async function bootOptions() {
   await initDB();
   TTS.init();
@@ -492,6 +637,11 @@ async function bootOptions() {
   bindOptions();
   showGate();
   renderOptions();
+  /* o jogo gravou em outra aba: traz o progresso novo e redesenha (quando a aba está à vista) */
+  let stale = false;
+  const refresh = () => { if (document.hidden) { stale = true; return; } stale = false; if (adoptLatest()) renderOptions(); };
+  onExternalSave(() => { clearTimeout(refresh.t); refresh.t = setTimeout(refresh, 300); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && stale) refresh(); });
 }
 window.CC = {};
 bootOptions();

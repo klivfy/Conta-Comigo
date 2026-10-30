@@ -12,6 +12,19 @@
 
 let gameWinId = null;
 
+/* ADR-001: no MV3 o service worker dorme depois de ~30 s e esquece a variável; o id da janela
+   fica em storage.session (não pede permissão nova, ao contrário de buscar a aba por URL) */
+function lerGameWin(cb) {
+  if (gameWinId != null) { cb(gameWinId); return; }
+  try {
+    chrome.storage.session.get('ccGameWin', (r) => { void chrome.runtime.lastError; cb(r && r.ccGameWin != null ? r.ccGameWin : null); });
+  } catch (e) { cb(null); }
+}
+function gravarGameWin(id) {
+  gameWinId = id;
+  try { chrome.storage.session.set({ ccGameWin: id }, () => { void chrome.runtime.lastError; }); } catch (e) { /* ignora */ }
+}
+
 function openGame() {
   const url = chrome.runtime.getURL('game.html');
 
@@ -24,7 +37,7 @@ function openGame() {
 
   const focusOrFs = (win) => {
     if (!win || win.id == null) return;
-    gameWinId = win.id;
+    gravarGameWin(win.id);
     try {
       chrome.windows.update(win.id, { focused: true, state: 'fullscreen' }, () => { void chrome.runtime.lastError; });
     } catch (e) { /* ignora */ }
@@ -44,20 +57,19 @@ function openGame() {
     }
   };
 
-  if (gameWinId != null) {
+  lerGameWin((id) => {
+    if (id == null) { create(); return; }
     try {
-      chrome.windows.get(gameWinId, (win) => {
-        if (chrome.runtime.lastError || !win) { gameWinId = null; create(); return; }
+      chrome.windows.get(id, (win) => {
+        if (chrome.runtime.lastError || !win) { gravarGameWin(null); create(); return; }
         focusOrFs(win);
       });
     } catch (e) { create(); }
-  } else {
-    create();
-  }
+  });
 }
 
 try {
-  chrome.windows.onRemoved.addListener((id) => { if (id === gameWinId) gameWinId = null; });
+  chrome.windows.onRemoved.addListener((id) => { lerGameWin((cur) => { if (id === cur) gravarGameWin(null); }); });
 } catch (e) { /* ignora */ }
 
 try {
