@@ -672,3 +672,27 @@ test('restorePreview: resume o backup e avisa quando ele é mais antigo e tem me
   // campos faltando não quebram
   assert.deepEqual(pv({}, {}).profiles, []);
 });
+
+test('app do Windows: a lista de links permitidos é a mesma de LEGAL e todo o resto segue negado', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const urls = (src, ini, fim) => {
+    const i = src.indexOf(ini);
+    assert.ok(i >= 0, 'bloco não encontrado: ' + ini);
+    const bloco = src.slice(i, src.indexOf(fim, i));
+    return [...bloco.matchAll(/'(https:\/\/[^']+)'/g)].map((m) => m[1]).sort();
+  };
+  const raiz = path.join(__dirname, '..');
+  const main = fs.readFileSync(path.join(raiz, 'native/windows/main.js'), 'utf8');
+  const eng = fs.readFileSync(path.join(raiz, 'download/conta-comigo/js/engine.js'), 'utf8');
+  const doJogo = urls(eng, 'const LEGAL = Object.freeze({', '});');
+  const doApp = urls(main, 'const LEGAL_URLS = [', '];');
+  assert.equal(doJogo.length, 3);
+  assert.deepEqual(doApp, doJogo);
+  // o manipulador sempre devolve "deny" para endereços https; só file:// é permitido
+  const h = main.slice(main.indexOf('setWindowOpenHandler'), main.indexOf('will-navigate'));
+  assert.match(h, /startsWith\('file:\/\/'\)\) return \{ action: 'allow' \}/);
+  assert.match(h, /LEGAL_URLS\.includes\(url\)\) shell\.openExternal/);
+  assert.match(h, /return \{ action: 'deny' \}/);
+  assert.equal((h.match(/action: 'allow'/g) || []).length, 1);
+});

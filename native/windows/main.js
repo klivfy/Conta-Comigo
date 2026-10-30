@@ -1,9 +1,16 @@
 'use strict';
 /* Conta Comigo — Windows (Electron) — janela do jogo, 100% offline.
  * Carrega app/index.html (PWA gerada por scripts/build_pwa.py, copiada pelo CI).
- * Sem rede, sem telemetria, sem navegação externa. © 2026 Klivfy Tecnologia. */
-const { app, BrowserWindow, Menu, nativeTheme } = require('electron');
+ * Sem rede, sem telemetria; só os 3 canais oficiais abrem no navegador do sistema. © 2026 Klivfy Tecnologia. */
+const { app, BrowserWindow, Menu, nativeTheme, shell } = require('electron');
 const path = require('path');
+
+/* Mesmos endereços de LEGAL em js/engine.js (tests/engine.test.cjs confere que não se afastam). */
+const LEGAL_URLS = [
+  'https://klivfy.com/privacidade',
+  'https://klivfy.com/termos-de-uso',
+  'https://klivfy.com/suporte',
+];
 
 let win = null;
 
@@ -59,6 +66,9 @@ function createWindow() {
   // App offline: bloqueia pop-ups e navegação externa
   wc.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('file://')) return { action: 'allow' };
+    // única saída: os três canais oficiais (Privacidade, Termos e Suporte), no navegador do sistema.
+    // O jogo só chega aqui depois da conferência para adultos; qualquer outro endereço segue negado.
+    if (LEGAL_URLS.includes(url)) shell.openExternal(url).catch(() => { /* sem navegador: nada a fazer */ });
     return { action: 'deny' };
   });
   wc.on('will-navigate', (e, url) => {
