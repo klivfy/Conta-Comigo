@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const css = fs.readFileSync(path.join(__dirname, '..', 'download', 'conta-comigo', 'css', 'style.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
 const SP = new Set(['2', '4', '6', '8', '12', '16', '24', '36']); // valores que já têm token --sp-*
-const FS_REM = new Set(['.6875', '.78125', '.875', '1', '1.1875', '1.5', '1.75', '2.5']); // e --fs-*
+const FS_REM = new Set(['.75', '.8125', '.875', '1', '1.1875', '1.5', '1.75', '2.5']); // e --fs-*
 
 const espaco = /(?<![\w-])((?:padding|margin)[\w-]*|(?:row-|column-)?gap)\s*:\s*([^;{}]+)/g;
 let soltoSemToken = 0, soltoComToken = 0, m;
@@ -24,7 +24,7 @@ for (const t of css.match(/transition\s*:[^;}]+/g) || []) if (!/ease|linear/.tes
 const usos = { sp: (css.match(/var\(--sp-/g) || []).length, fs: (css.match(/var\(--fs-/g) || []).length };
 
 /* tetos: o estado depois da rodada de 29/10/2026. Só podem descer. */
-const TETO = { soltoComToken: 0, fsRemSolto: 0, soltoSemToken: 137, semCurva: 0 };
+const TETO = { soltoComToken: 0, fsRemSolto: 0, soltoSemToken: 133, semCurva: 0 };
 const medido = { soltoComToken, fsRemSolto, soltoSemToken, semCurva };
 console.log('espaço em px com token disponível, mas sem usar:', soltoComToken, '(teto ' + TETO.soltoComToken + ')');
 console.log('font-size em rem com token disponível, mas sem usar:', fsRemSolto, '(teto ' + TETO.fsRemSolto + ')');

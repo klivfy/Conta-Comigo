@@ -356,7 +356,18 @@ function renderModes() {
       startRound(card.dataset.mode);
     });
   });
+  fixModesOrphan();
 }
+/* v2.8.0 (10.3.2): carta sozinha na última linha vira faixa de largura total (13 modos em 6 colunas deixavam
+   "Contra o Tempo" com cinco buracos ao lado). Recalcula quando a largura muda. */
+function fixModesOrphan() {
+  const grid = $('#modes-grid'); if (!grid) return;
+  const cards = [...grid.children]; if (!cards.length) return;
+  cards.forEach((c) => c.classList.remove('wide'));
+  const cols = getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length;
+  if (cols > 1 && cards.length % cols === 1) cards[cards.length - 1].classList.add('wide');
+}
+if (typeof window !== 'undefined') window.addEventListener('resize', () => { clearTimeout(fixModesOrphan.t); fixModesOrphan.t = setTimeout(fixModesOrphan, 120); });
 
 /* ---------- tela inicial completa ---------- */
 function renderHome() {
@@ -373,7 +384,7 @@ function renderHome() {
   if (btnBoss) btnBoss.classList.toggle('hidden', !p.bossReady);
   const btnDiag = $('#sp-diag');
   if (btnDiag) btnDiag.classList.toggle('attention', !p.assessed);
-  renderPlayNow(); renderDiffChips(); refreshChrome();
+  renderPlayNow(); refreshChrome();
 }
 /* v2.8.0 (N3): um toque grande com a sugestão do dia; os outros modos ficam logo abaixo */
 function renderPlayNow() {
@@ -393,14 +404,6 @@ function renderPlayNow() {
   const what = r.kind === 'boss' ? t('sp_boss') : r.kind === 'review' ? t('review_btn', { n: r.n }) : t('m_' + r.mode);
   b.innerHTML = '<span class="pn-emoji" aria-hidden="true">' + emoji + '</span><span class="pn-txt"><b>' + t('play_now') + '</b><small>' + escHtml(what) + '</small></span>';
   b.setAttribute('aria-label', t('play_now') + ': ' + what);
-}
-
-/* ---------- dificuldade manual (chips auto + 1..5) ---------- */
-function renderDiffChips() {
-  $$('.diff-chip').forEach((c) => {
-    const on = String(G().diffMode) === c.dataset.d;
-    c.classList.toggle('active', on); c.setAttribute('aria-pressed', String(on));
-  });
 }
 
 /* ==================== rodadas ==================== */
@@ -605,8 +608,8 @@ function renderProgress() {
     else if (R.kind === 'duel') {
       const d = R.duel;
       txt = d.a1 + ' ' + d.s1 + ' × ' + d.s2 + ' ' + d.a2 + ' · ' + (R.qIndex + 1) + '/' + R.total;
-    } else txt = t('q_of', { a: Math.min(R.qIndex + 1, R.total), b: R.total }) + ' · ' + t('level') + ' ' + R.level + (G().diffMode === 'auto' ? '' : ' · ' + t('fixed_lbl'));
-    chip.textContent = txt;
+    } else { chip.innerHTML = escHtml(t('q_of', { a: Math.min(R.qIndex + 1, R.total), b: R.total })) + '<span class="lv-part"> · ' + escHtml(t('level') + ' ' + R.level + (G().diffMode === 'auto' ? '' : ' · ' + t('fixed_lbl'))) + '</span>'; txt = null; }
+    if (txt != null) chip.textContent = txt;
   }
   const combo = $('#combo-chip');
   if (combo) {
@@ -1209,11 +1212,6 @@ function bindStatic() {
     startDuel(a1, a2);
   });
   $('#duel-back').addEventListener('click', () => { SFX.tap(); renderHome(); show('home'); });
-  $$('.diff-chip').forEach((chip) => chip.addEventListener('click', () => {
-    ensureAudio(); SFX.tap();
-    G().diffMode = chip.dataset.d === 'auto' ? 'auto' : Number(chip.dataset.d);
-    saveState(); renderDiffChips();
-  }));
   // CSP: overlays usam data-close em vez de onclick inline
   document.addEventListener('click', (e) => {
     const b = e.target && e.target.closest ? e.target.closest('[data-close]') : null;

@@ -61,7 +61,7 @@ typography:
     lineHeight: 1.45
   label:
     fontFamily: "Conta, Nunito, Segoe UI, system-ui, sans-serif"
-    fontSize: "11px"
+    fontSize: "12px"
     fontWeight: 800
     lineHeight: 1.3
 rounded:
@@ -202,12 +202,12 @@ O tema `auto` é o padrão de perfis novos: segue `prefers-color-scheme` ao vivo
 **Character:** é uma sans arredondada e pesada, amigável como letra de livro infantil. Os pesos ficam altos (700 a 900) para os traços aguentarem tela pequena e leitor iniciante.
 
 ### Hierarchy
-Escala `--fs-*` para texto de interface: 10, 11, 12,5, 14, 16, 19, 24, 28 e 40px.
+Escala `--fs-*` para texto de interface: 12, 13, 14, 16, 19, 24, 28 e 40px (v2.7.4: `--fs-2xs` e `--fs-xs` são o mesmo degrau de 12px; antes eram dois de 11px).
 - **Display** (900, `--fs-display` 40px, que vai a 64px na página cheia): a equação e o número das respostas.
 - **Headline** (800–900, `--fs-3xl` 28px): título "Conta Comigo" em degradê e título da tela final.
 - **Title** (800–900, `--fs-xl`/`--fs-2xl`, 19–24px): títulos de tela (Loja, Duelo), botões grandes e modais.
 - **Body** (700, `--fs-md`/`--fs-lg`, 14–16px): histórias, mensagens e campos.
-- **Label** (800, `--fs-2xs`–`--fs-sm`, 10–12,5px): nome e descrição dos modos, chips, missões e selos.
+- **Label** (800, `--fs-2xs`–`--fs-sm`, 12–13px): nome e descrição dos modos, chips, missões e selos.
 
 **Unidades (v2.6.2):** todo texto, inclusive a equação e os números das respostas, fica em `rem` (1rem = 16px no padrão). Assim ele acompanha o tamanho de fonte escolhido no navegador e no sistema; no iOS, `font: -apple-system-body` na raiz liga o texto ao Dynamic Type. Emojis de ícone e de ilustração (`.icon-btn`, `.mascot`, `.obj`, `.mode-emoji`, avatares, figurinhas) ficam em px: são imagem, e crescer com o texto estouraria as caixas de 44px. Os ajustes por breakpoint (`body.page-mode` e `@media`) seguem calibrados à parte, fora da escala `--fs-*`; juntá-los na escala é o item 7.2 do plano. No Windows, Ctrl+= / Ctrl+− / Ctrl+0 e Ctrl+roda ampliam a página inteira até 300%.
 
@@ -228,7 +228,7 @@ Escala `--fs-*` para texto de interface: 10, 11, 12,5, 14, 16, 19, 24, 28 e 40px
   - ≤600px de altura em retrato (iPhone SE): espaços verticais enxutos.
 - **Home em paisagem curta:** 2 colunas só a partir de 700px de largura. Abaixo disso segue em coluna única, e os cartões de status quebram linha em vez de se espremer.
 - **Unidades:** `dvh` com `vh` de reserva (barras do navegador móvel), `clamp()` na tipografia do jogo, `env(safe-area-inset-*)` nas bordas e no popover.
-- **Alvos de toque:** nenhum controle com menos de 44×44px (botões, chips, objetos tocáveis). Texto de interface nunca abaixo de 11px.
+- **Alvos de toque:** nenhum controle com menos de 44×44px (botões, chips, objetos tocáveis). Texto de interface nunca abaixo de 12px (v2.7.4).
 - **Elementos flutuantes** (popover, balão, modal) ficam sempre dentro da tela: `max-height` pela altura real e rolagem interna.
 - **Ritmo:** escala `--sp-*` de 2, 4, 6, 8, 12, 16, 24 e 36px. (Ainda definida, mas pouco aplicada: veja o item 7.2 do plano.)
 - **Teste:** `scripts/resp_check.cjs` mede 8 aparelhos emulados × 15 telas e roda no CI, no tamanho padrão e com o texto a 200% (`CC_TEXTO=200`).

@@ -242,6 +242,7 @@ function renderDash() {
     ['⭐', p.stars, t('d_stars')], ['⚡', p.points || 0, t('d_points')], ['🔥', p.streak || 0, t('d_streak')],
     ['🎮', p.rounds, t('d_rounds')], ['⏱️', Math.round(p.playSec / 60) + ' min', t('d_time')],
     ['✅', acc + '%', t('d_acc')], ['🎲', modesPlayed(p).n + '/' + modesPlayed(p).total, t('d_modes')],
+    ['📚', p.reviewWins || 0, t('d_reviews')], // v2.8.0: par com os outros 7 (sem cartão sozinho na última linha)
   ].map((s) => '<div class="stat"><b>' + s[1] + '</b><span>' + s[0] + ' ' + s[2] + '</span></div>').join('');
 
   // mapa de domínio S09

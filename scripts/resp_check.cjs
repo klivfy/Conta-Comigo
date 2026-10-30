@@ -54,7 +54,7 @@ const PROBE = () => {
     if (w > 6 && h > 6) issues.push({ type: 'sobreposicao', el: name(a) + ' × ' + name(b), txt: txt(a) + ' | ' + txt(b), w: Math.round(w), h: Math.round(h) });
   }
   // texto que escapa do próprio botão/cartão ou da tela
-  const leaf = [...document.querySelectorAll('button, .mode-card, .mission, .diff-chip, .chip, #star-chip, #chip-streak, #level-chip, #pts-chip, .badge, .hrow, #bubble, #toast, h2, h3, p, b, span, small, label')].filter((e) => inScope(e) && vis(e));
+  const leaf = [...document.querySelectorAll('button, .mode-card, .mission, .chip, #star-chip, #chip-streak, #level-chip, #pts-chip, .badge, .hrow, #bubble, #toast, h2, h3, p, b, span, small, label')].filter((e) => inScope(e) && vis(e));
   const seen = new Set();
   for (const e of leaf) {
     const hasText = [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
