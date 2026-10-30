@@ -620,3 +620,39 @@ test('dragResist e dropHit: borda que segura e cesta com folga', () => {
   assert.equal(E.ev('dropHit(105,50,{left:0,right:100,top:0,bottom:100},16)'), true);
   assert.equal(E.ev('dropHit(50,50,{left:0,right:100,top:0,bottom:100})'), true);
 });
+
+test('háptica (N5): só no app, desligável, muda no calmo, sem notificação de erro e sem zumbido', () => {
+  assert.equal(E.ev('hapticOK({hapticsOn:true}, false)'), true);
+  assert.equal(E.ev('hapticOK({hapticsOn:false}, false)'), false);
+  assert.equal(E.ev('hapticOK({hapticsOn:true}, true)'), false);
+  assert.equal(E.ev('hapticOK({}, false)'), true); // perfil antigo sem o campo: ligada
+  // no navegador não há plugin: nada a fazer e nada quebra
+  assert.equal(E.ev('NATIVE_HAPTICS'), null);
+  E.ev('HAPT.play("success")');
+  // no app: ponte simulada
+  const calls = [];
+  const H = loadEngine({ capacitor: { isNativePlatform: () => true, isPluginAvailable: () => true, Plugins: {
+    Preferences: { get: () => Promise.resolve({ value: null }), set: () => Promise.resolve() },
+    Haptics: { impact: (o) => calls.push(['i', o.style]), notification: (o) => calls.push(['n', o.type]) } } } });
+  const go = (code) => { calls.length = 0; H.ev('HAPT.last = 0'); H.ev(code); return calls.slice(); };
+  assert.deepEqual(go('SFX.correct()'), [['n', 'SUCCESS']]);
+  assert.deepEqual(go('SFX.wrong()'), [['i', 'LIGHT']]);
+  assert.deepEqual(go('SFX.star()'), [['i', 'MEDIUM']]);
+  assert.deepEqual(go('SFX.tap(); SFX.tap()'), [['i', 'LIGHT']]); // a 2ª, dentro de 60 ms, não vibra
+  H.ev('G().hapticsOn = false');
+  assert.deepEqual(go('SFX.correct()'), []);
+  H.ev('G().hapticsOn = true; G().mute = true; G().sfxOn = false');
+  assert.deepEqual(go('SFX.correct()'), [['n', 'SUCCESS']]); // sem som, ainda vibra
+  H.ctx.document.body.classList.contains = (c) => c === 'calmo';
+  assert.deepEqual(go('SFX.correct()'), []);
+  H.ctx.document.body.classList.contains = (c) => c === 'rm';
+  assert.deepEqual(go('SFX.correct()'), []);
+});
+
+test('háptica: backup antigo sem o campo fica ligado; valor estranho vira booleano', () => {
+  const run = (settings) => j('parseDB(' + E.put('raw', JSON.stringify({ v: 2, activeId: 'p1', profiles: [{ id: 'p1' }], settings })) + ').settings.hapticsOn');
+  assert.equal(run({}), true);
+  assert.equal(run({ hapticsOn: false }), false);
+  assert.equal(run({ hapticsOn: 0 }), false);
+  assert.equal(run({ hapticsOn: 'talvez' }), true);
+});

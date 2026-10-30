@@ -45,7 +45,7 @@ Administração no repositório — clique manual, sem custo).
 
 ```
 native/android/
-├── package.json             Capacitor 8 + plugins: Preferences, TextToSpeech, Filesystem, Share, App
+├── package.json             Capacitor 8 + plugins: Preferences, TextToSpeech, Filesystem, Share, App, Haptics
 ├── capacitor.config.json    appId com.klivfy.conta.comigo.matematica · webDir www · barras do sistema
 ├── www/                     o jogo (gerado por scripts/build_android_www.py; fora do Git)
 ├── keystore/README.md       upload key (o .jks nunca entra no Git)

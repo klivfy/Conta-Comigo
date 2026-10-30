@@ -271,6 +271,7 @@ function serve() {
       ok(r.links === 9 && r.broken === 0 && r.small === 0, 'painel ' + w + 'px: 9 âncoras, todas com destino e alvo >= 44px');
       ok(r.maxPrimary <= 1, 'painel ' + w + 'px: no máximo um botão primário por seção (' + r.maxPrimary + ')');
       ok(r.dangerOutside && r.legalAsButtons === 0, 'painel ' + w + 'px: zona de perigo própria e links legais como links');
+      ok(await page.evaluate(() => document.getElementById('row-haptics').classList.contains('hidden')), 'painel ' + w + 'px: no navegador a opção de vibração não aparece (só nos apps)');
       ok(r.emojiExposed === 0 && r.gateTitles === 0, 'painel ' + w + 'px: emoji dos títulos escondido do leitor de tela e título do portão sem repetição');
       ok(!r.scrollX, 'painel ' + w + 'px: sem rolagem horizontal da página');
       if (w >= 1000) ok(r.labelW <= 345, 'painel desktop: rótulo não estica até a borda (' + Math.round(r.labelW) + 'px)');

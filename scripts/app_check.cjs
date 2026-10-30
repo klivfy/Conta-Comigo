@@ -34,6 +34,7 @@ const MOCK = (shareRejects) => {
       Share: { share: (o) => { calls.push(['share', o]); return shareRejects ? Promise.reject(new Error('Share canceled')) : Promise.resolve({}); } },
       App: { addListener: (ev, cb) => { (listeners[ev] = listeners[ev] || []).push(cb); return Promise.resolve({ remove() {} }); },
              minimizeApp: rec('app.minimize'), exitApp: rec('app.exit') },
+      Haptics: { impact: (o) => { calls.push(['haptics.impact', o]); return Promise.resolve(); }, notification: (o) => { calls.push(['haptics.notification', o]); return Promise.resolve(); } },
       SystemBars: { setStyle: rec('bars.setStyle') },
     },
   };
@@ -121,6 +122,17 @@ const MOCK = (shareRejects) => {
     await page.waitForTimeout(300);
     ok(await page.evaluate(() => window.__calls.some(([n, o]) => n === 'fs.writeFile' && o.path === 'conta-comigo-progresso.json')), 'painel: exportar grava conta-comigo-progresso.json');
     ok(await page.evaluate(() => !(window.__listeners.backButton || []).length), 'painel: sem ouvinte (o Capacitor faz goBack sozinho)');
+    // v2.8.0 (N5): vibração leve só no app, desligável, muda no modo calmo
+    await page.evaluate(() => showContent());
+    ok(await page.evaluate(() => !document.getElementById('row-haptics').classList.contains('hidden')), 'painel (app): a opção de vibração aparece');
+    await page.evaluate(() => { window.__calls.length = 0; HAPT.last = 0; SFX.correct(); });
+    ok(await page.evaluate(() => window.__calls.some(([n, o]) => n === 'haptics.notification' && o.type === 'SUCCESS')), 'app: acertar vibra (sucesso)');
+    await page.evaluate(() => { window.__calls.length = 0; HAPT.last = 0; SFX.wrong(); });
+    ok(await page.evaluate(() => window.__calls.length === 1 && window.__calls[0][0] === 'haptics.impact' && window.__calls[0][1].style === 'LIGHT'), 'app: errar só dá o toque leve (nunca a notificação de erro)');
+    await page.evaluate(() => { document.body.classList.add('calmo'); window.__calls.length = 0; HAPT.last = 0; SFX.correct(); SFX.tap(); });
+    ok(await page.evaluate(() => window.__calls.filter(([n]) => n.startsWith('haptics')).length === 0), 'app: no modo calmo não vibra');
+    await page.evaluate(() => { document.body.classList.remove('calmo'); document.getElementById('set-haptics').click(); window.__calls.length = 0; HAPT.last = 0; SFX.correct(); });
+    ok(await page.evaluate(() => G().hapticsOn === false && window.__calls.filter(([n]) => n.startsWith('haptics')).length === 0), 'app: desligar a opção silencia a vibração');
     ok(errs.length === 0, 'painel: sem erros de JS' + (errs.length ? ': ' + errs.join(' | ') : ''));
     await ctx.close();
   }

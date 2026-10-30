@@ -191,6 +191,9 @@ function renderOptions() {
   $('#set-mute').checked = !!g.mute;
   $('#set-voice-on').checked = g.voiceOn !== false; // v2.4 (A-186)
   $('#set-sfx-on').checked = g.sfxOn !== false; // v2.4 (A-186)
+  // v2.8.0 (N5): a vibração só existe nos apps; no navegador a opção nem aparece
+  $('#row-haptics').classList.toggle('hidden', !NATIVE_HAPTICS); $('#note-haptics').classList.toggle('hidden', !NATIVE_HAPTICS);
+  $('#set-haptics').checked = g.hapticsOn !== false;
   paintConsent();
   const curSel = $('#set-cur');
   curSel.innerHTML = ['auto'].concat(Object.keys(CURRENCIES)).map((k) => '<option value="' + k + '">' + escHtml(t('cur_' + k)) + '</option>').join('');
@@ -517,6 +520,7 @@ function bindOptions() {
   // v2.4: narração e efeitos independentes + tempo extra + menos movimento + sem loja
   $('#set-voice-on').addEventListener('change', (e) => { G().voiceOn = e.target.checked; set(); });
   $('#set-sfx-on').addEventListener('change', (e) => { G().sfxOn = e.target.checked; set(); });
+  $('#set-haptics').addEventListener('change', (e) => { G().hapticsOn = e.target.checked; set(); if (e.target.checked) HAPT.play('light'); });
   bindConsent();
   $('#set-cur').addEventListener('change', (e) => { G().currency = e.target.value; set(); });
   $('#set-tscale').addEventListener('change', (e) => { G().timeScale = Number(e.target.value); set(); });

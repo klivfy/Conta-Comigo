@@ -234,6 +234,8 @@ const DEFAULT_SETTINGS = {
   unlockAll: false, newtabOn: true, timer: false, /* v2.7.2: desligado por padrão (sem pressão); perfis antigos mantêm a escolha */
   /* v2.4 — voz cordial: narração e efeitos independentes, tempo extra, menos movimento */
   voiceOn: true, sfxOn: true, timeScale: 1, reduceMotion: false, shopOff: false,
+  /* v2.8.0 (N5): vibração leve nos apps; o plugin só existe dentro do app, e o modo calmo a silencia */
+  hapticsOn: true,
   /* v2.3 — portão parental por senha (tudo fica no dispositivo) */
   passHash: '', passSalt: '', passHint: '', passSetAt: 0,
   passTries: 0, passLockUntil: 0,
@@ -431,6 +433,7 @@ function capPlugin(name) {
 const IN_NATIVE_APP = (() => { try { return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()); } catch (e) { return false; } })();
 const NATIVE_PREFS = capPlugin('Preferences');
 const NATIVE_TTS = capPlugin('TextToSpeech');
+const NATIVE_HAPTICS = capPlugin('Haptics');
 
 /* entre duas cópias válidas, vale a gravada por último */
 function newerDB(a, b) { if (!a) return b; if (!b) return a; return (b.updatedAt || 0) > (a.updatedAt || 0) ? b : a; }
@@ -841,6 +844,34 @@ const SFX = {
     sfxNote(2093, 0.11, 0.55, { timbre: 'bell', vol: 0.07 });
   },
 };
+
+/* ---------- háptica (v2.8.0, N5) ----------
+   Só dentro dos apps (plugin Haptics). Independe do som: quem silenciou o aparelho ainda sente o toque.
+   Desligada no modo calmo e em "reduzir movimentos" (o toque também é estímulo). Errar nunca vibra
+   forte: usa o mesmo toque leve de tocar, sem a notificação de erro do sistema. */
+function hapticOK(g, calm) { return !!g && g.hapticsOn !== false && !calm; }
+const HAPT = {
+  last: 0,
+  calmNow() {
+    try { const c = document.body.classList; return c.contains('calmo') || c.contains('rm'); } catch (e) { return false; }
+  },
+  play(kind) {
+    if (!NATIVE_HAPTICS || !hapticOK(G(), this.calmNow())) return;
+    const now = Date.now();
+    if (now - this.last < 60) return; // tocar rápido não vira zumbido
+    this.last = now;
+    try {
+      if (kind === 'success') NATIVE_HAPTICS.notification({ type: 'SUCCESS' });
+      else NATIVE_HAPTICS.impact({ style: kind === 'medium' ? 'MEDIUM' : 'LIGHT' });
+    } catch (e) { /* sem vibração: segue o jogo */ }
+  },
+};
+/* cada efeito do jogo ganha o toque que combina com ele (o efeito sonoro continua valendo igual) */
+const HAPT_KIND = { tap: 'light', wrong: 'light', cash: 'light', star: 'medium', correct: 'success', fanfare: 'success' };
+Object.entries(HAPT_KIND).forEach(([k, kind]) => {
+  const fx = SFX[k];
+  SFX[k] = (...a) => { HAPT.play(kind); return fx(...a); };
+});
 
 /* ---------- voz cordial (S22 + Fase 1 do estudo de voz, v2.4) ----------
    A-176 heurística de vozes naturais/neurais · A-177 prosódia por pontuação em
