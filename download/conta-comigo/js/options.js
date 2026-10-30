@@ -241,7 +241,7 @@ function renderDash() {
   $('#stat-grid').innerHTML = [
     ['⭐', p.stars, t('d_stars')], ['⚡', p.points || 0, t('d_points')], ['🔥', p.streak || 0, t('d_streak')],
     ['🎮', p.rounds, t('d_rounds')], ['⏱️', Math.round(p.playSec / 60) + ' min', t('d_time')],
-    ['✅', acc + '%', t('d_acc')], ['🎲', modesPlayed(p).n + '/' + modesPlayed(p).total, t('d_modes')],
+    ['✅', totalQ >= MASTERY_MIN ? acc + '%' : '—', t('d_acc')], ['🎲', modesPlayed(p).n + '/' + modesPlayed(p).total, t('d_modes')],
     ['📚', p.reviewWins || 0, t('d_reviews')], // v2.8.0: par com os outros 7 (sem cartão sozinho na última linha)
   ].map((s) => '<div class="stat"><b>' + s[1] + '</b><span>' + s[0] + ' ' + s[2] + '</span></div>').join('');
 
@@ -251,27 +251,37 @@ function renderDash() {
     ? (sm.rounds === 1 ? t('sum_week1') : t('sum_week', { n: sm.rounds })) + (sm.best ? ' ' + t('sum_best', { m: t('m_' + sm.best) }) : '') + (sm.next ? ' ' + t('sum_next', { m: t('m_' + sm.next) }) : '')
     : t('sum_idle'));
 
-  // mapa de domínio S09
+  // mapa de domínio S09 (v2.8.0, 10.1.5): só dá veredito com 20 questões no modo; rótulo em texto, não só cor
   $('#map-rows').innerHTML = Object.keys(MODES).map((m) => {
     const lv = p.lvl[m] || {};
     let r = 0, w = 0;
     Object.keys(lv).forEach((k) => { r += lv[k].r; w += lv[k].w; });
-    const accM = (r + w) ? Math.round(100 * r / (r + w)) : 0;
+    const lab = masteryLabel(r, w);
+    const accM = Math.round(100 * r / Math.max(1, r + w));
     const dots = [1, 2, 3, 4, 5].map((l) => {
       const b = lv[l];
-      if (!b || (b.r + b.w) === 0) return '<span class="lv-dot">' + l + '</span>';
+      if (!b || (b.r + b.w) === 0) return '<span class="lv-dot" role="img" aria-label="' + escHtml(t('lv_none', { l })) + '">' + l + '</span>';
       const a = b.r / (b.r + b.w);
-      return '<span class="lv-dot ' + (a >= 0.8 ? 'g' : a >= 0.5 ? 'y' : 'r') + '">' + l + '</span>';
+      return '<span class="lv-dot ' + (a >= 0.8 ? 'g' : a >= 0.5 ? 'y' : 'r') + '" role="img" aria-label="' + escHtml(t('lv_acc', { l, p: Math.round(100 * a) })) + '">' + l + '</span>';
     }).join('');
+    const txt = lab === 'few' ? t('mast_few', { n: r + w }) : t('mast_' + lab) + ' · ' + t('mast_acc', { p: accM });
     return '<div class="map-row"><div class="map-mode">' + MODES[m].emoji + ' ' + t('m_' + m) + '</div>' +
-      '<div class="map-bar"><i style="width:' + accM + '%"></i></div><div class="map-dots">' + dots + '</div></div>';
+      '<div class="map-bar' + (lab === 'few' ? ' few' : '') + '"><i style="width:' + (lab === 'few' ? 0 : accM) + '%"></i></div>' +
+      '<div class="map-lbl ' + lab + '">' + escHtml(txt) + '</div><div class="map-dots">' + dots + '</div></div>';
   }).join('');
 
-  // semanas
+  // semanas (v2.8.0, 10.1.6): "27/10 a 2/11" em vez de "S44"
   const weeks = p.weeks.slice(-5);
   const maxR = Math.max(1, ...weeks.map((w) => w.rounds));
+  const lc = TTS_LANG[G().lang] || 'pt-BR';
+  const dm = (d) => d.toLocaleDateString(lc, { day: 'numeric', month: 'numeric' });
+  const thisWk = weekKey();
   $('#week-bars').innerHTML = weeks.length
-    ? weeks.map((w) => '<div class="week-bar"><span>' + w.rounds + '</span><i style="height:' + Math.max(6, Math.round(70 * w.rounds / maxR)) + 'px"></i><span>' + escHtml(w.k.replace(/^\d{4}-/, '')) + '</span></div>').join('')
+    ? weeks.map((w) => {
+      const rg = weekRange(w.k);
+      const name = w.k === thisWk ? t('wk_now') : rg ? dm(rg.start) + t('wk_to') + dm(rg.end) : w.k;
+      return '<div class="week-bar" title="' + escHtml(name + ': ' + t('wk_rounds', { n: w.rounds })) + '"><span>' + w.rounds + '</span><i style="height:' + Math.max(6, Math.round(70 * w.rounds / maxR)) + 'px"></i><span class="wk-name">' + escHtml(name) + '</span></div>';
+    }).join('')
     : '<span class="opt-note">—</span>';
 }
 

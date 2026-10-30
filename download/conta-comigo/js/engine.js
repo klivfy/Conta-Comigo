@@ -1566,6 +1566,30 @@ function recommendNext() {
   for (const m of from) if (acc(m) < acc(best)) best = m;
   return { kind: 'mode', mode: best };
 }
+/* v2.8.0 (10.1.5): domínio só com evidência. Menos de 20 questões no modo: "few" (sem veredito).
+   Depois: 80% ou mais "high", 50% ou mais "mid", abaixo disso "low" (começando, nunca "ruim"). */
+const MASTERY_MIN = 20;
+function masteryLabel(r, w) {
+  const n = r + w;
+  if (n < MASTERY_MIN) return 'few';
+  const a = r / n;
+  return a >= 0.8 ? 'high' : a >= 0.5 ? 'mid' : 'low';
+}
+/* v2.8.0 (10.1.6): a chave "2026-S44" (domingo a sábado, a mesma conta do weekKey) vira datas;
+   a primeira e a última semana do ano são parciais, como no weekKey.
+   Chave que não segue o formato devolve null e o painel mostra a chave como veio. */
+function weekRange(k) {
+  const m = /^(\d{4})-S(\d{2})$/.exec(k || '');
+  if (!m) return null;
+  const y = +m[1], wk = +m[2];
+  const jan1 = new Date(y, 0, 1);
+  let start = new Date(y, 0, 1 + (wk - 1) * 7 - jan1.getDay());
+  let end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
+  if (start < jan1) start = jan1; // a semana 1 e a última são parciais: o weekKey reinicia em 1º de janeiro
+  const dec31 = new Date(y, 11, 31);
+  if (end > dec31) end = dec31;
+  return { start, end };
+}
 /* v2.8.0 (10.4.2): resumo do painel dos responsáveis. Só afirma o que tem evidência:
    "ótima" exige 3 respostas recentes e 80% de acerto; a sugestão vai para o modo mais fraco
    (abaixo de 80%) entre os que têm 3 respostas. Mistar e Contra o Tempo nunca entram. */

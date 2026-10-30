@@ -216,6 +216,30 @@ function serve() {
       if (w >= 1000) ok(r.labelW <= 345, 'painel desktop: rótulo não estica até a borda (' + Math.round(r.labelW) + 'px)');
       await page.click('#opt-nav a[href="#sec-data"]'); await page.waitForTimeout(400);
       ok(await page.evaluate(() => document.getElementById('sec-data').getBoundingClientRect().top < window.innerHeight - 100), 'painel ' + w + 'px: a âncora leva à seção');
+      // lote D: mapa de domínio com evidência mínima e semanas legíveis
+      const d = await page.evaluate(() => {
+        const p = P();
+        p.rights = 5; p.wrongs = 0; // uma rodada 5/5 não pode virar "100%"
+        p.lvl.somar = { 1: { r: 5, w: 0 } };
+        p.lvl.contar = { 1: { r: 18, w: 2 }, 2: { r: 8, w: 2 } };
+        p.lvl.subtrair = { 1: { r: 5, w: 20 } };
+        p.weeks = [{ k: '2026-S43', rounds: 3, rights: 0 }, { k: 'S44', rounds: 1, rights: 0 }, { k: weekKey(), rounds: 2, rights: 0 }];
+        renderDash();
+        const row = (m) => [...document.querySelectorAll('.map-row')].find((r) => r.textContent.includes(t('m_' + m)));
+        return {
+          few: row('somar').querySelector('.map-lbl').textContent, fewBar: row('somar').querySelector('.map-bar i').style.width,
+          high: row('contar').querySelector('.map-lbl').textContent,
+          low: row('subtrair').querySelector('.map-lbl').textContent,
+          dotLabel: row('contar').querySelector('.lv-dot').getAttribute('aria-label'),
+          acc: [...document.querySelectorAll('.stat')].find((x) => x.textContent.includes(t('d_acc'))).querySelector('b').textContent,
+          weeks: [...document.querySelectorAll('.wk-name')].map((x) => x.textContent),
+        };
+      });
+      ok(/Poucos dados \(5\/20\)/.test(d.few) && parseFloat(d.fewBar) === 0, 'painel ' + w + 'px: modo com 5 questões diz "poucos dados" e a barra fica vazia ("' + d.few + '")');
+      ok(/Domina/.test(d.high) && /Come/.test(d.low), 'painel ' + w + 'px: com 20+ questões o rótulo é texto ("' + d.high + '" / "' + d.low + '")');
+      ok(/Nível 1: 90% de acerto/.test(d.dotLabel), 'painel ' + w + 'px: o ponto de nível tem texto ("' + d.dotLabel + '")');
+      ok(d.acc === '—', 'painel ' + w + 'px: precisão não aparece com poucas questões');
+      ok(d.weeks[0] === '18/10 a 24/10' && d.weeks[1] === 'S44' && d.weeks[2] === 'esta semana', 'painel ' + w + 'px: semanas em data legível (' + d.weeks.join(' | ') + ')');
       await ctx.close();
     }
     ok(errors.length === 0, 'painel: sem erro de JavaScript' + (errors.length ? ' (' + errors.join(' | ') + ')' : ''));

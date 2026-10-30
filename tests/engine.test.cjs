@@ -586,3 +586,25 @@ test('parentSummary: só afirma com evidência (3 respostas) e sugere o modo mai
   assert.deepEqual(run(2, { contar: [false, false], mistar: [false, false, false], tempo: [false, false, false] }), { rounds: 2, best: null, next: null });
   assert.deepEqual(j('parentSummary({weeks:[],recent:{}},"2026-S44")'), { rounds: 0, best: null, next: null });
 });
+
+test('masteryLabel: sem veredito com menos de 20 questões; depois começando, praticando, domina', () => {
+  assert.equal(E.ev('masteryLabel(5,0)'), 'few');
+  assert.equal(E.ev('masteryLabel(10,9)'), 'few');
+  assert.equal(E.ev('masteryLabel(20,0)'), 'high');
+  assert.equal(E.ev('masteryLabel(16,4)'), 'high');
+  assert.equal(E.ev('masteryLabel(15,5)'), 'mid');
+  assert.equal(E.ev('masteryLabel(10,10)'), 'mid');
+  assert.equal(E.ev('masteryLabel(9,11)'), 'low');
+});
+
+test('weekRange: a chave da semana vira domingo a sábado e bate com weekKey', () => {
+  const r = j('(() => { const x = weekRange("2026-S44"); return [fmtDate(x.start), fmtDate(x.end), weekKey(x.start), weekKey(x.end)]; })()');
+  assert.deepEqual(r, ['2026-10-25', '2026-10-31', '2026-S44', '2026-S44']);
+  assert.equal(E.ev('weekRange("S44")'), null);
+  assert.equal(E.ev('weekRange(undefined)'), null);
+  // virada de ano: o weekKey reinicia em 1º de janeiro, então a semana 1 e a última são parciais
+  const y = j('(() => { const x = weekRange("2026-S01"); return [fmtDate(x.start), fmtDate(x.end), weekKey(x.start), weekKey(x.end)]; })()');
+  assert.deepEqual(y, ['2026-01-01', '2026-01-03', '2026-S01', '2026-S01']);
+  const z = j('(() => { const x = weekRange("2026-S53"); return x ? [fmtDate(x.start), fmtDate(x.end)] : null; })()');
+  assert.deepEqual(z, ['2026-12-27', '2026-12-31']);
+});
