@@ -245,6 +245,12 @@ function renderDash() {
     ['📚', p.reviewWins || 0, t('d_reviews')], // v2.8.0: par com os outros 7 (sem cartão sozinho na última linha)
   ].map((s) => '<div class="stat"><b>' + s[1] + '</b><span>' + s[0] + ' ' + s[2] + '</span></div>').join('');
 
+  // v2.8.0 (10.4.2): resumo em uma frase com a próxima ação
+  const sm = parentSummary(p);
+  $('#opt-summary').textContent = pName(p) + ': ' + (sm.rounds
+    ? (sm.rounds === 1 ? t('sum_week1') : t('sum_week', { n: sm.rounds })) + (sm.best ? ' ' + t('sum_best', { m: t('m_' + sm.best) }) : '') + (sm.next ? ' ' + t('sum_next', { m: t('m_' + sm.next) }) : '')
+    : t('sum_idle'));
+
   // mapa de domínio S09
   $('#map-rows').innerHTML = Object.keys(MODES).map((m) => {
     const lv = p.lvl[m] || {};
@@ -307,15 +313,15 @@ function renderProfList() {
       '<label for="pp-rate">' + t('s_rate') + '</label><input id="pp-rate" type="range" min="60" max="160" step="5" value="' + Math.round((pf.vRate != null ? pf.vRate : (g.vRate || VOICE_RATE)) * 100) + '" data-pprate="' + escHtml(pf.id) + '">' +
       '<label for="pp-pitch">' + t('s_pitch') + '</label><input id="pp-pitch" type="range" min="50" max="200" step="5" value="' + Math.round((pf.vPitch != null ? pf.vPitch : (g.vPitch || VOICE_PITCH)) * 100) + '" data-pppitch="' + escHtml(pf.id) + '">' +
       '<select aria-label="' + escHtml(t('s_voice')) + '" data-ppvoice="' + escHtml(pf.id) + '">' + voiceOptionsHtml(pf.vVoice || '') + '</select>' +
-      '<button class="mini-btn" data-ppreset="' + escHtml(pf.id) + '">' + t('pp_default') + '</button>' +
+      '<button class="mini-btn ghost" data-ppreset="' + escHtml(pf.id) + '">' + t('pp_default') + '</button>' +
       '</div>'
     ) : '';
     return '<div class="prof-line" data-pid="' + escHtml(pf.id) + '">' +
       '<span style="font-size:24px" aria-hidden="true">' + escHtml(pf.avatar) + '</span>' +
       '<input value="' + escHtml(pName(pf)) + '" maxlength="' + NAME_MAX + '" aria-label="' + escHtml(t('name_ph')) + '" data-name="' + escHtml(pf.id) + '">' +
       '<div class="av-row" role="group" aria-label="' + escHtml(t('a_avatar') + ' — ' + pName(pf)) + '">' + AVATARS.map((a) => '<button class="av' + (a === pf.avatar ? ' sel' : '') + '" aria-pressed="' + (a === pf.avatar) + '" data-av="' + a + '" data-setav="' + escHtml(pf.id) + '">' + a + '</button>').join('') + '</div>' +
-      '<button class="mini-btn' + (cur ? ' using' : '') + '" data-use="' + escHtml(pf.id) + '" aria-label="' + escHtml((cur ? t('in_use') : t('equip')) + ' — ' + pName(pf)) + '">' + (cur ? t('in_use') : t('equip')) + '</button>' +
-      '<button class="mini-btn" data-pp="' + escHtml(pf.id) + '" title="' + escHtml(t('pp_voice')) + '" aria-label="' + escHtml(t('pp_voice') + ' — ' + pName(pf)) + '" aria-expanded="' + (pf.id === ppOpen) + '">🎙️</button>' +
+      '<button class="mini-btn' + (cur ? ' using' : ' ghost') + '" data-use="' + escHtml(pf.id) + '" aria-label="' + escHtml((cur ? t('in_use') : t('equip')) + ' — ' + pName(pf)) + '">' + (cur ? t('in_use') : t('equip')) + '</button>' +
+      '<button class="mini-btn ghost" data-pp="' + escHtml(pf.id) + '" title="' + escHtml(t('pp_voice')) + '" aria-label="' + escHtml(t('pp_voice') + ' — ' + pName(pf)) + '" aria-expanded="' + (pf.id === ppOpen) + '"><span aria-hidden="true">🎙️</span> ' + t('pp_voice_btn') + '</button>' +
       (DB.profiles.length > 1 ? '<button class="mini-btn danger-btn" data-del="' + escHtml(pf.id) + '" title="' + escHtml(t('del_prof') + ' — ' + pName(pf)) + '" aria-label="' + escHtml(t('del_prof') + ' — ' + pName(pf)) + '">✕</button>' : '') +
       pp +
       '</div>';

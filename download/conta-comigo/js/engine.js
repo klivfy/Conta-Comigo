@@ -1566,6 +1566,22 @@ function recommendNext() {
   for (const m of from) if (acc(m) < acc(best)) best = m;
   return { kind: 'mode', mode: best };
 }
+/* v2.8.0 (10.4.2): resumo do painel dos responsáveis. Só afirma o que tem evidência:
+   "ótima" exige 3 respostas recentes e 80% de acerto; a sugestão vai para o modo mais fraco
+   (abaixo de 80%) entre os que têm 3 respostas. Mistar e Contra o Tempo nunca entram. */
+function parentSummary(p, wk) {
+  const row = (p.weeks || []).find((w) => w.k === (wk || weekKey()));
+  const stat = Object.keys(MODES).filter((m) => m !== 'mistar' && m !== 'tempo').map((m) => {
+    const r = (p.recent && p.recent[m]) || [];
+    return { m, n: r.length, acc: r.length ? r.filter(Boolean).length / r.length : 0 };
+  }).filter((x) => x.n >= 3);
+  let best = null, next = null;
+  stat.forEach((x) => {
+    if (x.acc >= 0.8 && (!best || x.acc > best.acc)) best = x;
+    if (x.acc < 0.8 && (!next || x.acc < next.acc)) next = x;
+  });
+  return { rounds: row ? row.rounds : 0, best: best ? best.m : null, next: next ? next.m : null };
+}
 /* v2.8.0 (N2): quanto falta para o mascote mudar de fase (0 a 100) */
 function mascotProgress(stars) {
   if (stars >= 100) return { pct: 100, need: 0, to: null };

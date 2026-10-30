@@ -577,3 +577,12 @@ test('shopSort: o que é da criança vem primeiro, depois o mais perto de compra
   assert.equal(j(code(40)), 'cbeda');   // b e e compráveis, d falta 5, a falta 20
   assert.equal(j(code(100)), 'cabde');  // tudo comprável: ordem original
 });
+
+test('parentSummary: só afirma com evidência (3 respostas) e sugere o modo mais fraco', () => {
+  const run = (rounds, recent) => j('parentSummary({weeks:[{k:"2026-S44",rounds:' + rounds + ',rights:0}],recent:' + JSON.stringify(recent) + '},"2026-S44")');
+  assert.deepEqual(run(0, {}), { rounds: 0, best: null, next: null });
+  assert.deepEqual(run(4, { contar: [true, true, true, true, true], somar: [true, false, false, true, false] }), { rounds: 4, best: 'contar', next: 'somar' });
+  // menos de 3 respostas não conta; mistar e tempo nunca viram sugestão
+  assert.deepEqual(run(2, { contar: [false, false], mistar: [false, false, false], tempo: [false, false, false] }), { rounds: 2, best: null, next: null });
+  assert.deepEqual(j('parentSummary({weeks:[],recent:{}},"2026-S44")'), { rounds: 0, best: null, next: null });
+});

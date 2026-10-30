@@ -174,6 +174,53 @@ function serve() {
     await ctx.close();
   }
 
+  // 5) v2.8.0 lote C: painel desbloqueado (resumo, âncoras, um primário por seção, zona de perigo)
+  {
+    const errors = [];
+    for (const vp of [{ width: 390, height: 844 }, { width: 1280, height: 900 }]) {
+      const ctx = await browser.newContext({ viewport: vp, locale: 'pt-BR', bypassCSP: true });
+      const page = await ctx.newPage();
+      page.on('pageerror', (e) => errors.push(e.message));
+      await page.goto(base + 'options.html'); await page.waitForTimeout(700);
+      const q = await page.evaluate(() => document.getElementById('gc-adult-q').textContent);
+      const m = q.match(/(\d+)\s*×\s*(\d+)/);
+      await page.fill('#gc-adult-in', String(Number(m[1]) * Number(m[2]))); await page.click('#gc-adult-go');
+      await page.fill('#gc-pwd', 'teste123'); await page.fill('#gc-pwd2', 'teste123'); await page.fill('#gc-hint', 'dica');
+      await page.click('#gc-go'); await page.waitForTimeout(800);
+      const w = vp.width;
+      const r = await page.evaluate(() => {
+        const nav = [...document.querySelectorAll('#opt-nav a')];
+        const secs = [...document.querySelectorAll('.opt-card[id]')].map((c) => c.id);
+        const small = nav.filter((a) => a.getBoundingClientRect().height < 44).length;
+        const lone = [...document.querySelectorAll('.opt-card')].map((c) => c.querySelectorAll('.mini-btn:not(.ghost):not(.danger-btn):not(.using)').length);
+        const dz = document.getElementById('sec-danger');
+        const dataCard = document.getElementById('sec-data');
+        return {
+          summary: document.getElementById('opt-summary').textContent,
+          links: nav.length, broken: nav.filter((a) => !secs.includes(a.getAttribute('href').slice(1))).length, small,
+          maxPrimary: Math.max(...lone),
+          dangerOutside: !dataCard.contains(dz) && !!document.getElementById('btn-reset-all') && dz.contains(document.getElementById('btn-reset-all')),
+          legalAsButtons: document.querySelectorAll('#lnk-privacy.mini-btn, #lnk-terms.mini-btn, #lnk-support.mini-btn').length,
+          emojiExposed: [...document.querySelectorAll('.opt-card > h2')].filter((h) => h.firstElementChild && h.firstElementChild.getAttribute('aria-hidden') !== 'true').length,
+          gateTitles: [...document.querySelectorAll('#gate h2')].length,
+          scrollX: document.documentElement.scrollWidth > document.documentElement.clientWidth || document.body.scrollWidth > window.innerWidth || document.querySelector('.opt-wrap').getBoundingClientRect().right > window.innerWidth,
+          labelW: Math.max(...[...document.querySelectorAll('.opt-row label')].map((l) => l.getBoundingClientRect().width)),
+        };
+      });
+      ok(/Jogador: /.test(r.summary) && /rodada/.test(r.summary), 'painel ' + w + 'px: resumo da semana no topo ("' + r.summary + '")');
+      ok(r.links === 9 && r.broken === 0 && r.small === 0, 'painel ' + w + 'px: 9 âncoras, todas com destino e alvo >= 44px');
+      ok(r.maxPrimary <= 1, 'painel ' + w + 'px: no máximo um botão primário por seção (' + r.maxPrimary + ')');
+      ok(r.dangerOutside && r.legalAsButtons === 0, 'painel ' + w + 'px: zona de perigo própria e links legais como links');
+      ok(r.emojiExposed === 0 && r.gateTitles === 0, 'painel ' + w + 'px: emoji dos títulos escondido do leitor de tela e título do portão sem repetição');
+      ok(!r.scrollX, 'painel ' + w + 'px: sem rolagem horizontal da página');
+      if (w >= 1000) ok(r.labelW <= 345, 'painel desktop: rótulo não estica até a borda (' + Math.round(r.labelW) + 'px)');
+      await page.click('#opt-nav a[href="#sec-data"]'); await page.waitForTimeout(400);
+      ok(await page.evaluate(() => document.getElementById('sec-data').getBoundingClientRect().top < window.innerHeight - 100), 'painel ' + w + 'px: a âncora leva à seção');
+      await ctx.close();
+    }
+    ok(errors.length === 0, 'painel: sem erro de JavaScript' + (errors.length ? ' (' + errors.join(' | ') + ')' : ''));
+  }
+
   await browser.close(); srv.close();
   if (fails.length) { console.log('\n' + fails.length + ' falha(s).'); process.exit(1); }
   console.log('\nOK — nova aba, versão web e portão do painel');
