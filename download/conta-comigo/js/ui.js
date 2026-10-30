@@ -724,11 +724,77 @@ function bindCounting(q) {
     el.setAttribute('role', 'button');
     el.setAttribute('tabindex', '0');
     el.setAttribute('aria-label', el.textContent.trim() + ' ' + (Number(el.dataset.i) + 1));
-    el.addEventListener('click', () => count(el));
+    el.addEventListener('click', () => { if (el._dragged) return; count(el); });
     el.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); count(el); }
     });
   });
+  setupBasket();
+}
+
+/* v2.8.0 (N4, protótipo só em Contar): arrastar o objeto para a cesta conta em voz alta.
+   Alternativas sem arrastar (WCAG 2.5.7): tocar no objeto (ou Enter/Espaço) conta como antes, e a
+   própria cesta é um botão que põe o próximo objeto dentro. A cesta não muda a resposta nem a pontuação. */
+function setupBasket() {
+  const vis = $('#visual');
+  vis.classList.remove('has-basket');
+  const objs = $$('#visual .obj.tappable');
+  if (!objs.length) return;
+  const basket = document.createElement('button');
+  basket.type = 'button'; basket.className = 'basket';
+  basket.innerHTML = '<span class="basket-in" aria-hidden="true"></span><span class="basket-ic" aria-hidden="true">🧺</span><b class="basket-n" aria-hidden="true">0</b>';
+  vis.classList.add('has-basket'); vis.appendChild(basket);
+  const inB = basket.querySelector('.basket-in'), nEl = basket.querySelector('.basket-n');
+  const refresh = () => {
+    const n = inB.children.length;
+    nEl.textContent = String(n);
+    basket.setAttribute('aria-label', vis.querySelector('.grp .obj.tappable') ? t('bk_label', { n }) : t('bk_full', { n }));
+  };
+  const put = (el) => {
+    if (el.parentNode === inB) return;
+    ensureAudio();
+    inB.appendChild(el);
+    el.style.transform = '';
+    el.classList.remove('tappable', 'dragging', 'counted', 'snap');
+    ['role', 'tabindex', 'aria-label'].forEach((a) => el.removeAttribute(a));
+    refresh();
+    basket.classList.remove('bump'); void basket.offsetWidth; basket.classList.add('bump');
+    SFX.tap();
+    TTS.speak(numWord(LANG, inB.children.length), { force: true });
+  };
+  refresh();
+  basket.addEventListener('click', () => { const next = vis.querySelector('.grp .obj.tappable'); if (next) put(next); });
+  objs.forEach((el) => el.addEventListener('pointerdown', (e) => {
+    if (e.button != null && e.button !== 0) return;
+    const sx = e.clientX, sy = e.clientY;
+    const vr = vis.getBoundingClientRect(), er = el.getBoundingClientRect();
+    const cx0 = er.left + er.width / 2, cy0 = er.top + er.height / 2;
+    let dragging = false;
+    try { el.setPointerCapture(e.pointerId); } catch (_) { /* sem captura (mouse): o arrasto só segue enquanto o ponteiro passa pelo objeto */ }
+    const move = (ev) => {
+      const dx = ev.clientX - sx, dy = ev.clientY - sy;
+      if (!dragging) {
+        if (Math.hypot(dx, dy) < 8) return;
+        dragging = true; el.classList.add('dragging');
+      }
+      el.style.transform = 'translate(' + (dragResist(cx0 + dx, vr.left, vr.right) - cx0) + 'px,' + (dragResist(cy0 + dy, vr.top, vr.bottom) - cy0) + 'px)';
+      basket.classList.toggle('over', dropHit(ev.clientX, ev.clientY, basket.getBoundingClientRect(), 16));
+    };
+    const end = (ev) => {
+      el.removeEventListener('pointermove', move);
+      el.removeEventListener('pointerup', end);
+      el.removeEventListener('pointercancel', end);
+      basket.classList.remove('over');
+      if (!dragging) return;
+      el._dragged = true; setTimeout(() => { el._dragged = false; }, 60); // o click que vem logo depois do arrasto não conta
+      el.classList.remove('dragging');
+      if (ev.type === 'pointerup' && dropHit(ev.clientX, ev.clientY, basket.getBoundingClientRect(), 16)) put(el);
+      else { el.classList.add('snap'); el.style.transform = ''; setTimeout(() => el.classList.remove('snap'), 320); }
+    };
+    el.addEventListener('pointermove', move);
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', end);
+  }));
 }
 
 /* ---------- resposta ---------- */

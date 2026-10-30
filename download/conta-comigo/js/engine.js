@@ -1566,6 +1566,19 @@ function recommendNext() {
   for (const m of from) if (acc(m) < acc(best)) best = m;
   return { kind: 'mode', mode: best };
 }
+/* v2.8.0 (N4): arrastar para contar. Resistência na borda: dentro de [lo, hi] o objeto acompanha o dedo;
+   fora, o excesso satura em 48px (a borda "segura": quanto mais puxa, menos cede, e nunca foge do quadro).
+   dropHit diz se o ponto caiu na cesta (com folga para dedos). */
+function dragResist(pos, lo, hi) {
+  const MAXO = 48;
+  if (pos < lo) return lo - MAXO * (1 - Math.exp((pos - lo) / MAXO));
+  if (pos > hi) return hi + MAXO * (1 - Math.exp((hi - pos) / MAXO));
+  return pos;
+}
+function dropHit(x, y, r, slop) {
+  const s = slop || 0;
+  return x >= r.left - s && x <= r.right + s && y >= r.top - s && y <= r.bottom + s;
+}
 /* v2.8.0 (10.1.5): domínio só com evidência. Menos de 20 questões no modo: "few" (sem veredito).
    Depois: 80% ou mais "high", 50% ou mais "mid", abaixo disso "low" (começando, nunca "ruim"). */
 const MASTERY_MIN = 20;

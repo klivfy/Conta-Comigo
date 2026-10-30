@@ -608,3 +608,15 @@ test('weekRange: a chave da semana vira domingo a sábado e bate com weekKey', (
   const z = j('(() => { const x = weekRange("2026-S53"); return x ? [fmtDate(x.start), fmtDate(x.end)] : null; })()');
   assert.deepEqual(z, ['2026-12-27', '2026-12-31']);
 });
+
+test('dragResist e dropHit: borda que segura e cesta com folga', () => {
+  assert.equal(E.ev('dragResist(50,0,100)'), 50);
+  const near = (code, want) => assert.ok(Math.abs(Number(E.ev(code)) - want) < 0.01, code);
+  near('dragResist(-100,0,100)', -42.02);
+  near('dragResist(300,0,100)', 100 + 48 * (1 - Math.exp(-200 / 48)));
+  assert.ok(Number(E.ev('dragResist(-100000,0,100)')) > -48.001, 'nunca passa de 48px fora');
+  assert.ok(Number(E.ev('dragResist(-10,0,100)')) > Number(E.ev('dragResist(-100,0,100)')), 'quanto mais puxa, mais fundo (monotônico)');
+  assert.equal(E.ev('dropHit(105,50,{left:0,right:100,top:0,bottom:100},0)'), false);
+  assert.equal(E.ev('dropHit(105,50,{left:0,right:100,top:0,bottom:100},16)'), true);
+  assert.equal(E.ev('dropHit(50,50,{left:0,right:100,top:0,bottom:100})'), true);
+});

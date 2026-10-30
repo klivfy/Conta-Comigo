@@ -174,6 +174,66 @@ function serve() {
     await ctx.close();
   }
 
+  // 6) v2.8.0 lote F: arrastar para contar (só em Contar), com alternativa por toque e teclado
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: 'pt-BR', bypassCSP: true });
+    const page = await ctx.newPage();
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    await page.goto(base + 'game.html'); await page.waitForTimeout(900);
+    await page.evaluate(() => { window.__said = []; const o = TTS.speak; TTS.speak = (t, x) => { window.__said.push(t); return o.call(TTS, t, x); }; });
+    await page.evaluate(() => { startRound('contar'); });
+    // garante pelo menos 4 objetos
+    for (let i = 0; i < 6; i++) {
+      const n = await page.evaluate(() => document.querySelectorAll('#visual .obj.tappable').length);
+      if (n >= 4) break;
+      await page.evaluate(() => { startRound('contar'); }); await page.waitForTimeout(200);
+    }
+    await page.waitForTimeout(400);
+    const total = await page.evaluate(() => document.querySelectorAll('#visual .obj.tappable').length);
+    const bk = await page.evaluate(() => { const b = document.querySelector('#visual .basket'); const r = b.getBoundingClientRect(); return { w: r.width, h: r.height, label: b.getAttribute('aria-label') }; });
+    ok(total >= 4 && bk.w >= 44 && bk.h >= 44 && /Cesta com 0/.test(bk.label), 'contar: a cesta existe, tem alvo >= 44px e nome ("' + bk.label + '")');
+    const box = async (sel, i) => page.evaluate(([s, k]) => { const r = document.querySelectorAll(s)[k].getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, [sel, i]);
+    // 1) arrastar até a cesta
+    let o = await box('#visual .obj.tappable', 0), c = await box('#visual .basket', 0);
+    await page.mouse.move(o.x, o.y); await page.mouse.down(); await page.mouse.move((o.x + c.x) / 2, (o.y + c.y) / 2, { steps: 4 }); await page.mouse.move(c.x, c.y, { steps: 4 }); await page.mouse.up();
+    await page.waitForTimeout(200);
+    let st = await page.evaluate(() => ({ n: document.querySelector('.basket-n').textContent, left: document.querySelectorAll('#visual .grp .obj.tappable').length, said: window.__said.slice(-1)[0] }));
+    ok(st.n === '1' && st.left === total - 1 && /um|1|uma/i.test(st.said), 'contar: arrastar um objeto até a cesta põe 1 na cesta e fala o número ("' + st.said + '")');
+    // 2) solto fora da cesta, volta e não entra
+    o = await box('#visual .obj.tappable', 0);
+    await page.mouse.move(o.x, o.y); await page.mouse.down(); await page.mouse.move(o.x - 20, o.y - 20, { steps: 4 }); await page.mouse.move(o.x - 40, o.y - 40, { steps: 3 }); await page.mouse.up();
+    await page.waitForTimeout(500);
+    st = await page.evaluate(() => ({ n: document.querySelector('.basket-n').textContent, tf: document.querySelector('#visual .grp .obj.tappable').style.transform, counted: document.querySelectorAll('#visual .obj.counted').length }));
+    ok(st.n === '1' && st.tf === '' && st.counted === 0, 'contar: solto fora da cesta, o objeto volta e não conta');
+    // 3) arrasto com a borda: puxar para fora do quadro não deixa o objeto fugir
+    o = await box('#visual .obj.tappable', 0);
+    await page.mouse.move(o.x, o.y); await page.mouse.down(); await page.mouse.move(o.x, -300, { steps: 6 });
+    const far = await page.evaluate(() => { const r = document.querySelector('#visual .obj.dragging').getBoundingClientRect(), v = document.getElementById('visual').getBoundingClientRect(); return r.top - v.top; });
+    await page.mouse.up(); await page.waitForTimeout(400);
+    ok(far > -90, 'contar: a borda segura o objeto (subiu ' + Math.round(far) + 'px com o ponteiro 300px acima)');
+    // 4) alternativa por toque: tocar no objeto conta como antes; tocar na cesta põe o próximo
+    o = await box('#visual .obj.tappable', 0);
+    await page.mouse.click(o.x, o.y); await page.waitForTimeout(150);
+    ok(await page.evaluate(() => document.querySelectorAll('#visual .obj.counted').length) === 1, 'contar: um toque no objeto continua contando (sem arrastar)');
+    c = await box('#visual .basket', 0);
+    await page.mouse.click(c.x, c.y); await page.waitForTimeout(150);
+    ok(await page.evaluate(() => document.querySelector('.basket-n').textContent) === '2', 'contar: tocar na cesta põe o próximo objeto (alternativa sem arrastar)');
+    // 5) teclado: Enter no objeto conta; Enter na cesta põe um
+    await page.evaluate(() => document.querySelector('#visual .grp .obj.tappable').focus());
+    await page.keyboard.press('Enter');
+    await page.focus('#visual .basket'); await page.keyboard.press('Enter'); await page.waitForTimeout(150);
+    ok(await page.evaluate(() => document.querySelector('.basket-n').textContent) === '3', 'contar: pelo teclado a cesta recebe um objeto com Enter');
+    // 6) só em Contar: Somar não tem cesta; a resposta continua valendo
+    await page.evaluate(() => { startRound('somar'); }); await page.waitForTimeout(400);
+    ok(await page.evaluate(() => !document.querySelector('#visual .basket') && !document.getElementById('visual').classList.contains('has-basket')), 'somar: sem cesta (protótipo só em Contar)');
+    await page.evaluate(() => { startRound('contar'); }); await page.waitForTimeout(400);
+    const resp = await page.evaluate(() => { const q = R.current; const g = [...document.querySelectorAll('#answers button')].find((b) => String(b.dataset.v) === String(q.answer)); g.click(); return document.querySelector('#answers .good') !== null; });
+    ok(resp, 'contar: responder pelos botões continua igual');
+    ok(errors.length === 0, 'contar: sem erro de JavaScript' + (errors.length ? ' (' + errors.join(' | ') + ')' : ''));
+    await ctx.close();
+  }
+
   // 5) v2.8.0 lote C: painel desbloqueado (resumo, âncoras, um primário por seção, zona de perigo)
   {
     const errors = [];

@@ -333,6 +333,26 @@ body.hc #timer-wrap { border: 2px solid var(--line); }
   background: var(--ans-1); color: var(--on-accent); font-size: var(--fs-xs); font-weight: 900;
   border-radius: var(--r-pill); padding: var(--sp-1) var(--sp-3); animation: pop .4s;
 }
+/* v2.8.0 (N4): cesta de contar. O objeto sobe acima dos outros ao arrastar; solto fora, volta com ease-out;
+   no modo calmo volta sem animar. touch-action:none só nos objetos, para o dedo arrastar em vez de rolar. */
+#visual.has-basket { gap: var(--sp-4); }
+#visual.has-basket .grp.plain { flex: 1 1 auto; min-width: 0; }
+#visual.has-basket .obj.tappable { touch-action: none; }
+.obj.dragging { z-index: 6; cursor: grabbing; filter: drop-shadow(0 6px 6px rgba(var(--sh), .25)); transition: none; }
+.obj.snap { transition: transform var(--dur-2) var(--ease-out); }
+body.calmo .obj.snap { transition: none; }
+.basket {
+  flex: 0 0 auto; position: relative; min-width: 76px; min-height: 76px; padding: var(--sp-2);
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  background: var(--tint); border: 2.5px dashed var(--line); border-radius: var(--r-md); cursor: pointer;
+  font-family: inherit; color: var(--ink); transition: transform var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out);
+}
+.basket.over { border-color: var(--ans-1); transform: scale(1.06); }
+.basket.bump { animation: pop .35s var(--ease-out); }
+.basket-ic { font-size: 30px; line-height: 1; }
+.basket-in { display: flex; flex-wrap: wrap; justify-content: center; max-width: 84px; }
+.basket-in .obj { font-size: 20px; margin: 0; animation: pop .35s var(--ease-out); }
+.basket-n { font-size: var(--fs-sm); font-weight: 900; }
 .expr { display: flex; flex-wrap: nowrap; align-items: center; justify-content: center; gap: var(--sp-4); max-width: 100%; }
 /* v2.7.1: "a + b" fica numa linha só; os grupos encolhem (antes o segundo grupo descia e o "+" ficava preso ao primeiro) */
 .expr > .grp { flex: 0 1 auto; min-width: 0; }
