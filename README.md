@@ -79,7 +79,7 @@ Instale o app da Google Play. O jogo vai dentro do pacote e roda 100% local, sem
 1. Baixe `conta-comigo-pwa-2.8.0.zip` e hospede a pasta em um endereço https
 2. Abra no navegador e use **Instalar** (Chrome/Edge) ou **Adicionar à Tela de Início** (Safari)
 
-> **Atualização sem perder progresso:** recarregar a extensão (↻ em `chrome://extensions`) preserva estrelas, conquistas e perfis; remover e reinstalar apaga — antes, exporte o backup pelo botão 💾 e reimporte depois. Para confirmar a versão: o **selo `v2.8.0`** aparece no topo do jogo, ao lado de 🔥.
+> **Atualização sem perder progresso:** recarregar a extensão (↻ em `chrome://extensions`) preserva estrelas, conquistas e perfis; remover e reinstalar apaga; antes, salve um backup (💾 na tela de Conquistas ou no painel dos responsáveis) e restaure depois. Para confirmar a versão: o **selo `v2.8.0`** aparece no topo do jogo, ao lado de 🔥.
 
 ## 🔐 Privacidade e público-infância
 
@@ -124,7 +124,7 @@ Os pacotes aparecem como **artefatos na aba Actions** a cada push nos diretório
 
 | Versão | Destaques |
 |---|---|
-| **2.8.0** | "Jogar agora": um toque grande na home com a sugestão do dia (chefe, revisão devida ou o modo mais fraco ainda não jogado); fim de rodada com barra "faltam N ⭐ para chocar", emoji do objeto nas fichas e conta errada que volta por voz; boas-vindas na primeira abertura (avatar, nome falado e primeira conta) |
+| **2.8.0** | "Jogar agora": um toque grande na home com a sugestão do dia (chefe, revisão devida ou o modo mais fraco ainda não jogado); boas-vindas na primeira abertura (avatar, nome falado e primeira conta); fim de rodada com barra "faltam N ⭐ para chocar" e conta errada que volta por voz; loja ordenada pelo que a criança já tem, com prévia do tema; missões e conquistas que falam o objetivo; arrastar o objeto para a cesta no modo Contar; vibração leve nos apps; painel com resumo da semana, navegação por seções, mapa de domínio só com 20 questões e semanas em datas; backup com prévia antes de restaurar e desfazer por 7 dias |
 | **2.7.4** | Tipografia e composição: piso de texto de 12 a 13 px (escala sem tamanhos duplicados), objetos do palco crescem em telas grandes, botão 🏠 repetido sai da loja e das conquistas, selo de versão sai da barra da criança |
 | **2.7.3** | Movimento mais gentil: curvas próprias em todas as transições, som do toque no mesmo instante em que o botão afunda, diálogos entram sem quicar, modo calmo mantém o afundar do botão, mascote quica 3 vezes e para, barra de tempo sem recálculo de layout e saída do aviso mais rápida que a entrada |
 | **2.7.2** | Cronômetro de tom único e desligado por padrão em perfis novos; loja mostra o caminho (quanto falta) em vez de recusar, com "Comprado! Desfazer" por 5 s; conquistas trancadas legíveis; o aviso de cookies saiu da tela da criança e fica no painel dos responsáveis |

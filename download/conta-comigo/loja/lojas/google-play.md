@@ -99,10 +99,10 @@ NO ANDROID
 • O texto acompanha o tamanho de fonte do sistema.
 ```
 
-**O que há de novo (≤ 500):** _(254 caracteres)_
+**O que há de novo (≤ 500):** _(426 caracteres)_
 
 ```text
-O jogo agora vem dentro do app e funciona sem internet desde a primeira abertura. A contagem por toque fala os números no idioma do jogo, o botão Voltar do Android leva ao início e o backup sai pela folha de compartilhar (exige Android 7.0 ou mais novo).
+Novidades da 2.8.0: Jogar agora na tela inicial, boas-vindas com o nome da criança, estrelas que faltam para o mascote, loja que mostra primeiro o que já é da criança, arrastar para contar e backup com prévia e desfazer. Vibração leve ao acertar (pode ser desligada no painel). O jogo vem dentro do app e funciona sem internet; o botão Voltar leva ao início; o backup sai pela folha de compartilhar (Android 7.0 ou mais novo).
 ```
 
 ## English (`en-US`)
@@ -147,10 +147,10 @@ ON ANDROID
 • Text follows the system font size.
 ```
 
-**O que há de novo (≤ 500):** _(240 caracteres)_
+**O que há de novo (≤ 500):** _(413 caracteres)_
 
 ```text
-The game now ships inside the app and works without internet from the first launch. Tap-to-count says the numbers in the game's language, the Android Back button goes home and the backup uses the share sheet (requires Android 7.0 or newer).
+What's new in 2.8.0: Play now on the home screen, a spoken welcome with the child's name, stars left before the mascot changes, a shop that shows first what the child owns, drag to count, and a backup with preview and undo. Light vibration on correct answers (can be turned off in the panel). The game ships inside the app and works offline; Back goes home; the backup uses the share sheet (Android 7.0 or newer).
 ```
 
 ## Español (`es-419`)
@@ -195,10 +195,10 @@ EN ANDROID
 • El texto sigue el tamaño de fuente del sistema.
 ```
 
-**O que há de novo (≤ 500):** _(266 caracteres)_
+**O que há de novo (≤ 500):** _(463 caracteres)_
 
 ```text
-El juego ahora viene dentro de la app y funciona sin internet desde el primer inicio. El conteo con toques dice los números en el idioma del juego, el botón Atrás de Android vuelve al inicio y la copia sale por el menú de compartir (requiere Android 7.0 o superior).
+Novedades de la 2.8.0: Jugar ya en la pantalla de inicio, bienvenida con el nombre dicho en voz alta, estrellas que faltan para la mascota, tienda que muestra primero lo que ya tiene, arrastrar para contar y copia de seguridad con vista previa y deshacer. Vibración suave al acertar (se puede desactivar en el panel). El juego viene dentro de la app y funciona sin internet; Atrás vuelve al inicio; la copia sale por el menú de compartir (Android 7.0 o superior).
 ```
 
 ## Checklist de envio

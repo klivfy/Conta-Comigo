@@ -97,10 +97,10 @@ Matemática de brincar para crianças de 4 a 8 anos: contar, somar, comparar, di
 
 **Palavras-chave (até 7, cada uma ≤ 30):** matemática infantil; jogo educativo; contar; somar e subtrair; crianças; offline; pré-escola
 
-**Novidades desta versão (≤ 1500):** _(384 caracteres)_
+**Novidades desta versão (≤ 1500):** _(683 caracteres)_
 
 ```text
-Novidades da 2.8.0: a nova aba não trava mais depois do acerto e volta a contar a ofensiva do dia; histórias e dicas em inglês e espanhol usam o nome certo dos objetos; o nome padrão do jogador aparece no seu idioma; avisos não cobrem mais os botões durante a rodada; e criar a senha dos responsáveis pede antes uma conta de adulto. O instalador do Windows ganhou um identificador novo: quem tinha a 2.6.2 instalada pelo instalador pode desinstalar a versão antiga em Aplicativos instalados; o progresso continua.
+Novidades da 2.8.0: botão Jogar agora na tela inicial, com a sugestão do dia; boas-vindas com o nome da criança falado na primeira abertura; no fim da rodada, quantas estrelas faltam para o mascote mudar; a loja mostra primeiro o que já é da criança; missões e conquistas dizem o objetivo ao toque; no modo Contar, arraste o objeto para a cesta; no painel dos responsáveis, resumo da semana e backup que mostra o que será restaurado, com desfazer por 7 dias; a nova aba não trava mais depois do acerto. O instalador do Windows ganhou um identificador novo: quem tinha a 2.6.2 instalada pelo instalador pode desinstalar a versão antiga em Aplicativos instalados; o progresso continua.
 ```
 
 **Notas para a certificação (≤ 2000):** _(478 caracteres)_
@@ -168,10 +168,10 @@ Playful math for children aged 4 to 8: counting, addition, comparing, money and 
 
 **Palavras-chave (até 7, cada uma ≤ 30):** kids math; educational game; counting; addition; children; offline; preschool
 
-**Novidades desta versão (≤ 1500):** _(362 caracteres)_
+**Novidades desta versão (≤ 1500):** _(688 caracteres)_
 
 ```text
-What's new in 2.8.0: the new tab no longer freezes after a correct answer and counts the daily streak again; stories and hints in English and Spanish use the right word for each object; the default player name shows in your language; notices no longer cover the buttons during a round; and creating the parents' password first asks a grown-up math question. The Windows installer has a new identifier: if you installed 2.6.2 with the installer, you can uninstall the old copy in Installed apps; your progress is kept.
+What's new in 2.8.0: a Play now button on the home screen, with today's suggestion; a spoken welcome with the child's name on first launch; at the end of a round, how many stars are left before the mascot changes; the shop shows first what the child already owns; missions and achievements say their goal when tapped; in Count mode, drag the object into the basket; in the parents' panel, a weekly summary and a backup that shows what will be restored, with undo for 7 days; the new tab no longer freezes after a correct answer. The Windows installer has a new identifier: if you installed 2.6.2 with the installer, you can uninstall the old copy in Installed apps; your progress is kept.
 ```
 
 **Notas para a certificação (≤ 2000):** _(472 caracteres)_
@@ -239,10 +239,10 @@ Matemática lúdica para niños de 4 a 8 años: contar, sumar, comparar, dinero 
 
 **Palavras-chave (até 7, cada uma ≤ 30):** matemática niños; juego educativo; contar; sumar y restar; niños; sin conexión; preescolar
 
-**Novidades desta versão (≤ 1500):** _(401 caracteres)_
+**Novidades desta versão (≤ 1500):** _(770 caracteres)_
 
 ```text
-Novedades de la 2.8.0: la pestaña nueva ya no se traba después de acertar y vuelve a contar la racha del día; las historias y pistas en inglés y español usan el nombre correcto de cada objeto; el nombre predeterminado del jugador sale en tu idioma; los avisos ya no tapan los botones durante la ronda; y crear la contraseña de los responsables pide antes una cuenta para adultos. El instalador de Windows tiene un identificador nuevo: si instalaste la 2.6.2 con el instalador, puedes desinstalar la copia antigua en Aplicaciones instaladas; el progreso se conserva.
+Novedades de la 2.8.0: botón Jugar ya en la pantalla de inicio, con la sugerencia del día; bienvenida con el nombre de la niña o niño dicho en voz alta en la primera apertura; al final de la ronda, cuántas estrellas faltan para que cambie la mascota; la tienda muestra primero lo que ya tiene; las misiones y los logros dicen su objetivo al tocarlos; en el modo Contar, arrastra el objeto a la cesta; en el panel de familiares, resumen de la semana y copia de seguridad que muestra lo que se restaurará, con deshacer durante 7 días; la pestaña nueva ya no se traba después de acertar. El instalador de Windows tiene un identificador nuevo: si instalaste la 2.6.2 con el instalador, puedes desinstalar la copia antigua en Aplicaciones instaladas; el progreso se conserva.
 ```
 
 **Notas para a certificação (≤ 2000):** _(485 caracteres)_

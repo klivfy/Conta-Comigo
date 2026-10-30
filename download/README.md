@@ -7,12 +7,19 @@ Versão atual: **v2.8.0**
 
 Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo parece o de antes, o navegador provavelmente ainda está com a build antiga. Para confirmar em 1 segundo: abra o jogo e olhe o **topo da tela** — desde a v2.4.1 há um **selo de versão** (ex.: `v2.8.0`) ao lado de 🔥. Sem selo = build anterior à 2.4.1.
 
-**Importante sobre o progresso:** recarregar a extensão (botão ↻ em `chrome://extensions`) **preserva** estrelas, conquistas e perfis; **remover e reinstalar apaga**. Antes de remover, baixe o **backup datado** no botão 💾 da tela de Conquistas ou no painel dos responsáveis — depois reimporte no mesmo painel.
+**Importante sobre o progresso:** recarregar a extensão (botão ↻ em `chrome://extensions`) **preserva** estrelas, conquistas e perfis; **remover e reinstalar apaga**. Antes de remover, salve um **backup datado** pelo 💾 da tela de Conquistas ou pelo painel dos responsáveis; depois restaure em *Dados → Restaurar em outro aparelho*.
 
-**Atualizar (Chrome/Edge/Brave):** com a extensão ainda instalada, clique em ↻ Recarregar no cartão da extensão e escolha a pasta nova descompactada (preserva tudo). Ou: backup → remover → carregar o zip novo → importar o backup.
+**Atualizar (Chrome/Edge/Brave):** com a extensão ainda instalada, clique em ↻ Recarregar no cartão da extensão e escolha a pasta nova descompactada (preserva tudo). Ou: salvar o backup → remover → carregar o zip novo → restaurar o backup.
 **Atualizar (Firefox):** `about:debugging#/runtime/this-firefox` → *Recarregar*.
 
 ## Novidades da v2.8.0
+
+- **Jogar agora**: um toque grande na tela inicial com a sugestão do dia; boas-vindas com o nome da criança falado.
+- **Fim de rodada e loja**: quantas estrelas faltam para o mascote mudar; a loja mostra primeiro o que já é da criança; missões e conquistas dizem o objetivo ao toque.
+- **Contar arrastando** (protótipo, só em Contar): o objeto vai para a cesta e o jogo fala o número. Tocar ou Enter continua funcionando.
+- **Painel dos responsáveis**: resumo da semana em uma frase; mapa de domínio só com 20 questões; semanas com datas.
+- **Backup**: salvar e restaurar. Restaurar mostra quem, quantas estrelas e a data antes de trocar, avisa se o backup é mais antigo, e dá para desfazer por 7 dias.
+- **Vibração leve** (só nos apps Android e iPhone): pode ser desligada no painel.
 
 - **Progresso protegido**: o jogo, o painel dos responsáveis e a nova aba não se sobrescrevem mais (antes, um painel aberto podia devolver as estrelas ao valor antigo).
 - **Sincronização por perfil**: funciona com vários perfis (antes falhava em silêncio acima de 8 KB) e o painel mostra se deu certo.

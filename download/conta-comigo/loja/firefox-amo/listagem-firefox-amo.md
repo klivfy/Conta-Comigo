@@ -49,7 +49,7 @@ OBSERVAÇÕES
 • Atalho de teclado para abrir o jogo: Ctrl+Shift+U (Command+Shift+U no Mac).
 
 **Notas da versão 2.8.0:**
-a nova aba não trava mais depois do acerto e volta a contar a ofensiva do dia; histórias e dicas em inglês e espanhol usam o nome certo dos objetos; o nome padrão do jogador aparece no seu idioma; avisos não cobrem mais os botões durante a rodada; e criar a senha dos responsáveis pede antes uma conta de adulto. Requer Firefox 128 ou superior.
+Novidades da 2.8.0: botão Jogar agora na tela inicial, com a sugestão do dia; boas-vindas com o nome da criança falado na primeira abertura; no fim da rodada, quantas estrelas faltam para o mascote mudar; a loja mostra primeiro o que já é da criança; missões e conquistas dizem o objetivo ao toque; no modo Contar, arraste o objeto para a cesta; no painel dos responsáveis, resumo da semana e backup que mostra o que será restaurado, com desfazer por 7 dias; a nova aba não trava mais depois do acerto.
 
 **Categoria sugerida:** Games & Entertainment (alternativa: Other)
 **Etiquetas (tags):** matemática, crianças, educação, jogo, contar, aprendizado, offline, infantil
@@ -96,7 +96,7 @@ NOTES
 • Keyboard shortcut to open the game: Ctrl+Shift+U (Command+Shift+U on Mac).
 
 **Release notes 2.8.0:**
-the new tab no longer freezes after a correct answer and counts the daily streak again; stories and hints in English and Spanish use the right word for each object; the default player name shows in your language; notices no longer cover the buttons during a round; and creating the parents' password first asks a grown-up math question. Requires Firefox 128 or later.
+What's new in 2.8.0: a Play now button on the home screen, with today's suggestion; a spoken welcome with the child's name on first launch; at the end of a round, how many stars are left before the mascot changes; the shop shows first what the child already owns; missions and achievements say their goal when tapped; in Count mode, drag the object into the basket; in the parents' panel, a weekly summary and a backup that shows what will be restored, with undo for 7 days; the new tab no longer freezes after a correct answer.
 
 ---
 
@@ -139,7 +139,7 @@ NOTAS
 • La extensión reemplaza la página de nueva pestaña por un desafío rápido de matemática. Puedes apagar el desafío en esa misma página; para recuperar la nueva pestaña predeterminada de Firefox, desactiva o elimina la extensión.
 
 **Notas de la versión 2.8.0:**
-la pestaña nueva ya no se traba después de acertar y vuelve a contar la racha del día; las historias y pistas en inglés y español usan el nombre correcto de cada objeto; el nombre predeterminado del jugador sale en tu idioma; los avisos ya no tapan los botones durante la ronda; y crear la contraseña de los responsables pide antes una cuenta para adultos. Requiere Firefox 128 o superior.
+Novedades de la 2.8.0: botón Jugar ya en la pantalla de inicio, con la sugerencia del día; bienvenida con el nombre de la niña o niño dicho en voz alta en la primera apertura; al final de la ronda, cuántas estrellas faltan para que cambie la mascota; la tienda muestra primero lo que ya tiene; las misiones y los logros dicen su objetivo al tocarlos; en el modo Contar, arrastra el objeto a la cesta; en el panel de familiares, resumen de la semana y copia de seguridad que muestra lo que se restaurará, con deshacer durante 7 días; la pestaña nueva ya no se traba después de acertar.
 
 ---
 
