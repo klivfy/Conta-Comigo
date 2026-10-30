@@ -7,7 +7,7 @@ Painel: <https://appstoreconnect.apple.com> · Pacote: *Archive* do Xcode do pro
 Estes itens foram conferidos no código. Enquanto não forem resolvidos, não envie.
 
 1. **Backup no iPhone: plugins adicionados, falta testar em aparelho.** O `native/ios` agora traz `@capacitor/filesystem` e `@capacitor/share` (como o Android), então `saveTextFile` grava o arquivo no cache e abre a folha de compartilhar. Só um iPhone real confirma; o aviso "salvo" só vale se o arquivo sair de fato.
-2. **Falta o manifesto de privacidade do app** (`PrivacyInfo.xcprivacy`). O `@capacitor/preferences` usa `UserDefaults`, API de "motivo obrigatório" (motivo `CA92.1`). Os pacotes de plugin do projeto não trazem manifesto próprio. Sem a declaração, o App Store Connect avisa ou recusa o envio (erro `ITMS-91053`). No Mac: *Product → Archive → Generate Privacy Report* e declare o que aparecer.
+2. **Manifesto de privacidade: criado, falta conferir no Mac.** O app agora traz `PrivacyInfo.xcprivacy` (sem rastreio, sem coleta, `UserDefaults` com motivo `CA92.1` e carimbo de data de arquivo com motivo `C617.1`). O segundo vem do plugin Filesystem, que ainda não foi checado no binário. No Mac: *Product → Archive → Generate Privacy Report* e compare com o arquivo; se o relatório apontar outra categoria ou motivo, ajuste. Sem a declaração certa, o App Store Connect avisa ou recusa o envio (erro `ITMS-91053`).
 3. **Capturas nos tamanhos da Apple.** As de `imagens/<idioma>/celular-1080x1920/` (Play) não servem. Preciso de iPhone 6,9" (1290×2796 ou 1320×2868) e iPad 13" (2064×2752 ou 2048×2732), em cada idioma.
 4. **Conta Apple** (Apple Developer Program, US$ 99/ano), App ID, certificado de distribuição e perfil. Conta de organização pede número D-U-N-S; conta individual mostra o seu nome como vendedor.
 5. **Teste num iPhone real** (TestFlight): voz, vibração, backup depois do item 1, e os três links do rodapé abrindo o Safari depois da conferência de adulto. No Windows e no Android esse mesmo caso já falhou antes; no iOS só foi lido no código.
@@ -269,7 +269,7 @@ Contact: [preencher: nome, telefone e e-mail]
 ## Checklist rápido
 
 - [ ] Backup salva um arquivo no iPhone (bloqueio 1)
-- [ ] `PrivacyInfo.xcprivacy` no app e relatório de privacidade sem pendência (bloqueio 2)
+- [ ] Relatório de privacidade do Xcode confere com o `PrivacyInfo.xcprivacy` do app (bloqueio 2)
 - [ ] Capturas nos tamanhos da Apple, nos 3 idiomas (bloqueio 3)
 - [ ] Conta, App ID e assinatura (bloqueio 4)
 - [ ] Teste no iPhone: voz, vibração, backup e links (bloqueio 5)

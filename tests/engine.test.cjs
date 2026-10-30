@@ -696,3 +696,23 @@ test('app do Windows: a lista de links permitidos é a mesma de LEGAL e todo o r
   assert.match(h, /return \{ action: 'deny' \}/);
   assert.equal((h.match(/action: 'allow'/g) || []).length, 1);
 });
+
+test('app do iPhone: manifesto de privacidade declara só o que o app faz e entra no projeto Xcode', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const app = path.join(__dirname, '..', 'native/ios/ios/App');
+  const xml = fs.readFileSync(path.join(app, 'App/PrivacyInfo.xcprivacy'), 'utf8');
+  // sem rastreio e sem coleta de dados: é o que a ficha da loja diz
+  assert.match(xml, /<key>NSPrivacyTracking<\/key>\s*<false\/>/);
+  assert.match(xml, /<key>NSPrivacyTrackingDomains<\/key>\s*<array\/>/);
+  assert.match(xml, /<key>NSPrivacyCollectedDataTypes<\/key>\s*<array\/>/);
+  // APIs de motivo obrigatório: UserDefaults (Preferences) e carimbo de data de arquivo (Filesystem)
+  const tipos = [...xml.matchAll(/<string>(NSPrivacyAccessedAPICategory\w+)<\/string>/g)].map((m) => m[1]).sort();
+  assert.deepEqual(tipos, ['NSPrivacyAccessedAPICategoryFileTimestamp', 'NSPrivacyAccessedAPICategoryUserDefaults']);
+  assert.match(xml, /<string>CA92\.1<\/string>/);
+  assert.match(xml, /<string>C617\.1<\/string>/);
+  // o arquivo precisa estar na fase Resources do alvo, senão não vai para o app
+  const proj = fs.readFileSync(path.join(app, 'App.xcodeproj/project.pbxproj'), 'utf8');
+  assert.match(proj, /PrivacyInfo\.xcprivacy in Resources \*\/ = \{isa = PBXBuildFile/);
+  assert.match(proj, /\/\* PrivacyInfo\.xcprivacy in Resources \*\/,\n/);
+});
