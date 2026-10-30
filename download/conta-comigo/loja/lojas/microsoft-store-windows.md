@@ -97,16 +97,16 @@ Matemática de brincar para crianças de 4 a 8 anos: contar, somar, comparar, di
 
 **Palavras-chave (até 7, cada uma ≤ 30):** matemática infantil; jogo educativo; contar; somar e subtrair; crianças; offline; pré-escola
 
-**Novidades desta versão (≤ 1500):** _(683 caracteres)_
+**Novidades desta versão (≤ 1500):** _(458 caracteres)_
 
 ```text
-Novidades da 2.8.0: botão Jogar agora na tela inicial, com a sugestão do dia; boas-vindas com o nome da criança falado na primeira abertura; no fim da rodada, quantas estrelas faltam para o mascote mudar; a loja mostra primeiro o que já é da criança; missões e conquistas dizem o objetivo ao toque; no modo Contar, arraste o objeto para a cesta; no painel dos responsáveis, resumo da semana e backup que mostra o que será restaurado, com desfazer por 7 dias; a nova aba não trava mais depois do acerto. O instalador do Windows ganhou um identificador novo: quem tinha a 2.6.2 instalada pelo instalador pode desinstalar a versão antiga em Aplicativos instalados; o progresso continua.
+Novidades da 2.8.0: botão Jogar agora na tela inicial, com a sugestão do dia; boas-vindas com o nome da criança falado na primeira abertura; no fim da rodada, quantas estrelas faltam para o mascote mudar; a loja mostra primeiro o que já é da criança; missões e conquistas dizem o objetivo ao toque; no modo Contar, arraste o objeto para a cesta; no painel dos responsáveis, resumo da semana e backup que mostra o que será restaurado, com desfazer por 7 dias.
 ```
 
-**Notas para a certificação (≤ 2000):** _(478 caracteres)_
+**Notas para a certificação (≤ 2000):** _(665 caracteres)_
 
 ```text
-Não há login, conta nem serviço externo para testar: abra o app, toque em "Contar" e responda. O app é um pacote MSIX gerado com Electron (desktop bridge) e declara a capacidade runFullTrust, necessária para apps de área de trabalho empacotados. Ele não acessa a internet (nenhuma requisição de rede), não usa a conta Microsoft e não grava nada fora da própria pasta de dados do app. A área dos responsáveis (engrenagem) é protegida por senha criada pelo adulto no primeiro uso.
+Não há login, conta nem serviço externo para testar: abra o app, toque em "Contar" e responda. O app é um pacote MSIX gerado com Electron (desktop bridge) e declara a capacidade runFullTrust, necessária para apps de área de trabalho empacotados. Ele não acessa a internet (nenhuma requisição de rede; links externos são bloqueados), não usa a conta Microsoft e só grava fora da própria pasta de dados quando o responsável pede um backup, no local que ele escolhe. Para abrir a área dos responsáveis (engrenagem), o app pede antes uma conta de adulto e depois a criação de uma senha; qualquer senha serve para testar. A política de privacidade está na ficha da loja.
 ```
 
 ## English
@@ -168,16 +168,16 @@ Playful math for children aged 4 to 8: counting, addition, comparing, money and 
 
 **Palavras-chave (até 7, cada uma ≤ 30):** kids math; educational game; counting; addition; children; offline; preschool
 
-**Novidades desta versão (≤ 1500):** _(688 caracteres)_
+**Novidades desta versão (≤ 1500):** _(474 caracteres)_
 
 ```text
-What's new in 2.8.0: a Play now button on the home screen, with today's suggestion; a spoken welcome with the child's name on first launch; at the end of a round, how many stars are left before the mascot changes; the shop shows first what the child already owns; missions and achievements say their goal when tapped; in Count mode, drag the object into the basket; in the parents' panel, a weekly summary and a backup that shows what will be restored, with undo for 7 days; the new tab no longer freezes after a correct answer. The Windows installer has a new identifier: if you installed 2.6.2 with the installer, you can uninstall the old copy in Installed apps; your progress is kept.
+What's new in 2.8.0: a Play now button on the home screen, with today's suggestion; a spoken welcome with the child's name on first launch; at the end of a round, how many stars are left before the mascot changes; the shop shows first what the child already owns; missions and achievements say their goal when tapped; in Count mode, drag the object into the basket; in the parents' panel, a weekly summary and a backup that shows what will be restored, with undo for 7 days.
 ```
 
-**Notas para a certificação (≤ 2000):** _(472 caracteres)_
+**Notas para a certificação (≤ 2000):** _(676 caracteres)_
 
 ```text
-There is no login, account or external service needed to test: open the app, tap "Count" and answer. The app is an MSIX package built with Electron (desktop bridge) and declares the runFullTrust capability required for packaged desktop apps. It does not access the internet (no network requests), does not use the Microsoft account and writes nothing outside its own app data folder. The parents' area (gear icon) is protected by a password the adult creates on first use.
+There is no login, account or external service needed to test: open the app, tap "Count" and answer. The app is an MSIX package built with Electron (desktop bridge) and declares the runFullTrust capability required for packaged desktop apps. It does not access the internet (no network requests; external links are blocked), does not use the Microsoft account and only writes outside its own app data folder when the parent asks for a backup, in the location they choose. To open the parents' area (gear icon), the app first asks a grown-up math question and then asks the adult to create a password; any password works for testing. The privacy policy is in the store listing.
 ```
 
 ## Español
@@ -239,16 +239,16 @@ Matemática lúdica para niños de 4 a 8 años: contar, sumar, comparar, dinero 
 
 **Palavras-chave (até 7, cada uma ≤ 30):** matemática niños; juego educativo; contar; sumar y restar; niños; sin conexión; preescolar
 
-**Novidades desta versão (≤ 1500):** _(770 caracteres)_
+**Novidades desta versão (≤ 1500):** _(532 caracteres)_
 
 ```text
-Novedades de la 2.8.0: botón Jugar ya en la pantalla de inicio, con la sugerencia del día; bienvenida con el nombre de la niña o niño dicho en voz alta en la primera apertura; al final de la ronda, cuántas estrellas faltan para que cambie la mascota; la tienda muestra primero lo que ya tiene; las misiones y los logros dicen su objetivo al tocarlos; en el modo Contar, arrastra el objeto a la cesta; en el panel de familiares, resumen de la semana y copia de seguridad que muestra lo que se restaurará, con deshacer durante 7 días; la pestaña nueva ya no se traba después de acertar. El instalador de Windows tiene un identificador nuevo: si instalaste la 2.6.2 con el instalador, puedes desinstalar la copia antigua en Aplicaciones instaladas; el progreso se conserva.
+Novedades de la 2.8.0: botón Jugar ya en la pantalla de inicio, con la sugerencia del día; bienvenida con el nombre de la niña o niño dicho en voz alta en la primera apertura; al final de la ronda, cuántas estrellas faltan para que cambie la mascota; la tienda muestra primero lo que ya tiene; las misiones y los logros dicen su objetivo al tocarlos; en el modo Contar, arrastra el objeto a la cesta; en el panel de familiares, resumen de la semana y copia de seguridad que muestra lo que se restaurará, con deshacer durante 7 días.
 ```
 
-**Notas para a certificação (≤ 2000):** _(485 caracteres)_
+**Notas para a certificação (≤ 2000):** _(713 caracteres)_
 
 ```text
-No hace falta login, cuenta ni servicio externo para probar: abre la app, toca "Contar" y responde. La app es un paquete MSIX creado con Electron (desktop bridge) y declara la capacidad runFullTrust, necesaria para apps de escritorio empaquetadas. No accede a internet (ninguna solicitud de red), no usa la cuenta Microsoft y no escribe nada fuera de su propia carpeta de datos. El área de las familias (engranaje) está protegida por una contraseña que el adulto crea en el primer uso.
+No hace falta login, cuenta ni servicio externo para probar: abre la app, toca "Contar" y responde. La app es un paquete MSIX creado con Electron (desktop bridge) y declara la capacidad runFullTrust, necesaria para apps de escritorio empaquetadas. No accede a internet (ninguna solicitud de red; los enlaces externos están bloqueados), no usa la cuenta Microsoft y solo escribe fuera de su propia carpeta de datos cuando la persona adulta pide una copia de seguridad, en el lugar que elige. Para abrir el área de las familias (engranaje), la app pide antes una cuenta de adulto y luego la creación de una contraseña; cualquier contraseña sirve para probar. La política de privacidad está en la ficha de la tienda.
 ```
 
 ## Checklist de envio
