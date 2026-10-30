@@ -118,9 +118,8 @@ const MOCK = (shareRejects) => {
     await page.evaluate(() => doBackupDownload());
     await page.waitForTimeout(300);
     ok(await page.evaluate(() => window.__calls.some(([n]) => n === 'share')), 'painel: backup datado vai para a folha de compartilhar');
-    await page.evaluate(() => doExport());
-    await page.waitForTimeout(300);
-    ok(await page.evaluate(() => window.__calls.some(([n, o]) => n === 'fs.writeFile' && o.path === 'conta-comigo-progresso.json')), 'painel: exportar grava conta-comigo-progresso.json');
+    ok(await page.evaluate(() => window.__calls.some(([n, o]) => n === 'fs.writeFile' && /^conta-comigo-backup-\d{4}-\d{2}-\d{2}\.json$/.test(o.path))), 'painel: o backup datado é gravado antes de ir para a folha de compartilhar');
+    ok(await page.evaluate(() => /Drive|iCloud/.test(document.getElementById('bk-where').textContent)), 'painel (app): o texto manda escolher Drive, iCloud ou Arquivos');
     ok(await page.evaluate(() => !(window.__listeners.backButton || []).length), 'painel: sem ouvinte (o Capacitor faz goBack sozinho)');
     // v2.8.0 (N5): vibração leve só no app, desligável, muda no modo calmo
     await page.evaluate(() => showContent());

@@ -182,6 +182,8 @@ function renderOptions() {
   renderDash();
   renderProfList();
   paintBackupHint(); // v2.5: estado do backup das conquistas
+  $('#bk-where').textContent = t(FILE_VIA_SHARE ? 'bk_where_app' : 'bk_where_web');
+  paintUndo();
 
   $('#set-diff').value = String(g.diffMode);
   $('#set-unlock').checked = !!g.unlockAll;
@@ -252,7 +254,7 @@ function renderDash() {
   const sm = parentSummary(p);
   $('#opt-summary').textContent = pName(p) + ': ' + (sm.rounds
     ? (sm.rounds === 1 ? t('sum_week1') : t('sum_week', { n: sm.rounds })) + (sm.best ? ' ' + t('sum_best', { m: t('m_' + sm.best) }) : '') + (sm.next ? ' ' + t('sum_next', { m: t('m_' + sm.next) }) : '')
-    : t('sum_idle'));
+    : t('sum_idle')) + (needsBackupNudge(p) ? ' ' + t('sum_backup') : '');
 
   // mapa de domínio S09 (v2.8.0, 10.1.5): só dá veredito com 20 questões no modo; rótulo em texto, não só cor
   $('#map-rows').innerHTML = Object.keys(MODES).map((m) => {
@@ -286,6 +288,12 @@ function renderDash() {
       return '<div class="week-bar" title="' + escHtml(name + ': ' + t('wk_rounds', { n: w.rounds })) + '"><span>' + w.rounds + '</span><i style="height:' + Math.max(6, Math.round(70 * w.rounds / maxR)) + 'px"></i><span class="wk-name">' + escHtml(name) + '</span></div>';
     }).join('')
     : '<span class="opt-note">—</span>';
+}
+
+/* v2.8.0: lembrar do backup só de quem já tem o que perder (30 ⭐) e não salva há 14 dias */
+function needsBackupNudge(p) {
+  const last = Number(G().lastBackupAt) || 0;
+  return (Number(p.stars) || 0) >= 30 && (!last || Date.now() - last >= 14 * 86400000);
 }
 
 /* ---------- perfis (S27) + voz por perfil (v2.4, A-179) ---------- */
@@ -441,13 +449,6 @@ function paintVoiceTierNote() {
 
 /* ---------- exportar / importar (S29) + backup com data (v2.5) ---------- */
 /* nos apps (iOS e Android) o arquivo sai pela folha de compartilhar do sistema */
-function doExport() {
-  saveState(true);
-  saveTextFile('conta-comigo-progresso.json', JSON.stringify(shareableDB(DB), null, 2), t('backup_share')).then((ok) => {
-    if (!ok) return;
-    try { G().lastBackupAt = Date.now(); saveState(true); paintBackupHint(); } catch (e) { /* ignora */ }
-  });
-}
 /* v2.5: backup datado — rede de segurança das conquistas quando a extensão
    é removida e reinstalada (recarregar ↻ preserva; remover apaga) */
 function doBackupDownload() {
@@ -467,15 +468,57 @@ function paintBackupHint() {
     : '✅ ' + t('backup_hint_ok', { n: days });
   el.style.fontWeight = days != null && days >= 14 ? '800' : '600';
 }
+/* v2.8.0: restaurar em dois passos. 1) o backup é lido e resumido (quem, quantas estrelas, se é mais
+   antigo que este aparelho); 2) só ao confirmar o progresso é trocado. O estado de antes fica guardado
+   por 7 dias para "Desfazer", porque restaurar o arquivo errado é o erro que mais dói. */
+const UNDO_KEY = 'cc_undo_restore', UNDO_DAYS = 7;
+let pendingRestore = null;
+function undoInfo() {
+  try {
+    const u = JSON.parse(localStorage.getItem(UNDO_KEY) || 'null');
+    if (!u || !u.db || Date.now() - (u.at || 0) > UNDO_DAYS * 86400000) { localStorage.removeItem(UNDO_KEY); return null; }
+    return u;
+  } catch (e) { return null; }
+}
+function paintUndo() { $('#btn-undo-restore').classList.toggle('hidden', !undoInfo()); }
+function cancelRestore() { pendingRestore = null; $('#restore-box').classList.add('hidden'); }
 function doImport(text) {
   const d = parseDB(text);
   if (!d) { toastOpt('⚠️ ' + t('imp_bad')); return; }
+  const pv = restorePreview(DB, d);
+  pendingRestore = d;
+  const when = pv.at ? new Date(pv.at).toLocaleDateString(TTS_LANG[G().lang] || 'pt-BR') : '?';
+  $('#restore-body').textContent = t('bk_pv_body', { d: when, who: pv.profiles.map((x) => x.avatar + ' ' + x.name + ' (' + x.stars + ' ⭐)').join(', '), s: pv.stars, c: pv.curStars });
+  const w = $('#restore-warn');
+  w.textContent = pv.older ? t('bk_pv_old', { n: pv.lose }) : '';
+  w.classList.toggle('hidden', !pv.older);
+  $('#restore-box').classList.remove('hidden');
+  $('#btn-restore-no').focus();
+}
+function applyRestore() {
+  const d = pendingRestore;
+  if (!d) return;
+  try { localStorage.setItem(UNDO_KEY, JSON.stringify({ at: Date.now(), db: JSON.stringify(shareableDB(DB)) })); } catch (e) { /* sem espaço: restaura sem o desfazer */ }
+  swapDB(d);
+  cancelRestore();
+  toastOpt('✅ ' + t('bk_restored'));
+  renderOptions();
+}
+function swapDB(d) {
   replaceDB(keepLocalSecrets(d, DB)); // a senha deste aparelho continua valendo; o backup vale inteiro
   if (!DB.profiles.length) DB.profiles = [newProfile('p1', DEFAULT_NAME, '🦊')];
   if (!DB.profiles.find((x) => x.id === DB.activeId)) DB.activeId = DB.profiles[0].id;
   DB.settings = Object.assign({}, DEFAULT_SETTINGS, DB.settings || {});
   saveState(true);
-  toastOpt('✅ ' + t('imp_ok'));
+}
+function undoRestore() {
+  const u = undoInfo();
+  const d = u && parseDB(u.db);
+  if (!d) { paintUndo(); return; }
+  swapDB(d);
+  try { localStorage.removeItem(UNDO_KEY); } catch (e) { /* ignora */ }
+  cancelRestore();
+  toastOpt('↩️ ' + t('bk_undone'));
   renderOptions();
 }
 
@@ -540,7 +583,9 @@ function bindOptions() {
   $('#set-limit').addEventListener('change', (e) => { G().sessionLimit = Number(e.target.value); set(); });
   $('#set-sync').addEventListener('change', (e) => { G().sync = e.target.checked; set(); if (G().sync) saveState(true); setTimeout(paintSyncStatus, 800); });
 
-  $('#btn-export').addEventListener('click', doExport);
+  $('#btn-restore-ok').addEventListener('click', applyRestore);
+  $('#btn-restore-no').addEventListener('click', cancelRestore);
+  $('#btn-undo-restore').addEventListener('click', undoRestore);
   $('#btn-backup-dl').addEventListener('click', doBackupDownload); // v2.5: backup datado
   $('#btn-copy').addEventListener('click', async () => {
     saveState(true);
@@ -555,6 +600,7 @@ function bindOptions() {
     const rd = new FileReader();
     rd.onload = () => doImport(String(rd.result));
     rd.readAsText(f);
+    e.target.value = ''; // permite escolher o mesmo arquivo de novo
   });
   $('#btn-reset-p').addEventListener('click', () => {
     if (!confirm(t('confirm_reset'))) return;

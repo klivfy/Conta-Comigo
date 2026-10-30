@@ -92,6 +92,8 @@
     .danger-zone { border: 2px solid var(--danger); }
     .danger-zone > h2 { color: var(--danger-text); }
     .opt-row label { max-width: 340px; }
+    .restore-box { background: rgba(var(--sh), .06); border-radius: var(--r-md); padding: var(--sp-5) var(--sp-6); margin-top: var(--sp-4); }
+    .restore-box p { font-size: var(--fs-md); margin: var(--sp-3) 0; }
     .map-lbl { flex: 0 0 auto; font-size: var(--fs-xs); font-weight: 800; color: var(--ink-soft); min-width: 120px; }
     .map-lbl.high { color: var(--success-text, var(--ink)); }
     .map-bar.few i { width: 0; }
@@ -309,16 +311,45 @@
 
         <div class="opt-card" id="sec-data">
           <h2><span aria-hidden="true">💾</span> <span data-i18n="data_set">Dados</span></h2>
-          <div class="btn-line">
-            <button class="mini-btn" id="btn-backup-dl" data-i18n="backup_btn">Baixar backup datado</button>
-            <button class="mini-btn ghost" id="btn-export" data-i18n="exp_btn">Exportar (arquivo)</button>
-            <button class="mini-btn ghost" id="btn-copy" data-i18n="exp_copy">Copiar</button>
-            <button class="mini-btn ghost" id="btn-import" data-i18n="imp_btn">Importar do texto</button>
-            <label class="mini-btn ghost" for="imp-file" style="display:inline-flex;align-items:center" data-i18n="imp_file">Importar arquivo</label>
-            <input type="file" id="imp-file" class="file-in" accept=".json,application/json">
-          </div>
-          <textarea id="imp-area" placeholder="…" data-i18n-label="a_imp_text" aria-label="Texto do backup"></textarea>
           <p class="opt-note" id="bk-hint"></p>
+
+          <h3 class="opt-sub" data-i18n="bk_save_h">Salvar o progresso</h3>
+          <p class="opt-note" id="bk-where"></p>
+          <div class="btn-line">
+            <button class="mini-btn" id="btn-backup-dl" data-i18n="bk_save">Salvar backup</button>
+            <button class="mini-btn ghost" id="btn-copy" data-i18n="exp_copy">Copiar como texto</button>
+          </div>
+
+          <h3 class="opt-sub" data-i18n="bk_restore_h">Restaurar em outro aparelho</h3>
+          <div class="btn-line">
+            <label class="mini-btn ghost" for="imp-file" style="display:inline-flex;align-items:center" data-i18n="bk_restore_file">Restaurar de um arquivo</label>
+            <input type="file" id="imp-file" class="file-in" accept=".json,application/json">
+            <button class="mini-btn ghost hidden" id="btn-undo-restore" data-i18n="bk_undo">Desfazer a última restauração</button>
+          </div>
+          <div id="restore-box" class="restore-box hidden" role="group" aria-labelledby="restore-title">
+            <b id="restore-title" data-i18n="bk_pv_title">Confira antes de restaurar</b>
+            <p id="restore-body"></p>
+            <p id="restore-warn" class="reset-warn hidden"></p>
+            <div class="btn-line">
+              <button class="mini-btn ghost" id="btn-restore-ok" data-i18n="bk_pv_ok">Restaurar agora</button>
+              <button class="mini-btn ghost" id="btn-restore-no" data-i18n="bk_pv_no">Cancelar</button>
+            </div>
+          </div>
+          <details class="voice-guide">
+            <summary data-i18n="bk_restore_text">Restaurar de um texto copiado</summary>
+            <div class="vg-body">
+              <textarea id="imp-area" placeholder="…" data-i18n-label="a_imp_text" aria-label="Texto do backup"></textarea>
+              <div class="btn-line"><button class="mini-btn ghost" id="btn-import" data-i18n="bk_restore_go">Restaurar do texto</button></div>
+            </div>
+          </details>
+          <details class="voice-guide">
+            <summary data-i18n="bk_steps_t">Como levar o progresso para outro aparelho</summary>
+            <div class="vg-body">
+              <p data-i18n="bk_s1"></p>
+              <p data-i18n="bk_s2"></p>
+              <p data-i18n="bk_s3"></p>
+            </div>
+          </details>
           <p class="opt-note" data-i18n="bk_pwd_note">🔒 O backup não leva a senha dos responsáveis: ao importar, continua valendo a senha deste aparelho.</p>
           <p class="opt-note" id="opt-version"></p>
         </div>

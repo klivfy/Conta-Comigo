@@ -301,6 +301,37 @@ function serve() {
       ok(/Nível 1: 90% de acerto/.test(d.dotLabel), 'painel ' + w + 'px: o ponto de nível tem texto ("' + d.dotLabel + '")');
       ok(d.acc === '—', 'painel ' + w + 'px: precisão não aparece com poucas questões');
       ok(d.weeks[0] === '18/10 a 24/10' && d.weeks[1] === 'S44' && d.weeks[2] === 'esta semana', 'painel ' + w + 'px: semanas em data legível (' + d.weeks.join(' | ') + ')');
+      // backup melhorado: restaurar em dois passos, aviso de backup mais antigo e desfazer
+      const bk = await page.evaluate(() => {
+        const out = {};
+        P().stars = 150; DB.updatedAt = Date.now(); G().lastBackupAt = 0; saveState(true); renderOptions();
+        out.nudge = document.getElementById('opt-summary').textContent;
+        out.hintNew = document.getElementById('bk-hint').textContent;
+        out.where = document.getElementById('bk-where').textContent;
+        const old = shareableDB(DB); old.updatedAt = Date.now() - 500000; old.profiles[0].stars = 40;
+        doImport(JSON.stringify(old));
+        out.boxShown = !document.getElementById('restore-box').classList.contains('hidden');
+        out.warn = document.getElementById('restore-warn').textContent;
+        out.body = document.getElementById('restore-body').textContent;
+        out.untouched = P().stars;
+        cancelRestore();
+        out.boxHidden = document.getElementById('restore-box').classList.contains('hidden');
+        out.afterCancel = P().stars;
+        doImport(JSON.stringify(old)); applyRestore();
+        out.restored = P().stars;
+        out.undoShown = !document.getElementById('btn-undo-restore').classList.contains('hidden');
+        undoRestore();
+        out.undone = P().stars;
+        out.undoGone = document.getElementById('btn-undo-restore').classList.contains('hidden');
+        out.bad = (() => { doImport('isto não é backup'); return document.getElementById('restore-box').classList.contains('hidden'); })();
+        return out;
+      });
+      ok(/Salve um backup em Dados/.test(bk.nudge), 'backup ' + w + 'px: quem já tem estrelas e nunca salvou recebe o lembrete no resumo');
+      ok(!/extensão/.test(bk.hintNew) && /Drive|Downloads/.test(bk.where), 'backup ' + w + 'px: textos sem jargão de extensão e com o destino do arquivo ("' + bk.where.slice(0, 40) + '…")');
+      ok(bk.boxShown && /Backup de .*Total: 40 ⭐.*\(150 ⭐\)/.test(bk.body) && /perderia 110 ⭐/.test(bk.warn) && bk.untouched === 150, 'backup ' + w + 'px: restaurar mostra o resumo e o aviso de backup mais antigo sem trocar nada ainda');
+      ok(bk.boxHidden && bk.afterCancel === 150, 'backup ' + w + 'px: cancelar não muda o progresso');
+      ok(bk.restored === 40 && bk.undoShown && bk.undone === 150 && bk.undoGone, 'backup ' + w + 'px: confirmar restaura e "Desfazer" devolve o progresso de antes');
+      ok(bk.bad, 'backup ' + w + 'px: arquivo inválido não abre a confirmação');
       await ctx.close();
     }
     ok(errors.length === 0, 'painel: sem erro de JavaScript' + (errors.length ? ' (' + errors.join(' | ') + ')' : ''));

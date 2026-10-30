@@ -1235,6 +1235,19 @@ function shareableDB(db) {
   if (out.settings) SECRET_KEYS.forEach((k) => { delete out.settings[k]; });
   return out;
 }
+/* v2.8.0: antes de restaurar um backup, mostra o que ele traz e avisa se é mais antigo que o aparelho
+   (restaurar o backup errado por cima do progresso novo é o pior erro possível desse fluxo).
+   Quem chama já passou o texto por parseDB; local e incoming são bancos normalizados. */
+function restorePreview(local, incoming) {
+  const stars = (db) => (db.profiles || []).reduce((n, p) => n + (Number(p.stars) || 0), 0);
+  const inc = stars(incoming), cur = stars(local);
+  const older = (Number(incoming.updatedAt) || 0) < (Number(local.updatedAt) || 0) && inc < cur;
+  return {
+    at: Number(incoming.updatedAt) || 0,
+    profiles: (incoming.profiles || []).map((p) => ({ name: p.name, avatar: p.avatar, stars: Number(p.stars) || 0 })),
+    stars: inc, curStars: cur, older, lose: older ? cur - inc : 0,
+  };
+}
 function keepLocalSecrets(incoming, local) {
   const from = (local && local.settings) || DEFAULT_SETTINGS;
   SECRET_KEYS.forEach((k) => { incoming.settings[k] = from[k] != null ? from[k] : DEFAULT_SETTINGS[k]; });

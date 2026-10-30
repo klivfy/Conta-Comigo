@@ -656,3 +656,19 @@ test('háptica: backup antigo sem o campo fica ligado; valor estranho vira boole
   assert.equal(run({ hapticsOn: 0 }), false);
   assert.equal(run({ hapticsOn: 'talvez' }), true);
 });
+
+test('restorePreview: resume o backup e avisa quando ele é mais antigo e tem menos estrelas', () => {
+  const pv = (loc, inc) => j('restorePreview(' + JSON.stringify(loc) + ',' + JSON.stringify(inc) + ')');
+  const db = (at, ...stars) => ({ updatedAt: at, profiles: stars.map((st, i) => ({ name: 'P' + i, avatar: '🦊', stars: st })) });
+  const novo = pv(db(1000, 50), db(2000, 120, 30));
+  assert.equal(novo.older, false);
+  assert.equal(novo.stars, 150);
+  assert.deepEqual(novo.profiles.map((x) => x.name), ['P0', 'P1']);
+  const velho = pv(db(2000, 150), db(1000, 40));
+  assert.equal(velho.older, true);
+  assert.equal(velho.lose, 110);
+  // mais antigo na data, mas com mais estrelas (outro aparelho jogou mais): não é "perda"
+  assert.equal(pv(db(2000, 40), db(1000, 150)).older, false);
+  // campos faltando não quebram
+  assert.deepEqual(pv({}, {}).profiles, []);
+});
