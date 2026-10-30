@@ -33,7 +33,10 @@ cd native/windows && npm ci && npm run dist         # saída em native/windows/d
 ## Notas técnicas
 
 - Sem `nodeIntegration`; `sandbox: true`; navegação externa bloqueada
-  (`setWindowOpenHandler` + `will-navigate`) — app 100% offline.
+  (`setWindowOpenHandler` + `will-navigate`); o app não faz requisições de rede.
+- Única exceção: os links de Privacidade, Termos e Suporte (`LEGAL_URLS` em `main.js`, iguais a
+  `LEGAL` em `engine.js`) abrem no navegador do sistema, só depois da conferência para adultos.
+  Qualquer outro endereço é negado; `tests/engine.test.cjs` confere que as duas listas não se afastam.
 - `electron-builder --publish never`: nada é enviado a lojas automaticamente.
 - Futuro (otimização): Tauri 2 reduz o binário de ~90 MB para < 10 MB —
   ver estudo de viabilidade, seção "Custo e esforço".
