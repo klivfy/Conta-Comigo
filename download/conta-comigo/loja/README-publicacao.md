@@ -1,6 +1,6 @@
 # Conta Comigo v2.8.0 — Material de publicação nas lojas
 
-Tudo o que é preciso para publicar nas 5 lojas, com **português (Brasil) como idioma padrão** e inglês e espanhol como traduções.
+Tudo o que é preciso para publicar nas 6 lojas, com **português (Brasil) como idioma padrão** e inglês e espanhol como traduções.
 
 | Loja | Roteiro e textos (pt, en, es) | Pacote a enviar |
 |---|---|---|
@@ -9,6 +9,7 @@ Tudo o que é preciso para publicar nas 5 lojas, com **português (Brasil) como 
 | Firefox Add-ons (AMO) | [`firefox-amo/listagem-firefox-amo.md`](firefox-amo/listagem-firefox-amo.md) e [`firefox-amo/LEIAME-envio-firefox.md`](firefox-amo/LEIAME-envio-firefox.md) | `download/conta-comigo-firefox-2.8.0.zip` |
 | Microsoft Store (Windows 10/11) | [`lojas/microsoft-store-windows.md`](lojas/microsoft-store-windows.md) | `.appx` do workflow *Windows (Electron)* |
 | Google Play (Android) | [`lojas/google-play.md`](lojas/google-play.md) | `.aab` do workflow *Android* |
+| Apple App Store (iPhone e iPad) | [`lojas/apple-app-store.md`](lojas/apple-app-store.md) | *Archive* do Xcode (`native/ios`); **há bloqueios, leia o topo do roteiro** |
 
 ## Pastas
 
