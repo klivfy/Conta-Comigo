@@ -6,7 +6,7 @@ Painel: <https://appstoreconnect.apple.com> · Pacote: *Archive* do Xcode do pro
 
 Estes itens foram conferidos no código. Enquanto não forem resolvidos, não envie.
 
-1. **Backup no iPhone não funciona hoje.** O app Android salva o backup com os plugins `@capacitor/filesystem` e `@capacitor/share`; o `native/ios/package.json` não os tem. Sem eles, `saveTextFile` cai no download comum, que o WebView não executa, e mesmo assim devolve sucesso (o aviso diz "salvo"). Corrija antes de enviar, senão "backup do progresso em arquivo" na descrição é falso no iOS.
+1. **Backup no iPhone: plugins adicionados, falta testar em aparelho.** O `native/ios` agora traz `@capacitor/filesystem` e `@capacitor/share` (como o Android), então `saveTextFile` grava o arquivo no cache e abre a folha de compartilhar. Só um iPhone real confirma; o aviso "salvo" só vale se o arquivo sair de fato.
 2. **Falta o manifesto de privacidade do app** (`PrivacyInfo.xcprivacy`). O `@capacitor/preferences` usa `UserDefaults`, API de "motivo obrigatório" (motivo `CA92.1`). Os pacotes de plugin do projeto não trazem manifesto próprio. Sem a declaração, o App Store Connect avisa ou recusa o envio (erro `ITMS-91053`). No Mac: *Product → Archive → Generate Privacy Report* e declare o que aparecer.
 3. **Capturas nos tamanhos da Apple.** As de `imagens/<idioma>/celular-1080x1920/` (Play) não servem. Preciso de iPhone 6,9" (1290×2796 ou 1320×2868) e iPad 13" (2064×2752 ou 2048×2732), em cada idioma.
 4. **Conta Apple** (Apple Developer Program, US$ 99/ano), App ID, certificado de distribuição e perfil. Conta de organização pede número D-U-N-S; conta individual mostra o seu nome como vendedor.
