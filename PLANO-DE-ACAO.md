@@ -91,7 +91,8 @@ Legenda: **[eu]** código na branch · **[você]** ação em conta/GitHub/loja.
     - No Safari do iOS, há um `cancel()` antes de cada `speak()`.
   - **Tela cheia:** o botão some no app e nos navegadores sem a API (iPhone).
   - **Teste:** fiz com um Capacitor simulado. Passaram evicção do `localStorage`, cópia mais nova, voz nativa com a voz 🌟, cancelamento no meio e reset. A web, a extensão e a PWA não mudaram: a11y, teclado, topbar e contraste continuam iguais.
-- [ ] 6.2 [você] ativar o Pages · 6.3 [você] AAB assinado e teste em aparelho
+- [x] 6.2 [você] ativar o Pages. **Concluído em 31/10/2026** (item 9.5): o `pages.yml` publica o site e a política responde 200.
+- [ ] 6.3 [você] AAB assinado e teste em aparelho
 - [ ] 6.4 [você] testar os instaladores do Windows
 - [x] 6.5 [eu] **iOS/Capacitor ("Fase B")** em `native/ios/`:
   - **Projeto:** Capacitor 8 com Swift Package Manager e os plugins Preferences e TextToSpeech, gerado e versionado.
