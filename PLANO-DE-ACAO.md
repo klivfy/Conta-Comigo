@@ -169,7 +169,8 @@ Auditoria de segurança, estrutura e design com `/security-review`, `/anthropic-
 - [x] 9.2 Identificador único `com.klivfy.conta.comigo.matematica` (`IDENTIFICADORES.md`), conferido pelo `sync_check`.
 - [x] 9.3 Android: minSdk 24, targetSdk 36, R8 com mapping, AGP 8.13.2, Gradle 8.14.3; scripts de assinatura para Linux/macOS e Windows.
 - [x] 9.4 Contagem por toque no idioma do jogo.
-- [ ] 9.5 [você] ligar o GitHub Pages (política de privacidade e PWA; o app Android não depende mais dele); criar o app novo no Play Console; identidade da Partner Center; conta Apple.
+- [x] 9.5 [você] ligar o GitHub Pages (política de privacidade e PWA; o app Android não depende mais dele). **Concluído em 31/10/2026:** o `pages.yml` publica o site (run 15, verde) e a política, a home, o `manifest.webmanifest` e o `sw.js` respondem 200 em `klivfy.github.io/Conta-Comigo/`.
+- [ ] 9.5b [você] o que sobrou do 9.5: criar o app novo no Play Console; identidade da Partner Center; conta Apple (adiada com o iOS, item A.1).
 - [x] 9.6a Moeda do modo Dinheiro por região (L1): real, euro, dólar, libra e peso mexicano pela região do aparelho; sem região conhecida, só "moedas". Escolha no painel (`currency`), validada em `normalizeDB`.
 - [x] 9.6b Espanhol por região (L3): a voz pedida e a escolhida seguem a região do aparelho (es-ES, es-MX, es-US; as demais da América Latina caem em es-MX), e a pergunta do troco diz "cambio" ou "vuelto" conforme o país. Voz robótica não ganha por região, e a escolha manual dos responsáveis continua valendo.
 - [x] 9.7 Limpeza do repositório: 155 arquivos sem uso fora (geradores de estudos com caminho de outra máquina, scripts avulsos de versões antigas, PDFs intermediários, guia de push manual, capturas `qa/` e `qa2/`), 16 chaves de texto sem uso nos 3 idiomas, e `scripts/scan_csp.py` consertado e no CI.
