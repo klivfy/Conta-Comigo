@@ -2,7 +2,7 @@
 
 ## 1. O arquivo a enviar
 
-`download/conta-comigo-firefox-2.8.0.zip` (≈ 144 KB, `manifest.json` na raiz)
+`download/conta-comigo-firefox-2.8.0.zip` (≈ 173 KB, `manifest.json` na raiz)
 
 Gerado por `python3 scripts/build_packages.py`. Não contém `demo.html`, `web/`
 nem `loja/`. Não há minificação, transpilação nem bibliotecas de terceiros, então
@@ -60,12 +60,16 @@ No Firefox 128 real: pt-BR abre em português, es-ES em espanhol e en-US em ingl
 
 ## 4. O que foi validado (e o que não foi)
 
-Validado em 27/10/2026:
+Validado em 31/10/2026, no pacote da 2.8.0:
 
 - `web-ext lint` (validador da Mozilla) sobre o pacote: **0 erros, 0 avisos de
-  manifesto, 20 avisos** `UNSAFE_VAR_ASSIGNMENT` (uso de `innerHTML` em
+  manifesto, 25 avisos** `UNSAFE_VAR_ASSIGNMENT` (uso de `innerHTML` em
   `js/ui.js` e `js/options.js`). São avisos, não bloqueiam a assinatura, mas o
-  revisor pode perguntar — ver notas abaixo.
+  revisor pode perguntar — ver notas abaixo. (Em 27/10/2026, numa versão
+  anterior, eram 20.)
+
+Validado em 27/10/2026, numa versão anterior, e **não refeito na 2.8.0**:
+
 - **Firefox 128.0 ESR real** (Linux, headless), extensão instalada a partir do
   pacote: o jogo abriu, uma rodada completa foi jogada (17 respostas até a tela
   de fim de rodada), Comparar, Loja e Conquistas abriram, e o console registrou
@@ -95,10 +99,14 @@ Validado em 27/10/2026:
 5. Preencher a listagem com `listagem-firefox-amo.md` (pt-BR; en e es opcionais).
 6. Capturas: `anuncio/anuncio-01…06.png` (1280×800).
 7. Licença: **All Rights Reserved** (o projeto é proprietário — ver `LICENSE`).
-8. Política de privacidade: colar o texto de `../politica-de-privacidade.md`
-   no campo próprio (o GitHub Pages ainda não está ativo, então não há URL
-   pública estável).
-9. Notas para o revisor: colar o texto do item 6 abaixo.
+8. Política de privacidade: informar a URL
+   <https://klivfy.github.io/Conta-Comigo/politica-de-privacidade.html> (o
+   GitHub Pages está no ar e a página responde 200). Se o campo do AMO pedir o
+   texto em vez de um endereço, colar o de `../politica-de-privacidade.md`.
+9. Notas para o revisor: colar o texto do item 6 abaixo. A última linha dele diz
+   "Tested on Firefox ESR 128.0", e esse teste é de 27/10/2026, numa versão
+   anterior: carregue o pacote da 2.8.0 no Firefox 128 e jogue uma rodada antes
+   de enviar, ou tire a linha.
 10. Enviar para revisão. Extensão nova costuma passar por revisão manual.
 
 ## 6. Notas para o revisor (colar no formulário, em inglês)
@@ -123,7 +131,7 @@ Validado em 27/10/2026:
 
 ## 7. Pendências conhecidas
 
-- **Os 20 usos de `innerHTML` não foram auditados um a um nesta etapa.** A frase
+- **Os 25 avisos de `innerHTML` não foram auditados um a um nesta etapa.** A frase
   sobre "nomes escapados" nas notas reflete o endurecimento feito na Fase 1
   (`escHtml` e validação do backup). Se o revisor pedir, o caminho é trocar
   `innerHTML` por `textContent`/`createElement` nesses pontos.
