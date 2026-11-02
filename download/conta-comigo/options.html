@@ -147,8 +147,15 @@
           <button id="ge-go" class="big-btn" data-i18n="gate_enter">Entrar</button>
           <button id="ge-forgot" class="link-btn" type="button" data-i18n="gate_forgot">Esqueci a senha</button>
           <div id="ge-forgot-box" class="hidden">
-            <p class="hint-line"><b data-i18n="gate_hint_lbl">Seu lembrete de segurança:</b><span id="ge-hint">—</span></p>
-          </div>
+            <!-- conta de adulto antes do lembrete e do "apagar tudo": sem ela, criança que errasse a senha lia o lembrete -->
+            <div id="ge-adult">
+              <p id="ge-adult-q"></p>
+              <input id="ge-adult-in" class="ad-input" type="text" inputmode="numeric" autocomplete="off" aria-labelledby="ge-adult-q">
+              <div class="gate-err" id="ge-adult-err" role="alert"></div>
+              <button id="ge-adult-go" class="big-btn" type="button" data-i18n="ok">OK</button>
+            </div>
+            <div id="ge-adult-ok" class="hidden">
+              <p class="hint-line"><b data-i18n="gate_hint_lbl">Seu lembrete de segurança:</b><span id="ge-hint">—</span></p>
           <div id="ge-reset-box" class="hidden">
             <button id="ge-reset-show" class="link-btn" type="button" data-i18n="gate_reset_show">Redefinir apagando tudo</button>
             <div id="ge-reset-form" class="hidden">
@@ -156,6 +163,8 @@
               <input id="ge-reset-in" aria-labelledby="ge-reset-lbl" type="text" autocomplete="off">
               <div class="gate-err" id="ge-reset-err" role="alert"></div>
               <button id="ge-reset-go" class="mini-btn danger-btn" type="button" data-i18n="gate_reset_go">Apagar tudo</button>
+            </div>
+          </div>
             </div>
           </div>
         </div>
@@ -299,12 +308,8 @@
           </div>
           <h3 class="opt-sub" data-i18n="ab_ck">Cookies e rastreamento</h3>
           <p class="opt-note" data-i18n="ck_note"></p>
-          <div class="opt-row"><label for="set-ck-stats" data-i18n="ck_stats">Estatísticas de uso</label><input type="checkbox" id="set-ck-stats"></div>
-          <div class="opt-row"><label for="set-ck-track" data-i18n="ck_track">Rastreamento e publicidade</label><input type="checkbox" id="set-ck-track"></div>
-          <div class="btn-line">
-            <button class="mini-btn ghost" id="btn-ck-accept" data-i18n="ck_accept">Aceitar tudo</button>
-            <button class="mini-btn ghost" id="btn-ck-reject" data-i18n="ck_reject">Recusar tudo</button>
-          </div>
+          <div class="opt-row"><label for="set-ck-stats" data-i18n="ck_stats">Estatísticas de uso</label><input type="checkbox" id="set-ck-stats" disabled></div>
+          <div class="opt-row"><label for="set-ck-track" data-i18n="ck_track">Rastreamento e publicidade</label><input type="checkbox" id="set-ck-track" disabled></div>
           <p class="opt-note" data-i18n="ab_dev">Desenvolvido por Klivfy</p>
           <p class="opt-note" data-i18n="lg_owner"></p>
         </div>

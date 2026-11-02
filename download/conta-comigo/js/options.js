@@ -54,7 +54,7 @@ function gateEnterIdle() {
   const tries = G().passTries || 0;
   // recuperação sempre acessível a partir da 2ª tentativa (mesmo durante bloqueio)
   $('#ge-forgot-box').classList.toggle('hidden', tries < 2);
-  if (tries >= 2) $('#ge-hint').textContent = G().passHint || '—';
+  if (tries >= 2 && $('#ge-adult-ok').classList.contains('hidden')) geAdultAsk(); // lembrete e "apagar tudo" só depois da conta de adulto
   $('#ge-reset-box').classList.toggle('hidden', tries < 5);
   $('#ge-reset-form').classList.add('hidden');
   const go = $('#ge-go');
@@ -99,6 +99,25 @@ async function tryGate() {
 }
 function forgotPwd() {
   $('#ge-forgot-box').classList.remove('hidden');
+  if ($('#ge-adult-ok').classList.contains('hidden')) geAdultAsk();
+}
+/* o lembrete da senha e o "apagar tudo" ficam atrás de uma conta que criança de 4 a 8 anos não resolve sozinha
+   (antes, 2 erros mostravam o lembrete e 5 mostravam a palavra que apaga todo o progresso) */
+let geAdultAnswer = '';
+function geAdultAsk() {
+  const a = rand(12, 19), b = rand(13, 19);
+  geAdultAnswer = String(a * b);
+  $('#ge-adult').classList.remove('hidden');
+  $('#ge-adult-ok').classList.add('hidden');
+  $('#ge-adult-q').textContent = t('ad_title') + '. ' + t('ad_q', { q: a + ' × ' + b });
+  $('#ge-adult-in').value = ''; $('#ge-adult-err').textContent = '';
+}
+function geAdultCheck() {
+  if ($('#ge-adult-in').value.trim() !== geAdultAnswer) {
+    $('#ge-adult-err').textContent = t('ad_wrong'); $('#ge-adult-in').select(); return;
+  }
+  $('#ge-adult').classList.add('hidden');
+  $('#ge-adult-ok').classList.remove('hidden');
   $('#ge-hint').textContent = G().passHint || '—';
 }
 function showContent() {
@@ -393,38 +412,8 @@ function renderProfList() {
 /* ---------- canais oficiais e cookies (v2.7) ---------- */
 function paintConsent() {
   $('#lnk-privacy').href = LEGAL.privacy; $('#lnk-terms').href = LEGAL.terms; $('#lnk-support').href = LEGAL.support;
-  $('#set-ck-stats').checked = Consent.allows('stats');
-  $('#set-ck-track').checked = Consent.allows('track');
-  paintConsentBanner();
+  $('#set-ck-stats').checked = false; $('#set-ck-track').checked = false; // o app não coleta nem rastreia: as duas linhas são só aviso
 }
-/* v2.8.0: o aviso mora no painel (adulto), nunca na tela da criança. Some assim que há escolha. */
-function paintConsentBanner() {
-  let b = document.getElementById('consent');
-  if (Consent.decided() || $('#opt-content').classList.contains('hidden')) { if (b) b.remove(); return; } // atrás da senha não aparece
-  if (b) return;
-  b = document.createElement('div'); b.id = 'consent'; b.className = 'consent';
-  b.setAttribute('role', 'region'); b.setAttribute('aria-label', t('ck_title'));
-  b.innerHTML = '<p>' + t('ck_msg') + '</p><div class="consent-actions">' +
-    '<button type="button" class="ck-btn ck-link" data-ck="custom">' + t('ck_custom') + '</button>' +
-    '<button type="button" class="ck-btn" data-ck="reject">' + t('ck_reject') + '</button>' +
-    '<button type="button" class="ck-btn" data-ck="accept">' + t('ck_accept') + '</button></div>';
-  document.body.appendChild(b);
-  b.addEventListener('click', (e) => {
-    const k = e.target.closest ? e.target.closest('[data-ck]') : null;
-    if (!k) return;
-    if (k.dataset.ck === 'reject') { Consent.rejectAll(); saveState(true); paintConsent(); }
-    else if (k.dataset.ck === 'accept') { Consent.acceptAll(); saveState(true); paintConsent(); }
-    else { const c = $('#set-ck-stats'); c.scrollIntoView({ block: 'center' }); c.focus(); }
-  });
-}
-function bindConsent() {
-  const save = () => { Consent.set($('#set-ck-stats').checked, $('#set-ck-track').checked); saveState(true); paintConsent(); };
-  $('#set-ck-stats').addEventListener('change', save);
-  $('#set-ck-track').addEventListener('change', save);
-  $('#btn-ck-accept').addEventListener('click', () => { Consent.acceptAll(); saveState(true); paintConsent(); });
-  $('#btn-ck-reject').addEventListener('click', () => { Consent.rejectAll(); saveState(true); paintConsent(); });
-}
-
 /* ---------- vozes (S22 + estudo v2.6) ---------- */
 function fillVoices() {
   const g = G();
@@ -532,6 +521,8 @@ function bindOptions() {
   $('#ge-go').addEventListener('click', tryGate);
   $('#ge-pwd').addEventListener('keydown', (e) => { if (e.key === 'Enter') tryGate(); });
   $('#ge-forgot').addEventListener('click', forgotPwd);
+  $('#ge-adult-go').addEventListener('click', geAdultCheck);
+  $('#ge-adult-in').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); geAdultCheck(); } });
   $('#ge-reset-show').addEventListener('click', () => { $('#ge-reset-form').classList.remove('hidden'); });
   $('#ge-reset-go').addEventListener('click', tryResetGate);
   $('#gc-go').addEventListener('click', tryCreateGate);
@@ -564,7 +555,6 @@ function bindOptions() {
   $('#set-voice-on').addEventListener('change', (e) => { G().voiceOn = e.target.checked; set(); });
   $('#set-sfx-on').addEventListener('change', (e) => { G().sfxOn = e.target.checked; set(); });
   $('#set-haptics').addEventListener('change', (e) => { G().hapticsOn = e.target.checked; set(); if (e.target.checked) HAPT.play('light'); });
-  bindConsent();
   $('#set-cur').addEventListener('change', (e) => { G().currency = e.target.value; set(); });
   $('#set-tscale').addEventListener('change', (e) => { G().timeScale = Number(e.target.value); set(); });
   $('#set-rm').addEventListener('change', (e) => { G().reduceMotion = e.target.checked; document.body.classList.toggle('rm', !!e.target.checked); set(); });

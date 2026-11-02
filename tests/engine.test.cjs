@@ -716,3 +716,128 @@ test('app do iPhone: manifesto de privacidade declara só o que o app faz e entr
   assert.match(proj, /PrivacyInfo\.xcprivacy in Resources \*\/ = \{isa = PBXBuildFile/);
   assert.match(proj, /\/\* PrivacyInfo\.xcprivacy in Resources \*\/,\n/);
 });
+
+/* ---------- correções do code-review (v2.8.0) ---------- */
+test('weekKey: a hora do dia não muda a semana (sábado à tarde fica com o sábado de manhã)', () => {
+  const k = (code) => E.ev('weekKey(' + code + ')');
+  assert.equal(k('new Date(2026, 9, 31, 0, 0)'), '2026-S44');          // sáb 31/10
+  assert.equal(k('new Date(2026, 9, 31, 15, 30)'), '2026-S44');
+  assert.equal(k('new Date(2026, 9, 31, 23, 59, 59)'), '2026-S44');
+  assert.equal(k('new Date(2026, 10, 1, 0, 0)'), '2026-S45');          // dom 1/11
+  assert.equal(k('new Date(2026, 0, 3, 12)'), '2026-S01');             // sáb 3/1: ainda a primeira semana (parcial)
+  assert.equal(k('new Date(2026, 0, 4, 12)'), '2026-S02');
+});
+
+test('ofensiva: perdoa um dia sem jogar e recomeça em 1 depois de dois', () => {
+  const now = 'new Date(2026, 9, 28, 12)';
+  const go = (lastPlay) => run('finishRound(p, { kind: "normal", mode: "somar", firsts: 5, wrongs: 0, total: 5, points: 0 }, { goalRounds: 0, now: ' + now + ' })',
+    profile({ lastPlay, streak: 4, today: { d: '2026-10-28', rounds: 0, done: false, modes: {} } })).p.streak;
+  assert.equal(go('2026-10-27'), 5);   // ontem
+  assert.equal(go('2026-10-26'), 5);   // um dia sem jogar: perdoado
+  assert.equal(go('2026-10-25'), 1);   // dois dias: recomeça
+  assert.equal(go(''), 1);
+  assert.equal(E.ev('nextStreak({ lastPlay: "2026-10-26", streak: 6 }, new Date(2026, 9, 28, 9))'), 7); // a nova aba usa a mesma regra
+});
+
+test('revisão espaçada: o cartão passa pelas caixas de 2, 4, 8 e 16 dias e só se forma ao acertar na última', () => {
+  const r = JSON.parse(E.ev(`(() => {
+    const p = P(); p.review = []; p.reviewWins = 0;
+    const card = { m: 'somar', lv: 1, f: { a: 1, b: 2 }, box: 1, due: '2000-01-01' };
+    p.review.push(card);
+    const days = (c) => Math.round((new Date(c.due + 'T12:00:00') - new Date(fmtDate() + 'T12:00:00')) / 86400000);
+    const out = [];
+    for (let i = 0; i < 4; i++) { gradeReview(card, true); out.push([card.box, days(card), p.review.length]); }
+    gradeReview(card, true); out.push([card.box, p.review.length, p.reviewWins]);
+    return JSON.stringify(out);
+  })()`));
+  assert.deepEqual(r, [[2, 2, 1], [3, 4, 1], [4, 8, 1], [5, 16, 1], [5, 0, 5]]);
+  // errar volta à caixa 1 e o cartão continua na revisão
+  const w = JSON.parse(E.ev(`(() => { const p = P(); const c = { m: 'somar', lv: 1, f: { a: 1, b: 2 }, box: 4, due: '2000-01-01' }; p.review = [c]; gradeReview(c, false); return JSON.stringify([c.box, p.review.length]); })()`));
+  assert.deepEqual(w, [1, 1]);
+});
+
+test('subir de nível não apaga a evidência: o melhor modo fica no resumo e não vira "o mais fraco"', () => {
+  const r = JSON.parse(E.ev(`(() => {
+    const p = P(); p.stars = 200; p.bossReady = false; p.review = []; p.today = { d: '', rounds: 0, done: false, modes: {} };
+    p.levels = {}; p.recent = {}; p.lvl = {};
+    // contar: 5 acertos seguidos sobem o nível e a janela recomeça vazia
+    for (let i = 0; i < 5; i++) { bumpLvlStat('contar', 1, true); recordResult('contar', true); }
+    // somar a 60%; os demais modos liberados a 80%
+    p.recent.somar = [true, true, true, false, false];
+    Object.keys(MODES).filter((m) => m !== 'mistar' && m !== 'tempo' && m !== 'contar' && m !== 'somar').forEach((m) => { p.recent[m] = [true, true, true, true, false]; });
+    const out = { lv: p.levels.contar, window: p.recent.contar.length, acc: modeAcc(p, 'contar') };
+    out.weak = recommendNext().mode;
+    out.best = parentSummary(Object.assign({}, p, { weeks: [{ k: '2026-S44', rounds: 1, rights: 1 }] }), '2026-S44').best;
+    return JSON.stringify(out);
+  })()`));
+  assert.equal(r.lv, 2); assert.equal(r.window, 0);
+  assert.deepEqual(r.acc, { n: 5, acc: 1 });
+  assert.equal(r.weak, 'somar');      // contar acaba de subir (100%); somar está em 60%
+  assert.equal(r.best, 'contar');
+});
+
+test('backup com "__proto__" nas configurações não herda nada pelo protótipo', () => {
+  const raw = backupWith([], {}).replace('"settings":{"lang":"pt"}', '"settings":{"lang":"pt","__proto__":{"passHash":"zzz","sync":true}}');
+  assert.ok(raw.includes('"__proto__"'));
+  E.put('raw', raw);
+  assert.equal(E.ev('Object.getPrototypeOf(parseDB(__in.raw).settings) === Object.prototype'), true);
+  assert.equal(E.ev('parseDB(__in.raw).settings.passHash'), '');
+  assert.equal(E.ev('!!parseDB(__in.raw).settings.sync'), false);
+});
+
+test('tHtml escapa as variáveis; t() entrega como vieram (voz e aviso são texto, não HTML)', () => {
+  E.put('v', '<img src=x onerror=1>"&\'');
+  const html = E.ev('tHtml("switch_to", { n: __in.v })');
+  assert.ok(html.includes('&lt;img src=x onerror=1&gt;&quot;&amp;&#39;'), html);
+  assert.ok(!html.includes('<img'));
+  assert.ok(E.ev('t("switch_to", { n: __in.v })').includes('<img'));
+});
+
+test('backup no app: apaga do cache só os backups de mais de 1 dia', async () => {
+  const deleted = [];
+  const day = 86400000;
+  const cap = {
+    isNativePlatform: () => true,
+    isPluginAvailable: () => true,
+    Plugins: {
+      Filesystem: {
+        writeFile: () => Promise.resolve({ uri: 'x' }),
+        readdir: () => Promise.resolve({ files: [
+          { name: 'conta-comigo-backup-2026-10-20.json', mtime: Date.now() - 3 * day },
+          { name: 'conta-comigo-backup-2026-11-02.json', mtime: Date.now() - 1000 },
+          { name: 'outro-arquivo.json', mtime: Date.now() - 9 * day },
+        ] }),
+        deleteFile: (a) => { deleted.push(a); return Promise.resolve(); },
+      },
+      Share: { share: () => Promise.resolve({}) },
+    },
+  };
+  const E2 = loadEngine({ capacitor: cap });
+  E2.ev('purgeBackupCache()');
+  await new Promise((r) => setTimeout(r, 10));
+  assert.deepEqual(JSON.parse(JSON.stringify(deleted)), [{ path: 'conta-comigo-backup-2026-10-20.json', directory: 'CACHE' }]);
+});
+
+test('painel dos responsáveis: lembrete da senha e "apagar tudo" ficam atrás da conta de adulto', () => {
+  const fs = require('fs'), path = require('path');
+  const root = path.join(__dirname, '..', 'download', 'conta-comigo');
+  const html = fs.readFileSync(path.join(root, 'options.html'), 'utf8');
+  const iAdult = html.indexOf('id="ge-adult"'), iOk = html.indexOf('id="ge-adult-ok"');
+  assert.ok(iAdult > 0 && iOk > iAdult);
+  assert.ok(html.indexOf('id="ge-hint"') > iOk && html.indexOf('id="ge-reset-box"') > iOk);
+  const js = fs.readFileSync(path.join(root, 'js', 'options.js'), 'utf8');
+  // o texto do lembrete só é escrito depois da conta certa
+  assert.equal(js.split("$('#ge-hint').textContent").length - 1, 1);
+  assert.ok(js.indexOf("$('#ge-hint').textContent") > js.indexOf('function geAdultCheck'));
+});
+
+test('privacidade: nenhuma tela oferece ligar uma coleta que o app não faz', () => {
+  const fs = require('fs'), path = require('path');
+  const root = path.join(__dirname, '..', 'download', 'conta-comigo');
+  const html = fs.readFileSync(path.join(root, 'options.html'), 'utf8');
+  assert.match(html, /id="set-ck-stats" disabled/);
+  assert.match(html, /id="set-ck-track" disabled/);
+  assert.ok(!/btn-ck-accept|btn-ck-reject/.test(html));
+  const ui = fs.readFileSync(path.join(root, 'js', 'ui.js'), 'utf8');
+  assert.ok(!/ck-save|ckSaved/.test(ui));
+});

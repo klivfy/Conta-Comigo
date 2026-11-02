@@ -9,12 +9,12 @@ const I18N = {
     /* v2.7 — canais oficiais, cookies e verificação para adultos */
     lg_group: 'Informações legais', lg_privacy: 'Privacidade', lg_terms: 'Termos de Uso', lg_support: 'Suporte',
     lg_owner: '© 2026 Klivfy Tecnologia e Consultoria em TI LTDA. Todos os direitos reservados.',
-    ck_title: 'Suas preferências', ck_msg: 'O Conta Comigo não rastreia ninguém. Um responsável pode escolher o que permitir.',
-    ck_accept: 'Aceitar tudo', ck_reject: 'Recusar tudo', ck_custom: 'Personalizar', ck_custom_link: 'Personalizar aceites',
-    ck_note: 'Escolha o que pode ser usado neste aparelho. Dá para mudar quando quiser.',
+    ck_title: 'Suas preferências', ck_msg: 'O Conta Comigo não coleta dados nem rastreia ninguém.',
+    ck_accept: 'Aceitar tudo', ck_reject: 'Recusar tudo', ck_custom: 'Personalizar', ck_custom_link: 'O que o app coleta',
+    ck_note: 'Nada é coletado nem enviado deste aparelho. As opções abaixo ficam desligadas.',
     ck_ess: 'Essenciais', ck_ess_d: 'Guardam o progresso e os ajustes no aparelho. Sempre ativos.',
-    ck_stats: 'Estatísticas de uso', ck_stats_d: 'Ajudam a melhorar o jogo, sem identificar a criança.',
-    ck_track: 'Rastreamento e publicidade', ck_track_d: 'Desligado por padrão. Hoje o app não usa nenhum.',
+    ck_stats: 'Estatísticas de uso', ck_stats_d: 'O app não coleta estatísticas de uso.',
+    ck_track: 'Rastreamento e publicidade', ck_track_d: 'O app não rastreia nem mostra publicidade.',
     ck_save: 'Salvar escolhas', ck_cancel: 'Cancelar', ck_saved: 'Preferências salvas',
     ad_title: 'Só para responsáveis', ad_q: 'Peça a um adulto para resolver: {q}', ad_label: 'Resposta', ad_wrong: 'Resposta incorreta. Tente de novo.',
     ab_title: 'Sobre e privacidade', ab_dev: 'Desenvolvido por Klivfy', ab_ck: 'Cookies e rastreamento',
@@ -225,12 +225,12 @@ const I18N = {
     /* v2.7 — official channels, cookies and the adult check */
     lg_group: 'Legal information', lg_privacy: 'Privacy', lg_terms: 'Terms of Use', lg_support: 'Support',
     lg_owner: '© 2026 Klivfy Tecnologia e Consultoria em TI LTDA. All rights reserved.',
-    ck_title: 'Your preferences', ck_msg: 'Conta Comigo does not track anyone. A parent or guardian can choose what to allow.',
-    ck_accept: 'Accept all', ck_reject: 'Reject all', ck_custom: 'Customize', ck_custom_link: 'Customize consent',
-    ck_note: 'Choose what may be used on this device. You can change it any time.',
+    ck_title: 'Your preferences', ck_msg: 'Conta Comigo does not collect data or track anyone.',
+    ck_accept: 'Accept all', ck_reject: 'Reject all', ck_custom: 'Customize', ck_custom_link: 'What the app collects',
+    ck_note: 'Nothing is collected or sent from this device. The options below stay off.',
     ck_ess: 'Essential', ck_ess_d: 'Keep progress and settings on this device. Always on.',
-    ck_stats: 'Usage statistics', ck_stats_d: 'Help improve the game without identifying the child.',
-    ck_track: 'Tracking and advertising', ck_track_d: 'Off by default. The app uses none today.',
+    ck_stats: 'Usage statistics', ck_stats_d: 'The app does not collect usage statistics.',
+    ck_track: 'Tracking and advertising', ck_track_d: 'The app does not track anyone or show ads.',
     ck_save: 'Save choices', ck_cancel: 'Cancel', ck_saved: 'Preferences saved',
     ad_title: 'For grown-ups only', ad_q: 'Ask an adult to solve: {q}', ad_label: 'Answer', ad_wrong: 'Wrong answer. Try again.',
     ab_title: 'About and privacy', ab_dev: 'Developed by Klivfy', ab_ck: 'Cookies and tracking',
@@ -427,12 +427,12 @@ const I18N = {
     /* v2.7 — canales oficiales, cookies y verificación para adultos */
     lg_group: 'Información legal', lg_privacy: 'Privacidad', lg_terms: 'Términos de Uso', lg_support: 'Soporte',
     lg_owner: '© 2026 Klivfy Tecnologia e Consultoria em TI LTDA. Todos los derechos reservados.',
-    ck_title: 'Tus preferencias', ck_msg: 'Conta Comigo no rastrea a nadie. Un adulto responsable puede elegir qué permitir.',
-    ck_accept: 'Aceptar todo', ck_reject: 'Rechazar todo', ck_custom: 'Personalizar', ck_custom_link: 'Personalizar consentimientos',
-    ck_note: 'Elige qué se puede usar en este dispositivo. Puedes cambiarlo cuando quieras.',
+    ck_title: 'Tus preferencias', ck_msg: 'Conta Comigo no recopila datos ni rastrea a nadie.',
+    ck_accept: 'Aceptar todo', ck_reject: 'Rechazar todo', ck_custom: 'Personalizar', ck_custom_link: 'Qué recopila la app',
+    ck_note: 'No se recopila ni se envía nada desde este dispositivo. Las opciones de abajo quedan desactivadas.',
     ck_ess: 'Esenciales', ck_ess_d: 'Guardan el progreso y los ajustes en el dispositivo. Siempre activos.',
-    ck_stats: 'Estadísticas de uso', ck_stats_d: 'Ayudan a mejorar el juego sin identificar al niño.',
-    ck_track: 'Rastreo y publicidad', ck_track_d: 'Desactivado por defecto. Hoy la app no usa ninguno.',
+    ck_stats: 'Estadísticas de uso', ck_stats_d: 'La app no recopila estadísticas de uso.',
+    ck_track: 'Rastreo y publicidad', ck_track_d: 'La app no rastrea ni muestra publicidad.',
     ck_save: 'Guardar elecciones', ck_cancel: 'Cancelar', ck_saved: 'Preferencias guardadas',
     ad_title: 'Solo para adultos', ad_q: 'Pide a un adulto que resuelva: {q}', ad_label: 'Respuesta', ad_wrong: 'Respuesta incorrecta. Inténtalo de nuevo.',
     ab_title: 'Acerca de y privacidad', ab_dev: 'Desarrollado por Klivfy', ab_ck: 'Cookies y rastreo',
@@ -627,6 +627,13 @@ function t(key, vars) {
   let s = (I18N[LANG] && I18N[LANG][key] != null) ? I18N[LANG][key] : (I18N.pt[key] != null ? I18N.pt[key] : key);
   if (vars) for (const k in vars) s = s.split('{' + k + '}').join(String(vars[k]));
   return s;
+}
+/* t() para texto que vai para innerHTML (showOverlay, renderizadores): as variáveis passam por escHtml.
+   O texto fixo das traduções é nosso; o valor de {n}, {name}… pode vir do backup. */
+function tHtml(key, vars) {
+  const safe = {};
+  if (vars) for (const k in vars) safe[k] = escHtml(vars[k]);
+  return t(key, safe);
 }
 /* v2.4: variante para bibliotecas de frases (arrays) — escolhe aleatória e preenche */
 function tpick(key, vars) {
