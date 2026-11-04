@@ -25,6 +25,7 @@ function showGate() {
   $('#gate-enter').classList.toggle('hidden', !has);
   $('#gate').classList.remove('hidden');
   $('#opt-content').classList.add('hidden');
+  $('#ge-pwd').value = ''; // a senha digitada não fica no campo depois de travar de novo
   $('#ge-pwd').placeholder = t('gate_pwd_ph');
   $('#gc-hint').placeholder = t('ob_hint_ph');
   $('#ge-reset-in').placeholder = t('gate_reset_ph');
@@ -42,7 +43,8 @@ function gateAdultAsk() {
 }
 function gateAdultCheck() {
   if ($('#gc-adult-in').value.trim() !== gcAdultAnswer) {
-    $('#gc-adult-err').textContent = t('ad_wrong'); $('#gc-adult-in').select(); return;
+    /* a conta muda a cada erro: sem isso, dá para chutar as respostas possíveis (156 a 361) */
+    gateAdultAsk(); $('#gc-adult-err').textContent = t('ad_wrong'); $('#gc-adult-in').focus(); return;
   }
   gcAdultOk = true;
   $('#gc-adult').classList.add('hidden');
@@ -86,7 +88,11 @@ async function tryGate() {
     const g = G();
     g.passTries = 0; g.passLockUntil = 0;
     // v2.6.2: hash antigo (SHA-256 de uma rodada) vira PBKDF2 no primeiro acesso certo
-    if (PASS.needsUpgrade(g.passHash)) { g.passSalt = PASS.salt(); g.passHash = await PASS.hash(v, g.passSalt); }
+    if (PASS.needsUpgrade(g.passHash)) {
+      const salt = PASS.salt();
+      const hash = await PASS.hash(v, salt);
+      g.passSalt = salt; g.passHash = hash; // juntos: outra página nunca lê o sal novo com o hash velho
+    }
     saveState(true);
     showContent();
   } else {
@@ -114,7 +120,7 @@ function geAdultAsk() {
 }
 function geAdultCheck() {
   if ($('#ge-adult-in').value.trim() !== geAdultAnswer) {
-    $('#ge-adult-err').textContent = t('ad_wrong'); $('#ge-adult-in').select(); return;
+    geAdultAsk(); $('#ge-adult-err').textContent = t('ad_wrong'); $('#ge-adult-in').focus(); return; // nova conta a cada erro
   }
   $('#ge-adult').classList.add('hidden');
   $('#ge-adult-ok').classList.remove('hidden');
@@ -139,9 +145,11 @@ async function tryCreateGate() {
   showContent();
 }
 async function savePassword(pw, hint) {
+  const salt = PASS.salt();
+  const hash = await PASS.hash(pw, salt); // o cálculo demora: só depois dele sal e hash entram juntos
   const g = G();
-  g.passSalt = PASS.salt();
-  g.passHash = await PASS.hash(pw, g.passSalt);
+  g.passSalt = salt;
+  g.passHash = hash;
   g.passHint = hint;
   g.passSetAt = Date.now();
   g.passTries = 0; g.passLockUntil = 0;
@@ -173,7 +181,12 @@ async function tryChangePwd() {
   const a = $('#sec-new').value || '';
   const b = $('#sec-new2').value || '';
   const hint = ($('#sec-hint').value || '').trim();
-  if (!(await PASS.verify(cur, G().passSalt, G().passHash))) { $('#sec-err').textContent = t('sec_bad_cur'); SFX.wrong(); return; }
+  if (gateLockedNow()) { $('#sec-err').textContent = t('gate_locked', { n: gateLockLeft() }); SFX.wrong(); return; }
+  if (!(await PASS.verify(cur, G().passSalt, G().passHash))) {
+    registerFail(); // a troca de senha também conta erros e trava, como o portão
+    $('#sec-err').textContent = gateLockedNow() ? t('gate_locked', { n: gateLockLeft() }) : t('sec_bad_cur');
+    SFX.wrong(); return;
+  }
   if (a.length < PASS_MIN) { $('#sec-err').textContent = t('sec_short'); return; }
   if (a !== b) { $('#sec-err').textContent = t('sec_mismatch'); return; }
   if (!hint) { $('#sec-err').textContent = t('sec_need_hint'); return; }
@@ -632,6 +645,10 @@ async function bootOptions() {
   const refresh = () => { if (document.hidden) { stale = true; return; } stale = false; if (adoptLatest()) renderOptions(); };
   onExternalSave(() => { clearTimeout(refresh.t); refresh.t = setTimeout(refresh, 300); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden && stale) refresh(); });
+  /* o painel destravado não volta do cache de avançar/voltar do navegador: trava ao sair da página
+     e de novo se ela for restaurada (a criança toca em Voltar e cairia direto nas configurações) */
+  window.addEventListener('pagehide', showGate);
+  window.addEventListener('pageshow', (e) => { if (e.persisted) showGate(); });
 }
 window.CC = {};
 bootOptions();

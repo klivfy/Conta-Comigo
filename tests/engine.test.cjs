@@ -841,3 +841,32 @@ test('privacidade: nenhuma tela oferece ligar uma coleta que o app não faz', ()
   const ui = fs.readFileSync(path.join(root, 'js', 'ui.js'), 'utf8');
   assert.ok(!/ck-save|ckSaved/.test(ui));
 });
+
+test('apagar tudo leva também a cópia de "desfazer restauração" e o status do sync', async () => {
+  const store = { cc_state: '{}', cc_undo_restore: '{"db":"{}"}', cc_sync_status: '{"ok":true}', outra_coisa: 'fica' };
+  const e = loadEngine({ store });
+  await e.ev('clearSavedState()');
+  assert.deepEqual(Object.keys(store), ['outra_coisa'], 'sobrou estado do jogo no localStorage: ' + Object.keys(store));
+});
+
+test('portão dos responsáveis: trava ao sair e ao voltar do cache, e não dá para chutar a conta de adulto', () => {
+  const fs = require('fs'), path = require('path');
+  const js = fs.readFileSync(path.join(__dirname, '..', 'download', 'conta-comigo', 'js', 'options.js'), 'utf8');
+  const fn = (nome) => { const i = js.indexOf(nome); assert.ok(i > 0, nome); return js.slice(i, js.indexOf('\n}\n', i)); };
+  // painel destravado não volta do cache de avançar/voltar
+  assert.match(js, /addEventListener\('pagehide', showGate\)/);
+  assert.match(js, /addEventListener\('pageshow', \(e\) => \{ if \(e\.persisted\) showGate\(\); \}\)/);
+  assert.match(fn('function showGate'), /\$\('#ge-pwd'\)\.value = ''/);
+  // a conta de adulto muda a cada erro (nos dois portões)
+  assert.match(fn('function geAdultCheck'), /geAdultAsk\(\);/);
+  assert.match(fn('function gateAdultCheck'), /gateAdultAsk\(\);/);
+  // sal e hash entram juntos, depois do cálculo (outra página nunca lê um sem o outro)
+  const sp = fn('async function savePassword');
+  assert.ok(sp.indexOf('await PASS.hash') < sp.indexOf('g.passSalt = salt'));
+  const gate = fn('async function tryGate');
+  assert.ok(gate.indexOf('await PASS.hash') < gate.indexOf('g.passSalt = salt'));
+  // trocar a senha também conta erros e respeita o bloqueio
+  const troca = fn('async function tryChangePwd');
+  assert.match(troca, /gateLockedNow\(\)/);
+  assert.match(troca, /registerFail\(\)/);
+});

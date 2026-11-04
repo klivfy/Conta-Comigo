@@ -469,8 +469,11 @@ function loadRaw() {
 }
 async function initDB() {
   let d = await loadRaw();
-  // S32: se sync habilitado e a cópia sincronizada é mais recente, adota-a
-  const syncData = await loadSyncDB();
+  /* S32: se sync habilitado e a cópia sincronizada é mais recente, adota-a. Só consulta o sync
+     num aparelho novo (sem cópia local) ou com o sync ligado aqui: quem desligou o sync não
+     recebe de volta, nem religa sozinho, o que outro aparelho da mesma conta gravou. */
+  const localSync = !!(d && d.settings && d.settings.sync === true);
+  const syncData = (!d || localSync) ? await loadSyncDB() : null;
   if (syncData && syncData.updatedAt && (!d || (syncData.updatedAt > (d.updatedAt || 0)))) {
     const parsed = parseDB(JSON.stringify(syncData));
     if (parsed) d = keepLocalSecrets(parsed, d);
@@ -500,11 +503,14 @@ function askPersistentStorage() {
     navigator.storage.persisted().then((ok) => { if (!ok) return navigator.storage.persist(); }).catch(() => { /* ignora */ });
   } catch (e) { /* ignora */ }
 }
+/* tudo o que o jogo guarda no localStorage: o reset precisa levar também a cópia de
+   "desfazer restauração" (traz o progresso inteiro por 7 dias) e o resultado do sync */
+const LOCAL_STATE_KEYS = ['cc_state', 'cc_undo_restore', 'cc_sync_status'];
 /* apaga o progresso em todas as camadas (reset do painel); resolve quando a
    cópia nativa também saiu — recarregar antes disso traria o progresso de volta */
 function clearSavedState() {
   clearTimeout(saveTimer);
-  try { localStorage.removeItem('cc_state'); } catch (e) { /* ignora */ }
+  LOCAL_STATE_KEYS.forEach((k) => { try { localStorage.removeItem(k); } catch (e) { /* ignora */ } });
   try {
     if (typeof chrome !== 'undefined' && chrome.storage) { chrome.storage.local.clear(); chrome.storage.sync.clear(); }
   } catch (e) { /* ignora */ }
@@ -735,7 +741,10 @@ function loadSyncDB() {
 function adoptRemote(remote) {
   const parsed = parseDB(JSON.stringify(remote));
   if (!parsed) return false;
-  DB = keepLocalSecrets(parsed, DB);
+  /* a senha vigente é a gravada no aparelho (o painel pode tê-la trocado em outra página
+     depois de este DB carregar): grava o que está pendente e lê de lá, não da memória */
+  flushSave();
+  DB = keepLocalSecrets(parsed, readStored() || DB);
   writeState({ noSync: true, noMerge: true });
   return true;
 }
