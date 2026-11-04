@@ -31,7 +31,9 @@ function yesterdayStr() { const d = new Date(); d.setDate(d.getDate() - 1); retu
 function weekKey(d) {
   const x = d || new Date();
   const jan1 = new Date(x.getFullYear(), 0, 1);
-  const wk = Math.ceil((((x - jan1) / 86400000) + jan1.getDay() + 1) / 7);
+  /* dias de calendário (UTC): a hora do dia e a troca de horário de verão não empurram o sábado para a semana seguinte */
+  const n = Math.round((Date.UTC(x.getFullYear(), x.getMonth(), x.getDate()) - Date.UTC(x.getFullYear(), 0, 1)) / 86400000);
+  const wk = Math.floor((n + jan1.getDay()) / 7) + 1;
   return x.getFullYear() + '-S' + String(wk).padStart(2, '0');
 }
 
@@ -258,6 +260,12 @@ function migrateV1(old) {
   if (old && (old.difficulty === 1 || old.difficulty === 2 || old.difficulty === 3)) s.diffMode = old.difficulty;
   return { v: 2, updatedAt: Date.now(), activeId: p.id, profiles: [p], settings: s };
 }
+/* padrão + o que veio salvo; a chave própria "__proto__" de um JSON malicioso não vira protótipo do objeto novo */
+function withDefaults(over) {
+  const s = Object.assign({}, DEFAULT_SETTINGS);
+  if (over && typeof over === 'object') Object.keys(over).forEach((k) => { if (k !== '__proto__') s[k] = over[k]; });
+  return s;
+}
 function parseDB(raw) {
   try {
     const d = JSON.parse(raw);
@@ -266,7 +274,7 @@ function parseDB(raw) {
       // v2.6.2: o antigo hc (sim/não) vira contrast; "não" passa a seguir o sistema
       const old = d.settings && typeof d.settings === 'object' ? d.settings : {};
       if (!('contrast' in old) && 'hc' in old) old.contrast = old.hc === true ? 'on' : 'auto';
-      d.settings = Object.assign({}, DEFAULT_SETTINGS, d.settings || {});
+      d.settings = withDefaults(d.settings);
       normalizeDB(d);
       return d;
     }
@@ -385,11 +393,14 @@ function normalizeDB(d) {
     p.stickers = (Array.isArray(p.stickers) ? p.stickers : [])
       .filter((i, j, a) => Number.isInteger(i) && i >= 0 && i < STICKERS.length && a.indexOf(i) === j);
     p.owned = (p.owned && typeof p.owned === 'object') ? p.owned : { themes: ['classico'], hats: [], pets: ['fox'] };
-    const shortStrs = (a) => (Array.isArray(a) ? a.filter((x) => typeof x === 'string' && x.length <= 16) : []);
+    /* mesmo critério do chapéu: sem < > & " ' (ids de catálogo são letras ou emoji) */
+    const shortStrs = (a) => (Array.isArray(a) ? a.filter((x) => typeof x === 'string' && x.length <= 16 && !/[<>&"']/.test(x)) : []);
     p.owned.themes = shortStrs(p.owned.themes); if (!p.owned.themes.length) p.owned.themes = ['classico'];
     p.owned.hats = shortStrs(p.owned.hats);
     p.owned.pets = shortStrs(p.owned.pets); if (!p.owned.pets.length) p.owned.pets = ['fox'];
-    p.pet = typeof p.pet === 'string' ? p.pet : '';
+    /* ids de mascote são letras, números, _ e - (vazio = raposa); a data do último jogo é AAAA-MM-DD */
+    p.pet = (typeof p.pet === 'string' && /^[A-Za-z0-9_-]{1,16}$/.test(p.pet)) ? p.pet : '';
+    p.lastPlay = (typeof p.lastPlay === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(p.lastPlay)) ? p.lastPlay : '';
     p.chests = cleanMap(p.chests, () => 1);
     p.bestSurvive = Number(p.bestSurvive) || 0;
     p.firstPet = !!p.firstPet;
@@ -461,8 +472,11 @@ function loadRaw() {
 }
 async function initDB() {
   let d = await loadRaw();
-  // S32: se sync habilitado e a cópia sincronizada é mais recente, adota-a
-  const syncData = await loadSyncDB();
+  /* S32: se sync habilitado e a cópia sincronizada é mais recente, adota-a. Só consulta o sync
+     num aparelho novo (sem cópia local) ou com o sync ligado aqui: quem desligou o sync não
+     recebe de volta, nem religa sozinho, o que outro aparelho da mesma conta gravou. */
+  const localSync = !!(d && d.settings && d.settings.sync === true);
+  const syncData = (!d || localSync) ? await loadSyncDB() : null;
   if (syncData && syncData.updatedAt && (!d || (syncData.updatedAt > (d.updatedAt || 0)))) {
     const parsed = parseDB(JSON.stringify(syncData));
     if (parsed) d = keepLocalSecrets(parsed, d);
@@ -470,7 +484,7 @@ async function initDB() {
   if (!d) d = { v: 2, updatedAt: Date.now(), activeId: '', profiles: [], settings: Object.assign({}, DEFAULT_SETTINGS) };
   if (!d.profiles.length) d.profiles.push(newProfile('p1', DEFAULT_NAME, '🦊'));
   if (!d.profiles.find((p) => p.id === d.activeId)) d.activeId = d.profiles[0].id;
-  d.settings = Object.assign({}, DEFAULT_SETTINGS, d.settings || {});
+  d.settings = withDefaults(d.settings);
   normalizeDB(d);
   DB = d;
   /* a cópia adotada (nativa ou do sync) pode ser mais nova que a do localStorage: grava
@@ -479,6 +493,7 @@ async function initDB() {
   if (!ls || (DB.updatedAt || 0) > (ls.updatedAt || 0)) writeState({ noSync: true, noMerge: true });
   else BASE = JSON.stringify(DB);
   askPersistentStorage();
+  purgeBackupCache();
   return DB;
 }
 /* PWA instalada: pede ao navegador para não recolher o armazenamento sob pouco
@@ -491,11 +506,14 @@ function askPersistentStorage() {
     navigator.storage.persisted().then((ok) => { if (!ok) return navigator.storage.persist(); }).catch(() => { /* ignora */ });
   } catch (e) { /* ignora */ }
 }
+/* tudo o que o jogo guarda no localStorage: o reset precisa levar também a cópia de
+   "desfazer restauração" (traz o progresso inteiro por 7 dias) e o resultado do sync */
+const LOCAL_STATE_KEYS = ['cc_state', 'cc_undo_restore', 'cc_sync_status'];
 /* apaga o progresso em todas as camadas (reset do painel); resolve quando a
    cópia nativa também saiu — recarregar antes disso traria o progresso de volta */
 function clearSavedState() {
   clearTimeout(saveTimer);
-  try { localStorage.removeItem('cc_state'); } catch (e) { /* ignora */ }
+  LOCAL_STATE_KEYS.forEach((k) => { try { localStorage.removeItem(k); } catch (e) { /* ignora */ } });
   try {
     if (typeof chrome !== 'undefined' && chrome.storage) { chrome.storage.local.clear(); chrome.storage.sync.clear(); }
   } catch (e) { /* ignora */ }
@@ -510,6 +528,20 @@ function clearSavedState() {
 const NATIVE_FS = capPlugin('Filesystem');
 const NATIVE_SHARE = capPlugin('Share');
 const FILE_VIA_SHARE = !!(NATIVE_FS && NATIVE_SHARE); // o aviso diz "guardado", não "baixado"
+/* o backup compartilhado fica no cache do app, com os nomes das crianças em texto puro: apaga os de mais de 1 dia.
+   Não apaga na hora: o app de destino (e-mail, Drive) pode ler o arquivo depois que a folha de compartilhar fecha. */
+function purgeBackupCache() {
+  if (!NATIVE_FS || !NATIVE_FS.readdir || !NATIVE_FS.deleteFile) return;
+  try {
+    NATIVE_FS.readdir({ path: '', directory: 'CACHE' }).then((r) => {
+      ((r && r.files) || []).forEach((f) => {
+        const name = typeof f === 'string' ? f : f && f.name;
+        const old = typeof f === 'string' || !f.mtime || Date.now() - f.mtime > 86400000;
+        if (name && old && /^conta-comigo-backup-.*\.json$/.test(name)) NATIVE_FS.deleteFile({ path: name, directory: 'CACHE' }).catch(() => { /* ignora */ });
+      });
+    }).catch(() => { /* ignora */ });
+  } catch (e) { /* ignora */ }
+}
 function saveTextFile(name, text, title) {
   if (FILE_VIA_SHARE) {
     return NATIVE_FS.writeFile({ path: name, data: text, directory: 'CACHE', encoding: 'utf8' })
@@ -626,7 +658,7 @@ function adoptLatest() {
   const d = readStored();
   if (!d) return false;
   if (!d.profiles.find((p) => p.id === d.activeId)) d.activeId = d.profiles[0].id;
-  d.settings = Object.assign({}, DEFAULT_SETTINGS, d.settings || {});
+  d.settings = withDefaults(d.settings);
   DB = d;
   BASE = JSON.stringify(DB);
   return true;
@@ -712,7 +744,10 @@ function loadSyncDB() {
 function adoptRemote(remote) {
   const parsed = parseDB(JSON.stringify(remote));
   if (!parsed) return false;
-  DB = keepLocalSecrets(parsed, DB);
+  /* a senha vigente é a gravada no aparelho (o painel pode tê-la trocado em outra página
+     depois de este DB carregar): grava o que está pendente e lê de lá, não da memória */
+  flushSave();
+  DB = keepLocalSecrets(parsed, readStored() || DB);
   writeState({ noSync: true, noMerge: true });
   return true;
 }
@@ -1580,7 +1615,6 @@ function bumpLvlStat(mode, level, right) {
 /* ---------- revisão espaçada (S08) ---------- */
 function addReviewCard(mode, level, f) {
   const p = P();
-  if (mode === 'mistar' || mode === 'comparar' && false) { /* comparar usa f {a,b} ok */ }
   if (!f) return;
   if (p.review.some((c) => c.m === mode && JSON.stringify(c.f) === JSON.stringify(f))) return;
   p.review.push({ m: mode, lv: level, f, box: 1, due: fmtDate() });
@@ -1591,6 +1625,17 @@ function dueReviews() {
   const today = fmtDate();
   return p.review.filter((c) => c.due <= today);
 }
+/* acerto do modo: as últimas 5 respostas. Ao mudar de nível a janela recomeça vazia (recordResult), então com
+   menos de 3 respostas vale o acumulado do modo; sem isso o melhor modo sumia do resumo logo após subir de nível. */
+function modeAcc(p, m) {
+  const r = (p.recent && p.recent[m]) || [];
+  if (r.length >= 3) return { n: r.length, acc: r.filter(Boolean).length / r.length };
+  let right = 0, wrong = 0;
+  const byLv = (p.lvl && p.lvl[m]) || {};
+  Object.keys(byLv).forEach((k) => { right += byLv[k].r; wrong += byLv[k].w; });
+  if (right + wrong) return { n: right + wrong, acc: right / (right + wrong) };
+  return { n: r.length, acc: r.length ? r.filter(Boolean).length / r.length : 0 };
+}
 /* v2.8.0 (N3): "Jogar agora". Uma escolha só para a criança: chefe pronto, depois revisão devida,
    depois o modo liberado que ela ainda não jogou hoje e que está mais fraco (últimas 5 respostas).
    Sem dado, vale a ordem da home. Mistar e Contra o Tempo são desafios: nunca são a sugestão. */
@@ -1598,12 +1643,11 @@ function recommendNext() {
   const p = P();
   if (!p) return { kind: 'mode', mode: 'somar' };
   if (p.bossReady) return { kind: 'boss' };
-  const today = fmtDate();
-  const due = p.review.filter((c) => c.due <= today).length;
+  const due = dueReviews().length;
   if (due > 0) return { kind: 'review', n: due };
   const modes = Object.keys(MODES).filter((m) => m !== 'mistar' && m !== 'tempo' && modeUnlocked(m));
   const played = (m) => !!(p.today && p.today.modes && p.today.modes[m]);
-  const acc = (m) => { const r = p.recent[m]; return r && r.length ? r.filter(Boolean).length / r.length : 0.5; };
+  const acc = (m) => { const a = modeAcc(p, m); return a.n ? a.acc : 0.5; };
   const pool = modes.filter((m) => !played(m));
   const from = pool.length ? pool : modes;
   let best = from[0];
@@ -1652,10 +1696,8 @@ function weekRange(k) {
    (abaixo de 80%) entre os que têm 3 respostas. Mistar e Contra o Tempo nunca entram. */
 function parentSummary(p, wk) {
   const row = (p.weeks || []).find((w) => w.k === (wk || weekKey()));
-  const stat = Object.keys(MODES).filter((m) => m !== 'mistar' && m !== 'tempo').map((m) => {
-    const r = (p.recent && p.recent[m]) || [];
-    return { m, n: r.length, acc: r.length ? r.filter(Boolean).length / r.length : 0 };
-  }).filter((x) => x.n >= 3);
+  const stat = Object.keys(MODES).filter((m) => m !== 'mistar' && m !== 'tempo')
+    .map((m) => Object.assign({ m }, modeAcc(p, m))).filter((x) => x.n >= 3);
   let best = null, next = null;
   stat.forEach((x) => {
     if (x.acc >= 0.8 && (!best || x.acc > best.acc)) best = x;
@@ -1672,11 +1714,12 @@ function mascotProgress(stars) {
 function gradeReview(card, right) {
   const p = P();
   if (right) {
-    card.box = Math.min(5, card.box + 1);
     p.reviewWins++;
+    // acertou já na caixa 5 (que voltou depois de 16 dias): o cartão se formou e sai da revisão
+    if (card.box >= 5) { p.review = p.review.filter((c) => c !== card); return; }
+    card.box += 1;
     const d = new Date(); d.setDate(d.getDate() + REVIEW_INTERVALS[card.box - 1]);
     card.due = fmtDate(d);
-    if (card.box >= 5) p.review = p.review.filter((c) => c !== card);
   } else {
     card.box = 1;
     const d = new Date(); d.setDate(d.getDate() + 1);
@@ -1698,6 +1741,16 @@ function makeFromCard(card) {
    mexem só no perfil recebido e devolvem o que a interface deve comemorar
    (toast, som, confete ficam em ui.js). Testadas em tests/engine.test.cjs. */
 const STARS_MISSION = 3, STARS_GOAL = 5, STARS_ACH = 5;
+/* ofensiva (S15): perdoa 1 dia sem jogar (um sábado fora não zera a sequência); 2 dias seguidos sem jogar recomeçam em 1 */
+const STREAK_GRACE_DAYS = 1;
+function nextStreak(p, now) {
+  const d = new Date(now);
+  for (let i = 0; i <= STREAK_GRACE_DAYS; i++) {
+    d.setDate(d.getDate() - 1);
+    if (p.lastPlay === fmtDate(d)) return (p.streak || 0) + 1;
+  }
+  return 1;
+}
 const COMBO_STEP = 5, STARS_COMBO = 2;   // a cada 5 acertos seguidos, +2 ⭐
 const BOSS_EVERY = 5, BOSS_WIN = 0.7;    // chefe a cada 5 rodadas; vence com 70% de primeira
 
@@ -1809,11 +1862,10 @@ function finishRound(p, r, opts) {
   const o = opts || {};
   const now = o.now || new Date();
   const today = fmtDate(now);
-  const yest = new Date(now); yest.setDate(yest.getDate() - 1);
   const res = { goalStars: 0, boss: '', chest: 0, newRecord: false, survive: null, diagLevel: 0, missions: [], achs: [] };
   // ofensiva (S15)
   if (p.lastPlay !== today) {
-    p.streak = (p.lastPlay === fmtDate(yest)) ? (p.streak || 0) + 1 : 1;
+    p.streak = nextStreak(p, now);
     p.lastPlay = today;
   }
   // semanas (S26)

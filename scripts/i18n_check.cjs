@@ -12,8 +12,8 @@ for (const f of ['game.html', 'popup.html', 'web/index.html', 'options.html', 'n
   for (const m of fs.readFileSync(path.join(ROOT, f), 'utf8').matchAll(/data-i18n(?:-label|-ph|-title)?="([a-z0-9_]+)"/g)) used.add(m[1]);
 }
 for (const f of fs.readdirSync(path.join(ROOT, 'js'))) {
-  // t('chave') literal; prefixos montados em tempo de execução (t('th_' + id)) ficam de fora
-  for (const m of fs.readFileSync(path.join(ROOT, 'js', f), 'utf8').matchAll(/\bt\('([a-z0-9_]+)'\s*([+,)])/g)) if (m[2] !== '+') used.add(m[1]);
+  // t('chave') e tHtml('chave') literais; prefixos montados em tempo de execução (t('th_' + id)) ficam de fora
+  for (const m of fs.readFileSync(path.join(ROOT, 'js', f), 'utf8').matchAll(/\b(?:t|tHtml)\('([a-z0-9_]+)'\s*([+,)])/g)) if (m[2] !== '+') used.add(m[1]);
 }
 let bad = 0;
 for (const lang of Object.keys(I18N)) {

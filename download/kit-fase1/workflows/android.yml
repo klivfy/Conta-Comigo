@@ -72,10 +72,11 @@ jobs:
         with:
           gradle-version: '8.14.3'
 
+      # PR roda código do próprio ramo (gradle, scripts): fica sem os segredos de assinatura e o build sai sem assinatura
       - name: Restaurar keystore dos secrets
         id: key
         env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_BASE64: ${{ github.event_name != 'pull_request' && secrets.ANDROID_KEYSTORE_BASE64 || '' }}
         run: |
           if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
             echo "::warning::secret ANDROID_KEYSTORE_BASE64 ausente: APK e AAB sem assinatura (ver native/android/keystore/README.md)"
@@ -88,9 +89,9 @@ jobs:
       - name: Build release (APK + AAB)
         working-directory: native/android/android
         env:
-          ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASS: ${{ secrets.ANDROID_KEY_PASS }}
+          ANDROID_KEYSTORE_PASS: ${{ github.event_name != 'pull_request' && secrets.ANDROID_KEYSTORE_PASS || '' }}
+          ANDROID_KEY_ALIAS: ${{ github.event_name != 'pull_request' && secrets.ANDROID_KEY_ALIAS || '' }}
+          ANDROID_KEY_PASS: ${{ github.event_name != 'pull_request' && secrets.ANDROID_KEY_PASS || '' }}
         run: gradle assembleRelease bundleRelease --no-daemon
 
       - name: Conferir o AAB (jogo dentro do pacote, sem endereço da web)

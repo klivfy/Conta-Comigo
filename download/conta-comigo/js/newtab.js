@@ -36,7 +36,7 @@ function ntQuestion() {
         // a nova aba não carrega ui.js: sem a guarda, o erro parava a rodada e a ofensiva nunca contava
         if (typeof confetti === 'function') confetti(18);
         if (p.lastPlay !== fmtDate()) {
-          p.streak = (p.lastPlay === yesterdayStr()) ? (p.streak || 0) + 1 : 1;
+          p.streak = nextStreak(p, new Date());
           p.lastPlay = fmtDate(); saveState();
         }
         setTimeout(ntQuestion, 1800);

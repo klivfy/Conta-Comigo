@@ -8,6 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const { pathToFileURL } = require('url');
 const nodeCrypto = require('crypto');
 
 const JS = path.join(__dirname, '..', 'download', 'conta-comigo', 'js');
@@ -39,7 +40,9 @@ function loadEngine(opts) {
   ctx.globalThis = ctx;
   vm.createContext(ctx);
   for (const f of ['i18n.js', 'engine.js']) {
-    vm.runInContext(fs.readFileSync(path.join(JS, f), 'utf8'), ctx, { filename: f });
+    const file = path.join(JS, f);
+    /* filename como URL de arquivo: assim o node --experimental-test-coverage mede engine.js e i18n.js */
+    vm.runInContext(fs.readFileSync(file, 'utf8'), ctx, { filename: pathToFileURL(file).href });
   }
   /* avalia uma expressão no escopo global dos scripts (alcança const/let) */
   const ev = (code) => vm.runInContext(code, ctx);

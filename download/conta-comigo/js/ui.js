@@ -893,7 +893,7 @@ function onWrong(btn) {
 }
 function levelUpOverlay(mode, lv) {
   SFX.fanfare(); confetti(40);
-  showOverlay('<div class="ov-emoji">🎉</div><h3>' + t('lvl_up', { n: lv, m: t('m_' + mode) }) + '</h3>' +
+  showOverlay('<div class="ov-emoji">🎉</div><h3>' + tHtml('lvl_up', { n: lv, m: t('m_' + mode) }) + '</h3>' +
     '<button class="big-btn" data-close="1">' + t('ok') + '</button>');
 }
 function closeOverlay() { hideOverlay(); }
@@ -953,7 +953,7 @@ function renderEndScreen(res) {
   if (endPts) {
     if (R.points > 0) {
       endPts.classList.remove('hidden');
-      endPts.innerHTML = t('end_pts', { n: R.points }) +
+      endPts.innerHTML = tHtml('end_pts', { n: R.points }) +
         (R.newRecord ? ' <span class="rec">🏆 ' + t('end_record') + '</span>' : '');
     } else endPts.classList.add('hidden');
   }
@@ -972,7 +972,7 @@ function renderEndScreen(res) {
   if (!nx) { nx = document.createElement('div'); nx.id = 'end-next'; const anchor = $('#end-msg'); anchor.parentNode.insertBefore(nx, anchor.nextSibling); }
   const mp = mascotProgress(p.stars);
   nx.classList.toggle('hidden', mp.to == null);
-  if (mp.to != null) nx.innerHTML = '<span class="np-bar" aria-hidden="true"><i style="width:' + Math.max(4, mp.pct) + '%"></i></span><span>' + (mp.to === 'baby' ? t('end_hatch', { n: mp.need }) : t('to_next', { n: mp.need })) + '</span>';
+  if (mp.to != null) nx.innerHTML = '<span class="np-bar" aria-hidden="true"><i style="width:' + Math.max(4, mp.pct) + '%"></i></span><span>' + (mp.to === 'baby' ? tHtml('end_hatch', { n: mp.need }) : tHtml('to_next', { n: mp.need })) + '</span>';
   // v2.4 (A-144): parabéns personalizado falado — recorde tem fala própria
   if (R.kind === 'normal' || R.kind === 'review') {
     const spoken = R.newRecord ? tpick('pr_record', { name: pName(p), n: R.points }) : tpick('pr_end', { name: pName(p) });
@@ -1135,7 +1135,7 @@ function buyPet(id) {
   if (p.stars < pt.price) { sayFar(pt.price - p.stars, t(pt.key)); return; }
   p.stars -= pt.price; p.owned.pets.push(id); p.firstBuy = true; p.firstPet = true; p.pet = id;
   checkAch(); saveState(); renderShop(); renderMascot(); refreshChrome();
-  showOverlay('<div class="ov-emoji">' + pt.emoji + '</div><h3>' + t('pet_new', { n: t(pt.key) }) + '</h3><button class="big-btn" data-close="1">' + t('ok') + '</button>');
+  showOverlay('<div class="ov-emoji">' + pt.emoji + '</div><h3>' + tHtml('pet_new', { n: t(pt.key) }) + '</h3><button class="big-btn" data-close="1">' + t('ok') + '</button>');
   SFX.cash(); confetti(30);
 }
 function buySticker() {
@@ -1157,7 +1157,7 @@ function openChest(ms) {
   const res = openChestReward(P(), ms);
   const extra = res.sticker >= 0 ? '<p class="ov-sub">' + t('chest_sticker', { s: STICKERS[res.sticker] }) + '</p>' : '';
   celebrateAch(res.achs); saveState(); refreshChrome();
-  showOverlay('<div class="ov-emoji chest-pop">🎁</div><h3>' + t('chest_title') + '</h3><p>' + t('chest_msg', { n: ms }) + '</p>' +
+  showOverlay('<div class="ov-emoji chest-pop">🎁</div><h3>' + t('chest_title') + '</h3><p>' + tHtml('chest_msg', { n: ms }) + '</p>' +
     '<p class="chest-reward">⭐ +' + res.stars + '</p>' + extra +
     '<button class="big-btn" id="btn-chest-claim">' + t('chest_claim') + '</button>');
   const b = $('#btn-chest-claim');
@@ -1381,7 +1381,7 @@ function openExternal(url) {
 }
 function adultCheck(onOk) {
   const a = rand(12, 19), b = rand(13, 19), want = String(a * b);
-  showOverlay('<div class="ov-emoji">🔒</div><h3>' + t('ad_title') + '</h3><p>' + t('ad_q', { q: a + ' × ' + b }) + '</p>' +
+  showOverlay('<div class="ov-emoji">🔒</div><h3>' + t('ad_title') + '</h3><p>' + tHtml('ad_q', { q: a + ' × ' + b }) + '</p>' +
     '<input id="ad-in" class="ad-input" type="text" inputmode="numeric" autocomplete="off" aria-label="' + t('ad_label') + '">' +
     '<div class="gate-err" id="ad-err" role="alert"></div>' +
     '<div class="ov-actions"><button class="big-btn" id="ad-ok">' + t('ok') + '</button>' +
@@ -1393,25 +1393,17 @@ function adultCheck(onOk) {
   $('#ad-ok').addEventListener('click', go);
   $('#ad-in').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
 }
-function ckSaved(stats, track) {
-  Consent.set(stats, track); saveState(true);
-  toast(t('ck_saved'));
-}
+/* O app não coleta nem rastreia nada: o diálogo só informa. As duas linhas ficam desligadas e travadas,
+   para que nada nesta tela pareça um pedido de permissão (Data safety e rótulos de privacidade dizem "nenhum dado coletado"). */
 function openConsentPrefs() {
-  const row = (id, title, desc, on, locked) =>
+  const row = (title, desc, on) =>
     '<div class="ck-row"><div class="ck-txt"><b>' + title + '</b><span>' + desc + '</span></div>' +
-    '<input type="checkbox" class="ck-switch" id="' + id + '" aria-label="' + title + '"' + (on ? ' checked' : '') + (locked ? ' disabled' : '') + '></div>';
+    '<input type="checkbox" class="ck-switch" aria-label="' + title + '"' + (on ? ' checked' : '') + ' disabled></div>';
   showOverlay('<h3>' + t('ck_title') + '</h3><p class="ck-note">' + t('ck_note') + '</p>' +
-    row('ck-ess', t('ck_ess'), t('ck_ess_d'), true, true) +
-    row('ck-stats', t('ck_stats'), t('ck_stats_d'), Consent.allows('stats'), false) +
-    row('ck-track', t('ck_track'), t('ck_track_d'), Consent.allows('track'), false) +
-    '<div class="ov-actions"><button class="big-btn" id="ck-save">' + t('ck_save') + '</button>' +
-    '<button class="big-btn alt" data-close="1">' + t('ck_cancel') + '</button></div>');
-  $('#ck-save').addEventListener('click', () => {
-    const st = $('#ck-stats').checked, tr = $('#ck-track').checked;
-    if (!st && !tr) { hideOverlay(); ckSaved(false, false); return; }
-    hideOverlay(); adultCheck(() => ckSaved(st, tr));
-  });
+    row(t('ck_ess'), t('ck_ess_d'), true) +
+    row(t('ck_stats'), t('ck_stats_d'), false) +
+    row(t('ck_track'), t('ck_track_d'), false) +
+    '<div class="ov-actions"><button class="big-btn" data-close="1">' + t('ok') + '</button></div>');
 }
 function bindLegal() {
   $$('.legal-link[data-legal]').forEach((btn) => btn.addEventListener('click', () => {

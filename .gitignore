@@ -22,6 +22,13 @@ native/android/keystore/*
 !native/android/keystore/README.md
 *.jks
 *.keystore
+# outras chaves e certificados privados (Apple, Windows, PEM genérico)
+*.p12
+*.pfx
+*.pem
+*.key
+*.p8
+*.mobileprovision
 
 # Builds gerados a partir de download/conta-comigo/ (fonte única) — ver README
 download/conta-comigo-firefox/

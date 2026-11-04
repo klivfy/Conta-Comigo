@@ -40,8 +40,8 @@ jobs:
       - name: Textos em pt/en/es (nenhuma chave faltando)
         run: node scripts/i18n_check.cjs
 
-      - name: Testes unitários do motor (senha, backup, geradores, regras)
-        run: node --test tests/*.test.cjs
+      - name: Testes unitários do motor (senha, backup, geradores, regras), com piso de cobertura do engine.js
+        run: node --test --experimental-test-coverage --test-coverage-include='download/conta-comigo/js/engine.js' --test-coverage-lines=85 tests/*.test.cjs
 
       - name: Cópias sincronizadas (tela do jogo, workflows do kit, versão)
         run: node scripts/sync_check.cjs

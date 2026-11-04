@@ -128,7 +128,9 @@ test('sync: perfil que não cabe nem cortado não grava nada e o painel sabe o t
   const f = fakeChrome();
   const e = loadEngine({ chrome: f.chrome });
   await e.ev('initDB()');
-  e.ev("G().sync = true; P().pet = 'x'.repeat(9000); saveState(true)");
+  /* perfil que o corte de revisões e semanas não resolve: 1500 conquistas (cleanMap aceita qualquer quantidade
+     de chaves alfanuméricas; antes o teste inflava p.pet, que agora é validado e não passa de 16 caracteres) */
+  e.ev("G().sync = true; P().ach = Object.fromEntries(Array.from({ length: 1500 }, (_, i) => ['k' + i, 1])); saveState(true)");
   const st = JSON.parse(e.ev('JSON.stringify(syncStatus())'));
   assert.equal(st.ok, false);
   assert.ok(st.kb >= 9);
@@ -211,4 +213,63 @@ test('replaceDB: importar um backup vale inteiro, sem misturar com a cópia grav
   await c.ev('initDB()');
   assert.deepEqual(JSON.parse(c.ev('JSON.stringify(DB.profiles.map((p) => p.id))')), ['x1']);
   assert.equal(c.ev('P().stars'), 0);
+});
+
+const HASH_VELHA = 'pbkdf2$600000$' + 'a'.repeat(64), HASH_NOVA = 'pbkdf2$600000$' + 'b'.repeat(64);
+
+test('sync: adotar a cópia de outro computador não devolve a senha antiga nem zera o bloqueio', async () => {
+  const store = {};
+  const seed = loadEngine({ store });
+  await seed.ev('initDB()');
+  seed.ev(`G().passHash = '${HASH_VELHA}'; G().passSalt = 's1'; saveState(true)`);
+  const painel = loadEngine({ store }), jogo = loadEngine({ store });
+  await painel.ev('initDB()'); await jogo.ev('initDB()');
+  /* o painel troca a senha e erra o suficiente para travar; o jogo ainda tem a senha velha na memória */
+  painel.ev(`G().passHash = '${HASH_NOVA}'; G().passSalt = 's2'; G().passTries = 4; G().passLockUntil = Date.now() + 60000; saveState(true)`);
+  const remoto = JSON.parse(jogo.ev('JSON.stringify(shareableDB(DB))'));
+  remoto.profiles[0].stars = 77;
+  jogo.ev('adoptRemote(' + jogo.put('remoto', remoto) + ')');
+  assert.equal(jogo.ev('P().stars'), 77, 'adotou o progresso remoto');
+  const depois = loadEngine({ store });
+  await depois.ev('initDB()');
+  assert.equal(depois.ev('G().passHash'), HASH_NOVA, 'a senha trocada voltou à antiga');
+  assert.equal(depois.ev('G().passSalt'), 's2');
+  assert.equal(depois.ev('G().passTries'), 4, 'o bloqueio foi zerado');
+});
+
+test('sync: quem desligou o sync neste aparelho não recebe nem religa o que veio de outro', async () => {
+  const f = fakeChrome();
+  /* este aparelho joga com o sync desligado (estrelas = 5) */
+  const aqui = loadEngine({ chrome: f.chrome });
+  await aqui.ev('initDB()');
+  aqui.ev('P().stars = 5; saveState(true)');
+  assert.equal(aqui.ev('G().sync'), false);
+  /* outro computador, na mesma conta, liga o sync e grava uma cópia mais nova (estrelas = 99) */
+  const outro = fakeChrome({ sync: f.sync });
+  const b = loadEngine({ chrome: outro.chrome });
+  await b.ev('initDB()');
+  b.ev('G().sync = true; P().stars = 99; saveState(true)');
+  f.sync.cc_sync_meta.updatedAt += 10000;
+
+  const depois = loadEngine({ chrome: f.chrome });
+  await depois.ev('initDB()');
+  assert.equal(depois.ev('P().stars'), 5, 'adotou o sync com o sync desligado');
+  assert.equal(depois.ev('G().sync'), false, 'religou o sync sozinho');
+});
+
+test('sync: com o sync ligado aqui, a cópia mais nova de outro computador continua sendo adotada', async () => {
+  const f = fakeChrome();
+  const aqui = loadEngine({ chrome: f.chrome });
+  await aqui.ev('initDB()');
+  aqui.ev('G().sync = true; P().stars = 5; saveState(true)');
+  const outro = fakeChrome({ sync: f.sync });
+  const b = loadEngine({ chrome: outro.chrome });
+  await b.ev('initDB()'); // aparelho novo: adota o que já está no sync
+  b.ev('P().stars = 99; saveState(true)');
+  f.sync.cc_sync_meta.updatedAt += 10000;
+  f.sync.cc_sync_p1.stars = 99;
+
+  const depois = loadEngine({ chrome: f.chrome });
+  await depois.ev('initDB()');
+  assert.equal(depois.ev('P().stars'), 99);
 });
