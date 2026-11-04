@@ -33,6 +33,7 @@ Responda **Não** a todas as perguntas de violência, medo, sexo, linguagem impr
 | Item | Arquivo |
 |---|---|
 | Capturas 1920×1080 (mínimo 4, até 10) | `imagens/<idioma>/desktop-1920x1080/` |
+| Anúncios com legenda 1920×1080 (opcional) | `anuncios/<idioma>/desktop-1920x1080/` |
 | Logotipo 300×300 (1:1) | `graficos/icones/msstore-logo-300x300.png` |
 | Pôster 720×1080 (2:3) | `graficos/<idioma>/msstore-poster-720x1080.png` |
 | Caixa 1080×1080 (1:1) | `graficos/<idioma>/msstore-caixa-1080x1080.png` |

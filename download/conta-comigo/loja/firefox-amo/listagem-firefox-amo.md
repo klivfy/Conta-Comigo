@@ -145,17 +145,20 @@ Novedades de la 2.8.0: botón Jugar ya en la pantalla de inicio, con la sugerenc
 
 ## Imagens da listagem
 
-Enviar em **Capturas de tela** (até 10), nesta ordem. Use os anúncios; as
-capturas puras estão em `capturas/` caso prefira o jogo sem moldura.
+Enviar em **Capturas de tela** (até 10), nesta ordem. Use os anúncios de
+`../anuncios/<idioma>/desktop-1280x800/` (pt, en, es; a legenda já está escrita
+na própria imagem). As capturas puras, sem moldura, estão em
+`../imagens/<idioma>/desktop-1280x800/`.
 
-| # | Arquivo (`anuncio/`) | Legenda sugerida |
+| # | Arquivo | Legenda (já na imagem, em pt) |
 |---|---|---|
-| 1 | `anuncio-01-inicio.png` | Matemática que parece brincadeira |
-| 2 | `anuncio-02-contar-pergunta.png` | Conte de um em um |
-| 3 | `anuncio-03-comparar.png` | Maior, menor ou igual? |
-| 4 | `anuncio-04-fim-de-rodada.png` | Estrelas, pontos e recordes |
-| 5 | `anuncio-05-loja.png` | Personalize com as estrelas |
-| 6 | `anuncio-06-conquistas.png` | 20 conquistas para desbloquear |
+| 1 | `01-inicio.png` | Matemática que parece brincadeira |
+| 2 | `02-contar.png` | Conte de um em um |
+| 3 | `03-comparar.png` | Maior, menor ou igual? |
+| 4 | `06-fim-de-rodada.png` | Estrelas, pontos e recordes |
+| 5 | `07-loja.png` | Personalize com as estrelas |
+| 6 | `08-conquistas.png` | 20 conquistas para desbloquear |
+| 7 | `09-painel-responsaveis.png` | Acompanhe o progresso |
 
 Ícone da extensão: `icons/icon128.png` (já dentro do pacote; o AMO usa o do manifesto).
 
@@ -163,6 +166,6 @@ capturas puras estão em `capturas/` caso prefira o jogo sem moldura.
 
 ## Imagens e política de privacidade (novo pacote de lojas)
 
-- Capturas 1280×800 nos 3 idiomas: `../imagens/<idioma>/desktop-1280x800/` (pt, en, es). As capturas e os anúncios desta pasta (`capturas/`, `anuncio/`) continuam válidos para a listagem em português.
+- Capturas 1280×800 nos 3 idiomas: `../imagens/<idioma>/desktop-1280x800/` (pt, en, es). Os anúncios com legenda estão em `../anuncios/<idioma>/` (1280×800 para o Firefox).
 - URL da política de privacidade (trilíngue): https://klivfy.github.io/Conta-Comigo/politica-de-privacidade.html
 - URL de suporte: https://github.com/klivfy/Conta-Comigo/issues
