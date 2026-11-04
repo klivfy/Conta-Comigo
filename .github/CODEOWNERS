@@ -1,0 +1,9 @@
+# Quem precisa revisar o que muda o comportamento de agentes de IA neste repositório.
+# O CLAUDE.md e as skills de .claude/ são lidos e executados por agentes: um PR que os altere
+# passa a dar instruções (e rodar scripts) na máquina de quem revisa.
+#
+# Só bloqueia o merge com a regra "Require review from Code Owners" ativa na proteção da branch main
+# (Settings > Branches). Sem ela, o arquivo apenas pede a revisão automaticamente.
+
+/CLAUDE.md   @klivfy
+/.claude/    @klivfy

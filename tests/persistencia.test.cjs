@@ -128,7 +128,9 @@ test('sync: perfil que não cabe nem cortado não grava nada e o painel sabe o t
   const f = fakeChrome();
   const e = loadEngine({ chrome: f.chrome });
   await e.ev('initDB()');
-  e.ev("G().sync = true; P().pet = 'x'.repeat(9000); saveState(true)");
+  /* perfil que o corte de revisões e semanas não resolve: 1500 conquistas (cleanMap aceita qualquer quantidade
+     de chaves alfanuméricas; antes o teste inflava p.pet, que agora é validado e não passa de 16 caracteres) */
+  e.ev("G().sync = true; P().ach = Object.fromEntries(Array.from({ length: 1500 }, (_, i) => ['k' + i, 1])); saveState(true)");
   const st = JSON.parse(e.ev('JSON.stringify(syncStatus())'));
   assert.equal(st.ok, false);
   assert.ok(st.kb >= 9);

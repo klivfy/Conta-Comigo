@@ -393,11 +393,14 @@ function normalizeDB(d) {
     p.stickers = (Array.isArray(p.stickers) ? p.stickers : [])
       .filter((i, j, a) => Number.isInteger(i) && i >= 0 && i < STICKERS.length && a.indexOf(i) === j);
     p.owned = (p.owned && typeof p.owned === 'object') ? p.owned : { themes: ['classico'], hats: [], pets: ['fox'] };
-    const shortStrs = (a) => (Array.isArray(a) ? a.filter((x) => typeof x === 'string' && x.length <= 16) : []);
+    /* mesmo critério do chapéu: sem < > & " ' (ids de catálogo são letras ou emoji) */
+    const shortStrs = (a) => (Array.isArray(a) ? a.filter((x) => typeof x === 'string' && x.length <= 16 && !/[<>&"']/.test(x)) : []);
     p.owned.themes = shortStrs(p.owned.themes); if (!p.owned.themes.length) p.owned.themes = ['classico'];
     p.owned.hats = shortStrs(p.owned.hats);
     p.owned.pets = shortStrs(p.owned.pets); if (!p.owned.pets.length) p.owned.pets = ['fox'];
-    p.pet = typeof p.pet === 'string' ? p.pet : '';
+    /* ids de mascote são letras, números, _ e - (vazio = raposa); a data do último jogo é AAAA-MM-DD */
+    p.pet = (typeof p.pet === 'string' && /^[A-Za-z0-9_-]{1,16}$/.test(p.pet)) ? p.pet : '';
+    p.lastPlay = (typeof p.lastPlay === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(p.lastPlay)) ? p.lastPlay : '';
     p.chests = cleanMap(p.chests, () => 1);
     p.bestSurvive = Number(p.bestSurvive) || 0;
     p.firstPet = !!p.firstPet;

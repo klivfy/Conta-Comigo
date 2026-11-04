@@ -870,3 +870,22 @@ test('portão dos responsáveis: trava ao sair e ao voltar do cache, e não dá 
   assert.match(troca, /gateLockedNow\(\)/);
   assert.match(troca, /registerFail\(\)/);
 });
+
+test('backup hostil: pet, lastPlay e itens comprados não carregam HTML, e os legítimos continuam', () => {
+  const ruim = '<img src=x onerror=alert(1)>', curto = '<svg onload=x>'; // o curto cabe nos 16 caracteres
+  const raw = (p) => JSON.stringify({ v: 2, activeId: 'p1', profiles: [Object.assign({ id: 'p1' }, p)], settings: { lang: 'pt' } });
+  const lê = (p) => j('parseDB(' + E.put('raw', raw(p)) + ').profiles[0]');
+  const hostil = lê({ pet: ruim, lastPlay: ruim, owned: { themes: [curto, 'arcoiris'], hats: [curto, '👑'], pets: [curto, 'panda'] } });
+  assert.equal(hostil.pet, '', 'pet com HTML');
+  assert.equal(hostil.lastPlay, '', 'lastPlay com HTML');
+  assert.deepEqual(hostil.owned, { themes: ['arcoiris'], hats: ['👑'], pets: ['panda'] }, 'item comprado com HTML sobreviveu ou o legítimo foi perdido');
+  // data fora do formato e mascote com aspas também saem
+  assert.equal(lê({ lastPlay: '2026-10-3' }).lastPlay, '');
+  assert.equal(lê({ lastPlay: 20261030 }).lastPlay, '');
+  assert.equal(lê({ pet: 'a"b' }).pet, '');
+  // valores legítimos passam intactos
+  const bom = lê({ pet: 'unicorn', lastPlay: '2026-10-30', owned: { themes: ['classico', 'neve'], hats: ['🕶️'], pets: ['fox', 'unicorn'] } });
+  assert.equal(bom.pet, 'unicorn');
+  assert.equal(bom.lastPlay, '2026-10-30');
+  assert.deepEqual(bom.owned, { themes: ['classico', 'neve'], hats: ['🕶️'], pets: ['fox', 'unicorn'] });
+});

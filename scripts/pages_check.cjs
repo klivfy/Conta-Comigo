@@ -163,8 +163,11 @@ function serve() {
     await page.evaluate(() => { renderHome(); show('home'); });
     const mh = await page.$eval('#mission-row .mission', (e) => e.getBoundingClientRect().height);
     ok(mh >= 44, 'missão: alvo de toque >= 44px (' + Math.round(mh) + ')');
+    /* as missões do dia são sorteadas: a primeira do painel pode já estar cumprida (a 1ª rodada do teste cumpre "modo novo"),
+       e a narração dela ("Missão cumprida: ...") não tem número; em andamento, a narração traz o progresso (a/b) */
+    const miAntes = await page.evaluate(() => ({ feita: document.querySelector('#mission-row .mission').classList.contains('done'), n: window.__said.length }));
     await page.click('#mission-row .mission');
-    ok(await page.evaluate(() => /\d/.test(window.__said.slice(-1)[0] || '')), 'missão: o toque narra o objetivo e o progresso');
+    ok(await page.evaluate((m) => window.__said.slice(m.n).some((x) => (m.feita ? x.length > 0 : /\d/.test(x))), miAntes), 'missão: o toque narra o objetivo e o progresso');
     await page.evaluate(() => { celebrateMissions(advanceMissions(P(), 'round', 2)); });
     ok(await page.evaluate(() => /:\s.+!/.test(document.getElementById('toast').textContent)), 'missão: o aviso diz qual missão foi cumprida');
     await page.evaluate(() => { renderAch(); show('ach'); });
