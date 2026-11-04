@@ -15,10 +15,11 @@ Tudo o que é preciso para publicar nas 6 lojas, com **português (Brasil) como 
 
 - `lojas/` — um roteiro por loja: campos, limites de caracteres, respostas de privacidade e classificação, notas para a revisão e checklist.
 - `imagens/<idioma>/<formato>/` — capturas de tela reais do jogo (pt, en, es): `desktop-1280x800` (Chrome, Edge, Firefox), `desktop-1920x1080` (Microsoft Store), `celular-1080x1920`, `tablet7-1200x1920` e `tablet10-1600x2560` (Google Play).
+- `anuncios/<idioma>/<formato>/` — as capturas com título, frase de apoio e selos de privacidade, sem o nome de nenhum navegador, então servem a todas as lojas: `desktop-1280x800` (Firefox, Chrome, Edge) e `desktop-1920x1080` (Microsoft Store). 7 cenas por idioma.
 - `graficos/<idioma>/` — tiles, banner (marquee), gráfico de recursos do Play e pôster/caixa/destaque da Microsoft Store; `graficos/icones/` — ícones nos tamanhos pedidos.
 - `politica-de-privacidade.md` — política em pt, en e es. Publicada em https://klivfy.github.io/Conta-Comigo/politica-de-privacidade.html (gerada por `python scripts/fase1_privacidade_html.py` e publicada pelo workflow *Site*).
 - `capturas/` — capturas antigas 1440×900 usadas no README do repositório (não enviar às lojas; use `imagens/`).
-- `firefox-amo/` — pacote específico do Firefox (textos, capturas e anúncios).
+- `firefox-amo/` — textos e roteiro de envio do Firefox. As imagens ficam em `imagens/` e `anuncios/`.
 
 ## Como refazer as imagens
 
@@ -26,6 +27,7 @@ Tudo o que é preciso para publicar nas 6 lojas, com **português (Brasil) como 
 python scripts/build_pwa.py
 node scripts/loja_capturas.cjs [pt|en|es]   # capturas
 node scripts/loja_graficos.cjs              # tiles, banners, pôster e ícones
+node scripts/loja_anuncios.cjs              # anúncios com legenda (1280×800 e 1920×1080)
 ```
 
 Refaça as duas coisas quando a tela do jogo mudar. Os limites de caracteres de cada campo estão escritos ao lado dele nos roteiros; ao editar um texto, confira o limite.

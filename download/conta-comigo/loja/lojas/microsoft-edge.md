@@ -21,6 +21,7 @@ Painel: <https://partner.microsoft.com/dashboard/microsoftedge/overview> · Paco
 |---|---|
 | Logotipo da extensão 300×300 | `graficos/icones/edge-logo-300x300.png` |
 | Capturas 1280×800 (até 10 por idioma) | `imagens/<idioma>/desktop-1280x800/` — todas as 9 servem |
+| Anúncios com legenda 1280×800 (opcional) | `anuncios/<idioma>/desktop-1280x800/` |
 | Tile promocional pequeno 440×280 | `graficos/<idioma>/promo-pequeno-440x280.png` |
 | Tile promocional grande 1400×560 | `graficos/<idioma>/promo-marquee-1400x560.png` |
 

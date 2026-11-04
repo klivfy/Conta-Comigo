@@ -73,7 +73,7 @@ Validado em 27/10/2026, numa versão anterior, e **não refeito na 2.8.0**:
 - **Firefox 128.0 ESR real** (Linux, headless), extensão instalada a partir do
   pacote: o jogo abriu, uma rodada completa foi jogada (17 respostas até a tela
   de fim de rodada), Comparar, Loja e Conquistas abriram, e o console registrou
-  **0 erros**. Os prints da pasta `capturas/` vêm dessa execução.
+  **0 erros**. Os prints dessa execução eram da versão anterior e foram substituídos pelas capturas novas em `../imagens/`.
 - A **página de nova aba** abriu e o botão "Conta Comigo" dela criou uma segunda
   janela com o `game.html` (`chrome.windows.create`, o mesmo caminho do ícone),
   sem erros de console.
@@ -97,7 +97,7 @@ Validado em 27/10/2026, numa versão anterior, e **não refeito na 2.8.0**:
    (com os avisos de `innerHTML`).
 4. Código-fonte: **Não** (ver item 1).
 5. Preencher a listagem com `listagem-firefox-amo.md` (pt-BR; en e es opcionais).
-6. Capturas: `anuncio/anuncio-01…06.png` (1280×800).
+6. Capturas: `../anuncios/pt/desktop-1280x800/` (7 imagens de 1280×800; en e es nas pastas irmãs).
 7. Licença: **All Rights Reserved** (o projeto é proprietário — ver `LICENSE`).
 8. Política de privacidade: informar a URL
    <https://klivfy.github.io/Conta-Comigo/politica-de-privacidade.html> (o
