@@ -527,7 +527,7 @@ function clearSavedState() {
    quando o arquivo saiu e false quando a pessoa cancelou ou algo falhou. */
 const NATIVE_FS = capPlugin('Filesystem');
 const NATIVE_SHARE = capPlugin('Share');
-const FILE_VIA_SHARE = !!(NATIVE_FS && NATIVE_SHARE); // o aviso diz "guardado", não "baixado"
+let FILE_VIA_SHARE = !!(NATIVE_FS && NATIVE_SHARE); // o aviso diz "guardado", não "baixado" (também vale para a PWA no iPhone, abaixo)
 /* o backup compartilhado fica no cache do app, com os nomes das crianças em texto puro: apaga os de mais de 1 dia.
    Não apaga na hora: o app de destino (e-mail, Drive) pode ler o arquivo depois que a folha de compartilhar fecha. */
 function purgeBackupCache() {
@@ -543,11 +543,30 @@ function purgeBackupCache() {
   } catch (e) { /* ignora */ }
 }
 function saveTextFile(name, text, title) {
-  if (FILE_VIA_SHARE) {
+  if (NATIVE_FS && NATIVE_SHARE) { // app nativo (FILE_VIA_SHARE também fica true na PWA do iPhone, que não tem plugin)
     return NATIVE_FS.writeFile({ path: name, data: text, directory: 'CACHE', encoding: 'utf8' })
       .then((r) => NATIVE_SHARE.share({ title: title || name, files: [r.uri], dialogTitle: title || name }))
       .then(() => true, () => false);
   }
+  const shared = webShareFile(name, text, title);
+  if (shared) return shared;
+  return downloadTextFile(name, text);
+}
+/* PWA instalada no iPhone/iPad: o download por blob abre um visualizador sem como guardar; a folha de
+   compartilhar do sistema (Arquivos, iCloud, e-mail) é o jeito certo. Só nesse caso: no computador e no
+   Android o download comum segue como sempre. Cancelar a folha (AbortError) não é erro nem vira download. */
+function webShareFile(name, text, title) {
+  try {
+    if (typeof IOS_WEBKIT === 'undefined' || !IOS_WEBKIT || typeof File === 'undefined') return null;
+    const standalone = navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    if (!standalone || typeof navigator.share !== 'function' || typeof navigator.canShare !== 'function') return null;
+    const file = new File([text], name, { type: 'application/json' });
+    if (!navigator.canShare({ files: [file] })) return null;
+    return navigator.share({ files: [file], title: title || name }).then(() => { FILE_VIA_SHARE = true; return true; },
+      (e) => (e && e.name === 'AbortError' ? false : downloadTextFile(name, text)));
+  } catch (e) { return null; }
+}
+function downloadTextFile(name, text) {
   try {
     const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
     const a = document.createElement('a');

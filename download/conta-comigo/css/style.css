@@ -1132,3 +1132,9 @@ button.hrow { border: none; font: inherit; font-weight: 800; color: var(--ink-so
 /* v2.8.0 (10.3.7): janela baixa (iPhone SE) com texto grande: o contador fica só com "Questão 1 de 5" (o nível sai),
    para "Ouvir de novo" e as respostas não caírem abaixo da dobra */
 @media (max-height: 600px) { #level-chip .lv-part { display: none; } }
+
+/* PWA: convite para instalar (js/pwa.js, só na PWA). Cartão na tela inicial, acima do rodapé legal. */
+.pwa-install { margin: var(--sp-6) auto var(--sp-4); max-width: 420px; padding: var(--sp-5) var(--sp-6); border-radius: var(--r-lg); background: var(--card); box-shadow: var(--lift-3); text-align: center; display: flex; flex-direction: column; gap: var(--sp-3); }
+.pwa-title { margin: 0; font-size: var(--fs-lg); font-weight: 900; color: var(--ink); }
+.pwa-body { margin: 0; font-size: var(--fs-md); font-weight: 700; color: var(--ink-soft); line-height: 1.35; }
+.pwa-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-4); }

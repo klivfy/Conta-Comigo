@@ -60,7 +60,7 @@ Versões carregadas manualmente **não se atualizam sozinhas** — se o jogo par
 |---|---|
 | `conta-comigo-chrome-2.8.0.zip` | Pacote para Chrome/Edge/Brave (Manifest V3, service worker) |
 | `conta-comigo-firefox-2.8.0.zip` | Pacote para Firefox computador **e Android** (event page + `gecko_android` 128+) |
-| `conta-comigo-pwa-2.8.0.zip` | **Web/PWA** (computador e iPhone): instalável e offline. O Android não usa a PWA: lá o jogo é o app local da Play Store |
+| `conta-comigo-pwa-2.8.0.zip` | **Web/PWA** (computador, Android e iPhone): instalável e offline, com convite para instalar. No Android e no iPhone também existe o app local das lojas |
 
 - Instalação e novidades: abra `conta-comigo/demo.html` no navegador.
 - Pasta `conta-comigo/` = fonte única (build Chromium). As pastas `conta-comigo-firefox/` e `conta-comigo-pwa/` são geradas por `python scripts/build_packages.py` e `python scripts/build_pwa.py` e não ficam no Git.

@@ -7,6 +7,7 @@ on:
       - 'download/conta-comigo/**'
       - 'scripts/build_pwa.py'
       - 'scripts/cc_build.py'
+      - 'scripts/pwa/**'
       - 'scripts/fonts/**'
       - 'docs/**'
       - '.github/workflows/pages.yml'

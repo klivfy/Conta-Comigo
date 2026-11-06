@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """v2.7 — gera a PWA do Conta Comigo (web, escolas, base do Windows e do iPhone).
 
-O Android NÃO é plataforma da PWA: lá o jogo roda como app local (Capacitor, dentro do
-AAB), sem depender de site, de rede ou de service worker.
+Android: a PWA instala pelo Chrome (WebAPK); o app local da Google Play (Capacitor, dentro do
+AAB) continua sendo a opção sem site e sem service worker.
 
 Cria download/conta-comigo-pwa/ autocontido (sem paths ../), com:
   - index.html (jogo completo, meta tags PWA, registro de service worker)
@@ -32,29 +32,22 @@ os.makedirs(ICON_OUT, exist_ok=True)
 for size in (192, 512):
     draw_icon(size, maskable=False).save(os.path.join(ICON_OUT, f'icon-{size}.png'))
     draw_icon(size, maskable=True).save(os.path.join(ICON_OUT, f'icon-maskable-{size}.png'))
-print("[OK] ícones 192/512 + maskable")
+draw_icon(180, maskable=True).convert("RGB").save(os.path.join(ICON_OUT, "apple-touch-icon-180.png"))
+print("[OK] ícones 192/512 + maskable + apple-touch 180")
 
 # ---------- 2) base = cópia autocontida ----------
 os.makedirs(OUT, exist_ok=True)
 shutil.copytree(os.path.join(SRC, "js"), os.path.join(OUT, "js"),
                 ignore=shutil.ignore_patterns("newtab.js", "boot.js"))
 shutil.copytree(os.path.join(SRC, "css"), os.path.join(OUT, "css"))
+shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), "pwa", "pwa.js"), os.path.join(OUT, "js", "pwa.js"))
 # boot.js do PWA: boot da extensão (html-page + ccVersion) + rota do jogo + service worker
 boot_src = open(os.path.join(SRC, "js", "boot.js"), encoding="utf-8").read()
 with open(os.path.join(OUT, "js", "boot.js"), "w", encoding="utf-8") as f:
     f.write(boot_src + """
 /* PWA: o jogo é index.html (o “voltar” das opções usa esta rota) */
 window.CC_GAME_URL = 'index.html';
-/* Android não é plataforma da PWA: lá o jogo é o app local da Google Play. Em navegador
-   Android a página não oferece instalação e remove o service worker de quem já instalou. */
-const ANDROID_WEB = /Android/i.test(navigator.userAgent || '');
-if (ANDROID_WEB) {
-  document.querySelectorAll('link[rel="manifest"], meta[name="mobile-web-app-capable"]').forEach((el) => el.remove());
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then((rs) => rs.forEach((r) => r.unregister())).catch(() => { /* ignora */ });
-  }
-}
-if ('serviceWorker' in navigator && !ANDROID_WEB) {
+if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => { /* offline opcional */ });
   });
@@ -64,12 +57,14 @@ if ('serviceWorker' in navigator && !ANDROID_WEB) {
 # index.html do jogo a partir do game.html (paths relativos corrigidos)
 game = open(os.path.join(SRC, "game.html"), encoding="utf-8").read()
 game = game.replace('href="css/style.css"', 'href="css/style.css"')
-game = game.replace('</title>', '</title>\n  <meta name="theme-color" content="#ff9a3d">\n  <meta name="cc-version" content="' + VERSION + '">\n  <meta name="mobile-web-app-capable" content="yes">\n  <link rel="manifest" href="manifest.webmanifest">\n  <link rel="icon" href="icons/icon-192.png">\n  <link rel="apple-touch-icon" href="icons/icon-192.png">')
+game = game.replace('</title>', '</title>\n  <meta name="theme-color" content="#ff9a3d">\n  <meta name="cc-version" content="' + VERSION + '">\n  <meta name="mobile-web-app-capable" content="yes">\n  <meta name="apple-mobile-web-app-capable" content="yes">\n  <meta name="apple-mobile-web-app-title" content="Conta Comigo">\n  <meta name="apple-mobile-web-app-status-bar-style" content="default">\n  <link rel="manifest" href="manifest.webmanifest">\n  <link rel="icon" href="icons/icon-192.png">\n  <link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png">')
+game = game.replace('<script src="js/ui.js"></script>', '<script src="js/ui.js"></script>\n  <script src="js/pwa.js"></script>', 1)
+assert 'js/pwa.js' in game
 open(os.path.join(OUT, "index.html"), "w", encoding="utf-8").write(game)
 
 # options.html (painel dos responsáveis — aberto pelo ⚙️ do jogo)
 opts = open(os.path.join(SRC, "options.html"), encoding="utf-8").read()
-opts = opts.replace('</title>', '</title>\n  <meta name="theme-color" content="#ff9a3d">\n  <link rel="manifest" href="manifest.webmanifest">\n  <link rel="icon" href="icons/icon-192.png">', 1)
+opts = opts.replace('</title>', '</title>\n  <meta name="theme-color" content="#ff9a3d">\n  <link rel="manifest" href="manifest.webmanifest">\n  <link rel="icon" href="icons/icon-192.png">\n  <link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png">', 1)
 open(os.path.join(OUT, "options.html"), "w", encoding="utf-8").write(opts)
 
 # ---------- 3) manifest.webmanifest ----------
@@ -100,9 +95,9 @@ with open(os.path.join(OUT, "manifest.webmanifest"), "w", encoding="utf-8") as f
 # ---------- 4) sw.js (cache-first do app shell) ----------
 ASSETS = ["./index.html", "./options.html", "./manifest.webmanifest", "./css/style.css",
           "./css/fonts/nunito-latin.woff2",
-          "./js/boot.js", "./js/engine.js", "./js/ui.js", "./js/i18n.js", "./js/options.js",
+          "./js/boot.js", "./js/engine.js", "./js/ui.js", "./js/i18n.js", "./js/options.js", "./js/pwa.js",
           "./icons/icon-192.png", "./icons/icon-512.png",
-          "./icons/icon-maskable-192.png", "./icons/icon-maskable-512.png"]
+          "./icons/icon-maskable-192.png", "./icons/icon-maskable-512.png", "./icons/apple-touch-icon-180.png"]
 # chave do cache = versão + hash do conteúdo: qualquer mudança nos arquivos gera
 # um sw.js diferente, o navegador instala o novo e o activate apaga o cache velho
 digest = hashlib.sha256()
@@ -146,13 +141,15 @@ open(os.path.join(OUT, "sw.js"), "w", encoding="utf-8").write(sw)
 # ---------- 5) leia-me.md ----------
 readme = f"""# Conta Comigo {VERSION} — PWA
 
-Versão web instalável e offline do jogo, para navegadores de **computador** e para o
-**iPhone/iPad** (Safari: Compartilhar, Adicionar à Tela de Início).
+Versão web instalável e offline do jogo, para navegadores de **computador**, para o
+**Android** (Chrome: botão Instalar na tela inicial) e para o **iPhone/iPad** (Safari: Compartilhar,
+Adicionar à Tela de Início; o jogo mostra o passo a passo).
 
-## E no Android?
-O Android **não usa a PWA**. Lá o Conta Comigo é um app local da Google Play: o jogo vai
-**dentro do pacote**, abre sem internet desde o primeiro toque e não depende deste site.
-Em navegador Android esta página não oferece instalação e não guarda cache offline.
+## PWA ou app?
+No Android e no iPhone existe também o app local (Google Play e App Store): o jogo vai **dentro do
+pacote**, a voz e o progresso são do sistema e nada depende deste site. A PWA é o caminho sem loja:
+instala por um endereço https, atualiza ao reabrir e guarda o progresso no armazenamento do navegador
+(faça o backup nas opções do painel dos responsáveis).
 
 ## Como hospedar
 1. Publique esta pasta em um endereço **https** (GitHub Pages, Netlify, servidor da escola…).
@@ -169,7 +166,7 @@ use o backup nas opções do painel dos responsáveis.
 - `manifest.webmanifest` — identidade do app instalável
 - `sw.js` — cache offline
 - `icons/` — ícones 192/512 e maskable
-- `css/`, `js/` — estilos e motor compartilhados
+- `css/`, `js/` — estilos e motor compartilhados (`js/pwa.js`: convite para instalar)
 """
 open(os.path.join(OUT, "leia-me.md"), "w", encoding="utf-8").write(readme)
 

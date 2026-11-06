@@ -92,13 +92,10 @@ def capacitor_www(dest, plataforma):
     if os.path.exists(dest):
         shutil.rmtree(dest)
     shutil.copytree(pwa, dest, ignore=shutil.ignore_patterns(
-        "sw.js", "manifest.webmanifest", "leia-me.md", ".well-known", "privacidade*"))
+        "sw.js", "manifest.webmanifest", "leia-me.md", ".well-known", "privacidade*", "pwa.js"))
     # boot.js: tira o registro do service worker (bloco acrescentado pelo build_pwa.py)
     boot = os.path.join(dest, "js", "boot.js")
     src = open(boot, encoding="utf-8").read()
-    # ... e a guarda de Android (remove manifesto e service worker de quem abre a PWA no navegador)
-    src, n0 = re.subn(r"\n/\* Android não é plataforma da PWA.*?\*/\nconst ANDROID_WEB = .*?\n\}\n", "\n", src, flags=re.S)
-    assert n0 == 1, "guarda de Android não encontrada em boot.js"
     src, n = re.subn(r"\nif \('serviceWorker' in navigator[^)]*\) \{.*?\n\}\n", "\n", src, flags=re.S)
     assert n == 1, "registro do service worker não encontrado em boot.js"
     open(boot, "w", encoding="utf-8").write(
@@ -108,4 +105,5 @@ def capacitor_www(dest, plataforma):
         p = os.path.join(dest, page)
         html = open(p, encoding="utf-8").read()
         html = re.sub(r'\s*<link rel="manifest" href="manifest.webmanifest">', "", html)
+        html = re.sub(r'\s*<script src="js/pwa.js"></script>', "", html)  # convite de instalar é só da PWA
         open(p, "w", encoding="utf-8").write(html)
