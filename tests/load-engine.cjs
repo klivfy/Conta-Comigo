@@ -4,7 +4,8 @@
    opts.subtle: false simula contexto sem WebCrypto (fallback em JS puro).
    opts.capacitor: ponte simulada do app (window.Capacitor) para os caminhos nativos.
    opts.store: objeto que faz de localStorage, para duas "páginas" dividirem o mesmo armazenamento.
-   opts.chrome: stub de chrome.* (extensão), para testar chrome.storage. */
+   opts.chrome: stub de chrome.* (extensão), para testar chrome.storage.
+   opts.navigator / opts.window / opts.globals: acrescentam campos ao navigator, ao window e ao escopo global (PWA no iPhone). */
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
@@ -23,20 +24,21 @@ function loadEngine(opts) {
       ? { getRandomValues: (a) => nodeCrypto.getRandomValues(a) }
       : nodeCrypto.webcrypto,
     chrome: o.chrome,
-    window: { matchMedia: media, Capacitor: o.capacitor || null, addEventListener() {}, removeEventListener() {} },
+    window: { matchMedia: media, Capacitor: o.capacitor || null, addEventListener() {}, removeEventListener() {}, ...(o.window || {}) },
     history: { back() { ctx.__backs = (ctx.__backs || 0) + 1; } },
     document: {
       querySelector: () => null, querySelectorAll: () => [],
       body: { dataset: {}, classList: { toggle() {}, contains: () => false } },
       documentElement: {},
     },
-    navigator: { language: o.lang || 'pt-BR', languages: [o.lang || 'pt-BR'], userAgent: 'node' },
+    navigator: { language: o.lang || 'pt-BR', languages: [o.lang || 'pt-BR'], userAgent: 'node', ...(o.navigator || {}) },
     localStorage: {
       getItem: (k) => (k in store ? store[k] : null),
       setItem: (k, v) => { store[k] = String(v); },
       removeItem: (k) => { delete store[k]; },
     },
   };
+  Object.assign(ctx, o.globals || {}); // File, Blob, URL, document… quando o teste precisa (vale por cima dos stubs)
   ctx.globalThis = ctx;
   vm.createContext(ctx);
   for (const f of ['i18n.js', 'engine.js']) {

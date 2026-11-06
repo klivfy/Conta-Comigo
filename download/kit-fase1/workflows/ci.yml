@@ -68,6 +68,14 @@ jobs:
       - name: Nova aba, versão web e portão do painel (fora da PWA)
         run: node scripts/pages_check.cjs
 
+      - name: PWA (instalar, offline e convite no Android e no iPhone), motor Chromium
+        run: node scripts/pwa_check.cjs
+
+      - name: Motor do Safari (WebKit) para a PWA do iPhone
+        run: |
+          npx playwright install --with-deps webkit
+          CC_ENGINE=webkit node scripts/pwa_check.cjs
+
       - name: Responsividade (celulares e tablets, retrato e paisagem)
         run: node scripts/resp_check.cjs
 

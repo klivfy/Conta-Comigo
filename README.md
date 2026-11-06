@@ -54,8 +54,8 @@ A narração usa a síntese de voz do próprio sistema com **seleção inteligen
 |---|---|
 | 🟢 Chrome / Edge / Brave | [conta-comigo-chrome-2.8.0.zip](download/conta-comigo-chrome-2.8.0.zip) |
 | 🦊 Firefox (128+) | [conta-comigo-firefox-2.8.0.zip](download/conta-comigo-firefox-2.8.0.zip) |
-| 🌐 Web / PWA (computador e iPhone) | [conta-comigo-pwa-2.8.0.zip](download/conta-comigo-pwa-2.8.0.zip) |
-| 🤖 Android (app local da Play Store, sem PWA) | AAB gerado pelo CI: *Actions → Android (Capacitor)*; assinatura em [native/android/keystore/README.md](native/android/keystore/README.md) |
+| 🌐 Web / PWA (computador, Android e iPhone) | [conta-comigo-pwa-2.8.0.zip](download/conta-comigo-pwa-2.8.0.zip) |
+| 🤖 Android (app local da Play Store) | AAB gerado pelo CI: *Actions → Android (Capacitor)*; assinatura em [native/android/keystore/README.md](native/android/keystore/README.md) |
 | 🎬 Vídeo promocional (2:19, pt-BR) | [conta-comigo-video-promocional-pt-BR.mp4](download/conta-comigo/loja/video/conta-comigo-video-promocional-pt-BR.mp4) + [legenda](download/conta-comigo/loja/video/conta-comigo-video-promocional-pt-BR.srt) |
 
 > Os pacotes ficam na pasta [`download/`](download/) e são gerados a partir de `download/conta-comigo/`. Versões anteriores: [releases](https://github.com/klivfy/Conta-Comigo/releases).
@@ -73,11 +73,12 @@ A narração usa a síntese de voz do próprio sistema com **seleção inteligen
 3. Selecione qualquer arquivo da pasta descompactada
 
 **Android**
-Instale o app da Google Play. O jogo vai dentro do pacote e roda 100% local, sem internet e sem site. A PWA não é mais oferecida no Android.
+Instale o app da Google Play. O jogo vai dentro do pacote e roda 100% local, sem internet e sem site. Sem loja, a PWA também funciona no Android (abaixo).
 
-**Web / PWA (computador e iPhone)**
+**Web / PWA (computador, Android e iPhone)**
 1. Baixe `conta-comigo-pwa-2.8.0.zip` e hospede a pasta em um endereço https
-2. Abra no navegador e use **Instalar** (Chrome/Edge) ou **Adicionar à Tela de Início** (Safari)
+2. Abra no navegador. No Android e no computador o jogo mostra o botão **Instalar**; no iPhone ele ensina **Compartilhar, Adicionar à Tela de Início**
+3. O progresso fica no armazenamento do navegador: faça o backup (💾 ou painel dos responsáveis). No iPhone instalado o backup sai pela folha de compartilhar.
 
 > **Atualização sem perder progresso:** recarregar a extensão (↻ em `chrome://extensions`) preserva estrelas, conquistas e perfis; remover e reinstalar apaga; antes, salve um backup (💾 na tela de Conquistas ou no painel dos responsáveis) e restaure depois. Para confirmar a versão: o **selo `v2.8.0`** aparece no topo do jogo, ao lado de 🔥.
 
