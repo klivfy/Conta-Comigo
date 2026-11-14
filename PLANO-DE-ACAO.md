@@ -212,7 +212,8 @@ Duas varreduras com a skill anti-vicio-design: a primeira lendo o código, a seg
   - dica (`.ans.hint`): contorno amarelo com 1,3:1 contra o fundo → faixa amarela, anel em `--focus` (≥10:1) e 💡, visíveis também com movimento reduzido;
   - mapa de domínio do painel (`.lv-dot` sem dados): 1,4:1 → número em `--ink`;
   - **achado na execução:** o foco do teclado no Espaço tinha 1,16:1, porque `--focus: var(--ink)` era resolvido em `:root` com a tinta do Clássico. Foi para `body`;
-  - **achado na execução:** o axe-core 4.14 passou a cobrar WCAG 2.5.3 (rótulo contém o texto visível) e a `main` já falhava: "Jogar agora", "Próximo prêmio" e os botões "falta" da loja. Corrigido em `ui.js`; o `pages_check` lê o nome acessível calculado.
+  - **achado na execução:** o axe-core 4.14 (instalado sem versão na sessão local; o CI segue fixado em 4.10.2) acusa WCAG 2.5.3 (rótulo contém o texto visível) em "Jogar agora", "Próximo prêmio" e nos botões "falta" da loja. Defeito real, corrigido em `ui.js`; o `pages_check` lê o nome acessível calculado;
+  - **CI:** o `ubuntu-latest` virou 26.04 e o Playwright 1.56.1 não instala o Chromium nele. O job `build-e-a11y` foi fixado em `ubuntu-24.04`.
 - [ ] 11.2 [eu] **Fase 2:** alto contraste (pontos de progresso e botões de ícone sem borda), texto pequeno (painel em 16px; loja e conquistas com rótulos ≥14px) e escala de espaço como gate do `tokens_check`.
 - [ ] 11.3 [eu] **Fase 3:** caixas do painel de 22 para 24px, estado vazio único no mapa de domínio (chaves novas em pt/en/es), `:hover` sob `(hover: hover)` e easing de `pop`/`bump`, enfeite ➕ longe do título, `PRODUCT.md` em WCAG 2.2.
 - [ ] 11.4 [você] **Fase 4:** decidir se as fases 1 e 2 saem como 2.8.1 (versão nos 13 lugares do `sync_check`, zips, PWA e lojas).
