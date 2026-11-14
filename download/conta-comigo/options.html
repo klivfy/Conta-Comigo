@@ -21,7 +21,7 @@
        mínima do card (min-width:0 deixa o flex item encolher e cortar o texto) */
     .opt-row select { min-width: 0; max-width: 100%; }
     .opt-row input[type="range"] { width: 180px; }
-    .opt-row input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--ans-1); }
+    .opt-row input[type="checkbox"] { width: 24px; height: 24px; accent-color: var(--ans-1); }
     /* a caixa é pequena, mas o rótulo (label for) amplia a área clicável */
     .opt-row label[for] { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
     .file-in { position: absolute; width: 1px; height: 1px; opacity: 0; }
@@ -33,6 +33,7 @@
     .stat span { font-size: var(--fs-sm); font-weight: 800; color: var(--ink-soft); }
     .map-row { display: flex; align-items: center; gap: 10px; padding: var(--sp-3) 0; border-bottom: 1px dashed var(--line); }
     .map-row:last-child { border-bottom: none; }
+    .map-empty { font-size: var(--fs-lg); font-weight: 700; color: var(--ink-soft); padding: var(--sp-5) 0; }
     .map-mode { flex: 0 0 170px; font-weight: 800; font-size: var(--fs-md); display: flex; gap: var(--sp-3); align-items: center; }
     .map-bar { flex: 1; height: 12px; background: rgba(var(--sh), .1); border-radius: var(--r-pill); overflow: hidden; min-width: 80px; }
     .map-bar i { display: block; height: 100%; background: var(--success-strong); border-radius: var(--r-pill); }

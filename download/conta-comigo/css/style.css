@@ -161,6 +161,8 @@ body.calmo .mascot-main, body.calmo .deco { animation: none !important; }
 .d1 { top: 70px; left: 8px; font-size: 34px; }
 .d2 { bottom: 60px; right: 10px; font-size: 32px; animation-delay: 1.2s; }
 .d3 { top: 42%; right: 16px; font-size: 24px; animation-delay: 2.1s; }
+/* nov/2026: até 480px o ➕ caía atrás do mascote e do título; não há canto livre para ele no celular */
+@media (max-width: 480px) { .d1 { display: none; } }
 /* durante a rodada os enfeites saem: o ➕ ficava atrás dos pontos de progresso no celular */
 body:has(#screen-game.active) .deco { display: none; }
 
@@ -176,7 +178,7 @@ body:has(#screen-game.active) .deco { display: none; }
   background: var(--card); border-radius: var(--r-pill); padding: var(--sp-4) 10px; font-weight: 800; font-size: var(--fs-lg); white-space: nowrap;
   box-shadow: var(--lift-2);
 }
-#star-chip.bump { animation: bump .5s; }
+#star-chip.bump { animation: bump .5s var(--ease-out); }
 @keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.25); } 100% { transform: scale(1); } }
 .btn-group { display: flex; gap: 5px; align-items: center; }
 #chip-streak {
@@ -185,7 +187,7 @@ body:has(#screen-game.active) .deco { display: none; }
 }
 #combo-chip {
   background: var(--yellow); color: var(--on-yellow); border-radius: var(--r-pill); padding: var(--sp-3) var(--sp-5);
-  font-weight: 900; font-size: var(--fs-sm); box-shadow: var(--lift-1); animation: bump .5s;
+  font-weight: 900; font-size: var(--fs-sm); box-shadow: var(--lift-1); animation: bump .5s var(--ease-out);
 }
 #combo-chip.hidden { display: none; }
 
@@ -302,7 +304,7 @@ body.hc .np-bar { border: 1px solid var(--line); }
 #level-chip { font-size: var(--fs-xs); font-weight: 800; color: var(--ink-soft); background: var(--card); border-radius: var(--r-pill); padding: var(--sp-2) 10px; box-shadow: var(--lift-1); margin-left: auto; }
 #pts-chip { font-size: var(--fs-xs); font-weight: 800; color: var(--ink); background: var(--card); border-radius: var(--r-pill); padding: var(--sp-2) 10px; box-shadow: var(--lift-1); }
 #pts-chip b { font-weight: 900; }
-#pts-chip.bump { animation: pop .35s; }
+#pts-chip.bump { animation: pop .35s var(--ease-out); }
 
 /* v2.2 — barra de tempo suave (nunca pune: só zera o bônus de rapidez) */
 #timer-wrap { width: 100%; height: 10px; border-radius: var(--r-pill); background: rgba(var(--sh), .12); overflow: hidden; margin: 0 0 var(--sp-4); }
@@ -334,7 +336,7 @@ body.hc #timer-wrap { border: 2px solid var(--line); }
 .obj.counted::before {
   content: var(--cnt); position: absolute; top: -12px; right: -8px; z-index: 3;
   background: var(--ans-1); color: var(--on-accent); font-size: var(--fs-xs); font-weight: 900;
-  border-radius: var(--r-pill); padding: var(--sp-1) var(--sp-3); animation: pop .4s;
+  border-radius: var(--r-pill); padding: var(--sp-1) var(--sp-3); animation: pop .4s var(--ease-out);
 }
 /* v2.8.0 (N4): cesta de contar. O objeto sobe acima dos outros ao arrastar; solto fora, volta com ease-out;
    no modo calmo volta sem animar. touch-action:none só nos objetos, para o dedo arrastar em vez de rolar. */
@@ -419,13 +421,13 @@ button:focus-visible, .mode-card:focus-visible { outline: 4px solid var(--focus)
   font-weight: 800; font-size: var(--fs-lg); box-shadow: var(--float-1); z-index: 30; width: max-content; max-width: 94%; text-align: center;
 }
 #bubble.hidden { display: none; }
-#bubble.pop { animation: pop .45s; }
+#bubble.pop { animation: pop .45s var(--ease-out); }
 #bubble-emoji { font-size: 25px; }
 
 /* ---------- tela final ---------- */
 #end-title { font-size: var(--fs-3xl); font-weight: 900; margin-top: var(--sp-2); }
 #stars-earned { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-3); max-width: 320px; margin: 10px 0 var(--sp-3); min-height: 38px; }
-.star-pop { font-size: 29px; animation: pop .5s backwards; }
+.star-pop { font-size: 29px; animation: pop .5s var(--ease-out) backwards; }
 #end-pts { font-size: var(--fs-lg); font-weight: 900; color: var(--ink); background: var(--card); padding: var(--sp-4) 18px; border-radius: var(--r-pill); box-shadow: var(--lift-2); margin: var(--sp-1) 0 var(--sp-2); max-width: 94%; text-align: center; }
 #end-pts .rec { color: var(--accent-text); }
 #end-msg { font-size: var(--fs-lg); color: var(--ink-soft); font-weight: 700; text-align: center; }
@@ -708,7 +710,8 @@ body.rm .breathe-ball { animation: ccBreatheFade 8s ease-in-out infinite !import
   border-radius: var(--r-pill);
   padding: 5px var(--sp-4);
 }
-.cc-ver:hover { color: var(--ink); border-color: var(--ink-soft); }
+/* nov/2026: hover só onde existe ponteiro fino; no toque ele "grudava" depois do toque */
+@media (hover: hover) and (pointer: fine) { .cc-ver:hover { color: var(--ink); border-color: var(--ink-soft); } }
 /* popup 400x600 (sem classe html-page): espaço curto — selo some no mini-molde,
    continua visível no jogo em tela cheia (page-mode) e nas opções */
 html:not(.html-page) .cc-ver { display: none; }
@@ -978,7 +981,7 @@ body.page-mode #app, body.wide #app {
 /* superfícies do navegador também seguem o tema (Fase 5) */
 body { accent-color: var(--ans-1); }
 ::selection { background: rgba(var(--glow), .55); color: var(--ink); }
-body.hc ::selection { background: var(--focus); color: #000; }
+body.hc ::selection { background: var(--focus); color: var(--card); } /* --card é preto no alto contraste */
 
 
 /* ==================== Fase 7 — responsivo por natureza ====================
@@ -1056,7 +1059,8 @@ body.page-mode .shop-row > :last-child:nth-child(odd) { grid-column: auto; justi
   text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px;
   transition: text-decoration-color var(--dur-1) var(--ease-out);
 }
-.legal-link:hover, .legal-link:focus-visible { text-decoration-color: currentColor; }
+.legal-link:focus-visible { text-decoration-color: currentColor; }
+@media (hover: hover) and (pointer: fine) { .legal-link:hover { text-decoration-color: currentColor; } }
 .legal-owner { margin: 0 0 var(--sp-4); font-size: var(--fs-2xs); font-weight: 600; color: var(--ink-soft); text-align: center; }
 .consent {
   position: fixed; left: 50%; bottom: calc(var(--sp-5) + env(safe-area-inset-bottom, 0px)); z-index: 40;

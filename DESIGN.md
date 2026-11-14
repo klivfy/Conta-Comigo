@@ -301,6 +301,8 @@ A raposa (🥚 → 🐣 → 🦊, com chapéu da loja) quica em loop. O balão d
 - **Do** teste cada mudança visual nos 8 modos de cor (7 temas mais alto contraste), no popup 400×600 e em celulares e tablets emulados, retrato e paisagem (`node scripts/resp_check.cjs`). O contraste dos 8 modos, incluindo texto em degradê, dica, foco e as bordas do alto contraste, é conferido por `node scripts/contrast_check.cjs`.
 - **Do** mantenha `game.html`, `popup.html` e `web/index.html` com a mesma marcação da tela inicial (`node scripts/sync_check.cjs` confere).
 - **Do** desligue animação em `body.calmo`, `body.rm` e `prefers-reduced-motion`.
+- **Do** dê curva a toda animação (`pop` e `bump` usam `var(--ease-out)`) e ponha `:hover` dentro de `@media (hover: hover) and (pointer: fine)`: no toque, o hover "gruda" depois do toque.
+- **Do** troque listas vazias repetidas por um aviso único que diga o que fazer (ex.: o mapa de domínio sem nenhuma questão respondida).
 
 ### Don't:
 - **Don't** use os matizes de enfeite (`--green` #2ed573, `--blue` #4c7dff, `--orange` #ff9a3d) como fundo de texto branco: ficam abaixo de 4,5:1.

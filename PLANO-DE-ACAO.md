@@ -220,7 +220,15 @@ Duas varreduras com a skill anti-vicio-design: a primeira lendo o código, a seg
   - loja e conquistas: nomes, descrições, preços e botões de 12–13px para 14px (`--fs-md`);
   - escala de espaço: 7, 9, 11 e 13px viraram `var(--sp-*)` (32 no jogo, mais 30 valores do painel que já tinham token). O `tokens_check` entrou no CI (antes só rodava à mão), passou a cobrir o `<style>` do `options.html` com teto próprio e teve os tetos baixados (133 → 101 no jogo; 26 no painel); um valor fora da escala colocado de propósito reprova. O 10px (49 usos) fica para um lote próprio, porque mudar 2px em tantos lugares aparece na tela;
   - verificação: `resp_check` a 100% e 200%, `a11y_check`, `contrast_check` (8 modos), `pwa_check` Chromium e `app_check` verdes; `visual_diff` mostra só deslocamentos de 1px. O `pwa_check` com WebKit não rodou localmente (motor ausente no contêiner); fica para o CI, que roda os dois motores.
-- [ ] 11.3 [eu] **Fase 3:** caixas do painel de 22 para 24px, estado vazio único no mapa de domínio (chaves novas em pt/en/es), `:hover` sob `(hover: hover)` e easing de `pop`/`bump`, enfeite ➕ longe do título, `PRODUCT.md` em WCAG 2.2.
+- [x] 11.3 [eu] **Fase 3, acabamento (sem subir versão):**
+  - caixas de seleção do painel de 22 para 24px;
+  - mapa de domínio sem nenhuma questão respondida: um aviso único (chave `map_empty` em pt, en e es) no lugar de 13 linhas iguais de "Poucos dados (0/20)". Com qualquer dado, as linhas voltam;
+  - `:hover` de `.cc-ver` e `.legal-link` só com ponteiro fino (`@media (hover: hover) and (pointer: fine)`); o `:focus-visible` do link continua fora;
+  - `pop` e `bump` ganharam `var(--ease-out)` nos 6 usos que estavam sem curva;
+  - enfeite ➕ escondido até 480px: ele caía atrás do mascote e do título, e no celular não há canto livre;
+  - `body.hc ::selection` usa `var(--card)` no lugar do `#000` literal;
+  - `PRODUCT.md` passa a citar WCAG 2.2 AA, com o `contrast_check` ao lado do axe;
+  - verificação: testes, i18n, sync, CSP, tokens, contraste (8 modos), a11y, pages, `resp_check` (100% e 200%), `pwa_check` Chromium e `app_check` verdes. O WebKit fica para o CI.
 - [ ] 11.4 [você] **Fase 4:** decidir se as fases 1 e 2 saem como 2.8.1 (versão nos 13 lugares do `sync_check`, zips, PWA e lojas).
 
 ## Adiado (decisão do responsável, 30/10/2026)
