@@ -183,7 +183,7 @@ Cada tema redefine só os tokens semânticos: `--ink`, `--ink-soft`, `--sh` (cor
 - **Clássico** e **Espaço**. Espaço é escuro: #131a33, cartão #273159, tinta #eaf0ff e `color-scheme: dark`.
 - **Jardim**, **Arco-íris**, **Oceano**, **Doces** e **Neve**.
 
-O **Alto contraste** (`body.hc`) tem fundo #000, tinta #fff, secundário e foco #ffff00, e borda branca em todo componente interativo. Ele liga sozinho quando o sistema pede mais contraste (`prefers-contrast: more`); no painel, o adulto escolhe automático, ligado ou desligado. Com "Reduzir transparência" (`prefers-reduced-transparency`), a barra superior fica sólida, sem desfoque.
+O **Alto contraste** (`body.hc`) tem fundo #000, tinta #fff, secundário e foco #ffff00, e borda branca em todo componente interativo, inclusive botões de ícone, missões e os pontos de progresso da rodada (o ponto atual fica amarelo e os feitos, verdes). O `contrast_check` mede essa borda (3:1, WCAG 1.4.11). Ele liga sozinho quando o sistema pede mais contraste (`prefers-contrast: more`); no painel, o adulto escolhe automático, ligado ou desligado. Com "Reduzir transparência" (`prefers-reduced-transparency`), a barra superior fica sólida, sem desfoque.
 
 O tema `auto` é o padrão de perfis novos: segue `prefers-color-scheme` ao vivo, Clássico no claro e Espaço no escuro.
 
@@ -206,8 +206,8 @@ Escala `--fs-*` para texto de interface: 12, 13, 14, 16, 19, 24, 28 e 40px (v2.7
 - **Display** (900, `--fs-display` 40px, que vai a 64px na página cheia): a equação e o número das respostas.
 - **Headline** (800–900, `--fs-3xl` 28px): título "Conta Comigo" (em `--ink`, com a faixa da marca embaixo) e título da tela final.
 - **Title** (800–900, `--fs-xl`/`--fs-2xl`, 19–24px): títulos de tela (Loja, Duelo), botões grandes e modais.
-- **Body** (700, `--fs-md`/`--fs-lg`, 14–16px): histórias, mensagens e campos.
-- **Label** (800, `--fs-2xs`–`--fs-sm`, 12–13px): nome e descrição dos modos, chips, missões e selos.
+- **Body** (700, `--fs-md`/`--fs-lg`, 14–16px): histórias, mensagens e campos. No painel dos responsáveis (leitura de adulto), rótulos, campos, links e ajuda ficam em 16px e as notas em 14px.
+- **Label** (800, `--fs-2xs`–`--fs-sm`, 12–13px): nome e descrição dos modos, chips, missões e selos. Na loja e nas conquistas, nomes, descrições e preços ficam em 14px (`--fs-md`) no mínimo.
 
 **Unidades (v2.6.2):** todo texto, inclusive a equação e os números das respostas, fica em `rem` (1rem = 16px no padrão). Assim ele acompanha o tamanho de fonte escolhido no navegador e no sistema; no iOS, `font: -apple-system-body` na raiz liga o texto ao Dynamic Type. Emojis de ícone e de ilustração (`.icon-btn`, `.mascot`, `.obj`, `.mode-emoji`, avatares, figurinhas) ficam em px: são imagem, e crescer com o texto estouraria as caixas de 44px. Os ajustes por breakpoint (`body.page-mode` e `@media`) seguem calibrados à parte, fora da escala `--fs-*`; juntá-los na escala é o item 7.2 do plano. No Windows, Ctrl+= / Ctrl+− / Ctrl+0 e Ctrl+roda ampliam a página inteira até 300%.
 
@@ -230,7 +230,7 @@ Escala `--fs-*` para texto de interface: 12, 13, 14, 16, 19, 24, 28 e 40px (v2.7
 - **Unidades:** `dvh` com `vh` de reserva (barras do navegador móvel), `clamp()` na tipografia do jogo, `env(safe-area-inset-*)` nas bordas e no popover.
 - **Alvos de toque:** nenhum controle com menos de 44×44px (botões, chips, objetos tocáveis). Texto de interface nunca abaixo de 12px (v2.7.4).
 - **Elementos flutuantes** (popover, balão, modal) ficam sempre dentro da tela: `max-height` pela altura real e rolagem interna.
-- **Ritmo:** escala `--sp-*` de 2, 4, 6, 8, 12, 16, 24 e 36px. (Ainda definida, mas pouco aplicada: veja o item 7.2 do plano.)
+- **Ritmo:** escala `--sp-*` de 2, 4, 6, 8, 12, 16, 24 e 36px. O `tokens_check` (no CI) reprova valor da escala escrito em px e qualquer aumento de valor fora dela, no `style.css` e no `<style>` do painel. Ainda restam valores fora da escala, sobretudo 10px; o teto só desce.
 - **Teste:** `scripts/resp_check.cjs` mede 8 aparelhos emulados × 15 telas e roda no CI, no tamanho padrão e com o texto a 200% (`CC_TEXTO=200`).
 - **Texto grande:** `overflow-wrap: anywhere` no `body`, grades com `minmax(0, 1fr)` e barra superior com `flex-wrap`. A 200% nada sai da tela; o jogo pode pedir rolagem vertical, que a WCAG permite.
 
@@ -298,7 +298,7 @@ A raposa (🥚 → 🐣 → 🦊, com chapéu da loja) quica em loop. O balão d
 ### Do:
 - **Do** use os tokens semânticos (`--ink`, `--card`, `--line`, `--tint`, `--success-*`, `--attention`, `--accent-text`, `--on-accent`, `--on-yellow`) e deixe o tema decidir a cor.
 - **Do** dê a todo controle tocável no mínimo 44×44px e uma aresta que afunda no `:active`.
-- **Do** teste cada mudança visual nos 8 modos de cor (7 temas mais alto contraste), no popup 400×600 e em celulares e tablets emulados, retrato e paisagem (`node scripts/resp_check.cjs`). O contraste dos 8 modos, incluindo texto em degradê, dica e foco, é conferido por `node scripts/contrast_check.cjs`.
+- **Do** teste cada mudança visual nos 8 modos de cor (7 temas mais alto contraste), no popup 400×600 e em celulares e tablets emulados, retrato e paisagem (`node scripts/resp_check.cjs`). O contraste dos 8 modos, incluindo texto em degradê, dica, foco e as bordas do alto contraste, é conferido por `node scripts/contrast_check.cjs`.
 - **Do** mantenha `game.html`, `popup.html` e `web/index.html` com a mesma marcação da tela inicial (`node scripts/sync_check.cjs` confere).
 - **Do** desligue animação em `body.calmo`, `body.rm` e `prefers-reduced-motion`.
 

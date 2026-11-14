@@ -24,7 +24,9 @@ const ROOT = path.resolve(__dirname, '..');
 const PWA = path.join(ROOT, 'download', 'conta-comigo-pwa');
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json',
   '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.svg': 'image/svg+xml', '.woff2': 'font/woff2' };
-const MODOS = ['classico', 'espaco', 'jardim', 'arcoiris', 'oceano', 'doces', 'neve', 'hc'];
+const TODOS = ['classico', 'espaco', 'jardim', 'arcoiris', 'oceano', 'doces', 'neve', 'hc'];
+// CC_MODOS=hc,espaco roda só esses modos (uso local, para iterar mais rápido)
+const MODOS = process.env.CC_MODOS ? process.env.CC_MODOS.split(',').filter((m) => TODOS.includes(m)) : TODOS;
 const TELAS = [{ nome: 'computador', viewport: { width: 1280, height: 800 } },
   { nome: 'celular', viewport: { width: 390, height: 844 }, touch: true }];
 
@@ -114,6 +116,53 @@ function medirAnel(sel) {
   return +Math.min(...fundos.map((f) => cr(cor, f))).toFixed(2);
 }
 
+/* Roda dentro da página (só no alto contraste): borda dos controles e dos pontos de
+   progresso. No alto contraste o cartão e o fundo são pretos, então um controle com
+   fundo próprio só se distingue pela borda: ela (ou o fundo) precisa de 3:1 contra o
+   que está em volta (WCAG 1.4.11). Botão só de texto, sem fundo e sem borda, fica de
+   fora: é o próprio texto que o identifica, e o texto já é medido acima. */
+function medirLimites() {
+  const P = (c) => { const m = (c.match(/[\d.]+/g) || []).map(Number); return { r: m[0], g: m[1], b: m[2], a: m.length > 3 ? m[3] : 1 }; };
+  const lum = (c) => { const v = [c.r, c.g, c.b].map((x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; });
+    return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+  const cr = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+  const sobre = (f, b) => ({ r: f.r * f.a + b.r * (1 - f.a), g: f.g * f.a + b.g * (1 - f.a), b: f.b * f.a + b.b * (1 - f.a), a: 1 });
+  const fundoDe = (el) => {
+    const camadas = [];
+    for (let e = el; e; e = e.parentElement) { const c = P(getComputedStyle(e).backgroundColor); if (c.a > 0) { camadas.push(c); if (c.a >= 1) break; } }
+    let acc = { r: 0, g: 0, b: 0, a: 1 }; // alto contraste: a página é preta
+    if (camadas.length && camadas[camadas.length - 1].a >= 1) acc = camadas.pop();
+    return camadas.reduceRight((a, l) => sobre(l, a), acc);
+  };
+  const visivel = (el) => {
+    const r = el.getBoundingClientRect(); if (r.width < 1 || r.height < 1) return false;
+    for (let e = el; e; e = e.parentElement) {
+      const cs = getComputedStyle(e);
+      if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0 || e.classList.contains('sr-only')) return false;
+    }
+    return true;
+  };
+  const nome = (el) => el.tagName.toLowerCase() + (el.id ? '#' + el.id : (typeof el.className === 'string' && el.className.trim() ? '.' + el.className.trim().split(/\s+/).slice(0, 2).join('.') : ''));
+  const ruins = {};
+  for (const el of document.querySelectorAll('button, [role="button"], select, textarea, input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]), .dot')) {
+    if (!visivel(el) || el.closest('[disabled], [aria-disabled="true"]')) continue;
+    const cs = getComputedStyle(el);
+    const proprio = P(cs.backgroundColor);
+    const bw = parseFloat(cs.borderTopWidth) || 0;
+    const temBorda = bw >= 1 && cs.borderTopStyle !== 'none';
+    if (proprio.a === 0 && !temBorda && !el.classList.contains('dot')) continue;
+    const volta = fundoDe(el.parentElement);
+    const rFundo = cr(sobre(proprio, volta), volta);
+    const rBorda = temBorda ? cr(sobre(P(cs.borderTopColor), volta), volta) : 0;
+    const melhor = Math.max(rFundo, rBorda);
+    if (melhor < 3) {
+      const k = nome(el);
+      if (!ruins[k] || ruins[k].r > melhor) ruins[k] = { r: +melhor.toFixed(2), min: 3, texto: '(borda do controle)' };
+    }
+  }
+  return ruins;
+}
+
 (async () => {
   if (!fs.existsSync(path.join(PWA, 'index.html'))) {
     console.error('PWA não encontrada — rode antes: python scripts/build_pwa.py'); process.exit(2);
@@ -139,16 +188,20 @@ function medirAnel(sel) {
       })); }, modo);
       await page.reload(); await page.waitForTimeout(800);
       anotar(onde('inicio'), await page.evaluate(medirTextos));
+      if (modo === 'hc') anotar(onde('inicio'), await page.evaluate(medirLimites));
       await page.keyboard.press('Tab');
       const foco = await page.evaluate(medirAnel, null);
       if (foco === null || foco < 3) falhas.push(onde('inicio') + ' · anel de foco do teclado ' + foco + ':1 (mínimo 3) contra o fundo');
       await page.click('#btn-shop'); await page.waitForTimeout(250);
       anotar(onde('loja'), await page.evaluate(medirTextos));
+      if (modo === 'hc') anotar(onde('loja'), await page.evaluate(medirLimites));
       await page.click('#btn-home'); await page.click('#btn-ach'); await page.waitForTimeout(250);
       anotar(onde('conquistas'), await page.evaluate(medirTextos));
+      if (modo === 'hc') anotar(onde('conquistas'), await page.evaluate(medirLimites));
       await page.click('#btn-home');
       await page.locator('#modes-grid > *').first().click(); await page.waitForTimeout(1200);
       anotar(onde('rodada'), await page.evaluate(medirTextos));
+      if (modo === 'hc') anotar(onde('rodada'), await page.evaluate(medirLimites));
       const dica = await page.evaluate(medirAnel, '#answers .ans');
       if (dica !== null && dica < 3) falhas.push(onde('rodada') + ' · anel da dica (.ans.hint) ' + dica + ':1 (mínimo 3) contra o fundo');
 
@@ -160,6 +213,7 @@ function medirAnel(sel) {
       await page.fill('#gc-pwd', 'teste123'); await page.fill('#gc-pwd2', 'teste123'); await page.fill('#gc-hint', 'dica');
       await page.click('#gc-go'); await page.waitForTimeout(800);
       anotar(onde('painel'), await page.evaluate(medirTextos));
+      if (modo === 'hc') anotar(onde('painel'), await page.evaluate(medirLimites));
     }
     await ctx.close();
   }
@@ -170,5 +224,5 @@ function medirAnel(sel) {
     console.error(falhas.length + ' caso(s) de contraste abaixo do mínimo:\n  ' + falhas.join('\n  '));
     process.exit(1);
   }
-  console.log('OK — contraste dentro do mínimo em ' + MODOS.length + ' modos de cor × ' + TELAS.length + ' tamanhos × 5 telas, com degradê, anel da dica e anel de foco.');
+  console.log('OK — contraste dentro do mínimo em ' + MODOS.length + ' modos de cor × ' + TELAS.length + ' tamanhos × 5 telas, com degradê, anel da dica, anel de foco e bordas no alto contraste.');
 })().catch((e) => { console.error(e); process.exit(1); });

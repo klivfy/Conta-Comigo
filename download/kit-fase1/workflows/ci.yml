@@ -48,6 +48,9 @@ jobs:
       - name: Cópias sincronizadas (tela do jogo, workflows do kit, versão)
         run: node scripts/sync_check.cjs
 
+      - name: Escala de espaço e fonte (valor fora da escala não pode aumentar)
+        run: node scripts/tokens_check.cjs
+
       # navegador do Playwright em cache, chaveado pela versão (troque as duas juntas)
       - name: Cache do Chromium do Playwright
         uses: actions/cache@v6
@@ -67,7 +70,7 @@ jobs:
       - name: Acessibilidade (falha em violação nova)
         run: node scripts/a11y_check.cjs
 
-      - name: Contraste nos 8 modos de cor (degradê, dica e foco)
+      - name: Contraste nos 8 modos de cor (degradê, dica, foco e bordas do alto contraste)
         run: node scripts/contrast_check.cjs
 
       - name: Nova aba, versão web e portão do painel (fora da PWA)

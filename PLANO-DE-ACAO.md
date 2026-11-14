@@ -214,7 +214,12 @@ Duas varreduras com a skill anti-vicio-design: a primeira lendo o código, a seg
   - **achado na execução:** o foco do teclado no Espaço tinha 1,16:1, porque `--focus: var(--ink)` era resolvido em `:root` com a tinta do Clássico. Foi para `body`;
   - **achado na execução:** o axe-core 4.14 (instalado sem versão na sessão local; o CI segue fixado em 4.10.2) acusa WCAG 2.5.3 (rótulo contém o texto visível) em "Jogar agora", "Próximo prêmio" e nos botões "falta" da loja. Defeito real, corrigido em `ui.js`; o `pages_check` lê o nome acessível calculado;
   - **CI:** o `ubuntu-latest` virou 26.04 e o Playwright 1.56.1 não instala o Chromium nele. O job `build-e-a11y` foi fixado em `ubuntu-24.04`.
-- [ ] 11.2 [eu] **Fase 2:** alto contraste (pontos de progresso e botões de ícone sem borda), texto pequeno (painel em 16px; loja e conquistas com rótulos ≥14px) e escala de espaço como gate do `tokens_check`.
+- [x] 11.2 [eu] **Fase 2, legibilidade e alto contraste (sem subir versão):**
+  - alto contraste: botões de ícone, missões e pontos de progresso sumiam (1:1 contra o preto). Ganharam borda branca; o `contrast_check` passou a medir a borda dos controles no `hc` (3:1, WCAG 1.4.11): 42 casos antes, 0 depois;
+  - painel dos responsáveis: rótulos, campos, links e ajuda de 13–14px para 16px; notas para 14px. Campos em 16px também evitam o zoom automático do iOS ao focar;
+  - loja e conquistas: nomes, descrições, preços e botões de 12–13px para 14px (`--fs-md`);
+  - escala de espaço: 7, 9, 11 e 13px viraram `var(--sp-*)` (32 no jogo, mais 30 valores do painel que já tinham token). O `tokens_check` entrou no CI (antes só rodava à mão), passou a cobrir o `<style>` do `options.html` com teto próprio e teve os tetos baixados (133 → 101 no jogo; 26 no painel); um valor fora da escala colocado de propósito reprova. O 10px (49 usos) fica para um lote próprio, porque mudar 2px em tantos lugares aparece na tela;
+  - verificação: `resp_check` a 100% e 200%, `a11y_check`, `contrast_check` (8 modos), `pwa_check` Chromium e `app_check` verdes; `visual_diff` mostra só deslocamentos de 1px. O `pwa_check` com WebKit não rodou localmente (motor ausente no contêiner); fica para o CI, que roda os dois motores.
 - [ ] 11.3 [eu] **Fase 3:** caixas do painel de 22 para 24px, estado vazio único no mapa de domínio (chaves novas em pt/en/es), `:hover` sob `(hover: hover)` e easing de `pop`/`bump`, enfeite ➕ longe do título, `PRODUCT.md` em WCAG 2.2.
 - [ ] 11.4 [você] **Fase 4:** decidir se as fases 1 e 2 saem como 2.8.1 (versão nos 13 lugares do `sync_check`, zips, PWA e lojas).
 

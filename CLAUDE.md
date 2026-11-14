@@ -36,10 +36,10 @@ node scripts/sync_check.cjs
 python scripts/build_packages.py && python scripts/build_pwa.py
 python scripts/scan_csp.py          # CSP: sem script/evento inline, javascript: ou eval
 node scripts/a11y_check.cjs         # axe; precisa de playwright e axe-core
-node scripts/contrast_check.cjs     # contraste nos 7 temas e no alto contraste, com texto em degradê, anel da dica e foco
+node scripts/contrast_check.cjs     # contraste nos 7 temas e no alto contraste: texto em degradê, anel da dica, foco e bordas do alto contraste
 node scripts/pwa_check.cjs          # PWA: instalar, offline e convite no Android e no iPhone (CC_ENGINE=webkit para o motor do Safari)
 node scripts/resp_check.cjs         # 8 aparelhos × 15 telas
-node scripts/tokens_check.cjs       # espaço e fonte: usar var(--sp-*) e var(--fs-*) quando o valor existe na escala
+node scripts/tokens_check.cjs       # espaço e fonte (style.css e painel): usar var(--sp-*) e var(--fs-*); valor fora da escala não pode aumentar
 CC_TEXTO=200 node scripts/resp_check.cjs
 python scripts/build_android_www.py && node scripts/app_check.cjs   # apps: Voltar, backup nativo, barras
 ```
