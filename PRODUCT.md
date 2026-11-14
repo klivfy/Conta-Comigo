@@ -45,9 +45,10 @@ O jogo é trilíngue (PT/EN/ES), funciona 100% offline e não coleta dados. Cada
 5. Os dados ficam no aparelho.
 
 ## Accessibility & Inclusion
-WCAG 2.1 AA:
-- contraste de 4,5:1 no texto e de 3:1 em elementos gráficos;
-- alvos de toque de 44px;
-- foco visível e navegação completa por teclado.
+WCAG 2.2 AA:
+- contraste de 4,5:1 no texto e de 3:1 em elementos gráficos, indicadores de estado e anel de foco, em todos os temas e no alto contraste;
+- alvos de toque de 44px (a 2.2 pede 24px; o jogo mantém 44px, porque o público é infantil);
+- foco visível, sem ficar escondido atrás de outros elementos, e navegação completa por teclado;
+- o nome acessível de cada controle começa pelo texto visível (2.5.3).
 
-O jogo também oferece alto contraste, fonte para dislexia, modo calmo e respeito ao `prefers-reduced-motion`. A checagem automática fica em `scripts/a11y_check.cjs`.
+O jogo também oferece alto contraste, fonte para dislexia, modo calmo e respeito ao `prefers-reduced-motion`. A checagem automática fica em `scripts/a11y_check.cjs` (axe) e `scripts/contrast_check.cjs` (contraste medido no render, nos 8 modos de cor).

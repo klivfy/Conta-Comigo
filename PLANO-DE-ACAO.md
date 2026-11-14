@@ -205,6 +205,32 @@ Detalhe, evidência e critérios de validação em `docs/revisoes/rodada-2026-10
 - [x] 10.6 [eu] **Backup melhorado (2.8.0, sem subir versão).** Estudo de viabilidade do salvar na conta Google (Play Points não guarda progresso; Play Games Services só cobre Android; o caminho multiplataforma seria o Drive `appDataFolder`, com bloqueio provável na Política para Famílias): a decisão foi **não construir o login agora** e entregar antes o que resolve a necessidade sem risco. **Decisão final do responsável (30/10/2026): o login fica descartado.** Feito: painel Dados em dois blocos (Salvar o progresso / Restaurar em outro aparelho) com um botão primário; texto diz onde o arquivo vai (app: Drive, iCloud ou Arquivos pela folha de compartilhar; web: Downloads); restaurar em dois passos com resumo (quem, estrelas, data) e aviso quando o backup é mais antigo e tem menos estrelas (`restorePreview`, com teste); "Desfazer a última restauração" por 7 dias; lembrete no resumo do painel para quem tem 30 ⭐ ou mais e não salva há 14 dias; guia "como levar para outro aparelho"; textos sem jargão de extensão. Saiu o botão duplicado "Exportar (arquivo)". **Falta [você]:** perguntar ao suporte do Play Console se login Google opcional, feito pelo adulto atrás da senha, é aceito em app só para crianças, e perguntar a 5 a 10 responsáveis se levariam o progresso entre aparelhos; o login não está mais no roteiro (descartado em 30/10/2026).
 - [x] 10.D [você] Decisões de 29/10/2026: **D1** aviso de cookies sai da home e aparece na primeira abertura do painel ("Personalizar aceites" continua no rodapé) · **D2** cronômetro desligado por padrão em perfil novo, barra de um tom só · **D3** só "Auto" na home, níveis 1 a 5 no painel. Execução nas fases 10.1 e 10.3. D4 (mascote no primeiro dia) segue em aberto.
 
+## Fase 11 — Auditoria anti-vício de design (13 e 14/11/2026)
+Duas varreduras com a skill anti-vicio-design: a primeira lendo o código, a segunda medindo no render (8 modos de cor, 1280/390/320px, teclado e movimento reduzido). Nota 22/24. Plano faseado por criticidade; decisões padrão aceitas pelo responsável ("Execute"): título em tinta sólida com faixa da marca, e dica com anel, faixa amarela e lâmpada.
+- [x] 11.1 [eu] **Fase 1, contraste AA (sem subir versão).** Medido antes e depois com o novo `scripts/contrast_check.cjs` (7 temas + alto contraste, 2 tamanhos, 5 telas; texto em degradê, anel da dica e anel de foco), que entrou no CI:
+  - título "Conta Comigo": degradê no texto dava 1,9 a 2,1:1 → texto em `--ink` e o degradê numa faixa de 5px embaixo;
+  - dica (`.ans.hint`): contorno amarelo com 1,3:1 contra o fundo → faixa amarela, anel em `--focus` (≥10:1) e 💡, visíveis também com movimento reduzido;
+  - mapa de domínio do painel (`.lv-dot` sem dados): 1,4:1 → número em `--ink`;
+  - **achado na execução:** o foco do teclado no Espaço tinha 1,16:1, porque `--focus: var(--ink)` era resolvido em `:root` com a tinta do Clássico. Foi para `body`;
+  - **achado na execução:** o axe-core 4.14 (instalado sem versão na sessão local; o CI segue fixado em 4.10.2) acusa WCAG 2.5.3 (rótulo contém o texto visível) em "Jogar agora", "Próximo prêmio" e nos botões "falta" da loja. Defeito real, corrigido em `ui.js`; o `pages_check` lê o nome acessível calculado;
+  - **CI:** o `ubuntu-latest` virou 26.04 e o Playwright 1.56.1 não instala o Chromium nele. O job `build-e-a11y` foi fixado em `ubuntu-24.04`.
+- [x] 11.2 [eu] **Fase 2, legibilidade e alto contraste (sem subir versão):**
+  - alto contraste: botões de ícone, missões e pontos de progresso sumiam (1:1 contra o preto). Ganharam borda branca; o `contrast_check` passou a medir a borda dos controles no `hc` (3:1, WCAG 1.4.11): 42 casos antes, 0 depois;
+  - painel dos responsáveis: rótulos, campos, links e ajuda de 13–14px para 16px; notas para 14px. Campos em 16px também evitam o zoom automático do iOS ao focar;
+  - loja e conquistas: nomes, descrições, preços e botões de 12–13px para 14px (`--fs-md`);
+  - escala de espaço: 7, 9, 11 e 13px viraram `var(--sp-*)` (32 no jogo, mais 30 valores do painel que já tinham token). O `tokens_check` entrou no CI (antes só rodava à mão), passou a cobrir o `<style>` do `options.html` com teto próprio e teve os tetos baixados (133 → 101 no jogo; 26 no painel); um valor fora da escala colocado de propósito reprova. O 10px (49 usos) fica para um lote próprio, porque mudar 2px em tantos lugares aparece na tela;
+  - verificação: `resp_check` a 100% e 200%, `a11y_check`, `contrast_check` (8 modos), `pwa_check` Chromium e `app_check` verdes; `visual_diff` mostra só deslocamentos de 1px. O `pwa_check` com WebKit não rodou localmente (motor ausente no contêiner); fica para o CI, que roda os dois motores.
+- [x] 11.3 [eu] **Fase 3, acabamento (sem subir versão):**
+  - caixas de seleção do painel de 22 para 24px;
+  - mapa de domínio sem nenhuma questão respondida: um aviso único (chave `map_empty` em pt, en e es) no lugar de 13 linhas iguais de "Poucos dados (0/20)". Com qualquer dado, as linhas voltam;
+  - `:hover` de `.cc-ver` e `.legal-link` só com ponteiro fino (`@media (hover: hover) and (pointer: fine)`); o `:focus-visible` do link continua fora;
+  - `pop` e `bump` ganharam `var(--ease-out)` nos 6 usos que estavam sem curva;
+  - enfeite ➕ escondido até 480px: ele caía atrás do mascote e do título, e no celular não há canto livre;
+  - `body.hc ::selection` usa `var(--card)` no lugar do `#000` literal;
+  - `PRODUCT.md` passa a citar WCAG 2.2 AA, com o `contrast_check` ao lado do axe;
+  - verificação: testes, i18n, sync, CSP, tokens, contraste (8 modos), a11y, pages, `resp_check` (100% e 200%), `pwa_check` Chromium e `app_check` verdes. O WebKit fica para o CI.
+- [ ] 11.4 [você] **Fase 4:** decidir se as fases 1 e 2 saem como 2.8.1 (versão nos 13 lugares do `sync_check`, zips, PWA e lojas).
+
 ## Adiado (decisão do responsável, 30/10/2026)
 - [~] A.1 **Ecossistema Apple (iPhone e iPad) fica para um futuro próximo.** Nenhuma nova entrega para iOS até o responsável retomar. Já está em `main`: projeto Capacitor em `native/ios/` com Preferences, TextToSpeech, Haptics, Filesystem e Share (backup passa a gerar arquivo, PR #19), manifesto `PrivacyInfo.xcprivacy` (PR #20) e o roteiro `loja/lojas/apple-app-store.md`. **Ao retomar, falta:**
   - [você] conta Apple Developer (US$ 99/ano), App ID, certificado e perfil de distribuição;

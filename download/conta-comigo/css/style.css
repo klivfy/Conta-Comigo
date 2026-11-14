@@ -48,7 +48,6 @@
   --ink: #33355c; --ink-soft: #60647c; --sh: 51, 53, 92;   /* texto, texto secundário, cor da sombra */
   --bg-a: #eaf6ff; --bg-b: #fff7e8; --bg-c: #fff0f4;      /* degradê de fundo */
   --card: #ffffff; --line: #e3e6f2;                      /* superfície e borda */
-  --focus: var(--ink);    /* anel de foco: a própria cor do texto, ≥3:1 em qualquer fundo do tema */
   --link: #2f5ce0; --danger-text: #c62828;
   --tint: #fff4dc;        /* fundo morno dos grupos de objetos */
   --pick-bg: #fff8e0; --pick-text: #33355c;               /* chip de dificuldade escolhido */
@@ -113,6 +112,9 @@ body {
   --float-2: 0 10px 26px rgba(0, 0, 0, .22);/* popover */
   --float-3: 0 12px 30px rgba(0, 0, 0, .3); /* modal */
   --track: rgba(var(--sh), .12);            /* trilho de barras de progresso */
+  /* anel de foco: a própria cor do texto, ≥3:1 em qualquer fundo do tema. nov/2026: mudou de :root para cá.
+     Em :root ele herdava a tinta já calculada do Clássico (#33355c), e o foco do Espaço ficava com 1,2:1. */
+  --focus: var(--ink);
 }
 body.hc { --track: #000; }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -159,6 +161,8 @@ body.calmo .mascot-main, body.calmo .deco { animation: none !important; }
 .d1 { top: 70px; left: 8px; font-size: 34px; }
 .d2 { bottom: 60px; right: 10px; font-size: 32px; animation-delay: 1.2s; }
 .d3 { top: 42%; right: 16px; font-size: 24px; animation-delay: 2.1s; }
+/* nov/2026: até 480px o ➕ caía atrás do mascote e do título; não há canto livre para ele no celular */
+@media (max-width: 480px) { .d1 { display: none; } }
 /* durante a rodada os enfeites saem: o ➕ ficava atrás dos pontos de progresso no celular */
 body:has(#screen-game.active) .deco { display: none; }
 
@@ -174,16 +178,16 @@ body:has(#screen-game.active) .deco { display: none; }
   background: var(--card); border-radius: var(--r-pill); padding: var(--sp-4) 10px; font-weight: 800; font-size: var(--fs-lg); white-space: nowrap;
   box-shadow: var(--lift-2);
 }
-#star-chip.bump { animation: bump .5s; }
+#star-chip.bump { animation: bump .5s var(--ease-out); }
 @keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.25); } 100% { transform: scale(1); } }
 .btn-group { display: flex; gap: 5px; align-items: center; }
 #chip-streak {
-  background: var(--card); border-radius: var(--r-pill); padding: 7px var(--sp-4); font-weight: 800; font-size: var(--fs-md);
+  background: var(--card); border-radius: var(--r-pill); padding: var(--sp-3) var(--sp-4); font-weight: 800; font-size: var(--fs-md);
   box-shadow: var(--lift-2); white-space: nowrap;
 }
 #combo-chip {
   background: var(--yellow); color: var(--on-yellow); border-radius: var(--r-pill); padding: var(--sp-3) var(--sp-5);
-  font-weight: 900; font-size: var(--fs-sm); box-shadow: var(--lift-1); animation: bump .5s;
+  font-weight: 900; font-size: var(--fs-sm); box-shadow: var(--lift-1); animation: bump .5s var(--ease-out);
 }
 #combo-chip.hidden { display: none; }
 
@@ -213,13 +217,14 @@ body:has(#screen-game.active) .deco { display: none; }
 #btn-gear { position: relative; }
 #btn-gear.needs-setup::after { content: ''; position: absolute; top: 4px; right: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--attention); box-shadow: 0 0 0 2px var(--card); }
 .icon-btn.icon-close { color: var(--red-dark); font-weight: 900; }
-.title {
-  font-size: var(--fs-3xl); font-weight: 800; letter-spacing: -.01em; margin-top: var(--sp-1);
-  background: linear-gradient(90deg, var(--brand-a), var(--brand-b));
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-}
-body.hc .title { background: none; color: var(--ink-soft); -webkit-text-fill-color: var(--ink-soft); }
-.subtitle { font-size: var(--fs-sm); color: var(--ink-soft); margin: 1px 0 7px; font-weight: 700; text-align: center; }
+.title { font-size: var(--fs-3xl); font-weight: 800; letter-spacing: -.01em; margin-top: var(--sp-1); color: var(--ink); }
+/* nov/2026: o degradê da marca saiu do texto (laranja e rosa davam 1,9 a 2,1:1 nos temas claros, abaixo
+   dos 3:1 de texto grande) e virou uma faixa logo abaixo, como a faixa colorida dos cartões de modo. */
+.title::after { content: ''; display: block; width: 2.4em; height: 5px; margin: var(--sp-2) auto 0; border-radius: var(--r-pill);
+  background: linear-gradient(90deg, var(--brand-a), var(--brand-b)); }
+body.hc .title { color: var(--ink-soft); }
+body.hc .title::after { display: none; }
+.subtitle { font-size: var(--fs-sm); color: var(--ink-soft); margin: 1px 0 var(--sp-3); font-weight: 700; text-align: center; }
 
 #week-strip { display: flex; gap: var(--sp-2); width: 100%; max-width: 360px; }
 .wday { display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); font-size: var(--fs-md); color: var(--ink-soft); flex: 1 1 0; min-width: 0; max-width: 46px; padding: 3px 0 var(--sp-2); border-radius: var(--r-sm); }
@@ -237,9 +242,9 @@ body.hc .mission.done { border: 1px solid currentColor; }
 /* faixa de controles: atalhos + dificuldade */
 .home-controls { display: flex; flex-direction: column; gap: var(--sp-4); width: 100%; margin: var(--sp-5) 0 var(--sp-4); }
 .home-controls .special-row { margin-bottom: 0; }
-.sec-title { width: 100%; text-align: center; font-size: var(--fs-xs); font-weight: 800; letter-spacing: .4px; color: var(--ink-soft); margin: var(--sp-1) 0 7px; }
+.sec-title { width: 100%; text-align: center; font-size: var(--fs-xs); font-weight: 800; letter-spacing: .4px; color: var(--ink-soft); margin: var(--sp-1) 0 var(--sp-3); }
 
-.special-row { display: flex; gap: 7px; width: 100%; }
+.special-row { display: flex; gap: var(--sp-3); width: 100%; }
 .special-row button {
   flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px;
   background: var(--card); border: 2px solid var(--line); border-radius: var(--r-md); padding: var(--sp-3) var(--sp-1);
@@ -258,7 +263,7 @@ body.hc .mission.done { border: 1px solid currentColor; }
 .modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); width: 100%; }
 .mode-card {
   position: relative; display: flex; flex-direction: column; align-items: center; gap: 0;
-  background: var(--card); border: none; border-radius: var(--r-lg); padding: var(--sp-4) var(--sp-3) 7px;
+  background: var(--card); border: none; border-radius: var(--r-lg); padding: var(--sp-4) var(--sp-3) var(--sp-3);
   cursor: pointer; box-shadow: var(--lift-3); transition: transform var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out); font-family: inherit;
 }
 /* só com mouse: no toque o hover "grudava" e o cartão ficava levantado depois do toque */
@@ -280,9 +285,9 @@ body.hc .np-bar { border: 1px solid var(--line); }
 .mode-emoji { font-size: 23px; line-height: 1.25; }
 .mode-name { font-size: var(--fs-md); font-weight: 800; color: var(--ink); }
 .mode-desc { font-size: var(--fs-2xs); color: var(--ink-soft); font-weight: 700; text-align: center; }
-.badge { position: absolute; top: -8px; right: -5px; white-space: nowrap; background: var(--yellow); color: var(--on-yellow); font-size: var(--fs-2xs); font-weight: 800; padding: var(--sp-1) 7px; border-radius: var(--r-pill); box-shadow: var(--lift-1); }
+.badge { position: absolute; top: -8px; right: -5px; white-space: nowrap; background: var(--yellow); color: var(--on-yellow); font-size: var(--fs-2xs); font-weight: 800; padding: var(--sp-1) var(--sp-3); border-radius: var(--r-pill); box-shadow: var(--lift-1); }
 
-.link-row { display: flex; gap: var(--sp-4); width: 100%; margin-top: 9px; }
+.link-row { display: flex; gap: var(--sp-4); width: 100%; margin-top: var(--sp-4); }
 .link-row button {
   flex: 1; background: var(--card); border: 2px solid var(--line); border-radius: var(--r-md); padding: var(--sp-4);
   font-family: inherit; font-weight: 800; font-size: var(--fs-sm); color: var(--ink); cursor: pointer; box-shadow: var(--lift-2);
@@ -292,14 +297,14 @@ body.hc .np-bar { border: 1px solid var(--line); }
 
 /* ---------- tela do jogo ---------- */
 #progress { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: var(--sp-3); margin: var(--sp-1) 0 var(--sp-4); flex-wrap: wrap; }
-#dots { display: flex; gap: 7px; }
+#dots { display: flex; gap: var(--sp-3); }
 .dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(var(--sh), .18); transition: background var(--dur-2) var(--ease-out), transform var(--dur-2) var(--ease-out); }
 .dot.now { background: var(--yellow); transform: scale(1.25); }
 .dot.done { background: var(--green); }
 #level-chip { font-size: var(--fs-xs); font-weight: 800; color: var(--ink-soft); background: var(--card); border-radius: var(--r-pill); padding: var(--sp-2) 10px; box-shadow: var(--lift-1); margin-left: auto; }
 #pts-chip { font-size: var(--fs-xs); font-weight: 800; color: var(--ink); background: var(--card); border-radius: var(--r-pill); padding: var(--sp-2) 10px; box-shadow: var(--lift-1); }
 #pts-chip b { font-weight: 900; }
-#pts-chip.bump { animation: pop .35s; }
+#pts-chip.bump { animation: pop .35s var(--ease-out); }
 
 /* v2.2 — barra de tempo suave (nunca pune: só zera o bônus de rapidez) */
 #timer-wrap { width: 100%; height: 10px; border-radius: var(--r-pill); background: rgba(var(--sh), .12); overflow: hidden; margin: 0 0 var(--sp-4); }
@@ -331,7 +336,7 @@ body.hc #timer-wrap { border: 2px solid var(--line); }
 .obj.counted::before {
   content: var(--cnt); position: absolute; top: -12px; right: -8px; z-index: 3;
   background: var(--ans-1); color: var(--on-accent); font-size: var(--fs-xs); font-weight: 900;
-  border-radius: var(--r-pill); padding: var(--sp-1) var(--sp-3); animation: pop .4s;
+  border-radius: var(--r-pill); padding: var(--sp-1) var(--sp-3); animation: pop .4s var(--ease-out);
 }
 /* v2.8.0 (N4): cesta de contar. O objeto sobe acima dos outros ao arrastar; solto fora, volta com ease-out;
    no modo calmo volta sem animar. touch-action:none só nos objetos, para o dedo arrastar em vez de rolar. */
@@ -359,7 +364,7 @@ body.calmo .obj.snap { transition: none; }
 .grp { display: inline-flex; flex-wrap: wrap; justify-content: center; max-width: 168px; background: var(--tint); border-radius: var(--r-md); padding: var(--sp-3) var(--sp-4); }
 .grp.plain { background: transparent; padding: 0; max-width: 100%; }
 .grp.row { display: inline-flex; flex-wrap: nowrap; padding: var(--sp-2) 10px; }
-.groups { display: flex; flex-direction: column; gap: 7px; align-items: center; }
+.groups { display: flex; flex-direction: column; gap: var(--sp-3); align-items: center; }
 .op { font-size: 32px; font-weight: 900; color: var(--purple); }
 .story { font-size: var(--fs-lg); font-weight: 700; text-align: center; max-width: 330px; line-height: 1.45; }
 .cmp { display: flex; align-items: center; gap: var(--sp-5); }
@@ -381,15 +386,21 @@ body.calmo .obj.snap { transition: none; }
 .ans {
   font-family: inherit; font-size: 1.875rem; font-weight: 900; color: var(--on-accent);
   background: var(--ans-1); border: none; border-radius: var(--r-lg); padding: 14px 0 var(--sp-5);
-  cursor: pointer; box-shadow: 0 6px 0 var(--ans-1-edge); transition: transform var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out);
+  --edge: var(--ans-1-edge);
+  cursor: pointer; box-shadow: 0 6px 0 var(--edge); transition: transform var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out);
 }
-.ans:nth-child(2) { background: var(--ans-2); box-shadow: 0 6px 0 var(--ans-2-edge); }
-.ans:nth-child(3) { background: var(--ans-3); box-shadow: 0 6px 0 var(--ans-3-edge); }
-.ans:nth-child(4) { background: var(--ans-4); box-shadow: 0 6px 0 var(--ans-4-edge); }
+.ans:nth-child(2) { background: var(--ans-2); --edge: var(--ans-2-edge); }
+.ans:nth-child(3) { background: var(--ans-3); --edge: var(--ans-3-edge); }
+.ans:nth-child(4) { background: var(--ans-4); --edge: var(--ans-4-edge); }
 .ans:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0, 0, 0, .2); } /* aresta escura comum às 4 cores */
 .ans.good { background: var(--success-strong) !important; box-shadow: 0 6px 0 var(--success-strong-edge) !important; animation: pop .3s var(--ease-out); }
 .ans.bad { opacity: .45; animation: shake .4s; }
-.ans.hint { position: relative; outline: 4px solid var(--yellow); }
+.ans.hint { position: relative; outline: 4px solid var(--focus); outline-offset: 4px; box-shadow: 0 6px 0 var(--edge), 0 0 0 4px rgb(var(--glow)); }
+/* nov/2026: a dica era só um contorno amarelo (1,3:1 contra o fundo claro, abaixo dos 3:1 de indicador)
+   que pulsava. Agora: faixa amarela colada no botão, anel na cor da tinta por fora (≥10:1) e a lâmpada,
+   que continua visível com movimento reduzido. A lâmpada é enfeite: a voz e o balão já dizem a dica. */
+.ans.hint::before { content: '💡'; content: '💡' / ''; position: absolute; top: -16px; right: -12px; font-size: 26px; line-height: 1;
+  pointer-events: none; z-index: 1; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .25)); }
 .ans.hint::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: 0 0 0 12px rgba(var(--glow), .7); opacity: 0; pointer-events: none; animation: pulse 1s var(--ease-out) infinite; }
 @keyframes pop { 0% { transform: scale(.5); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
 @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
@@ -410,13 +421,13 @@ button:focus-visible, .mode-card:focus-visible { outline: 4px solid var(--focus)
   font-weight: 800; font-size: var(--fs-lg); box-shadow: var(--float-1); z-index: 30; width: max-content; max-width: 94%; text-align: center;
 }
 #bubble.hidden { display: none; }
-#bubble.pop { animation: pop .45s; }
+#bubble.pop { animation: pop .45s var(--ease-out); }
 #bubble-emoji { font-size: 25px; }
 
 /* ---------- tela final ---------- */
 #end-title { font-size: var(--fs-3xl); font-weight: 900; margin-top: var(--sp-2); }
 #stars-earned { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-3); max-width: 320px; margin: 10px 0 var(--sp-3); min-height: 38px; }
-.star-pop { font-size: 29px; animation: pop .5s backwards; }
+.star-pop { font-size: 29px; animation: pop .5s var(--ease-out) backwards; }
 #end-pts { font-size: var(--fs-lg); font-weight: 900; color: var(--ink); background: var(--card); padding: var(--sp-4) 18px; border-radius: var(--r-pill); box-shadow: var(--lift-2); margin: var(--sp-1) 0 var(--sp-2); max-width: 94%; text-align: center; }
 #end-pts .rec { color: var(--accent-text); }
 #end-msg { font-size: var(--fs-lg); color: var(--ink-soft); font-weight: 700; text-align: center; }
@@ -428,7 +439,7 @@ button:focus-visible, .mode-card:focus-visible { outline: 4px solid var(--focus)
 .end-actions { display: flex; flex-direction: column; gap: var(--sp-5); width: 100%; max-width: 300px; margin-top: var(--sp-5); }
 .big-btn {
   font-family: inherit; font-size: var(--fs-xl); font-weight: 800; color: var(--on-accent); background: var(--ans-1);
-  border: none; border-radius: var(--r-lg); padding: 13px; cursor: pointer;
+  border: none; border-radius: var(--r-lg); padding: var(--sp-5); cursor: pointer;
   box-shadow: 0 6px 0 var(--ans-1-edge); transition: transform var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out);
 }
 .big-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--ans-1-edge); }
@@ -452,11 +463,11 @@ button:focus-visible, .mode-card:focus-visible { outline: 4px solid var(--focus)
 #shop-stars { font-weight: 900; font-size: var(--fs-xl); background: var(--card); border-radius: var(--r-pill); padding: var(--sp-4) var(--sp-6); box-shadow: var(--lift-2); }
 .shop-sec { width: 100%; margin-top: var(--sp-5); }
 .shop-sec > b { font-size: var(--fs-lg); color: var(--ink-soft); }
-.shop-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); margin-top: 7px; width: 100%; }
-.shop-item { background: var(--card); border-radius: var(--r-md); padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 5px; box-shadow: var(--lift-2); font-size: var(--fs-sm); text-align: center; }
+.shop-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); margin-top: var(--sp-3); width: 100%; }
+.shop-item { background: var(--card); border-radius: var(--r-md); padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 5px; box-shadow: var(--lift-2); font-size: var(--fs-md); text-align: center; }
 .mini-btn {
-  font-family: inherit; font-weight: 800; font-size: var(--fs-sm); background: var(--ans-1); color: var(--on-accent);
-  border: none; border-radius: var(--r-pill); padding: 7px 14px; cursor: pointer; box-shadow: 0 3px 0 var(--ans-1-edge);
+  font-family: inherit; font-weight: 800; font-size: var(--fs-md); background: var(--ans-1); color: var(--on-accent);
+  border: none; border-radius: var(--r-pill); padding: var(--sp-3) 14px; cursor: pointer; box-shadow: 0 3px 0 var(--ans-1-edge);
   min-height: 44px;
 }
 .mini-btn.using { background: var(--success-strong); box-shadow: 0 3px 0 var(--success-strong-edge); }
@@ -469,7 +480,7 @@ button:focus-visible, .mode-card:focus-visible { outline: 4px solid var(--focus)
 .th-doces .swatch { background: linear-gradient(90deg, #ffdff0, #ff6b9d); }
 .th-neve .swatch { background: linear-gradient(90deg, #eef6ff, #a8d4ff); }
 /* v2.5: nota de desbloqueio das mascotes */
-.pet-note { width: 100%; font-size: var(--fs-xs); font-weight: 700; color: var(--ink-soft); }
+.pet-note { width: 100%; font-size: var(--fs-md); font-weight: 700; color: var(--ink-soft); }
 /* v2.5: baú de recompensas — balanço alegre ao abrir */
 .chest-pop { display: inline-block; animation: chestShake .9s ease .15s both; }
 @keyframes chestShake {
@@ -489,16 +500,17 @@ button:focus-visible, .mode-card:focus-visible { outline: 4px solid var(--focus)
 #album-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--sp-3); width: 100%; margin-top: var(--sp-4); }
 .stk { background: var(--card); border-radius: var(--r-sm); padding: var(--sp-3) 0; text-align: center; font-size: 20px; opacity: .35; box-shadow: var(--lift-1); }
 .stk.got { opacity: 1; }
-#album-count { font-size: var(--fs-sm); font-weight: 800; color: var(--ink-soft); margin-top: var(--sp-3); }
+#album-count { font-size: var(--fs-md); font-weight: 800; color: var(--ink-soft); margin-top: var(--sp-3); }
 
 /* ---------- conquistas ---------- */
+/* nov/2026: nomes, descrições e preços da loja e das conquistas passaram a 14px (--fs-md) no mínimo; eram 12 e 13px. */
 #ach-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); width: 100%; margin-top: 10px; }
 .ach-card { background: var(--card); border-radius: var(--r-md); padding: 10px; display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); box-shadow: var(--lift-2); text-align: center; }
 .ach-card:not(.got) .ach-emoji { opacity: .5; filter: grayscale(1); }
 .ach-card.got { opacity: 1; border: 2px solid var(--yellow); }
 .ach-emoji { font-size: 26px; }
-.ach-card b { font-size: var(--fs-sm); }
-.ach-card small { font-size: var(--fs-xs); color: var(--ink-soft); font-weight: 700; }
+.ach-card b { font-size: var(--fs-md); }
+.ach-card small { font-size: var(--fs-md); color: var(--ink-soft); font-weight: 700; }
 
 /* ---------- overlays, toast, popovers ---------- */
 #fx { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 50; }
@@ -534,7 +546,7 @@ button:focus-visible, .mode-card:focus-visible { outline: 4px solid var(--focus)
 }
 .popover.hidden { display: none; }
 .popover > b { font-size: var(--fs-md); }
-.prof-row { display: flex; align-items: center; gap: var(--sp-4); background: rgba(var(--sh), .06); border: 2px solid transparent; border-radius: var(--r-sm); padding: 7px 9px; cursor: pointer; font-family: inherit; font-weight: 800; font-size: var(--fs-md); color: var(--ink); }
+.prof-row { display: flex; align-items: center; gap: var(--sp-4); background: rgba(var(--sh), .06); border: 2px solid transparent; border-radius: var(--r-sm); padding: var(--sp-3) var(--sp-4); cursor: pointer; font-family: inherit; font-weight: 800; font-size: var(--fs-md); color: var(--ink); }
 /* perfil atual: borda no verde do tema, ✓ visível e aria-current — não só pela cor */
 .prof-row.cur { border-color: var(--success-text); }
 .pf-cur { font-weight: 900; color: var(--success-text); }
@@ -550,7 +562,7 @@ button:focus-visible, .mode-card:focus-visible { outline: 4px solid var(--focus)
 .pwd-box input { padding-right: 42px; }
 .pwd-box input {
   font-family: inherit; font-size: var(--fs-lg); font-weight: 700; width: 100%; box-sizing: border-box;
-  padding: 10px 13px; border-radius: var(--r-sm); border: 2.5px solid var(--line);
+  padding: 10px var(--sp-5); border-radius: var(--r-sm); border: 2.5px solid var(--line);
   background: var(--card); color: var(--ink);
 }
 .pwd-box input:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
@@ -592,7 +604,7 @@ body.page-mode .pet-card { gap: var(--sp-6); }
 body.page-mode .pet-emoji { font-size: 48px; }
 body.page-mode .pet-lines { font-size: var(--fs-md); gap: 3px; }
 body.page-mode #mascot-stage { font-size: var(--fs-lg); }
-body.page-mode .missions-card { align-items: flex-start; gap: 7px; }
+body.page-mode .missions-card { align-items: flex-start; gap: var(--sp-3); }
 body.page-mode .m-title { font-size: var(--fs-sm); }
 body.page-mode #mission-row { flex-direction: row; flex-wrap: wrap; justify-content: flex-start; gap: var(--sp-3); }
 body.page-mode .mission { font-size: var(--fs-sm); padding: 5px var(--sp-5); }
@@ -605,7 +617,7 @@ body.page-mode .special-row button { flex-direction: row; gap: var(--sp-4); padd
 body.page-mode .special-row button b { font-size: 21px; }
 body.page-mode .sec-title { text-align: left; font-size: var(--fs-md); margin: var(--sp-6) var(--sp-2) 10px; }
 body.page-mode .modes { grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); gap: 14px; }
-body.page-mode .mode-card { padding: var(--sp-6) 10px 13px; border-radius: var(--r-xl); }
+body.page-mode .mode-card { padding: var(--sp-6) 10px var(--sp-5); border-radius: var(--r-xl); }
 body.page-mode .mode-emoji { font-size: 36px; }
 body.page-mode .mode-name { font-size: var(--fs-lg); }
 body.page-mode .mode-desc { font-size: var(--fs-xs); }
@@ -644,6 +656,13 @@ body.page-mode .ov-emoji { font-size: 72px; }
 /* modo alto contraste: reforço geral */
 body.hc .mode-card, body.hc .special-row button, body.hc .shop-item, body.hc .ach-card, body.hc .big-btn.alt, body.hc #btn-repeat { border: 2px solid var(--line); }
 body.hc .ans.hint { outline: 4px solid var(--focus); }
+/* nov/2026: no alto contraste o fundo e o cartão são pretos, então os botões de ícone,
+   as missões e os pontos de progresso sumiam (1:1). A borda branca os separa do fundo;
+   o contrast_check mede isso (WCAG 1.4.11). O ponto atual e os feitos mantêm a cor. */
+body.hc .icon-btn, body.hc button.mission { border: 2px solid var(--line); }
+body.hc .dot { background: transparent; border: 2px solid var(--line); }
+body.hc .dot.now { background: var(--yellow); border-color: var(--yellow); }
+body.hc .dot.done { background: var(--green); border-color: var(--line); }
 
 /* ==================== v2.4 — voz cordial + acessibilidade ==================== */
 /* A-052: foco visível reforçado em todo o app (teclado e leitores de tela) */
@@ -676,7 +695,7 @@ body.rm .breathe-ball { animation: ccBreatheFade 8s ease-in-out infinite !import
 .pp-row .pp-t { font-weight: 900; font-size: var(--fs-md); width: 100%; }
 .pp-row label { font-size: var(--fs-sm); font-weight: 700; }
 .pp-row input[type="range"] { width: 120px; }
-.pp-row select { max-width: 230px; min-width: 0; font-family: inherit; font-size: var(--fs-sm); padding: 7px 9px; border-radius: var(--r-sm); border: 2px solid var(--line); background: var(--card); color: var(--ink); }
+.pp-row select { max-width: 230px; min-width: 0; font-family: inherit; font-size: var(--fs-sm); padding: var(--sp-3) var(--sp-4); border-radius: var(--r-sm); border: 2px solid var(--line); background: var(--card); color: var(--ink); }
 
 /* v2.4.1: selo de versão no topo — confirmação instantânea da build em execução
    (evita a dúvida "estou mesmo com a versão nova?": versões descompactadas NÃO
@@ -689,9 +708,10 @@ body.rm .breathe-ball { animation: ccBreatheFade 8s ease-in-out infinite !import
   background: rgba(var(--sh), .06);
   border: 1px solid var(--line);
   border-radius: var(--r-pill);
-  padding: 5px 9px;
+  padding: 5px var(--sp-4);
 }
-.cc-ver:hover { color: var(--ink); border-color: var(--ink-soft); }
+/* nov/2026: hover só onde existe ponteiro fino; no toque ele "grudava" depois do toque */
+@media (hover: hover) and (pointer: fine) { .cc-ver:hover { color: var(--ink); border-color: var(--ink-soft); } }
 /* popup 400x600 (sem classe html-page): espaço curto — selo some no mini-molde,
    continua visível no jogo em tela cheia (page-mode) e nas opções */
 html:not(.html-page) .cc-ver { display: none; }
@@ -762,7 +782,7 @@ body.page-mode #app, body.wide #app {
   /* faixa de controles volta a empilhar como no popup */
   body.page-mode .home-controls { flex-direction: column; gap: var(--sp-4); }
   body.page-mode .special-row { width: 100%; }
-  body.page-mode .special-row button { padding: 9px 14px; font-size: var(--fs-sm); min-height: 46px; }
+  body.page-mode .special-row button { padding: var(--sp-4) 14px; font-size: var(--fs-sm); min-height: 46px; }
   body.page-mode .sec-title { text-align: center; }
   /* grade de modos: 2 colunas garantidas em 320–400px */
   body.page-mode .modes { grid-template-columns: repeat(auto-fill, minmax(138px, 1fr)); gap: 10px; }
@@ -803,7 +823,7 @@ body.page-mode #app, body.wide #app {
 @media (max-width: 430px) {
   /* o selo de versão sai da topbar (continua no painel dos responsáveis) */
   body.page-mode .cc-ver { display: none; }
-  body.page-mode #star-chip { font-size: var(--fs-lg); padding: var(--sp-4) 13px; }
+  body.page-mode #star-chip { font-size: var(--fs-lg); padding: var(--sp-4) var(--sp-5); }
   body.page-mode #chip-streak { padding: var(--sp-4) 10px; }
   body.page-mode #app { padding-left: max(10px, env(safe-area-inset-left)); padding-right: max(10px, env(safe-area-inset-right)); }
   .screen { padding: var(--sp-2) 10px var(--sp-5); }
@@ -850,7 +870,7 @@ body.page-mode #app, body.wide #app {
   body.page-mode .special-row button b { font-size: 16px; }
   body.page-mode .sec-title { font-size: var(--fs-xs); margin: var(--sp-2) var(--sp-1) var(--sp-3); }
   body.page-mode .modes { grid-template-columns: repeat(auto-fill, minmax(116px, 1fr)); gap: var(--sp-4); }
-  body.page-mode .mode-card { padding: 7px var(--sp-3) var(--sp-3); border-top-width: 3px; }
+  body.page-mode .mode-card { padding: var(--sp-3) var(--sp-3) var(--sp-3); border-top-width: 3px; }
   body.page-mode .mode-emoji { font-size: 20px; }
   body.page-mode .mode-name { font-size: var(--fs-xs); }
   body.page-mode .mode-desc { font-size: var(--fs-xs); }
@@ -868,9 +888,9 @@ body.page-mode #app, body.wide #app {
   body.page-mode #equation.small-text { font-size: clamp(1.1875rem, 5.5vh, 1.625rem); }
   body.page-mode #answers { max-width: 620px; gap: 10px; }
   body.page-mode .ans { font-size: clamp(1.125rem, 6vh, 1.625rem); padding: clamp(8px, 1.8vh, 14px) 0 clamp(6px, 1.4vh, 12px); min-height: 44px; border-radius: var(--r-md); }
-  body.page-mode #btn-repeat { margin-top: var(--sp-3); padding: 7px 14px; font-size: var(--fs-sm); }
+  body.page-mode #btn-repeat { margin-top: var(--sp-3); padding: var(--sp-3) 14px; font-size: var(--fs-sm); }
   body.page-mode .dot { width: 10px; height: 10px; }
-  body.page-mode #bubble { font-size: var(--fs-md); top: 10px; padding: 7px var(--sp-5); }
+  body.page-mode #bubble { font-size: var(--fs-md); top: 10px; padding: var(--sp-3) var(--sp-5); }
   body.page-mode .pts-pop { font-size: 1.375rem; top: 24%; }
   body.page-mode #end-title { font-size: var(--fs-2xl); }
   body.page-mode .star-pop { font-size: 22px; }
@@ -887,10 +907,10 @@ body.page-mode #app, body.wide #app {
 @media (hover: none) {
   .mode-card:hover { transform: none; }
   .mode-card:active { transform: translateY(2px) scale(.99); box-shadow: var(--lift-1); }
-  .mini-btn { padding: 9px var(--sp-6); min-height: 44px; }
-  .prof-row { padding: 10px 11px; min-height: 44px; }
+  .mini-btn { padding: var(--sp-4) var(--sp-6); min-height: 44px; }
+  .prof-row { padding: 10px var(--sp-5); min-height: 44px; }
   .av-row { --av: 48px; }
-  .stk { padding: 9px 0; }
+  .stk { padding: var(--sp-4) 0; }
 }
 
 /* topbar numa linha só no celular (4.1): tela cheia sai no app instalado e nos
@@ -900,8 +920,8 @@ body.page-mode #app, body.wide #app {
 }
 @media (max-width: 380px) {
   body.page-mode #topbar, body.page-mode #topbar .btn-group { gap: var(--sp-2); }
-  body.page-mode #star-chip { font-size: .9375rem; padding: 7px 10px; }
-  body.page-mode #chip-streak { font-size: var(--fs-md); padding: 7px var(--sp-4); }
+  body.page-mode #star-chip { font-size: .9375rem; padding: var(--sp-3) 10px; }
+  body.page-mode #chip-streak { font-size: var(--fs-md); padding: var(--sp-3) var(--sp-4); }
 }
 @media (max-width: 350px) {
   body.page-mode #chip-streak { display: none; }
@@ -918,9 +938,9 @@ body.page-mode #app, body.wide #app {
 /* ---------- v2.6 — voz humanizada: agrupador + guia nas opções ---------- */
 #voice-tier-note { font-size: var(--fs-sm); font-weight: 700; color: var(--ink-soft); margin-top: var(--sp-3); }
 .voice-guide { width: 100%; margin-top: 10px; border: 2px dashed var(--line); border-radius: var(--r-md); background: rgba(var(--sh), .04); }
-.voice-guide summary { cursor: pointer; font-weight: 900; font-size: var(--fs-md); padding: 11px 14px; user-select: none; }
+.voice-guide summary { cursor: pointer; font-weight: 900; font-size: var(--fs-md); padding: var(--sp-5) 14px; user-select: none; }
 .voice-guide summary::marker { color: var(--orange); }
-.voice-guide .vg-body { padding: 0 14px var(--sp-5); display: flex; flex-direction: column; gap: 7px; }
+.voice-guide .vg-body { padding: 0 14px var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-3); }
 .voice-guide .vg-body p { font-size: var(--fs-sm); line-height: 1.5; color: var(--ink-soft); font-weight: 600; text-align: left; }
 .voice-guide .vg-body b { color: var(--ink); }
 .voice-guide .vg-tip { font-size: var(--fs-sm); font-weight: 700; color: var(--ink); background: rgba(var(--sh), .06); border-radius: var(--r-sm); padding: var(--sp-4) 10px; }
@@ -961,7 +981,7 @@ body.page-mode #app, body.wide #app {
 /* superfícies do navegador também seguem o tema (Fase 5) */
 body { accent-color: var(--ans-1); }
 ::selection { background: rgba(var(--glow), .55); color: var(--ink); }
-body.hc ::selection { background: var(--focus); color: #000; }
+body.hc ::selection { background: var(--focus); color: var(--card); } /* --card é preto no alto contraste */
 
 
 /* ==================== Fase 7 — responsivo por natureza ====================
@@ -1039,7 +1059,8 @@ body.page-mode .shop-row > :last-child:nth-child(odd) { grid-column: auto; justi
   text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px;
   transition: text-decoration-color var(--dur-1) var(--ease-out);
 }
-.legal-link:hover, .legal-link:focus-visible { text-decoration-color: currentColor; }
+.legal-link:focus-visible { text-decoration-color: currentColor; }
+@media (hover: hover) and (pointer: fine) { .legal-link:hover { text-decoration-color: currentColor; } }
 .legal-owner { margin: 0 0 var(--sp-4); font-size: var(--fs-2xs); font-weight: 600; color: var(--ink-soft); text-align: center; }
 .consent {
   position: fixed; left: 50%; bottom: calc(var(--sp-5) + env(safe-area-inset-bottom, 0px)); z-index: 40;

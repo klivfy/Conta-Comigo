@@ -289,7 +289,10 @@ function renderDash() {
     : t('sum_idle')) + (needsBackupNudge(p) ? ' ' + t('sum_backup') : '');
 
   // mapa de domínio S09 (v2.8.0, 10.1.5): só dá veredito com 20 questões no modo; rótulo em texto, não só cor
-  $('#map-rows').innerHTML = Object.keys(MODES).map((m) => {
+  // nov/2026: sem nenhuma questão respondida, um aviso único em vez de 13 linhas iguais de "Poucos dados (0/20)"
+  const semDados = Object.keys(MODES).every((m) => Object.values(p.lvl[m] || {}).every((b) => !(b.r + b.w)));
+  if (semDados) $('#map-rows').innerHTML = '<p class="map-empty">' + escHtml(t('map_empty')) + '</p>';
+  else $('#map-rows').innerHTML = Object.keys(MODES).map((m) => {
     const lv = p.lvl[m] || {};
     let r = 0, w = 0;
     Object.keys(lv).forEach((k) => { r += lv[k].r; w += lv[k].w; });

@@ -160,7 +160,7 @@ A paleta é de brinquedo: matizes saturados para enfeite e identidade, versões 
 
 ### Primary
 - **Azul Resposta** (#2f5ce0): primeira resposta, botão principal (`.big-btn`), `.mini-btn` e links. Aresta em #1f3f9e.
-- **Laranja Raposa** (#ff9a3d): assinatura e atenção (ponto de "falta configurar", barra do próximo prêmio). É só enfeite, nunca fundo de texto. O degradê do título vai de #ff8a3d a #ff5e7e.
+- **Laranja Raposa** (#ff9a3d): assinatura e atenção (ponto de "falta configurar", barra do próximo prêmio). É só enfeite, nunca fundo de texto. O degradê da marca (#ff8a3d → #ff5e7e) é a faixa de 5px sob o título; desde novembro de 2026 ele não pinta mais o texto, porque dava 1,9 a 2,1:1 nos temas claros.
 - **Laranja Texto** (`--accent-text`): o laranja que carrega texto ("Novo recorde de pontos!", "+pontos", prêmio do baú). É #a34a00 nos temas claros (≥4,8:1 em todos os fundos), #ff9a3d no Espaço (5,95:1 sobre o cartão) e amarelo no alto contraste.
 
 ### Secondary
@@ -183,7 +183,7 @@ Cada tema redefine só os tokens semânticos: `--ink`, `--ink-soft`, `--sh` (cor
 - **Clássico** e **Espaço**. Espaço é escuro: #131a33, cartão #273159, tinta #eaf0ff e `color-scheme: dark`.
 - **Jardim**, **Arco-íris**, **Oceano**, **Doces** e **Neve**.
 
-O **Alto contraste** (`body.hc`) tem fundo #000, tinta #fff, secundário e foco #ffff00, e borda branca em todo componente interativo. Ele liga sozinho quando o sistema pede mais contraste (`prefers-contrast: more`); no painel, o adulto escolhe automático, ligado ou desligado. Com "Reduzir transparência" (`prefers-reduced-transparency`), a barra superior fica sólida, sem desfoque.
+O **Alto contraste** (`body.hc`) tem fundo #000, tinta #fff, secundário e foco #ffff00, e borda branca em todo componente interativo, inclusive botões de ícone, missões e os pontos de progresso da rodada (o ponto atual fica amarelo e os feitos, verdes). O `contrast_check` mede essa borda (3:1, WCAG 1.4.11). Ele liga sozinho quando o sistema pede mais contraste (`prefers-contrast: more`); no painel, o adulto escolhe automático, ligado ou desligado. Com "Reduzir transparência" (`prefers-reduced-transparency`), a barra superior fica sólida, sem desfoque.
 
 O tema `auto` é o padrão de perfis novos: segue `prefers-color-scheme` ao vivo, Clássico no claro e Espaço no escuro.
 
@@ -204,10 +204,10 @@ O tema `auto` é o padrão de perfis novos: segue `prefers-color-scheme` ao vivo
 ### Hierarchy
 Escala `--fs-*` para texto de interface: 12, 13, 14, 16, 19, 24, 28 e 40px (v2.7.4: `--fs-2xs` e `--fs-xs` são o mesmo degrau de 12px; antes eram dois de 11px).
 - **Display** (900, `--fs-display` 40px, que vai a 64px na página cheia): a equação e o número das respostas.
-- **Headline** (800–900, `--fs-3xl` 28px): título "Conta Comigo" em degradê e título da tela final.
+- **Headline** (800–900, `--fs-3xl` 28px): título "Conta Comigo" (em `--ink`, com a faixa da marca embaixo) e título da tela final.
 - **Title** (800–900, `--fs-xl`/`--fs-2xl`, 19–24px): títulos de tela (Loja, Duelo), botões grandes e modais.
-- **Body** (700, `--fs-md`/`--fs-lg`, 14–16px): histórias, mensagens e campos.
-- **Label** (800, `--fs-2xs`–`--fs-sm`, 12–13px): nome e descrição dos modos, chips, missões e selos.
+- **Body** (700, `--fs-md`/`--fs-lg`, 14–16px): histórias, mensagens e campos. No painel dos responsáveis (leitura de adulto), rótulos, campos, links e ajuda ficam em 16px e as notas em 14px.
+- **Label** (800, `--fs-2xs`–`--fs-sm`, 12–13px): nome e descrição dos modos, chips, missões e selos. Na loja e nas conquistas, nomes, descrições e preços ficam em 14px (`--fs-md`) no mínimo.
 
 **Unidades (v2.6.2):** todo texto, inclusive a equação e os números das respostas, fica em `rem` (1rem = 16px no padrão). Assim ele acompanha o tamanho de fonte escolhido no navegador e no sistema; no iOS, `font: -apple-system-body` na raiz liga o texto ao Dynamic Type. Emojis de ícone e de ilustração (`.icon-btn`, `.mascot`, `.obj`, `.mode-emoji`, avatares, figurinhas) ficam em px: são imagem, e crescer com o texto estouraria as caixas de 44px. Os ajustes por breakpoint (`body.page-mode` e `@media`) seguem calibrados à parte, fora da escala `--fs-*`; juntá-los na escala é o item 7.2 do plano. No Windows, Ctrl+= / Ctrl+− / Ctrl+0 e Ctrl+roda ampliam a página inteira até 300%.
 
@@ -230,7 +230,7 @@ Escala `--fs-*` para texto de interface: 12, 13, 14, 16, 19, 24, 28 e 40px (v2.7
 - **Unidades:** `dvh` com `vh` de reserva (barras do navegador móvel), `clamp()` na tipografia do jogo, `env(safe-area-inset-*)` nas bordas e no popover.
 - **Alvos de toque:** nenhum controle com menos de 44×44px (botões, chips, objetos tocáveis). Texto de interface nunca abaixo de 12px (v2.7.4).
 - **Elementos flutuantes** (popover, balão, modal) ficam sempre dentro da tela: `max-height` pela altura real e rolagem interna.
-- **Ritmo:** escala `--sp-*` de 2, 4, 6, 8, 12, 16, 24 e 36px. (Ainda definida, mas pouco aplicada: veja o item 7.2 do plano.)
+- **Ritmo:** escala `--sp-*` de 2, 4, 6, 8, 12, 16, 24 e 36px. O `tokens_check` (no CI) reprova valor da escala escrito em px e qualquer aumento de valor fora dela, no `style.css` e no `<style>` do painel. Ainda restam valores fora da escala, sobretudo 10px; o teto só desce.
 - **Teste:** `scripts/resp_check.cjs` mede 8 aparelhos emulados × 15 telas e roda no CI, no tamanho padrão e com o texto a 200% (`CC_TEXTO=200`).
 - **Texto grande:** `overflow-wrap: anywhere` no `body`, grades com `minmax(0, 1fr)` e barra superior com `flex-wrap`. A 200% nada sai da tela; o jogo pode pedir rolagem vertical, que a WCAG permite.
 
@@ -267,12 +267,12 @@ As bordas são de 2px em `--line`. O tracejado indica algo "ainda não seu": pr�
 ## Components
 
 ### Buttons
-- **Resposta** (`.ans`): 30px/900 branco sobre `--ans-1..4` por posição, raio de 20px e aresta de 6px da mesma família. Ao acertar fica `--success-strong` com pop. Ao errar, opacidade .45 com tremida. A dica é um contorno amarelo pulsante.
+- **Resposta** (`.ans`): 30px/900 branco sobre `--ans-1..4` por posição, raio de 20px e aresta de 6px da mesma família. Ao acertar fica `--success-strong` com pop. Ao errar, opacidade .45 com tremida. A dica é uma faixa amarela colada no botão, um anel em `--focus` por fora (offset de 4px) e a lâmpada 💡 no canto. A pulsação é extra: com movimento reduzido, faixa, anel e lâmpada continuam.
 - **Principal** (`.big-btn`): 19px/800 branco sobre o Azul Resposta, raio de 20px e aresta `--ans-1-edge`.
   - `.alt`: cartão com tinta e `lift-4`.
 - **Mini** (`.mini-btn`): pílula com altura mínima de 44px. Fica verde quando "em uso".
 - **Ícone** (`.icon-btn`): quadrado de 44px, raio de 12px e `lift-2`.
-- **Foco:** anel de 3–4px em `--focus` (a própria tinta, ou amarelo no alto contraste), com offset de 2px.
+- **Foco:** anel de 3–4px em `--focus` (a própria tinta, ou amarelo no alto contraste), com offset de 2px. `--focus` é resolvido em `body`, não em `:root`: em `:root` ele herdaria a tinta do Clássico em todos os temas.
 
 ### Chips
 - **Contadores** (estrelas, ofensiva, nível): pílula de cartão com `lift-2` e peso 800, sem quebra de linha.
@@ -298,9 +298,11 @@ A raposa (🥚 → 🐣 → 🦊, com chapéu da loja) quica em loop. O balão d
 ### Do:
 - **Do** use os tokens semânticos (`--ink`, `--card`, `--line`, `--tint`, `--success-*`, `--attention`, `--accent-text`, `--on-accent`, `--on-yellow`) e deixe o tema decidir a cor.
 - **Do** dê a todo controle tocável no mínimo 44×44px e uma aresta que afunda no `:active`.
-- **Do** teste cada mudança visual nos 8 modos de cor (7 temas mais alto contraste), no popup 400×600 e em celulares e tablets emulados, retrato e paisagem (`node scripts/resp_check.cjs`).
+- **Do** teste cada mudança visual nos 8 modos de cor (7 temas mais alto contraste), no popup 400×600 e em celulares e tablets emulados, retrato e paisagem (`node scripts/resp_check.cjs`). O contraste dos 8 modos, incluindo texto em degradê, dica, foco e as bordas do alto contraste, é conferido por `node scripts/contrast_check.cjs`.
 - **Do** mantenha `game.html`, `popup.html` e `web/index.html` com a mesma marcação da tela inicial (`node scripts/sync_check.cjs` confere).
 - **Do** desligue animação em `body.calmo`, `body.rm` e `prefers-reduced-motion`.
+- **Do** dê curva a toda animação (`pop` e `bump` usam `var(--ease-out)`) e ponha `:hover` dentro de `@media (hover: hover) and (pointer: fine)`: no toque, o hover "gruda" depois do toque.
+- **Do** troque listas vazias repetidas por um aviso único que diga o que fazer (ex.: o mapa de domínio sem nenhuma questão respondida).
 
 ### Don't:
 - **Don't** use os matizes de enfeite (`--green` #2ed573, `--blue` #4c7dff, `--orange` #ff9a3d) como fundo de texto branco: ficam abaixo de 4,5:1.
