@@ -48,7 +48,6 @@
   --ink: #33355c; --ink-soft: #60647c; --sh: 51, 53, 92;   /* texto, texto secundário, cor da sombra */
   --bg-a: #eaf6ff; --bg-b: #fff7e8; --bg-c: #fff0f4;      /* degradê de fundo */
   --card: #ffffff; --line: #e3e6f2;                      /* superfície e borda */
-  --focus: var(--ink);    /* anel de foco: a própria cor do texto, ≥3:1 em qualquer fundo do tema */
   --link: #2f5ce0; --danger-text: #c62828;
   --tint: #fff4dc;        /* fundo morno dos grupos de objetos */
   --pick-bg: #fff8e0; --pick-text: #33355c;               /* chip de dificuldade escolhido */
@@ -113,6 +112,9 @@ body {
   --float-2: 0 10px 26px rgba(0, 0, 0, .22);/* popover */
   --float-3: 0 12px 30px rgba(0, 0, 0, .3); /* modal */
   --track: rgba(var(--sh), .12);            /* trilho de barras de progresso */
+  /* anel de foco: a própria cor do texto, ≥3:1 em qualquer fundo do tema. nov/2026: mudou de :root para cá.
+     Em :root ele herdava a tinta já calculada do Clássico (#33355c), e o foco do Espaço ficava com 1,2:1. */
+  --focus: var(--ink);
 }
 body.hc { --track: #000; }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -213,12 +215,13 @@ body:has(#screen-game.active) .deco { display: none; }
 #btn-gear { position: relative; }
 #btn-gear.needs-setup::after { content: ''; position: absolute; top: 4px; right: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--attention); box-shadow: 0 0 0 2px var(--card); }
 .icon-btn.icon-close { color: var(--red-dark); font-weight: 900; }
-.title {
-  font-size: var(--fs-3xl); font-weight: 800; letter-spacing: -.01em; margin-top: var(--sp-1);
-  background: linear-gradient(90deg, var(--brand-a), var(--brand-b));
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-}
-body.hc .title { background: none; color: var(--ink-soft); -webkit-text-fill-color: var(--ink-soft); }
+.title { font-size: var(--fs-3xl); font-weight: 800; letter-spacing: -.01em; margin-top: var(--sp-1); color: var(--ink); }
+/* nov/2026: o degradê da marca saiu do texto (laranja e rosa davam 1,9 a 2,1:1 nos temas claros, abaixo
+   dos 3:1 de texto grande) e virou uma faixa logo abaixo, como a faixa colorida dos cartões de modo. */
+.title::after { content: ''; display: block; width: 2.4em; height: 5px; margin: var(--sp-2) auto 0; border-radius: var(--r-pill);
+  background: linear-gradient(90deg, var(--brand-a), var(--brand-b)); }
+body.hc .title { color: var(--ink-soft); }
+body.hc .title::after { display: none; }
 .subtitle { font-size: var(--fs-sm); color: var(--ink-soft); margin: 1px 0 7px; font-weight: 700; text-align: center; }
 
 #week-strip { display: flex; gap: var(--sp-2); width: 100%; max-width: 360px; }
@@ -381,15 +384,21 @@ body.calmo .obj.snap { transition: none; }
 .ans {
   font-family: inherit; font-size: 1.875rem; font-weight: 900; color: var(--on-accent);
   background: var(--ans-1); border: none; border-radius: var(--r-lg); padding: 14px 0 var(--sp-5);
-  cursor: pointer; box-shadow: 0 6px 0 var(--ans-1-edge); transition: transform var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out);
+  --edge: var(--ans-1-edge);
+  cursor: pointer; box-shadow: 0 6px 0 var(--edge); transition: transform var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out);
 }
-.ans:nth-child(2) { background: var(--ans-2); box-shadow: 0 6px 0 var(--ans-2-edge); }
-.ans:nth-child(3) { background: var(--ans-3); box-shadow: 0 6px 0 var(--ans-3-edge); }
-.ans:nth-child(4) { background: var(--ans-4); box-shadow: 0 6px 0 var(--ans-4-edge); }
+.ans:nth-child(2) { background: var(--ans-2); --edge: var(--ans-2-edge); }
+.ans:nth-child(3) { background: var(--ans-3); --edge: var(--ans-3-edge); }
+.ans:nth-child(4) { background: var(--ans-4); --edge: var(--ans-4-edge); }
 .ans:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0, 0, 0, .2); } /* aresta escura comum às 4 cores */
 .ans.good { background: var(--success-strong) !important; box-shadow: 0 6px 0 var(--success-strong-edge) !important; animation: pop .3s var(--ease-out); }
 .ans.bad { opacity: .45; animation: shake .4s; }
-.ans.hint { position: relative; outline: 4px solid var(--yellow); }
+.ans.hint { position: relative; outline: 4px solid var(--focus); outline-offset: 4px; box-shadow: 0 6px 0 var(--edge), 0 0 0 4px rgb(var(--glow)); }
+/* nov/2026: a dica era só um contorno amarelo (1,3:1 contra o fundo claro, abaixo dos 3:1 de indicador)
+   que pulsava. Agora: faixa amarela colada no botão, anel na cor da tinta por fora (≥10:1) e a lâmpada,
+   que continua visível com movimento reduzido. A lâmpada é enfeite: a voz e o balão já dizem a dica. */
+.ans.hint::before { content: '💡'; content: '💡' / ''; position: absolute; top: -16px; right: -12px; font-size: 26px; line-height: 1;
+  pointer-events: none; z-index: 1; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .25)); }
 .ans.hint::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: 0 0 0 12px rgba(var(--glow), .7); opacity: 0; pointer-events: none; animation: pulse 1s var(--ease-out) infinite; }
 @keyframes pop { 0% { transform: scale(.5); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
 @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }

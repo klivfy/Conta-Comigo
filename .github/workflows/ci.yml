@@ -65,6 +65,9 @@ jobs:
       - name: Acessibilidade (falha em violação nova)
         run: node scripts/a11y_check.cjs
 
+      - name: Contraste nos 8 modos de cor (degradê, dica e foco)
+        run: node scripts/contrast_check.cjs
+
       - name: Nova aba, versão web e portão do painel (fora da PWA)
         run: node scripts/pages_check.cjs
 

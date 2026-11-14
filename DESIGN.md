@@ -160,7 +160,7 @@ A paleta é de brinquedo: matizes saturados para enfeite e identidade, versões 
 
 ### Primary
 - **Azul Resposta** (#2f5ce0): primeira resposta, botão principal (`.big-btn`), `.mini-btn` e links. Aresta em #1f3f9e.
-- **Laranja Raposa** (#ff9a3d): assinatura e atenção (ponto de "falta configurar", barra do próximo prêmio). É só enfeite, nunca fundo de texto. O degradê do título vai de #ff8a3d a #ff5e7e.
+- **Laranja Raposa** (#ff9a3d): assinatura e atenção (ponto de "falta configurar", barra do próximo prêmio). É só enfeite, nunca fundo de texto. O degradê da marca (#ff8a3d → #ff5e7e) é a faixa de 5px sob o título; desde novembro de 2026 ele não pinta mais o texto, porque dava 1,9 a 2,1:1 nos temas claros.
 - **Laranja Texto** (`--accent-text`): o laranja que carrega texto ("Novo recorde de pontos!", "+pontos", prêmio do baú). É #a34a00 nos temas claros (≥4,8:1 em todos os fundos), #ff9a3d no Espaço (5,95:1 sobre o cartão) e amarelo no alto contraste.
 
 ### Secondary
@@ -204,7 +204,7 @@ O tema `auto` é o padrão de perfis novos: segue `prefers-color-scheme` ao vivo
 ### Hierarchy
 Escala `--fs-*` para texto de interface: 12, 13, 14, 16, 19, 24, 28 e 40px (v2.7.4: `--fs-2xs` e `--fs-xs` são o mesmo degrau de 12px; antes eram dois de 11px).
 - **Display** (900, `--fs-display` 40px, que vai a 64px na página cheia): a equação e o número das respostas.
-- **Headline** (800–900, `--fs-3xl` 28px): título "Conta Comigo" em degradê e título da tela final.
+- **Headline** (800–900, `--fs-3xl` 28px): título "Conta Comigo" (em `--ink`, com a faixa da marca embaixo) e título da tela final.
 - **Title** (800–900, `--fs-xl`/`--fs-2xl`, 19–24px): títulos de tela (Loja, Duelo), botões grandes e modais.
 - **Body** (700, `--fs-md`/`--fs-lg`, 14–16px): histórias, mensagens e campos.
 - **Label** (800, `--fs-2xs`–`--fs-sm`, 12–13px): nome e descrição dos modos, chips, missões e selos.
@@ -267,12 +267,12 @@ As bordas são de 2px em `--line`. O tracejado indica algo "ainda não seu": pr�
 ## Components
 
 ### Buttons
-- **Resposta** (`.ans`): 30px/900 branco sobre `--ans-1..4` por posição, raio de 20px e aresta de 6px da mesma família. Ao acertar fica `--success-strong` com pop. Ao errar, opacidade .45 com tremida. A dica é um contorno amarelo pulsante.
+- **Resposta** (`.ans`): 30px/900 branco sobre `--ans-1..4` por posição, raio de 20px e aresta de 6px da mesma família. Ao acertar fica `--success-strong` com pop. Ao errar, opacidade .45 com tremida. A dica é uma faixa amarela colada no botão, um anel em `--focus` por fora (offset de 4px) e a lâmpada 💡 no canto. A pulsação é extra: com movimento reduzido, faixa, anel e lâmpada continuam.
 - **Principal** (`.big-btn`): 19px/800 branco sobre o Azul Resposta, raio de 20px e aresta `--ans-1-edge`.
   - `.alt`: cartão com tinta e `lift-4`.
 - **Mini** (`.mini-btn`): pílula com altura mínima de 44px. Fica verde quando "em uso".
 - **Ícone** (`.icon-btn`): quadrado de 44px, raio de 12px e `lift-2`.
-- **Foco:** anel de 3–4px em `--focus` (a própria tinta, ou amarelo no alto contraste), com offset de 2px.
+- **Foco:** anel de 3–4px em `--focus` (a própria tinta, ou amarelo no alto contraste), com offset de 2px. `--focus` é resolvido em `body`, não em `:root`: em `:root` ele herdaria a tinta do Clássico em todos os temas.
 
 ### Chips
 - **Contadores** (estrelas, ofensiva, nível): pílula de cartão com `lift-2` e peso 800, sem quebra de linha.
@@ -298,7 +298,7 @@ A raposa (🥚 → 🐣 → 🦊, com chapéu da loja) quica em loop. O balão d
 ### Do:
 - **Do** use os tokens semânticos (`--ink`, `--card`, `--line`, `--tint`, `--success-*`, `--attention`, `--accent-text`, `--on-accent`, `--on-yellow`) e deixe o tema decidir a cor.
 - **Do** dê a todo controle tocável no mínimo 44×44px e uma aresta que afunda no `:active`.
-- **Do** teste cada mudança visual nos 8 modos de cor (7 temas mais alto contraste), no popup 400×600 e em celulares e tablets emulados, retrato e paisagem (`node scripts/resp_check.cjs`).
+- **Do** teste cada mudança visual nos 8 modos de cor (7 temas mais alto contraste), no popup 400×600 e em celulares e tablets emulados, retrato e paisagem (`node scripts/resp_check.cjs`). O contraste dos 8 modos, incluindo texto em degradê, dica e foco, é conferido por `node scripts/contrast_check.cjs`.
 - **Do** mantenha `game.html`, `popup.html` e `web/index.html` com a mesma marcação da tela inicial (`node scripts/sync_check.cjs` confere).
 - **Do** desligue animação em `body.calmo`, `body.rm` e `prefers-reduced-motion`.
 

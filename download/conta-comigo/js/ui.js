@@ -340,12 +340,13 @@ function renderModes() {
     const have = p ? p.stars : 0;
     const pct = Math.max(4, Math.min(100, Math.round(100 * have / md.unlock)));
     html += '<button class="mode-card next-prize c-' + md.color + '" data-next="' + nx + '" aria-label="' +
-      escHtml(t('next_prize') + ': ' + t('m_' + nx) + ' — ' + t('next_need', { n: md.unlock - have })) + '">' +
+      escHtml(t('next_prize') + ' ' + t('m_' + nx) + ' ' + have + ' / ' + md.unlock + ' ⭐ — ' + t('next_need', { n: md.unlock - have })) + '">' + // nov/2026: começa pelo texto visível (WCAG 2.5.3)
       '<span class="badge">' + t('next_prize') + '</span>' +
-      '<span class="mode-emoji">' + md.emoji + '<i aria-hidden="true">🔒</i></span>' +
-      '<span class="mode-name">' + t('m_' + nx) + '</span>' +
+      // espaço entre os blocos (o flex ignora no layout): sem ele o texto lido fica "Próximo prêmioFaltando0 / 10"
+      ' <span class="mode-emoji">' + md.emoji + '<i aria-hidden="true">🔒</i></span>' +
+      ' <span class="mode-name">' + t('m_' + nx) + '</span>' +
       '<span class="np-bar" aria-hidden="true"><i style="width:' + pct + '%"></i></span>' +
-      '<span class="mode-desc">' + have + ' / ' + md.unlock + ' ⭐</span></button>';
+      ' <span class="mode-desc">' + have + ' / ' + md.unlock + ' ⭐</span></button>';
   }
   grid.innerHTML = html;
   $$('#modes-grid .mode-card').forEach((card) => {
@@ -405,7 +406,9 @@ function renderPlayNow() {
   const emoji = r.kind === 'boss' ? '⚔️' : r.kind === 'review' ? '📚' : MODES[r.mode].emoji;
   const what = r.kind === 'boss' ? t('sp_boss') : r.kind === 'review' ? t('review_btn', { n: r.n }) : t('m_' + r.mode);
   b.innerHTML = '<span class="pn-emoji" aria-hidden="true">' + emoji + '</span><span class="pn-txt"><b>' + t('play_now') + '</b><small>' + escHtml(what) + '</small></span>';
-  b.setAttribute('aria-label', t('play_now') + ': ' + what);
+  // nov/2026: sem aria-label próprio. O nome vem do texto visível ("Jogar agora" + modo), e quem usa
+  // controle por voz consegue dizer exatamente o que vê (WCAG 2.5.3, rótulo contém o texto visível).
+  b.removeAttribute('aria-label');
 }
 
 /* ==================== rodadas ==================== */
@@ -1028,7 +1031,7 @@ function buyBtn(kind, id, price, name, stars) {
   if (stars >= price) return '<button class="mini-btn" data-buy' + kind + '="' + id + '"' + itemLbl(t('buy') + ' ' + price + '⭐', name) + '>' + t('buy') + ' ' + price + '⭐</button>';
   const miss = price - stars, txt = stars + '/' + price + '⭐';
   return '<span class="far-bar" aria-hidden="true"><i style="width:' + Math.round(100 * stars / price) + '%"></i></span>' +
-    '<button class="mini-btn far" data-far="' + miss + '" data-name="' + escHtml(name) + '" aria-disabled="true"' + itemLbl(t('far', { n: miss }), name) + '>' + txt + '</button>';
+    '<button class="mini-btn far" data-far="' + miss + '" data-name="' + escHtml(name) + '" aria-disabled="true"' + itemLbl(txt + ' — ' + t('far', { n: miss }), name) + '>' + txt + '</button>'; // nov/2026: rótulo começa pelo texto visível
 }
 function renderShop() {
   const p = P();

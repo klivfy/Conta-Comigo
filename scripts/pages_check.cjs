@@ -109,7 +109,9 @@ function serve() {
     page.on('pageerror', (e) => errors.push(e.message));
     await page.goto(base + 'game.html'); await page.waitForTimeout(900);
     await page.evaluate(() => { P().stars = 120; saveState(); renderHome(); });
-    const pn = await page.evaluate(() => { const b = document.getElementById('play-now'); return b ? { label: b.getAttribute('aria-label'), h: b.getBoundingClientRect().height } : null; });
+    const pn = await page.evaluate(() => { const b = document.getElementById('play-now'); return b ? { h: b.getBoundingClientRect().height } : null; });
+    // nov/2026: o nome acessível vem do texto visível (sem aria-label), então lê o nome calculado pelo navegador
+    if (pn) pn.label = (await page.getByRole('button', { name: /Jogar agora/ }).count()) === 1 ? 'Jogar agora' : null;
     ok(!!pn && pn.h >= 44 && /Jogar agora/.test(pn.label), 'home: cartão "Jogar agora" existe, alvo >= 44px ("' + (pn && pn.label) + '")');
     await page.click('#play-now'); await page.waitForTimeout(500);
     ok(await page.evaluate(() => document.getElementById('screen-game').classList.contains('active')), 'home: "Jogar agora" abre uma rodada');
